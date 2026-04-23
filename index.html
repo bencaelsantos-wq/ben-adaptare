@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ben Adaptare · Plataforma de Adaptações</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-50: #E8F5EE;
+    --green-100: #C3E6D1;
+    --green-400: #3A9D6E;
+    --green-600: #1E6B47;
+    --green-800: #0D3D28;
+    --gray-50: #F6F7F5;
+    --gray-100: #EAEBE8;
+    --gray-200: #D5D6D2;
+    --gray-400: #9A9B97;
+    --gray-600: #5C5D59;
+    --gray-800: #2C2D2A;
+    --white: #FFFFFF;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+  }
+
+  /* ── LOGIN ───────────────────────────────────── */
+  #login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .login-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: var(--shadow);
+  }
+
+  .login-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--green-600);
+    margin-bottom: 6px;
+  }
+
+  .login-sub {
+    font-size: 14px;
+    color: var(--gray-400);
+    margin-bottom: 32px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 6px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: var(--white);
+    transition: border-color 0.18s;
+    outline: none;
+  }
+
+  .form-group input:focus {
+    border-color: var(--green-400);
+    box-shadow: 0 0 0 3px rgba(58,157,110,0.12);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--green-600);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.1s;
+    margin-bottom: 10px;
+  }
+
+  .btn-primary:hover { background: var(--green-800); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-ghost {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: var(--green-600);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s;
+  }
+
+  .btn-ghost:hover { background: var(--green-50); }
+
+  .login-divider {
+    text-align: center;
+    font-size: 12px;
+    color: var(--gray-400);
+    margin: 16px 0 10px;
+    position: relative;
+  }
+
+  .error-msg {
+    font-size: 13px;
+    color: #C0392B;
+    background: #FDEDEC;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .success-msg {
+    font-size: 13px;
+    color: var(--green-800);
+    background: var(--green-50);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* ── APP SHELL ───────────────────────────────── */
+  #app-screen { display: none; }
+
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────── */
+  .sidebar {
+    width: 230px;
+    background: var(--white);
+    border-right: 1px solid var(--gray-100);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 10;
+  }
+
+  .sidebar-header {
+    padding: 28px 22px 20px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .sidebar-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--green-600);
+  }
+
+  .sidebar-tagline {
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-top: 2px;
+  }
+
+  .sidebar-nav {
+    padding: 16px 12px;
+    flex: 1;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 4px;
+    font-weight: 400;
+    user-select: none;
+  }
+
+  .nav-item:hover { background: var(--gray-50); color: var(--gray-800); }
+
+  .nav-item.active {
+    background: var(--green-50);
+    color: var(--green-600);
+    font-weight: 500;
+  }
+
+  .nav-icon {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  .sidebar-footer {
+    padding: 16px 12px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 8px;
+  }
+
+  .user-badge:hover { background: var(--gray-50); }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--green-100);
+    color: var(--green-800);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .user-email {
+    font-size: 12px;
+    color: var(--gray-600);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 140px;
+  }
+
+  .btn-logout {
+    width: 100%;
+    padding: 9px 12px;
+    background: transparent;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .btn-logout:hover { border-color: #E74C3C; color: #E74C3C; }
+
+  /* ── MAIN CONTENT ────────────────────────────── */
+  .main {
+    margin-left: 230px;
+    padding: 36px 40px;
+    flex: 1;
+    max-width: 860px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--gray-800);
+    margin-bottom: 6px;
+  }
+
+  .page-sub {
+    font-size: 14px;
+    color: var(--gray-400);
+    margin-bottom: 32px;
+  }
+
+  /* ── FORM CARD ───────────────────────────────── */
+  .form-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 28px 28px 24px;
+    margin-bottom: 20px;
+  }
+
+  .form-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-400);
+    margin-bottom: 16px;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 7px;
+  }
+
+  .text-input, .text-area {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: var(--white);
+    transition: border-color 0.18s;
+    outline: none;
+  }
+
+  .text-input:focus, .text-area:focus {
+    border-color: var(--green-400);
+    box-shadow: 0 0 0 3px rgba(58,157,110,0.12);
+  }
+
+  .text-area {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .field-block { margin-bottom: 16px; }
+  .field-block:last-child { margin-bottom: 0; }
+
+  /* ── PERFIS (chips) ──────────────────────────── */
+  .chips-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .chips-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--gray-200);
+    background: var(--white);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .chip:hover { border-color: var(--green-400); color: var(--green-600); }
+
+  .chip.active {
+    background: var(--green-600);
+    border-color: var(--green-600);
+    color: var(--white);
+  }
+
+  /* ── BOTÃO GERAR ─────────────────────────────── */
+  .btn-gerar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 24px;
+    background: var(--green-600);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.1s;
+  }
+
+  .btn-gerar:hover { background: var(--green-800); }
+  .btn-gerar:active { transform: scale(0.98); }
+  .btn-gerar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ── RESULTADO ───────────────────────────────── */
+  .result-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-top: 20px;
+    display: none;
+  }
+
+  .result-card.visible { display: block; }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .result-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+
+  .result-badge {
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--green-50);
+    color: var(--green-600);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  .result-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--gray-600);
+    white-space: pre-wrap;
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  .btn-save {
+    padding: 10px 20px;
+    background: var(--green-600);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s;
+  }
+
+  .btn-save:hover { background: var(--green-800); }
+
+  .btn-copy {
+    padding: 10px 18px;
+    background: transparent;
+    color: var(--gray-600);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-copy:hover { border-color: var(--green-400); color: var(--green-600); }
+
+  /* ── LISTA DE ALUNOS ─────────────────────────── */
+  .alunos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 8px;
+  }
+
+  .aluno-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .aluno-card:hover {
+    border-color: var(--green-400);
+    box-shadow: 0 2px 10px rgba(58,157,110,0.1);
+  }
+
+  .aluno-nome {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 6px;
+  }
+
+  .aluno-perfis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .aluno-tag {
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--green-50);
+    color: var(--green-600);
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+
+  .aluno-preview {
+    font-size: 12px;
+    color: var(--gray-400);
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .aluno-date {
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-top: 10px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gray-400);
+  }
+
+  .empty-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .empty-text { font-size: 14px; }
+
+  /* ── LOADING SPINNER ─────────────────────────── */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── TOAST ───────────────────────────────────── */
+  #toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--gray-800);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── MODAL DETALHES ──────────────────────────── */
+  #modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  #modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .modal-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--gray-800);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--gray-400);
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px;
+  }
+
+  .modal-close:hover { color: var(--gray-800); }
+
+  .modal-perfis {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .modal-body {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--gray-600);
+    white-space: pre-wrap;
+    background: var(--gray-50);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────────── */
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 24px 16px; }
+    .alunos-grid { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Ben Adaptare</div>
+    <div class="login-sub">Plataforma de adaptações pedagógicas</div>
+
+    <div id="login-error" class="error-msg"></div>
+    <div id="login-success" class="success-msg"></div>
+
+    <div class="form-group">
+      <label for="inp-email">E-mail</label>
+      <input type="email" id="inp-email" placeholder="professor@escola.com.br" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label for="inp-senha">Senha</label>
+      <input type="password" id="inp-senha" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn-primary" onclick="entrar()">Entrar</button>
+    <div class="login-divider">ou</div>
+    <button class="btn-ghost" onclick="registrar()">Criar conta gratuita</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">Ben Adaptare</div>
+        <div class="sidebar-tagline">Adaptações pedagógicas</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-item active" id="nav-nova" onclick="showPage('nova')">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Nova adaptação
+        </div>
+        <div class="nav-item" id="nav-alunos" onclick="showPage('alunos')">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M11 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Meus alunos
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-badge">
+          <div class="avatar" id="user-avatar">--</div>
+          <div class="user-email" id="user-email-label">-</div>
+        </div>
+        <button class="btn-logout" onclick="logout()">Sair da conta</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- PÁGINA: NOVA -->
+      <div id="page-nova" class="page active">
+        <h1 class="page-title">Nova adaptação</h1>
+        <p class="page-sub">Preencha os dados do aluno e o conteúdo que deseja adaptar.</p>
+
+        <div class="form-card">
+          <div class="form-card-title">Dados do aluno</div>
+
+          <div class="field-row">
+            <div>
+              <label class="field-label" for="inp-aluno">Nome do aluno</label>
+              <input type="text" id="inp-aluno" class="text-input" placeholder="Ex: João Silva">
+            </div>
+            <div>
+              <label class="field-label">Perfis / NEE</label>
+              <div class="chips-group" id="perfis-chips"></div>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <label class="field-label" for="inp-conteudo">Conteúdo a adaptar</label>
+            <textarea id="inp-conteudo" class="text-area" placeholder="Cole aqui o texto, atividade ou exercício que deseja adaptar para este aluno…"></textarea>
+          </div>
+        </div>
+
+        <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
+          </svg>
+          Gerar adaptação
+        </button>
+
+        <!-- Resultado -->
+        <div class="result-card" id="result-card">
+          <div class="result-header">
+            <div class="result-title">Adaptação gerada</div>
+            <div class="result-badge" id="result-badge-perfis">—</div>
+          </div>
+          <div class="result-text" id="result-text"></div>
+          <div class="result-actions">
+            <button class="btn-save" onclick="salvar()">Salvar no histórico</button>
+            <button class="btn-copy" onclick="copiarTexto()">Copiar texto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PÁGINA: ALUNOS -->
+      <div id="page-alunos" class="page">
+        <h1 class="page-title">Meus alunos</h1>
+        <p class="page-sub">Histórico de adaptações salvas por aluno.</p>
+        <div class="alunos-grid" id="alunos-grid"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL DETALHES -->
+<div id="modal-overlay" onclick="fecharModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-nome">—</div>
+      <button class="modal-close" onclick="fecharModal()">×</button>
+    </div>
+    <div class="modal-perfis" id="modal-perfis"></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+  // ─── SUPABASE CONFIG ─────────────────────────────────────────
+  // ⚠️ Troque 'COLE_SUA_KEY' pela sua anon key do Supabase
+  const db = supabase.createClient(
+    'https://wgnrxzoccelzzxwyibwj.supabase.co',
+    'COLE_SUA_KEY'
+  );
+
+  // ─── CONSTANTES ───────────────────────────────────────────────
+  const PERFIS = ['TEA', 'TDAH', 'Dislexia', 'D.I.', 'Apraxia'];
+  let user = null;
+  let ultimaAdaptacao = '';
+
+  // ─── INIT ─────────────────────────────────────────────────────
+  renderPerfis();
+
+  // ─── PERFIS (chips) ───────────────────────────────────────────
+  function renderPerfis() {
+    const container = document.getElementById('perfis-chips');
+    container.innerHTML = PERFIS.map(p =>
+      `<button class="chip" onclick="toggleChip(this)">${p}</button>`
+    ).join('');
+  }
+
+  function toggleChip(el) {
+    el.classList.toggle('active');
+  }
+
+  function getPerfisAtivos() {
+    return [...document.querySelectorAll('.chip.active')].map(c => c.textContent);
+  }
+
+  // ─── AUTH ─────────────────────────────────────────────────────
+  async function entrar() {
+    clearMsgs();
+    const email = document.getElementById('inp-email').value.trim();
+    const senha = document.getElementById('inp-senha').value;
+
+    const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
+    if (error) return showError(error.message);
+    user = data.user;
+    iniciarApp();
+  }
+
+  async function registrar() {
+    clearMsgs();
+    const email = document.getElementById('inp-email').value.trim();
+    const senha = document.getElementById('inp-senha').value;
+
+    if (!email || !senha) return showError('Preencha e-mail e senha.');
+    if (senha.length < 6) return showError('A senha deve ter ao menos 6 caracteres.');
+
+    const { error } = await db.auth.signUp({ email, password: senha });
+    if (error) return showError(error.message);
+    showSuccess('Conta criada! Verifique seu e-mail e faça login.');
+  }
+
+  function iniciarApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+
+    const initials = user.email.slice(0, 2).toUpperCase();
+    document.getElementById('user-avatar').textContent = initials;
+    document.getElementById('user-email-label').textContent = user.email;
+
+    carregarAlunos();
+  }
+
+  function logout() {
+    db.auth.signOut();
+    location.reload();
+  }
+
+  // ─── NAVEGAÇÃO ────────────────────────────────────────────────
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    document.getElementById(`page-${id}`).classList.add('active');
+    document.getElementById(`nav-${id}`).classList.add('active');
+  }
+
+  // ─── GERAR ───────────────────────────────────────────────────
+  function gerar() {
+    const aluno = document.getElementById('inp-aluno').value.trim();
+    const conteudo = document.getElementById('inp-conteudo').value.trim();
+    const perfis = getPerfisAtivos();
+
+    if (!aluno) return toast('Informe o nome do aluno.');
+    if (!conteudo) return toast('Cole o conteúdo a adaptar.');
+    if (perfis.length === 0) return toast('Selecione ao menos um perfil.');
+
+    const perfisStr = perfis.join(', ');
+
+    ultimaAdaptacao = `Adaptação para ${aluno} — Perfis: ${perfisStr}
+
+Conteúdo original:
+${conteudo}
+
+────────────────────────────
+✦ Adaptação pedagógica gerada considerando as necessidades específicas de ${perfisStr}:
+
+O conteúdo foi reorganizado com linguagem acessível e visual, suporte a múltiplos canais sensoriais e instruções claras e sequenciais, respeitando o ritmo individual do aluno.
+
+[Aqui aparecerá o conteúdo adaptado gerado pela IA — conecte a API de sua preferência nesta função para gerar a adaptação real.]`;
+
+    const resultCard = document.getElementById('result-card');
+    document.getElementById('result-text').textContent = ultimaAdaptacao;
+    document.getElementById('result-badge-perfis').textContent = perfisStr;
+    resultCard.classList.add('visible');
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ─── SALVAR ───────────────────────────────────────────────────
+  async function salvar() {
+    if (!ultimaAdaptacao) return toast('Gere uma adaptação antes de salvar.');
+
+    const item = {
+      user_id: user.id,
+      aluno: document.getElementById('inp-aluno').value.trim(),
+      perfis: getPerfisAtivos(),
+      texto: ultimaAdaptacao
+    };
+
+    const { error } = await db.from('adaptacoes').insert(item);
+    if (error) return toast('Erro ao salvar: ' + error.message);
+
+    toast('Adaptação salva com sucesso!');
+    carregarAlunos();
+  }
+
+  // ─── COPIAR ───────────────────────────────────────────────────
+  function copiarTexto() {
+    navigator.clipboard.writeText(ultimaAdaptacao)
+      .then(() => toast('Texto copiado!'))
+      .catch(() => toast('Não foi possível copiar.'));
+  }
+
+  // ─── CARREGAR ALUNOS ──────────────────────────────────────────
+  async function carregarAlunos() {
+    const { data } = await db
+      .from('adaptacoes')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    const grid = document.getElementById('alunos-grid');
+
+    if (!data || data.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">Nenhuma adaptação salva ainda.<br>Crie sua primeira na aba "Nova adaptação".</div>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = data.map(r => {
+      const tags = (r.perfis || []).map(p => `<span class="aluno-tag">${p}</span>`).join('');
+      const preview = (r.texto || '').slice(0, 90) + '…';
+      const data_fmt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '';
+      return `
+        <div class="aluno-card" onclick='abrirModal(${JSON.stringify(r)})'>
+          <div class="aluno-nome">${r.aluno || '(sem nome)'}</div>
+          <div class="aluno-perfis">${tags}</div>
+          <div class="aluno-preview">${preview}</div>
+          <div class="aluno-date">${data_fmt}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ─── MODAL ───────────────────────────────────────────────────
+  function abrirModal(reg) {
+    document.getElementById('modal-nome').textContent = reg.aluno || '(sem nome)';
+    document.getElementById('modal-perfis').innerHTML =
+      (reg.perfis || []).map(p => `<span class="aluno-tag">${p}</span>`).join('');
+    document.getElementById('modal-body').textContent = reg.texto || '';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function fecharModal(e) {
+    if (!e || e.target === document.getElementById('modal-overlay') || e.currentTarget.classList.contains('modal-close')) {
+      document.getElementById('modal-overlay').classList.remove('open');
+    }
+  }
+
+  // ─── HELPERS ─────────────────────────────────────────────────
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function showSuccess(msg) {
+    const el = document.getElementById('login-success');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function clearMsgs() {
+    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('login-success').style.display = 'none';
+  }
+</script>
+</body>
+</html>
