@@ -415,11 +415,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
     <div style="margin-top:14px;padding:10px 14px;background:var(--gr50);border-radius:var(--rsm);border:1px solid var(--gr200);font-size:12px;color:var(--gr400);text-align:center;line-height:1.5">
       🔒 O acesso é restrito.<br>Solicite seu cadastro ao administrador.
     </div>
-    <div style="margin-top:16px;text-align:center">
-      <button onclick="abrirDevPanel()" style="background:none;border:1px solid var(--gr200);border-radius:var(--rsm);padding:7px 18px;font-family:inherit;font-size:12px;color:var(--gr400);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--g400)';this.style.color='var(--g600)'" onmouseout="this.style.borderColor='var(--gr200)';this.style.color='var(--gr400)'">
-        ⚙️ Acesso do Desenvolvedor
-      </button>
-    </div>
+  </div>
+  <!-- Botão dev FORA do card, fixo na tela -->
+  <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100">
+    <button onclick="abrirDevPanel()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:8px 20px;font-family:inherit;font-size:12px;color:rgba(255,255,255,0.7);cursor:pointer;backdrop-filter:blur(4px);transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.2)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.7)'">
+      ⚙️ Acesso do Desenvolvedor
+    </button>
   </div>
 </div>
 
@@ -2644,9 +2645,20 @@ const DEV_EMAIL = 'dev@pluramente.app';
 const DEV_PASS  = 'Pluramente@Dev2025';
 
 function abrirDevPanel() {
-  document.getElementById('dev-screen').style.display = 'block';
-  document.getElementById('dev-login-view').style.display = 'flex';
-  document.getElementById('dev-app-view').style.display = 'none';
+  const s = document.getElementById('dev-screen');
+  const lv = document.getElementById('dev-login-view');
+  const av = document.getElementById('dev-app-view');
+  if (!s) { alert('Dev panel não encontrado.'); return; }
+  s.style.display = 'block';
+  if (lv) { lv.style.display = 'flex'; lv.style.alignItems = 'center'; lv.style.justifyContent = 'center'; }
+  if (av) av.style.display = 'none';
+  // Limpar campos
+  const em = document.getElementById('dev-email');
+  const pw = document.getElementById('dev-pass');
+  if (em) em.value = '';
+  if (pw) pw.value = '';
+  const err = document.getElementById('dev-err');
+  if (err) err.style.display = 'none';
 }
 function fecharDevPanel() {
   document.getElementById('dev-screen').style.display = 'none';
