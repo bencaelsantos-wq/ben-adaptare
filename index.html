@@ -3,15 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ben Adaptare · Plataforma de Adaptações</title>
+<title>Pluramente · Plataforma de Integração Clínica-Pedagógica</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
 :root{
-  --g50:#E8F5EE;--g100:#C3E6D1;--g400:#3A9D6E;--g600:#1E6B47;--g800:#0D3D28;
+  --g50:#EEF0FD;--g100:#D5D9FA;--g400:#5B6FE8;--g600:#3447C7;--g800:#1A2880;
   --gr50:#F6F7F5;--gr100:#EAEBE8;--gr200:#D5D6D2;--gr400:#9A9B97;--gr600:#5C5D59;--gr800:#2C2D2A;
   --white:#fff;--rsm:8px;--rmd:12px;--rlg:18px;--shadow:0 2px 12px rgba(0,0,0,.07);
   --blue:#1A56DB;--blue-light:#EBF5FF;--amber:#B45309;--amber-light:#FFFBEB;
+  --clinic:#7C3AED;--clinic-light:#F5F3FF;
+  --at:#0891B2;--at-light:#E0F7FA;
+  --green:#059669;--green-light:#ECFDF5;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);min-height:100vh}
@@ -299,9 +302,49 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
 .div-pratica-item{background:var(--gr50);border-radius:var(--rsm);padding:10px 12px;font-size:12.5px;color:var(--gr600);line-height:1.5}
 .div-pratica-item strong{display:block;font-size:11.5px;color:var(--gr800);margin-bottom:2px}
 
+/* ROLES EXTRAS */
+.sb-role.at{background:var(--at-light);color:var(--at)}
+.sb-role.clinica{background:var(--clinic-light);color:var(--clinic)}
+.nav-item.at-item.active{background:var(--at-light);color:var(--at)}
+.nav-item.clinic-item.active{background:var(--clinic-light);color:var(--clinic)}
+/* MÓDULO CLÍNICO */
+.clinic-hero{background:linear-gradient(135deg,var(--clinic) 0%,#A855F7 100%);border-radius:var(--rlg);padding:26px 28px;color:#fff;margin-bottom:22px}
+.clinic-hero h2{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:5px}
+.clinic-hero p{font-size:13px;opacity:.85;line-height:1.6}
+.clinic-card{background:#fff;border:1px solid var(--gr200);border-radius:var(--rmd);padding:18px 20px;margin-bottom:14px}
+.clinic-card-title{font-size:13px;font-weight:600;color:var(--gr800);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.obj-area{background:var(--gr50);border-radius:var(--rsm);padding:12px 14px;margin-bottom:8px}
+.obj-area-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gr400);margin-bottom:6px}
+.obj-area textarea{width:100%;border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--gr800);outline:none;resize:none;line-height:1.6;min-height:54px}
+/* ROTEIRO AT */
+.at-hero{background:linear-gradient(135deg,var(--at) 0%,#06B6D4 100%);border-radius:var(--rlg);padding:26px 28px;color:#fff;margin-bottom:22px}
+.at-card{background:#fff;border:1px solid var(--gr200);border-radius:var(--rmd);padding:16px 18px;margin-bottom:10px;border-left:3px solid var(--at)}
+.at-card-sit{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--at);margin-bottom:4px}
+.at-card-titulo{font-size:13.5px;font-weight:600;color:var(--gr800);margin-bottom:8px}
+.at-bloco{background:var(--gr50);border-radius:var(--rsm);padding:9px 12px;margin-bottom:6px;font-size:12.5px;color:var(--gr600);line-height:1.6}
+.at-bloco strong{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin-bottom:3px}
+.at-evitar{background:#FEF2F2;border-left:3px solid #EF4444;border-radius:var(--rsm);padding:9px 12px;margin-bottom:6px;font-size:12.5px;color:#7F1D1D;line-height:1.6}
+.at-evitar strong{display:block;font-size:11px;font-weight:700;text-transform:uppercase;margin-bottom:3px;color:#EF4444}
+/* RELATÓRIOS CRUZADOS */
+.rel-card{background:#fff;border:1px solid var(--gr200);border-radius:var(--rmd);padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.rel-card:hover{border-color:var(--g400);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.rel-origem{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:999px;margin-bottom:8px}
+.rel-origem.escola{background:var(--green-light);color:var(--green)}
+.rel-origem.clinica{background:var(--clinic-light);color:var(--clinic)}
+.rel-titulo{font-size:13.5px;font-weight:600;color:var(--gr800);margin-bottom:4px}
+.rel-meta{font-size:12px;color:var(--gr400)}
+/* MONITORAMENTO */
+.mon-btn-group{display:flex;gap:6px}
+.mon-btn{padding:6px 14px;border-radius:999px;border:1.5px solid var(--gr200);background:#fff;font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
+.mon-btn.ok{border-color:#10B981;color:#10B981}
+.mon-btn.ok.sel{background:#10B981;color:#fff}
+.mon-btn.parcial{border-color:#F59E0B;color:#F59E0B}
+.mon-btn.parcial.sel{background:#F59E0B;color:#fff}
+.mon-btn.nao{border-color:#EF4444;color:#EF4444}
+.mon-btn.nao.sel{background:#EF4444;color:#fff}
+
 @media(max-width:740px){
   .sidebar{display:none}.main{margin-left:0;padding:18px 14px}
-  .cards-grid,.cards-grid-3,.frow,.frow3,.stats-grid,.guia-grid,.div-modulos,.div-pratica-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -310,13 +353,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
 <!-- ══════════════ LOGIN ══════════════ -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">Ben Adaptare</div>
-    <div class="login-sub">Plataforma pedagógica inclusiva com IA</div>
-    <div class="login-desc">Selecione seu perfil de acesso antes de entrar.</div>
+    <div class="login-logo">Pluramente</div>
+    <div class="login-sub">Plataforma de Integração Clínica-Pedagógica</div>
+    <div class="login-desc">🏥➡️🏫 Traduzindo avaliações clínicas em estratégias aplicáveis no cotidiano escolar.</div>
 
+    <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--gr600)">Meu perfil</div>
     <div class="role-sel">
       <button class="role-btn active" id="role-btn-professor" onclick="setRole('professor')">👩‍🏫 Professor</button>
       <button class="role-btn" id="role-btn-gestao" onclick="setRole('gestao')">🏫 Gestão</button>
+      <button class="role-btn" id="role-btn-clinica" onclick="setRole('clinica')">🏥 Clínica</button>
+      <button class="role-btn" id="role-btn-at" onclick="setRole('at')">🧑‍⚕️ AT</button>
     </div>
 
     <div id="lerr" class="err-msg"></div>
@@ -325,7 +371,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
     <div class="fg"><label>Senha</label><input type="password" id="lsenha" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-p" onclick="entrar()">Entrar</button>
     <div class="ldiv">ou</div>
-    <button class="btn-gh" onclick="registrar()">Criar conta gratuita</button>
+    <button class="btn-gh" onclick="registrar()">Criar conta</button>
   </div>
 </div>
 
@@ -336,8 +382,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sb-header">
-        <div class="sb-logo">Ben Adaptare</div>
-        <div class="sb-tag">Plataforma pedagógica inclusiva</div>
+        <div class="sb-logo">Pluramente</div>
+        <div class="sb-tag">Integração Clínica-Pedagógica</div>
         <span class="sb-role" id="sb-role-badge">Professor</span>
       </div>
       <nav class="sb-nav" id="sb-nav">
@@ -518,6 +564,94 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
   </div>
 </div>
 
+<!-- ══ MODAL: Cadastro Perfil Clínico ══ -->
+<div class="overlay" id="modal-cad-clinica" onclick="fecharModal('modal-cad-clinica',event)">
+  <div class="modal lg">
+    <div class="modal-header">
+      <div class="modal-title" id="mcc-titulo">Novo Perfil Clínico</div>
+      <button class="modal-close" onclick="fecharModal('modal-cad-clinica')">×</button>
+    </div>
+    <div style="margin-top:16px">
+      <div class="frow">
+        <div><label class="flabel">Nome do aluno *</label><input type="text" id="cc-nome" class="finput" placeholder="Nome completo"></div>
+        <div><label class="flabel">Idade</label><input type="text" id="cc-idade" class="finput" placeholder="Ex: 8 anos"></div>
+      </div>
+      <div class="frow">
+        <div><label class="flabel">Diagnóstico(s)</label><input type="text" id="cc-diag" class="finput" placeholder="Ex: TEA nível 2, TDAH combinado"></div>
+        <div><label class="flabel">Hipóteses clínicas</label><input type="text" id="cc-hipotese" class="finput" placeholder="Ex: TPS associado, ansiedade"></div>
+      </div>
+      <div class="frow">
+        <div>
+          <label class="flabel">Comunicação</label>
+          <select id="cc-comunicacao" class="fselect">
+            <option value="">Selecione</option>
+            <option>Verbal fluente</option><option>Verbal com limitações</option>
+            <option>Verbal emergente</option><option>Não-verbal — usa CAA</option>
+            <option>Não-verbal — sem CAA formal</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Regulação emocional</label>
+          <select id="cc-regulacao" class="fselect">
+            <option value="">Selecione</option>
+            <option>Preservada</option><option>Comprometida — crises frequentes</option>
+            <option>Em desenvolvimento</option><option>Necessita suporte constante</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow">
+        <div>
+          <label class="flabel">Perfil sensorial</label>
+          <select id="cc-sensorio" class="fselect">
+            <option value="">Selecione</option>
+            <option>Sem particularidades</option><option>Hipersensibilidade</option>
+            <option>Hipossensibilidade</option><option>Misto (hipo + hiper)</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Motricidade</label>
+          <select id="cc-motricidade" class="fselect">
+            <option value="">Selecione</option>
+            <option>Preservada</option><option>Motricidade fina comprometida</option>
+            <option>Motricidade ampla comprometida</option><option>Ambas comprometidas</option>
+          </select>
+        </div>
+      </div>
+      <div class="fblock">
+        <label class="flabel">Funções preservadas</label>
+        <textarea id="cc-preservadas" class="ftarea sm" placeholder="Ex: Boa memória visual, linguagem receptiva preservada, interesse em rotinas…"></textarea>
+      </div>
+      <div class="fblock">
+        <label class="flabel">Funções comprometidas</label>
+        <textarea id="cc-comprometidas" class="ftarea sm" placeholder="Ex: Linguagem expressiva, regulação emocional, tolerância à frustração…"></textarea>
+      </div>
+      <div class="fblock">
+        <label class="flabel">Comportamento (observações relevantes)</label>
+        <textarea id="cc-comportamento" class="ftarea sm" placeholder="Ex: Estereotipias em situações de estresse, rigidez de rotina, autolesão ocasional…"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn-sm" onclick="salvarPerfilClinico()">Salvar perfil</button>
+        <button class="btn-sm-ghost" onclick="fecharModal('modal-cad-clinica')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Relatório Cruzado ══ -->
+<div class="overlay" id="modal-rel" onclick="fecharModal('modal-rel',event)">
+  <div class="modal lg">
+    <div class="modal-header">
+      <div class="modal-title" id="mrel-titulo">Relatório</div>
+      <button class="modal-close" onclick="fecharModal('modal-rel')">×</button>
+    </div>
+    <div class="modal-meta" id="mrel-meta"></div>
+    <div class="modal-body" id="mrel-body" style="font-size:13px;white-space:pre-line"></div>
+    <div class="modal-actions">
+      <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('mrel-body').textContent);toast('Copiado!','success')">Copiar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <!-- ══════════════ SCRIPT ══════════════ -->
@@ -591,8 +725,9 @@ let cpMats = [], cpSalas = [];
 // ── LOGIN / ROLE ─────────────────────────────────────────────
 function setRole(r) {
   userRole = r;
-  ['professor','gestao'].forEach(x => {
-    document.getElementById(`role-btn-${x}`).classList.toggle('active', x === r);
+  ['professor','gestao','clinica','at'].forEach(x => {
+    const b = document.getElementById(`role-btn-${x}`);
+    if (b) b.classList.toggle('active', x === r);
   });
 }
 
@@ -626,19 +761,17 @@ function iniciarApp() {
 
   const badge = document.getElementById('sb-role-badge');
   if (userRole === 'gestao') {
-    badge.textContent = '🏫 Gestão';
-    badge.className = 'sb-role gestao';
-    renderNavGestao();
-    carregarDadosGestao();
-    showPage('gestao-painel');
+    badge.textContent = '🏫 Gestão'; badge.className = 'sb-role gestao';
+    renderNavGestao(); carregarDadosGestao(); showPage('gestao-painel');
+  } else if (userRole === 'clinica') {
+    badge.textContent = '🏥 Clínica'; badge.className = 'sb-role clinica';
+    renderNavClinica(); showPage('clinica-perfil');
+  } else if (userRole === 'at') {
+    badge.textContent = '🧑‍⚕️ AT'; badge.className = 'sb-role at';
+    renderNavAT(); carregarRelatoriosAT(); showPage('at-roteiro');
   } else {
-    badge.textContent = '👩‍🏫 Professor';
-    badge.className = 'sb-role professor';
-    renderNavProfessor();
-    carregarAlunos();
-    carregarAdaptacoes();
-    carregarPEIs();
-    showPage('nova');
+    badge.textContent = '👩‍🏫 Professor'; badge.className = 'sb-role professor';
+    renderNavProfessor(); carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('nova');
   }
 }
 
@@ -689,7 +822,39 @@ function renderNavGestao() {
   renderPagesGestao();
 }
 
-function showPage(id) {
+function renderNavClinica() {
+  document.getElementById('sb-nav').innerHTML = `
+    <div class="nav-section">Módulo Clínico</div>
+    <div class="nav-item clinic-item active" id="nav-clinica-perfil" onclick="showPage('clinica-perfil')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfil Clínico
+    </div>
+    <div class="nav-item clinic-item" id="nav-clinica-objetivos" onclick="showPage('clinica-objetivos')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Objetivos Terapêuticos
+    </div>
+    <div class="nav-item clinic-item" id="nav-clinica-plano" onclick="showPage('clinica-plano')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Plano de Intervenção
+    </div>
+    <div class="nav-item clinic-item" id="nav-clinica-monitoramento" onclick="showPage('clinica-monitoramento')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Monitoramento
+    </div>
+    <div class="nav-section">Relatórios</div>
+    <div class="nav-item clinic-item" id="nav-clinica-relatorios" onclick="showPage('clinica-relatorios')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M8 4v12M4 8h4M4 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios da Escola
+    </div>`;
+  renderPagesClinica();
+}
+
+function renderNavAT() {
+  document.getElementById('sb-nav').innerHTML = `
+    <div class="nav-section">Acompanhante Terapêutico</div>
+    <div class="nav-item at-item active" id="nav-at-roteiro" onclick="showPage('at-roteiro')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 5h12M4 8h8M4 11h10M4 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Roteiro de Atuação
+    </div>
+    <div class="nav-item at-item" id="nav-at-relatorios" onclick="showPage('at-relatorios')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios Recebidos
+    </div>`;
+  renderPagesAT();
+}
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const p = document.getElementById(`page-${id}`);
@@ -700,6 +865,8 @@ function showPage(id) {
   if (id === 'gestao-peis') filtrarGPEIs();
   if (id === 'gestao-adapt') filtrarGAdapt();
   if (id === 'gestao-professores') { carregarProfessores(); }
+  if (id === 'clinica-relatorios') carregarRelatoriosClinica();
+  if (id === 'at-relatorios') carregarRelatoriosAT();
   if (id === 'guia') renderGuia();
   if (id === 'diversidade') renderDiversidade();
 }
@@ -982,7 +1149,77 @@ function renderPagesGestao() {
   </div>`;
 }
 
-// ── CHIPS ────────────────────────────────────────────────────
+// ── PÁGINAS CLÍNICA ───────────────────────────────────────────
+function renderPagesClinica() {
+  document.getElementById('main-content').innerHTML = `
+  <div id="page-clinica-perfil" class="page active">
+    <div class="clinic-hero"><h2>🏥 Módulo Clínico — Perfil Funcional</h2><p>Construa o perfil funcional do aluno. Essas informações alimentam o plano de intervenção integrado e os relatórios para escola e AT.</p></div>
+    <div class="section-header">
+      <div><h1 class="page-title">Perfis Clínicos</h1><p class="page-sub" style="margin-bottom:0">Cadastre um perfil por aluno acompanhado.</p></div>
+      <button class="btn-sm" onclick="abrirModalCadClinica()">+ Novo perfil</button>
+    </div>
+    <div class="cards-grid" id="clinica-perfis-grid"><div class="empty"><div class="empty-icon">🧠</div><div class="empty-text">Nenhum perfil cadastrado. Clique em "Novo perfil" para começar.</div></div></div>
+  </div>
+
+  <div id="page-clinica-objetivos" class="page">
+    <h1 class="page-title">Objetivos Terapêuticos</h1>
+    <p class="page-sub">Defina metas por área de desenvolvimento para cada aluno acompanhado.</p>
+    <div style="margin-bottom:16px"><select class="fselect" id="obj-aluno-sel" onchange="carregarObjetivos()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
+    <div id="clinica-obj-body"><div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Selecione um aluno para ver ou editar os objetivos.</div></div></div>
+  </div>
+
+  <div id="page-clinica-plano" class="page">
+    <h1 class="page-title">Plano de Intervenção Integrado</h1>
+    <p class="page-sub">A IA gera estratégias para escola, AT e clínica a partir do perfil funcional do aluno.</p>
+    <div style="margin-bottom:16px"><select class="fselect" id="plano-aluno-sel" style="max-width:320px" onchange="selecionarAlunoPlano()"><option value="">Selecione um aluno</option></select></div>
+    <div id="plano-aluno-info"></div>
+    <div id="plano-result" style="display:none">
+      <div class="cards-grid-3" style="margin-bottom:14px">
+        <div class="clinic-card"><div class="clinic-card-title">🏫 Para a Escola</div><div id="plano-escola" style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line"></div></div>
+        <div class="clinic-card"><div class="clinic-card-title">🧑‍⚕️ Para o AT</div><div id="plano-at" style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line"></div></div>
+        <div class="clinic-card"><div class="clinic-card-title">🏥 Estratégias Clínicas</div><div id="plano-clinica" style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line"></div></div>
+      </div>
+      <div class="clinic-card"><div class="clinic-card-title">📈 Indicadores de Evolução</div><div id="plano-indicadores" style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line"></div></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn-sm" onclick="enviarRelatorioEscola()">📤 Enviar para Escola</button>
+        <button class="btn-sm" onclick="enviarRelatorioAT()">📤 Enviar para AT</button>
+        <button class="btn-sm-ghost" onclick="copiarPlano()">Copiar tudo</button>
+      </div>
+    </div>
+    <button class="btn-sm" id="btn-gerar-plano" onclick="gerarPlanoIntervencao()" style="display:none;margin-top:12px">⭐ Gerar Plano com IA</button>
+  </div>
+
+  <div id="page-clinica-monitoramento" class="page">
+    <h1 class="page-title">Monitoramento de Evolução</h1>
+    <p class="page-sub">Registre a evolução do aluno em cada objetivo semana a semana.</p>
+    <div style="margin-bottom:16px"><select class="fselect" id="mon-aluno-sel" style="max-width:320px" onchange="carregarMonitoramento()"><option value="">Selecione um aluno</option></select></div>
+    <div id="mon-body"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Selecione um aluno para iniciar o monitoramento.</div></div></div>
+  </div>
+
+  <div id="page-clinica-relatorios" class="page">
+    <h1 class="page-title">Relatórios da Escola</h1>
+    <p class="page-sub">Relatórios enviados pela escola para a equipe clínica. Você não acessa o sistema escolar — apenas os documentos compartilhados.</p>
+    <div id="clinica-rel-grid"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum relatório recebido da escola ainda.</div></div></div>
+  </div>`;
+  carregarAlunosClinica();
+}
+
+// ── PÁGINAS AT ────────────────────────────────────────────────
+function renderPagesAT() {
+  document.getElementById('main-content').innerHTML = `
+  <div id="page-at-roteiro" class="page active">
+    <div class="at-hero"><h2>🧑‍⚕️ Roteiro de Atuação</h2><p>Seu guia prático do dia a dia. Situações, estratégias e o que evitar — linguagem direta, pronta para aplicar.</p></div>
+    <div style="margin-bottom:16px"><select class="fselect" id="at-aluno-sel" style="max-width:320px" onchange="carregarRoteiroAT()"><option value="">Selecione um aluno</option></select></div>
+    <div id="at-roteiro-body"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Selecione um aluno para ver o roteiro de atuação.</div></div></div>
+  </div>
+
+  <div id="page-at-relatorios" class="page">
+    <h1 class="page-title">Relatórios Recebidos</h1>
+    <p class="page-sub">Relatórios enviados pela escola e pela clínica para embasar sua atuação diária. Você não acessa os sistemas internos — apenas o que foi compartilhado com você.</p>
+    <div id="at-rel-grid"><div class="empty"><div class="empty-icon">📨</div><div class="empty-text">Nenhum relatório recebido ainda.</div></div></div>
+  </div>`;
+  carregarAlunosAT();
+}
 function renderChips(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -1716,6 +1953,428 @@ async function excluirProfessor() {
   fecharModal('modal-det-prof');
   toast('Professor excluído.', 'success');
   carregarProfessores();
+}
+
+// ── MÓDULO CLÍNICO ────────────────────────────────────────────
+let perfisClinicaList = [], perfilClinicaSel = null, planoGerado = {};
+let objetivosMap = {}, monitoramentoMap = {};
+
+async function carregarAlunosClinica() {
+  const { data } = await db.from('perfis_clinicos').select('*').eq('user_id', user.id).order('nome');
+  perfisClinicaList = data || [];
+  renderPerfisClinicaGrid();
+  popularSelectsClinica();
+}
+
+function popularSelectsClinica() {
+  const opts = '<option value="">Selecione um aluno</option>' +
+    perfisClinicaList.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+  ['obj-aluno-sel','plano-aluno-sel','mon-aluno-sel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+}
+
+function renderPerfisClinicaGrid() {
+  const grid = document.getElementById('clinica-perfis-grid');
+  if (!grid) return;
+  if (!perfisClinicaList.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🧠</div><div class="empty-text">Nenhum perfil cadastrado. Clique em "Novo perfil" para começar.</div></div>';
+    return;
+  }
+  grid.innerHTML = perfisClinicaList.map(p => `
+    <div class="clinic-card" style="cursor:pointer" onclick='abrirPerfilClinico(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+      <div class="clinic-card-title">🧠 ${p.nome} <span style="font-size:11px;font-weight:400;color:var(--gr400)">${p.idade||''}</span></div>
+      <div style="font-size:12.5px;color:var(--clinic);font-weight:500;margin-bottom:6px">${p.diagnostico||'Sem diagnóstico registrado'}</div>
+      <div style="font-size:12px;color:var(--gr400);line-height:1.5">
+        🗣️ ${p.comunicacao||'—'} &nbsp;|&nbsp; 🌀 ${p.sensorio||'—'} &nbsp;|&nbsp; 💢 ${p.regulacao||'—'}
+      </div>
+      ${p.preservadas ? `<div style="margin-top:8px;font-size:12px;color:var(--gr600)">✅ <strong>Preservadas:</strong> ${p.preservadas.slice(0,80)}${p.preservadas.length>80?'…':''}</div>` : ''}
+    </div>`).join('');
+}
+
+function abrirModalCadClinica(p) {
+  perfilClinicaSel = p || null;
+  document.getElementById('mcc-titulo').textContent = p ? 'Editar Perfil Clínico' : 'Novo Perfil Clínico';
+  ['cc-nome','cc-idade','cc-diag','cc-hipotese','cc-preservadas','cc-comprometidas','cc-comportamento'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  if (p) {
+    document.getElementById('cc-nome').value         = p.nome || '';
+    document.getElementById('cc-idade').value        = p.idade || '';
+    document.getElementById('cc-diag').value         = p.diagnostico || '';
+    document.getElementById('cc-hipotese').value     = p.hipotese || '';
+    document.getElementById('cc-comunicacao').value  = p.comunicacao || '';
+    document.getElementById('cc-regulacao').value    = p.regulacao || '';
+    document.getElementById('cc-sensorio').value     = p.sensorio || '';
+    document.getElementById('cc-motricidade').value  = p.motricidade || '';
+    document.getElementById('cc-preservadas').value  = p.preservadas || '';
+    document.getElementById('cc-comprometidas').value= p.comprometidas || '';
+    document.getElementById('cc-comportamento').value= p.comportamento || '';
+  }
+  abrirModal('modal-cad-clinica');
+}
+
+function abrirPerfilClinico(p) { abrirModalCadClinica(p); }
+
+async function salvarPerfilClinico() {
+  const nome = document.getElementById('cc-nome').value.trim();
+  if (!nome) return toast('Informe o nome do aluno.', 'error');
+  const payload = {
+    nome, user_id: user.id,
+    idade:         document.getElementById('cc-idade').value.trim() || null,
+    diagnostico:   document.getElementById('cc-diag').value.trim() || null,
+    hipotese:      document.getElementById('cc-hipotese').value.trim() || null,
+    comunicacao:   document.getElementById('cc-comunicacao').value || null,
+    regulacao:     document.getElementById('cc-regulacao').value || null,
+    sensorio:      document.getElementById('cc-sensorio').value || null,
+    motricidade:   document.getElementById('cc-motricidade').value || null,
+    preservadas:   document.getElementById('cc-preservadas').value.trim() || null,
+    comprometidas: document.getElementById('cc-comprometidas').value.trim() || null,
+    comportamento: document.getElementById('cc-comportamento').value.trim() || null,
+  };
+  let error;
+  if (perfilClinicaSel) {
+    ({ error } = await db.from('perfis_clinicos').update(payload).eq('id', perfilClinicaSel.id));
+  } else {
+    ({ error } = await db.from('perfis_clinicos').insert(payload));
+  }
+  if (error) return toast('Erro: ' + error.message, 'error');
+  fecharModal('modal-cad-clinica');
+  toast(perfilClinicaSel ? 'Perfil atualizado!' : 'Perfil salvo!', 'success');
+  carregarAlunosClinica();
+}
+
+// OBJETIVOS TERAPÊUTICOS
+async function carregarObjetivos() {
+  const sel = document.getElementById('obj-aluno-sel');
+  const id  = sel?.value;
+  const body = document.getElementById('clinica-obj-body');
+  if (!id || !body) return;
+  const { data } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
+  const obj = data || {};
+  const areas = [
+    { key:'cognitivo',     label:'🧠 Cognitivo',      ph:'Ex: Aumentar permanência em tarefa por 5 min; identificar 10 palavras…' },
+    { key:'comunicacao',   label:'🗣️ Comunicação',    ph:'Ex: Responder instruções simples; usar prancha de CAA com 3 símbolos…' },
+    { key:'social',        label:'👥 Social',          ph:'Ex: Participar de atividade em dupla por 10 min; cumprimentar colegas…' },
+    { key:'comportamental',label:'💢 Comportamental',  ph:'Ex: Reduzir crises para máx. 2 por semana; usar estratégia de regulação…' },
+    { key:'academico',     label:'📚 Acadêmico',       ph:'Ex: Reconhecer números de 1 a 10; copiar palavra com apoio…' },
+  ];
+  body.innerHTML = `
+    <div style="margin-bottom:14px">
+      ${areas.map(a => `
+        <div class="obj-area">
+          <div class="obj-area-label">${a.label}</div>
+          <textarea id="obj-${a.key}" placeholder="${a.ph}">${obj[a.key]||''}</textarea>
+        </div>`).join('')}
+    </div>
+    <button class="btn-sm" onclick="salvarObjetivos('${id}')">Salvar objetivos</button>`;
+}
+
+async function salvarObjetivos(perfilId) {
+  const areas = ['cognitivo','comunicacao','social','comportamental','academico'];
+  const payload = { perfil_id: perfilId, user_id: user.id };
+  areas.forEach(a => { payload[a] = document.getElementById(`obj-${a}`)?.value.trim() || null; });
+  const { data: existing } = await db.from('objetivos_terapeuticos').select('id').eq('perfil_id', perfilId).maybeSingle();
+  let error;
+  if (existing) {
+    ({ error } = await db.from('objetivos_terapeuticos').update(payload).eq('id', existing.id));
+  } else {
+    ({ error } = await db.from('objetivos_terapeuticos').insert(payload));
+  }
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Objetivos salvos!', 'success');
+}
+
+// PLANO DE INTERVENÇÃO
+async function selecionarAlunoPlano() {
+  const id = document.getElementById('plano-aluno-sel')?.value;
+  const info = document.getElementById('plano-aluno-info');
+  const btnGerar = document.getElementById('btn-gerar-plano');
+  document.getElementById('plano-result').style.display = 'none';
+  if (!id) { if(info) info.innerHTML=''; if(btnGerar) btnGerar.style.display='none'; return; }
+  const p = perfisClinicaList.find(x => x.id === id);
+  if (!p) return;
+  if (info) info.innerHTML = `
+    <div class="clinic-card" style="margin-bottom:14px">
+      <div class="clinic-card-title">🧠 ${p.nome} · ${p.diagnostico||'Sem diagnóstico'}</div>
+      <div style="font-size:12.5px;color:var(--gr600);line-height:1.6">
+        <strong>Preservadas:</strong> ${p.preservadas||'—'}<br>
+        <strong>Comprometidas:</strong> ${p.comprometidas||'—'}<br>
+        <strong>Comunicação:</strong> ${p.comunicacao||'—'} &nbsp;|&nbsp; <strong>Sensório:</strong> ${p.sensorio||'—'}
+      </div>
+    </div>`;
+  if (btnGerar) btnGerar.style.display = 'inline-flex';
+}
+
+async function gerarPlanoIntervencao() {
+  const id = document.getElementById('plano-aluno-sel')?.value;
+  const p  = perfisClinicaList.find(x => x.id === id);
+  if (!p) return toast('Selecione um aluno.', 'error');
+  const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
+  const btnGerar = document.getElementById('btn-gerar-plano');
+  btnGerar.textContent = '⏳ Gerando plano…'; btnGerar.disabled = true;
+  const prompt = `Você é especialista em integração clínico-pedagógica inclusiva.
+Gere um Plano de Intervenção Integrado para:
+
+ALUNO: ${p.nome} | ${p.idade||''} 
+DIAGNÓSTICO: ${p.diagnostico||'Não informado'}
+HIPÓTESES CLÍNICAS: ${p.hipotese||'—'}
+COMUNICAÇÃO: ${p.comunicacao||'—'}
+REGULAÇÃO EMOCIONAL: ${p.regulacao||'—'}
+SENSÓRIO: ${p.sensorio||'—'}
+MOTRICIDADE: ${p.motricidade||'—'}
+FUNÇÕES PRESERVADAS: ${p.preservadas||'—'}
+FUNÇÕES COMPROMETIDAS: ${p.comprometidas||'—'}
+COMPORTAMENTO: ${p.comportamento||'—'}
+
+OBJETIVOS TERAPÊUTICOS:
+- Cognitivo: ${obj?.cognitivo||'Não definido'}
+- Comunicação: ${obj?.comunicacao||'Não definido'}
+- Social: ${obj?.social||'Não definido'}
+- Comportamental: ${obj?.comportamental||'Não definido'}
+- Acadêmico: ${obj?.academico||'Não definido'}
+
+Responda APENAS em JSON válido, sem markdown, neste formato exato:
+{"escola":"estratégias pedagógicas detalhadas para professores","at":"roteiro prático detalhado para o acompanhante terapêutico","clinica":"estratégias terapêuticas e recomendações clínicas","indicadores":"indicadores observáveis de evolução por área"}`;
+
+  try {
+    const r = await fetch(CLAUDE_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_KEY}` },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await r.json();
+    const txt  = (data.content || []).map(b => b.text || '').join('').trim();
+    const clean = txt.replace(/```json|```/g, '').trim();
+    planoGerado = JSON.parse(clean);
+    document.getElementById('plano-escola').textContent      = planoGerado.escola || '—';
+    document.getElementById('plano-at').textContent          = planoGerado.at     || '—';
+    document.getElementById('plano-clinica').textContent     = planoGerado.clinica || '—';
+    document.getElementById('plano-indicadores').textContent = planoGerado.indicadores || '—';
+    document.getElementById('plano-result').style.display    = 'block';
+    planoGerado._aluno = p;
+    toast('Plano gerado com sucesso!', 'success');
+  } catch(e) { toast('Erro ao gerar plano: ' + e.message, 'error'); }
+  btnGerar.textContent = '⭐ Gerar Plano com IA'; btnGerar.disabled = false;
+}
+
+async function enviarRelatorioEscola() {
+  if (!planoGerado.escola) return toast('Gere o plano primeiro.', 'error');
+  const p = planoGerado._aluno;
+  const { error } = await db.from('relatorios').insert({
+    user_id: user.id, origem: 'clinica', destino: 'escola',
+    aluno_nome: p.nome, titulo: `Plano de Intervenção — ${p.nome}`,
+    conteudo: `ESTRATÉGIAS PEDAGÓGICAS:\n${planoGerado.escola}\n\nINDICADORES DE EVOLUÇÃO:\n${planoGerado.indicadores}`,
+    created_at: new Date().toISOString()
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Relatório enviado para a escola!', 'success');
+}
+
+async function enviarRelatorioAT() {
+  if (!planoGerado.at) return toast('Gere o plano primeiro.', 'error');
+  const p = planoGerado._aluno;
+  const { error } = await db.from('relatorios').insert({
+    user_id: user.id, origem: 'clinica', destino: 'at',
+    aluno_nome: p.nome, titulo: `Roteiro AT — ${p.nome}`,
+    conteudo: `ROTEIRO DE ATUAÇÃO:\n${planoGerado.at}\n\nINDICADORES DE EVOLUÇÃO:\n${planoGerado.indicadores}`,
+    created_at: new Date().toISOString()
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Roteiro enviado para o AT!', 'success');
+}
+
+function copiarPlano() {
+  const txt = `PLANO DE INTERVENÇÃO INTEGRADO — ${planoGerado._aluno?.nome||''}\n\nPARA A ESCOLA:\n${planoGerado.escola}\n\nPARA O AT:\n${planoGerado.at}\n\nESTRATÉGIAS CLÍNICAS:\n${planoGerado.clinica}\n\nINDICADORES DE EVOLUÇÃO:\n${planoGerado.indicadores}`;
+  navigator.clipboard.writeText(txt);
+  toast('Plano copiado!', 'success');
+}
+
+// MONITORAMENTO
+async function carregarMonitoramento() {
+  const id   = document.getElementById('mon-aluno-sel')?.value;
+  const body = document.getElementById('mon-body');
+  if (!id || !body) return;
+  const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
+  if (!obj) { body.innerHTML = '<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Cadastre os objetivos terapêuticos deste aluno primeiro.</div></div>'; return; }
+  const { data: regs } = await db.from('monitoramentos').select('*').eq('perfil_id', id).order('created_at', { ascending: false });
+  const areas = ['cognitivo','comunicacao','social','comportamental','academico'];
+  const labels = { cognitivo:'🧠 Cognitivo', comunicacao:'🗣️ Comunicação', social:'👥 Social', comportamental:'💢 Comportamental', academico:'📚 Acadêmico' };
+  body.innerHTML = `
+    <div class="clinic-card" style="margin-bottom:16px">
+      <div class="clinic-card-title">📅 Novo Registro — ${new Date().toLocaleDateString('pt-BR')}</div>
+      ${areas.filter(a => obj[a]).map(a => `
+        <div style="margin-bottom:12px">
+          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}: <em style="font-weight:400">${obj[a]}</em></div>
+          <div class="mon-btn-group">
+            <button class="mon-btn ok"     onclick="selMonBtn(this,'${a}','ok')"     data-area="${a}" data-val="ok">✔ Conseguiu</button>
+            <button class="mon-btn parcial" onclick="selMonBtn(this,'${a}','parcial')" data-area="${a}" data-val="parcial">⚠ Parcial</button>
+            <button class="mon-btn nao"    onclick="selMonBtn(this,'${a}','nao')"    data-area="${a}" data-val="nao">✗ Não conseguiu</button>
+          </div>
+        </div>`).join('')}
+      <textarea id="mon-obs" class="ftarea sm" placeholder="Observações do dia (opcional)…" style="margin-top:8px"></textarea>
+      <button class="btn-sm" style="margin-top:10px" onclick="salvarMonitoramento('${id}')">Salvar registro</button>
+    </div>
+    ${(regs||[]).length ? `
+      <h3 style="font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:10px">Histórico</h3>
+      ${(regs||[]).slice(0,10).map(r => `
+        <div class="rel-card">
+          <div class="rel-meta">${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">
+            ${Object.entries(r.resultados||{}).map(([k,v]) => `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:${v==='ok'?'#D1FAE5':v==='parcial'?'#FEF3C7':'#FEE2E2'};color:${v==='ok'?'#065F46':v==='parcial'?'#92400E':'#7F1D1D'}">${labels[k]||k}: ${v==='ok'?'✔':v==='parcial'?'⚠':'✗'}</span>`).join('')}
+          </div>
+          ${r.observacoes ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px">${r.observacoes}</div>` : ''}
+        </div>`).join('')}` : ''}`;
+}
+
+let monResultados = {};
+function selMonBtn(btn, area, val) {
+  const group = btn.closest('.mon-btn-group');
+  group.querySelectorAll('.mon-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  monResultados[area] = val;
+}
+
+async function salvarMonitoramento(perfilId) {
+  const obs = document.getElementById('mon-obs')?.value.trim() || null;
+  const { error } = await db.from('monitoramentos').insert({
+    perfil_id: perfilId, user_id: user.id,
+    resultados: monResultados, observacoes: obs,
+    created_at: new Date().toISOString()
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  monResultados = {};
+  toast('Registro salvo!', 'success');
+  carregarMonitoramento();
+}
+
+// RELATÓRIOS DA ESCOLA (para Clínica)
+async function carregarRelatoriosClinica() {
+  const { data } = await db.from('relatorios').select('*').eq('destino', 'clinica').order('created_at', { ascending: false });
+  const grid = document.getElementById('clinica-rel-grid');
+  if (!grid) return;
+  if (!(data||[]).length) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum relatório recebido da escola ainda.</div></div>'; return; }
+  grid.innerHTML = (data||[]).map(r => `
+    <div class="rel-card" onclick='abrirRelatorio(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <span class="rel-origem escola">🏫 Escola</span>
+      <div class="rel-titulo">${r.titulo}</div>
+      <div class="rel-meta">${r.aluno_nome||''} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>`).join('');
+}
+
+// ── AT ────────────────────────────────────────────────────────
+let perfisATList = [];
+async function carregarAlunosAT() {
+  const { data } = await db.from('perfis_clinicos').select('*').order('nome');
+  perfisATList = data || [];
+  const sel = document.getElementById('at-aluno-sel');
+  if (sel) sel.innerHTML = '<option value="">Selecione um aluno</option>' + perfisATList.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+}
+
+async function carregarRelatoriosAT() {
+  await carregarAlunosAT();
+  const { data } = await db.from('relatorios').select('*').eq('destino', 'at').order('created_at', { ascending: false });
+  const grid = document.getElementById('at-rel-grid');
+  if (!grid) return;
+  if (!(data||[]).length) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📨</div><div class="empty-text">Nenhum relatório recebido ainda.</div></div>'; return; }
+  grid.innerHTML = (data||[]).map(r => `
+    <div class="rel-card" onclick='abrirRelatorio(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <span class="rel-origem ${r.origem}">${r.origem === 'clinica' ? '🏥 Clínica' : '🏫 Escola'}</span>
+      <div class="rel-titulo">${r.titulo}</div>
+      <div class="rel-meta">${r.aluno_nome||''} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>`).join('');
+}
+
+async function carregarRoteiroAT() {
+  const id   = document.getElementById('at-aluno-sel')?.value;
+  const body = document.getElementById('at-roteiro-body');
+  if (!id || !body) return;
+  const p = perfisATList.find(x => x.id === id);
+  if (!p) return;
+  const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
+  const { data: rels } = await db.from('relatorios').select('*').eq('aluno_nome', p.nome).eq('destino','at').order('created_at',{ascending:false});
+  const ultimoRel = (rels||[])[0];
+
+  body.innerHTML = `
+    <div class="clinic-card" style="margin-bottom:14px">
+      <div class="clinic-card-title">🧠 ${p.nome} · ${p.diagnostico||'Sem diagnóstico'}</div>
+      <div style="font-size:12.5px;color:var(--gr600);line-height:1.7">
+        <strong>Comunicação:</strong> ${p.comunicacao||'—'} &nbsp;|&nbsp;
+        <strong>Sensório:</strong> ${p.sensorio||'—'} &nbsp;|&nbsp;
+        <strong>Regulação:</strong> ${p.regulacao||'—'}<br>
+        <strong>Preservadas:</strong> ${p.preservadas||'—'}<br>
+        <strong>Comprometidas:</strong> ${p.comprometidas||'—'}
+      </div>
+    </div>
+    ${obj ? `
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">🎯 Objetivos Terapêuticos</h3>
+    <div class="cards-grid-3" style="margin-bottom:14px">
+      ${[['🧠 Cognitivo',obj.cognitivo],['🗣️ Comunicação',obj.comunicacao],['👥 Social',obj.social],['💢 Comportamental',obj.comportamental],['📚 Acadêmico',obj.academico]].filter(([,v])=>v).map(([l,v])=>`
+        <div class="at-card"><div class="at-card-sit">${l}</div><div style="font-size:13px;color:var(--gr600);line-height:1.6">${v}</div></div>`).join('')}
+    </div>` : ''}
+    ${ultimoRel ? `
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">📋 Último roteiro recebido da clínica</h3>
+    <div class="at-card">
+      <div class="at-card-sit">Atualizado em ${new Date(ultimoRel.created_at).toLocaleDateString('pt-BR')}</div>
+      <div style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line">${ultimoRel.conteudo}</div>
+    </div>` : `<div class="info-banner">⚠️ Nenhum roteiro clínico recebido ainda para ${p.nome}. Aguarde o envio pela clínica.</div>`}
+    <button class="btn-sm" style="margin-top:14px" onclick="gerarRoteiroAT('${id}')">⭐ Gerar Roteiro com IA</button>
+    <div id="at-roteiro-ia" style="margin-top:14px"></div>`;
+}
+
+async function gerarRoteiroAT(perfilId) {
+  const p = perfisATList.find(x => x.id === perfilId);
+  if (!p) return;
+  const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', perfilId).maybeSingle();
+  const iaDiv = document.getElementById('at-roteiro-ia');
+  if (iaDiv) iaDiv.innerHTML = '<div style="color:var(--gr400);font-size:13px">⏳ Gerando roteiro…</div>';
+  const prompt = `Você é especialista em acompanhamento terapêutico (AT) em contexto escolar.
+Gere um Roteiro de Atuação prático para o AT que acompanha este aluno:
+
+ALUNO: ${p.nome} | ${p.idade||''}
+DIAGNÓSTICO: ${p.diagnostico||'—'}
+COMUNICAÇÃO: ${p.comunicacao||'—'}
+REGULAÇÃO: ${p.regulacao||'—'}
+SENSÓRIO: ${p.sensorio||'—'}
+PRESERVADAS: ${p.preservadas||'—'}
+COMPROMETIDAS: ${p.comprometidas||'—'}
+COMPORTAMENTO: ${p.comportamento||'—'}
+OBJETIVOS: ${obj ? Object.entries({cognitivo:obj.cognitivo,comunicação:obj.comunicacao,social:obj.social,comportamental:obj.comportamental,acadêmico:obj.academico}).filter(([,v])=>v).map(([k,v])=>`${k}: ${v}`).join('; ') : '—'}
+
+Responda APENAS em JSON válido, sem markdown, neste formato:
+{"situacoes":[{"situacao":"nome da situação","dificuldade":"o que pode acontecer","objetivo":"meta para esta situação","fazer":"lista de o que fazer separada por \\n","evitar":"lista do que evitar separada por \\n"}]}
+Gere entre 4 e 6 situações do cotidiano escolar.`;
+
+  try {
+    const r = await fetch(CLAUDE_PROXY, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_KEY}`},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    const d = await r.json();
+    const txt = (d.content||[]).map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(txt);
+    if (iaDiv) iaDiv.innerHTML = `
+      <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">⭐ Roteiro gerado pela IA</h3>
+      ${(parsed.situacoes||[]).map(s=>`
+        <div class="at-card">
+          <div class="at-card-sit">📍 Situação</div>
+          <div class="at-card-titulo">${s.situacao}</div>
+          <div class="at-bloco"><strong>⚠️ Possível dificuldade</strong>${s.dificuldade}</div>
+          <div class="at-bloco"><strong>🎯 Objetivo</strong>${s.objetivo}</div>
+          <div class="at-bloco"><strong>🛠️ O que fazer</strong>${(s.fazer||'').split('\n').filter(Boolean).map(f=>`• ${f}`).join('<br>')}</div>
+          <div class="at-evitar"><strong>🚫 O que evitar</strong>${(s.evitar||'').split('\n').filter(Boolean).map(f=>`• ${f}`).join('<br>')}</div>
+        </div>`).join('')}`;
+  } catch(e) { if (iaDiv) iaDiv.innerHTML = `<div style="color:red;font-size:13px">Erro: ${e.message}</div>`; }
+}
+
+function abrirRelatorio(r) {
+  document.getElementById('mrel-titulo').textContent = r.titulo || 'Relatório';
+  document.getElementById('mrel-meta').textContent   = `${r.aluno_nome||''} · ${new Date(r.created_at).toLocaleDateString('pt-BR')} · ${r.origem==='clinica'?'🏥 Clínica':'🏫 Escola'}`;
+  document.getElementById('mrel-body').textContent   = r.conteudo || '';
+  abrirModal('modal-rel');
 }
 
 // ── GUIA DE PERFIS ───────────────────────────────────────────
