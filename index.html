@@ -1117,6 +1117,7 @@ Como apresentar, mediar, avaliar e ajustar a atividade.`;
   try {
     const r = await fetch(CLAUDE_PROXY, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_KEY}` },
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2500, messages:[{role:'user',content:prompt}] })
     });
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || `Erro ${r.status}`); }
@@ -1298,6 +1299,7 @@ O documento deve ser formal, completo e pronto para ser assinado e arquivado na 
   try {
     const r = await fetch(CLAUDE_PROXY, {
       method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_KEY}`},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})
     });
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message||`Erro ${r.status}`); }
