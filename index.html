@@ -525,8 +525,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
 // ── CONFIG ───────────────────────────────────────────────────
 const SB_URL = 'https://wgnrxzoccelzzxwyibwj.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnbnJ4em9jY2Vsenp4d3lpYndqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDIzMDUsImV4cCI6MjA5MjQ3ODMwNX0.gVTkIw9BUtK79LsRtCwUJPla6M3tc3Yv4xh-AouQBpc';
-const CL_KEY = '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';
-const PROXY  = 'https://corsproxy.io/?';
+const CLAUDE_PROXY = 'https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/claude-proxy';
+
 const db = supabase.createClient(SB_URL, SB_KEY);
 
 // ── DADOS GLOBAIS ────────────────────────────────────────────
@@ -1115,9 +1115,8 @@ Liste recursos concretos e acessíveis (visuais, manipulativos, CAA, tecnologias
 Como apresentar, mediar, avaliar e ajustar a atividade.`;
 
   try {
-    const r = await fetch(PROXY + encodeURIComponent('https://api.anthropic.com/v1/messages'), {
+    const r = await fetch(CLAUDE_PROXY, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-api-key': CL_KEY, 'anthropic-version':'2023-06-01' },
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2500, messages:[{role:'user',content:prompt}] })
     });
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || `Erro ${r.status}`); }
@@ -1297,9 +1296,8 @@ Elabore um PEI COMPLETO, formal, detalhado e juridicamente embasado, com as segu
 O documento deve ser formal, completo e pronto para ser assinado e arquivado na escola.`;
 
   try {
-    const r = await fetch(PROXY + encodeURIComponent('https://api.anthropic.com/v1/messages'), {
+    const r = await fetch(CLAUDE_PROXY, {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':CL_KEY,'anthropic-version':'2023-06-01'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})
     });
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message||`Erro ${r.status}`); }
