@@ -855,6 +855,8 @@ function renderNavAT() {
     </div>`;
   renderPagesAT();
 }
+
+function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const p = document.getElementById(`page-${id}`);
