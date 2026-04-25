@@ -11,192 +11,237 @@
   --g50:#E8F5EE;--g100:#C3E6D1;--g400:#3A9D6E;--g600:#1E6B47;--g800:#0D3D28;
   --gr50:#F6F7F5;--gr100:#EAEBE8;--gr200:#D5D6D2;--gr400:#9A9B97;--gr600:#5C5D59;--gr800:#2C2D2A;
   --white:#fff;--rsm:8px;--rmd:12px;--rlg:18px;--shadow:0 2px 12px rgba(0,0,0,.07);
+  --blue:#1A56DB;--blue-light:#EBF5FF;--amber:#B45309;--amber-light:#FFFBEB;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);min-height:100vh}
 
-/* ── LOGIN ── */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.login-card{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rlg);padding:40px 36px;width:100%;max-width:380px;box-shadow:var(--shadow)}
-.login-logo{font-family:'DM Serif Display',serif;font-size:26px;color:var(--g600);margin-bottom:6px}
-.login-sub{font-size:14px;color:var(--gr400);margin-bottom:32px}
-.fg{margin-bottom:16px}
-.fg label{display:block;font-size:13px;font-weight:500;color:var(--gr600);margin-bottom:6px}
-.fg input{width:100%;padding:11px 14px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:14px;color:var(--gr800);background:var(--white);transition:border-color .18s;outline:none}
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#0D3D28 0%,#1E6B47 100%)}
+.login-card{background:var(--white);border-radius:var(--rlg);padding:44px 40px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.login-logo{font-family:'DM Serif Display',serif;font-size:28px;color:var(--g600);margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--gr400);margin-bottom:8px}
+.login-desc{font-size:12px;color:var(--gr400);background:var(--gr50);border-radius:var(--rsm);padding:10px 12px;margin-bottom:24px;line-height:1.5}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:13px;font-weight:500;color:var(--gr600);margin-bottom:5px}
+.fg input{width:100%;padding:11px 14px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:14px;color:var(--gr800);outline:none;transition:border-color .18s}
 .fg input:focus{border-color:var(--g400);box-shadow:0 0 0 3px rgba(58,157,110,.12)}
-.btn-p{width:100%;padding:12px;background:var(--g600);color:var(--white);border:none;border-radius:var(--rsm);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:background .18s;margin-bottom:10px}
+.btn-p{width:100%;padding:12px;background:var(--g600);color:#fff;border:none;border-radius:var(--rsm);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:10px;transition:background .18s}
 .btn-p:hover{background:var(--g800)}
 .btn-gh{width:100%;padding:12px;background:transparent;color:var(--g600);border:1px solid var(--g100);border-radius:var(--rsm);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:background .18s}
 .btn-gh:hover{background:var(--g50)}
-.ldiv{text-align:center;font-size:12px;color:var(--gr400);margin:16px 0 10px}
-.err-msg{font-size:13px;color:#C0392B;background:#FDEDEC;border-radius:var(--rsm);padding:10px 14px;margin-bottom:16px;display:none}
-.ok-msg{font-size:13px;color:var(--g800);background:var(--g50);border-radius:var(--rsm);padding:10px 14px;margin-bottom:16px;display:none}
+.ldiv{text-align:center;font-size:12px;color:var(--gr400);margin:12px 0 10px}
+.err-msg{font-size:13px;color:#C0392B;background:#FDEDEC;border-radius:var(--rsm);padding:10px 14px;margin-bottom:14px;display:none}
+.ok-msg{font-size:13px;color:var(--g800);background:var(--g50);border-radius:var(--rsm);padding:10px 14px;margin-bottom:14px;display:none}
+.role-sel{display:flex;gap:8px;margin-bottom:18px}
+.role-btn{flex:1;padding:9px;border:1.5px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr600);background:var(--white);cursor:pointer;transition:all .15s;text-align:center}
+.role-btn.active{background:var(--g50);border-color:var(--g600);color:var(--g600);font-weight:500}
 
-/* ── APP ── */
+/* APP */
 #app-screen{display:none}
 .layout{display:flex;min-height:100vh}
 
-/* ── SIDEBAR ── */
-.sidebar{width:236px;background:var(--white);border-right:1px solid var(--gr100);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10}
-.sb-header{padding:26px 20px 18px;border-bottom:1px solid var(--gr100)}
-.sb-logo{font-family:'DM Serif Display',serif;font-size:21px;color:var(--g600)}
-.sb-tag{font-size:11px;color:var(--gr400);margin-top:2px}
-.sb-nav{padding:14px 10px;flex:1}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--rsm);font-size:13.5px;color:var(--gr600);cursor:pointer;transition:background .15s,color .15s;margin-bottom:3px;user-select:none}
+/* SIDEBAR */
+.sidebar{width:240px;background:var(--white);border-right:1px solid var(--gr100);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10}
+.sb-header{padding:24px 20px 18px;border-bottom:1px solid var(--gr100)}
+.sb-logo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--g600)}
+.sb-tag{font-size:11px;color:var(--gr400);margin-top:1px}
+.sb-role{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:999px;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.sb-role.professor{background:var(--g50);color:var(--g600)}
+.sb-role.gestao{background:var(--blue-light);color:var(--blue)}
+.sb-nav{padding:14px 10px;flex:1;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gr400);padding:10px 11px 4px;margin-top:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:var(--rsm);font-size:13px;color:var(--gr600);cursor:pointer;transition:background .15s,color .15s;margin-bottom:2px;user-select:none}
 .nav-item:hover{background:var(--gr50);color:var(--gr800)}
 .nav-item.active{background:var(--g50);color:var(--g600);font-weight:500}
-.nav-icon{width:17px;height:17px;opacity:.7;flex-shrink:0}
+.nav-item.gestao-item.active{background:var(--blue-light);color:var(--blue)}
+.nav-icon{width:16px;height:16px;opacity:.7;flex-shrink:0}
 .nav-item.active .nav-icon{opacity:1}
-.sb-footer{padding:14px 10px;border-top:1px solid var(--gr100)}
-.user-badge{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--rsm);margin-bottom:8px}
+.sb-footer{padding:12px 10px;border-top:1px solid var(--gr100)}
+.user-badge{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rsm);margin-bottom:7px}
 .avatar{width:30px;height:30px;border-radius:50%;background:var(--g100);color:var(--g800);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
-.user-email{font-size:12px;color:var(--gr600);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
-.btn-logout{width:100%;padding:8px 11px;background:transparent;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr600);cursor:pointer;transition:border-color .15s,color .15s}
+.user-email{font-size:11.5px;color:var(--gr600);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-logout{width:100%;padding:8px;background:transparent;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:12.5px;color:var(--gr600);cursor:pointer;transition:border-color .15s,color .15s}
 .btn-logout:hover{border-color:#E74C3C;color:#E74C3C}
 
-/* ── MAIN ── */
-.main{margin-left:236px;padding:32px 38px;flex:1;max-width:960px}
+/* MAIN */
+.main{margin-left:240px;padding:30px 36px;flex:1;max-width:980px}
 .page{display:none}.page.active{display:block}
-.page-title{font-family:'DM Serif Display',serif;font-size:25px;color:var(--gr800);margin-bottom:5px}
-.page-sub{font-size:13.5px;color:var(--gr400);margin-bottom:26px}
+.page-title{font-family:'DM Serif Display',serif;font-size:24px;color:var(--gr800);margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--gr400);margin-bottom:22px}
 
-/* ── CARDS ── */
+/* INFO BANNER */
+.info-banner{background:var(--amber-light);border:1px solid #FCD34D;border-radius:var(--rmd);padding:12px 16px;margin-bottom:20px;font-size:13px;color:var(--amber);line-height:1.5}
+.info-banner strong{font-weight:600}
+
+/* CARDS */
 .fcard{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rlg);padding:20px 24px;margin-bottom:12px}
 .fcard-title{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gr400);margin-bottom:13px}
-.flabel{display:block;font-size:13px;font-weight:500;color:var(--gr600);margin-bottom:6px}
-.finput,.fselect,.ftarea{width:100%;padding:10px 13px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:14px;color:var(--gr800);background:var(--white);transition:border-color .18s;outline:none}
+.flabel{display:block;font-size:13px;font-weight:500;color:var(--gr600);margin-bottom:5px}
+.finput,.fselect,.ftarea{width:100%;padding:9px 12px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13.5px;color:var(--gr800);background:var(--white);transition:border-color .18s;outline:none}
 .finput:focus,.fselect:focus,.ftarea:focus{border-color:var(--g400);box-shadow:0 0 0 3px rgba(58,157,110,.12)}
 .ftarea{min-height:100px;resize:vertical;line-height:1.6}
-.ftarea.sm{min-height:72px}
-.fselect{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239A9B97' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer}
+.ftarea.sm{min-height:70px}
+.ftarea.lg{min-height:140px}
+.fselect{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239A9B97' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:34px;cursor:pointer}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
 .frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:13px}
-.fblock{margin-bottom:13px}.fblock:last-child{margin-bottom:0}
+.fblock{margin-bottom:12px}.fblock:last-child{margin-bottom:0}
 
-/* ── ALUNO TOGGLE ── */
-.aluno-toggle{display:flex;gap:8px;margin-bottom:16px}
+/* ALUNO TOGGLE */
+.aluno-toggle{display:flex;gap:7px;margin-bottom:14px}
 .toggle-btn{flex:1;padding:9px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr600);background:var(--white);cursor:pointer;transition:all .15s;text-align:center}
 .toggle-btn.active{background:var(--g50);border-color:var(--g400);color:var(--g600);font-weight:500}
 #painel-cadastrado,#painel-novo{display:none}
 #painel-cadastrado.show,#painel-novo.show{display:block}
 
-/* ── ALUNO SELECTOR ── */
-.aluno-selector{border:1px solid var(--gr200);border-radius:var(--rsm);max-height:180px;overflow-y:auto}
-.aluno-opt{padding:10px 13px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--gr100);transition:background .12s}
+/* ALUNO SELECTOR */
+.aluno-selector{border:1px solid var(--gr200);border-radius:var(--rsm);max-height:170px;overflow-y:auto}
+.aluno-search{width:100%;padding:8px 12px;border:none;border-bottom:1px solid var(--gr200);font-family:inherit;font-size:13px;outline:none;border-radius:var(--rsm) var(--rsm) 0 0}
+.aluno-opt{padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--gr100);transition:background .12s}
 .aluno-opt:last-child{border-bottom:none}
-.aluno-opt:hover{background:var(--g50)}
-.aluno-opt.selected{background:var(--g50);color:var(--g600);font-weight:500}
+.aluno-opt:hover,.aluno-opt.selected{background:var(--g50)}
 .aluno-opt-nome{font-weight:500;color:var(--gr800)}
 .aluno-opt-meta{font-size:11px;color:var(--gr400);margin-top:2px}
-.aluno-search{width:100%;padding:9px 13px;border:none;border-bottom:1px solid var(--gr200);font-family:inherit;font-size:13px;outline:none;border-radius:var(--rsm) var(--rsm) 0 0}
+.aluno-sel-info{display:none;margin-top:9px;padding:10px 12px;background:var(--g50);border-radius:var(--rsm);font-size:13px;color:var(--g800)}
 
-/* ── CHIPS ── */
+/* CHIPS */
 .chips-group{display:flex;flex-wrap:wrap;gap:6px}
-.chip{padding:5px 11px;border-radius:999px;border:1px solid var(--gr200);background:var(--white);font-family:inherit;font-size:12px;font-weight:500;color:var(--gr600);cursor:pointer;transition:all .15s;user-select:none}
+.chip{padding:4px 11px;border-radius:999px;border:1px solid var(--gr200);background:var(--white);font-family:inherit;font-size:12px;font-weight:500;color:var(--gr600);cursor:pointer;transition:all .15s;user-select:none}
 .chip:hover{border-color:var(--g400);color:var(--g600)}
-.chip.active{background:var(--g600);border-color:var(--g600);color:var(--white)}
+.chip.active{background:var(--g600);border-color:var(--g600);color:#fff}
 
-/* ── TEMPLATES ── */
-.templates-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
-.tpl-btn{padding:6px 13px;border-radius:var(--rsm);border:1px solid var(--gr200);background:var(--white);font-family:inherit;font-size:12px;color:var(--gr600);cursor:pointer;transition:all .15s}
+/* TEMPLATES */
+.templates-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tpl-btn{padding:5px 12px;border-radius:var(--rsm);border:1px solid var(--gr200);background:var(--white);font-family:inherit;font-size:12px;color:var(--gr600);cursor:pointer;transition:all .15s}
 .tpl-btn:hover{border-color:var(--g400);color:var(--g600);background:var(--g50)}
-.tpl-btn.active{background:var(--g600);border-color:var(--g600);color:var(--white)}
+.tpl-btn.active{background:var(--g600);border-color:var(--g600);color:#fff}
 
-/* ── BTN GERAR ── */
-.btn-gerar{display:flex;align-items:center;gap:8px;padding:13px 28px;background:var(--g600);color:var(--white);border:none;border-radius:var(--rsm);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:background .18s,transform .1s;margin-top:4px}
+/* BOTÕES */
+.btn-gerar{display:flex;align-items:center;gap:8px;padding:12px 26px;background:var(--g600);color:#fff;border:none;border-radius:var(--rsm);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:background .18s,transform .1s;margin-top:4px}
 .btn-gerar:hover{background:var(--g800)}
 .btn-gerar:active{transform:scale(.98)}
-.btn-gerar:disabled{opacity:.55;cursor:not-allowed;transform:none}
-
-/* ── LOADING ── */
-.gen-box{display:none;align-items:center;gap:12px;padding:14px 18px;background:var(--g50);border:1px solid var(--g100);border-radius:var(--rmd);margin-top:14px;font-size:13px;color:var(--g800)}
-.gen-box.show{display:flex}
-.spin{width:17px;height:17px;border:2px solid var(--g100);border-top-color:var(--g600);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── RESULTADO ── */
-.result-card{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rlg);padding:22px 26px;margin-top:18px;display:none}
-.result-card.show{display:block}
-.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--gr100)}
-.result-title{font-size:14px;font-weight:600;color:var(--gr800)}
-.result-badge{font-size:11px;font-weight:500;background:var(--g50);color:var(--g600);padding:4px 10px;border-radius:999px;max-width:320px;text-align:right}
-.result-text{font-size:14px;line-height:1.85;color:var(--gr600);white-space:pre-wrap}
-.result-actions{display:flex;gap:9px;margin-top:18px;padding-top:14px;border-top:1px solid var(--gr100)}
-.btn-save{padding:9px 18px;background:var(--g600);color:var(--white);border:none;border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .18s}
-.btn-save:hover{background:var(--g800)}
-.btn-copy{padding:9px 16px;background:transparent;color:var(--gr600);border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s}
-.btn-copy:hover{border-color:var(--g400);color:var(--g600)}
-
-/* ── PÁGINA ALUNOS ── */
-.toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.search-box{flex:1;min-width:200px;position:relative}
-.search-box input{width:100%;padding:9px 13px 9px 36px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr800);background:var(--white);outline:none;transition:border-color .18s}
-.search-box input:focus{border-color:var(--g400)}
-.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--gr400)}
-.filter-sel{padding:9px 32px 9px 12px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr600);background:var(--white);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239A9B97' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer;outline:none}
-.filter-sel:focus{border-color:var(--g400)}
-
-.alunos-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.aluno-card{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:16px 18px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
-.aluno-card:hover{border-color:var(--g400);box-shadow:0 2px 10px rgba(58,157,110,.1)}
-.ac-nome{font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:2px}
-.ac-meta{font-size:11.5px;color:var(--gr400);margin-bottom:8px}
-.ac-perfis{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px}
-.ac-tag{font-size:10.5px;font-weight:500;background:var(--g50);color:var(--g600);padding:2px 7px;border-radius:999px}
-.ac-prev{font-size:12px;color:var(--gr400);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.ac-date{font-size:11px;color:var(--gr400);margin-top:9px}
-
-/* ── PÁGINA CADASTRO ── */
-.alunos-lista{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px}
-.aluno-reg{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:15px 17px}
-.ar-nome{font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:3px}
-.ar-meta{font-size:12px;color:var(--gr400);margin-bottom:8px}
-.ar-perfis{display:flex;flex-wrap:wrap;gap:4px}
-.ar-tag{font-size:10.5px;font-weight:500;background:var(--g50);color:var(--g600);padding:2px 7px;border-radius:999px}
-
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.btn-sm{padding:8px 16px;background:var(--g600);color:var(--white);border:none;border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .18s}
+.btn-gerar:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-sm{padding:8px 16px;background:var(--g600);color:#fff;border:none;border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .18s;white-space:nowrap}
 .btn-sm:hover{background:var(--g800)}
+.btn-sm:disabled{opacity:.5;cursor:not-allowed}
 .btn-sm-ghost{padding:8px 14px;background:transparent;color:var(--g600);border:1px solid var(--g100);border-radius:var(--rsm);font-family:inherit;font-size:13px;cursor:pointer;transition:background .18s}
 .btn-sm-ghost:hover{background:var(--g50)}
+.btn-blue{padding:8px 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .18s}
+.btn-blue:hover{background:#1345B7}
+.btn-copy{padding:8px 14px;background:transparent;color:var(--gr600);border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s}
+.btn-copy:hover{border-color:var(--g400);color:var(--g600)}
+.btn-danger{padding:8px 14px;background:transparent;color:#E74C3C;border:1px solid #FECACA;border-radius:var(--rsm);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s}
+.btn-danger:hover{background:#FEF2F2}
 
-/* ── MODAL ── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:50;align-items:center;justify-content:center;padding:20px}
+/* LOADING */
+.gen-box{display:none;align-items:center;gap:12px;padding:13px 17px;background:var(--g50);border:1px solid var(--g100);border-radius:var(--rmd);margin-top:13px;font-size:13px;color:var(--g800)}
+.gen-box.show{display:flex}
+.spin{width:16px;height:16px;border:2px solid var(--g100);border-top-color:var(--g600);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.spin-blue{width:16px;height:16px;border:2px solid #BFDBFE;border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESULTADO */
+.result-card{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rlg);padding:22px 26px;margin-top:16px;display:none}
+.result-card.show{display:block}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;padding-bottom:12px;border-bottom:1px solid var(--gr100);flex-wrap:wrap;gap:8px}
+.result-title{font-size:14px;font-weight:600;color:var(--gr800)}
+.result-badge{font-size:11px;font-weight:500;background:var(--g50);color:var(--g600);padding:4px 10px;border-radius:999px}
+.result-text{font-size:13.5px;line-height:1.85;color:var(--gr600);white-space:pre-wrap}
+.result-actions{display:flex;gap:8px;margin-top:16px;padding-top:13px;border-top:1px solid var(--gr100);flex-wrap:wrap}
+
+/* TOOLBAR / FILTROS */
+.toolbar{display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap}
+.search-box{flex:1;min-width:180px;position:relative}
+.search-box input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;outline:none;transition:border-color .18s}
+.search-box input:focus{border-color:var(--g400)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--gr400)}
+.filter-sel{padding:8px 30px 8px 11px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr600);background:#fff;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A9B97' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;cursor:pointer;outline:none}
+.filter-sel:focus{border-color:var(--g400)}
+
+/* GRIDS */
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cards-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.item-card{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:15px 17px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.item-card:hover{border-color:var(--g400);box-shadow:0 2px 10px rgba(58,157,110,.1)}
+.ic-nome{font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:2px}
+.ic-meta{font-size:11.5px;color:var(--gr400);margin-bottom:7px}
+.ic-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.ic-tag{font-size:10.5px;font-weight:500;background:var(--g50);color:var(--g600);padding:2px 7px;border-radius:999px}
+.ic-tag.blue{background:var(--blue-light);color:var(--blue)}
+.ic-prev{font-size:12px;color:var(--gr400);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ic-date{font-size:11px;color:var(--gr400);margin-top:8px}
+.ic-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:2px 8px;border-radius:999px;margin-top:6px}
+.ic-status.rascunho{background:#FEF9C3;color:#854D0E}
+.ic-status.finalizado{background:var(--g50);color:var(--g600)}
+
+/* SEÇÃO HEADER */
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px}
+.section-header-btns{display:flex;gap:8px;flex-shrink:0}
+
+/* PEI */
+.pei-step{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rlg);padding:20px 24px;margin-bottom:12px}
+.pei-step-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.pei-step-num{width:26px;height:26px;border-radius:50%;background:var(--g600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.pei-step-title{font-size:14px;font-weight:600;color:var(--gr800)}
+.pei-step-sub{font-size:12px;color:var(--gr400);margin-top:1px}
+.pei-legal{background:var(--blue-light);border:1px solid #BFDBFE;border-radius:var(--rsm);padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:var(--blue);line-height:1.5}
+.pei-legal strong{font-weight:600}
+
+/* GESTÃO STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:16px 18px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--g600);margin-bottom:2px}
+.stat-label{font-size:12px;color:var(--gr400)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;align-items:center;justify-content:center;padding:20px}
 .overlay.open{display:flex}
-.modal{background:var(--white);border-radius:var(--rlg);padding:26px;max-width:660px;width:100%;max-height:87vh;overflow-y:auto}
-.modal.sm{max-width:460px}
-.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
-.modal-title{font-family:'DM Serif Display',serif;font-size:19px;color:var(--gr800)}
+.modal{background:var(--white);border-radius:var(--rlg);padding:24px;width:100%;max-height:88vh;overflow-y:auto}
+.modal.sm{max-width:480px}
+.modal.md{max-width:620px}
+.modal.lg{max-width:800px}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.modal-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--gr800)}
 .modal-meta{font-size:12px;color:var(--gr400);margin-bottom:10px}
-.modal-close{background:none;border:none;font-size:21px;color:var(--gr400);cursor:pointer;line-height:1}
+.modal-close{background:none;border:none;font-size:20px;color:var(--gr400);cursor:pointer;line-height:1}
 .modal-close:hover{color:var(--gr800)}
-.modal-perfis{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.modal-body{font-size:14px;line-height:1.85;color:var(--gr600);white-space:pre-wrap;background:var(--gr50);border-radius:var(--rsm);padding:15px}
-.modal-actions{display:flex;gap:8px;margin-top:14px}
+.modal-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.modal-body{font-size:13.5px;line-height:1.85;color:var(--gr600);white-space:pre-wrap;background:var(--gr50);border-radius:var(--rsm);padding:14px}
+.modal-actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
 
-/* ── EMPTY / TOAST ── */
-.empty{text-align:center;padding:50px 20px;color:var(--gr400);grid-column:1/-1}
-.empty-icon{font-size:34px;margin-bottom:10px}
-.empty-text{font-size:14px}
-#toast{position:fixed;bottom:26px;right:26px;background:var(--gr800);color:var(--white);padding:11px 18px;border-radius:var(--rsm);font-size:13px;font-weight:500;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;z-index:200;pointer-events:none}
+/* EMPTY / TOAST */
+.empty{text-align:center;padding:48px 20px;color:var(--gr400);grid-column:1/-1}
+.empty-icon{font-size:32px;margin-bottom:9px}
+.empty-text{font-size:13.5px;line-height:1.6}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--gr800);color:#fff;padding:11px 18px;border-radius:var(--rsm);font-size:13px;font-weight:500;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;z-index:200;pointer-events:none;max-width:320px}
 #toast.show{opacity:1;transform:translateY(0)}
+#toast.success{background:var(--g600)}
+#toast.error{background:#C0392B}
 
-@media(max-width:720px){
-  .sidebar{display:none}.main{margin-left:0;padding:20px 14px}
-  .alunos-grid,.alunos-lista,.frow,.frow3{grid-template-columns:1fr}
+@media(max-width:740px){
+  .sidebar{display:none}.main{margin-left:0;padding:18px 14px}
+  .cards-grid,.cards-grid-3,.frow,.frow3,.stats-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ══════════════ LOGIN ══════════════ -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">Ben Adaptare</div>
-    <div class="login-sub">Plataforma de adaptações pedagógicas</div>
+    <div class="login-sub">Plataforma pedagógica inclusiva com IA</div>
+    <div class="login-desc">Selecione seu perfil de acesso antes de entrar.</div>
+
+    <div class="role-sel">
+      <button class="role-btn active" id="role-btn-professor" onclick="setRole('professor')">👩‍🏫 Professor</button>
+      <button class="role-btn" id="role-btn-gestao" onclick="setRole('gestao')">🏫 Gestão</button>
+    </div>
+
     <div id="lerr" class="err-msg"></div>
     <div id="lok" class="ok-msg"></div>
-    <div class="fg"><label>E-mail</label><input type="email" id="lemail" placeholder="professor@escola.com.br" autocomplete="email"></div>
+    <div class="fg"><label>E-mail</label><input type="email" id="lemail" placeholder="seu@email.com" autocomplete="email"></div>
     <div class="fg"><label>Senha</label><input type="password" id="lsenha" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-p" onclick="entrar()">Entrar</button>
     <div class="ldiv">ou</div>
@@ -204,27 +249,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
   </div>
 </div>
 
-<!-- APP -->
+<!-- ══════════════ APP ══════════════ -->
 <div id="app-screen">
   <div class="layout">
+
+    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sb-header">
         <div class="sb-logo">Ben Adaptare</div>
-        <div class="sb-tag">Adaptações pedagógicas com IA</div>
+        <div class="sb-tag">Plataforma pedagógica inclusiva</div>
+        <span class="sb-role" id="sb-role-badge">Professor</span>
       </div>
-      <nav class="sb-nav">
-        <div class="nav-item active" id="nav-nova" onclick="showPage('nova')">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Nova adaptação
-        </div>
-        <div class="nav-item" id="nav-historico" onclick="showPage('historico')">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          Histórico
-        </div>
-        <div class="nav-item" id="nav-alunos" onclick="showPage('alunos')">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M11 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Alunos
-        </div>
+      <nav class="sb-nav" id="sb-nav">
+        <!-- Preenchido via JS conforme o papel -->
       </nav>
       <div class="sb-footer">
         <div class="user-badge">
@@ -235,296 +272,108 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
       </div>
     </aside>
 
-    <main class="main">
-
-      <!-- ══ NOVA ADAPTAÇÃO ══ -->
-      <div id="page-nova" class="page active">
-        <h1 class="page-title">Nova adaptação</h1>
-        <p class="page-sub">Preencha os dados do aluno. Quanto mais detalhes, melhor a adaptação gerada pela IA.</p>
-
-        <!-- BLOCO ALUNO -->
-        <div class="fcard">
-          <div class="fcard-title">Dados do aluno</div>
-          <div class="aluno-toggle">
-            <button class="toggle-btn active" id="toggle-cadastrado" onclick="setModoAluno('cadastrado')">Selecionar aluno cadastrado</button>
-            <button class="toggle-btn" id="toggle-novo" onclick="setModoAluno('novo')">Digitar manualmente</button>
-          </div>
-
-          <div id="painel-cadastrado" class="show">
-            <div class="fblock">
-              <label class="flabel">Buscar aluno cadastrado</label>
-              <div class="aluno-selector">
-                <input class="aluno-search" id="aluno-search" placeholder="Digite o nome do aluno…" oninput="filtrarAlunosSel()">
-                <div id="aluno-lista-sel"></div>
-              </div>
-            </div>
-            <div id="aluno-sel-info" style="display:none;margin-top:10px;padding:10px 13px;background:var(--g50);border-radius:var(--rsm);font-size:13px;color:var(--g800)"></div>
-          </div>
-
-          <div id="painel-novo">
-            <div class="frow">
-              <div><label class="flabel">Nome do aluno</label><input type="text" id="inp-aluno" class="finput" placeholder="Ex: João Silva"></div>
-              <div><label class="flabel">Idade</label>
-                <select id="inp-idade" class="fselect">
-                  <option value="">Selecione</option>
-                  <option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option>
-                  <option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option>
-                  <option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option>
-                  <option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option>
-                  <option>18 anos</option><option>19 anos</option><option>20 anos ou mais</option>
-                </select>
-              </div>
-            </div>
-            <div class="frow">
-              <div><label class="flabel">Série / Ano escolar</label>
-                <select id="inp-serie" class="fselect">
-                  <option value="">Selecione</option>
-                  <optgroup label="Educação Infantil">
-                    <option>Maternal (2-3 anos)</option><option>Jardim I (4 anos)</option>
-                    <option>Jardim II (5 anos)</option><option>Pré-escola (5-6 anos)</option>
-                  </optgroup>
-                  <optgroup label="Ensino Fundamental I">
-                    <option>1º ano</option><option>2º ano</option><option>3º ano</option><option>4º ano</option><option>5º ano</option>
-                  </optgroup>
-                  <optgroup label="Ensino Fundamental II">
-                    <option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option>
-                  </optgroup>
-                  <optgroup label="Ensino Médio">
-                    <option>1º ano EM</option><option>2º ano EM</option><option>3º ano EM</option>
-                  </optgroup>
-                  <optgroup label="EJA / Outros">
-                    <option>EJA - Fundamental</option><option>EJA - Médio</option><option>AEE / Sala de recursos</option>
-                  </optgroup>
-                </select>
-              </div>
-              <div>
-                <label class="flabel">Perfis / NEE</label>
-                <div class="chips-group" id="perfis-chips-novo" style="max-height:90px;overflow-y:auto"></div>
-              </div>
-            </div>
-            <div class="fblock">
-              <label class="flabel">Observações clínicas e pedagógicas</label>
-              <textarea id="inp-obs" class="ftarea sm" placeholder="Ex: Laudo de TEA nível 2, hipersensibilidade sensorial, boa memória visual, usa CAA, acompanhado por TO e fonoaudióloga…"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- BLOCO MATÉRIA -->
-        <div class="fcard">
-          <div class="fcard-title">Matéria e tipo de atividade</div>
-          <div class="frow">
-            <div>
-              <label class="flabel">Matéria / Área do conhecimento</label>
-              <select id="inp-materia" class="fselect" onchange="atualizarTemplates()">
-                <option value="">Selecione a matéria</option>
-                <optgroup label="Montessori">
-                  <option>Educação Cósmica</option><option>Vida Prática</option>
-                  <option>Linguagem Oral e Escrita (Montessori)</option><option>Matemática (Montessori)</option>
-                  <option>Sensorial</option><option>Cultura Geral</option><option>Arte e Expressão</option>
-                  <option>Movimento e Coordenação</option><option>Botânica e Zoologia</option>
-                  <option>Geografia e Geologia</option><option>História do Universo</option><option>Educação para a Paz</option>
-                </optgroup>
-                <optgroup label="Currículo Convencional">
-                  <option>Língua Portuguesa</option><option>Matemática</option><option>Ciências da Natureza</option>
-                  <option>História</option><option>Geografia</option><option>Artes</option>
-                  <option>Educação Física</option><option>Língua Inglesa</option><option>Filosofia</option>
-                  <option>Sociologia</option><option>Biologia</option><option>Física</option>
-                  <option>Química</option><option>Ensino Religioso</option><option>Redação e Produção Textual</option>
-                </optgroup>
-                <optgroup label="Outros">
-                  <option>Projeto de Vida / Protagonismo</option><option>Tecnologia e Computação</option>
-                  <option>Música</option><option>Teatro e Expressão Dramática</option><option>Atividade Multidisciplinar</option>
-                </optgroup>
-              </select>
-            </div>
-            <div>
-              <label class="flabel">Tipo de atividade (template)</label>
-              <div class="templates-grid" id="templates-grid">
-                <span style="font-size:12px;color:var(--gr400)">Selecione uma matéria para ver os templates</span>
-              </div>
-            </div>
-          </div>
-          <div class="fblock">
-            <label class="flabel">Ou descreva livremente o tipo de atividade</label>
-            <input type="text" id="inp-tipo-livre" class="finput" placeholder="Ex: Prova oral com apoio de imagens, atividade em dupla com mediação…">
-          </div>
-        </div>
-
-        <!-- BLOCO CONTEÚDO -->
-        <div class="fcard">
-          <div class="fcard-title">Conteúdo a adaptar</div>
-          <div class="fblock">
-            <label class="flabel">Cole aqui o texto, atividade ou enunciado que deseja adaptar</label>
-            <textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;'A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…'&#10;&#10;1) O que é fotossíntese?&#10;2) Quais ingredientes são necessários?"></textarea>
-          </div>
-        </div>
-
-        <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
-          <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
-          Gerar adaptação com IA
-        </button>
-
-        <div class="gen-box" id="gen-box">
-          <div class="spin"></div>
-          <span>A IA está gerando a adaptação personalizada. Aguarde…</span>
-        </div>
-
-        <div class="result-card" id="result-card">
-          <div class="result-header">
-            <div class="result-title">Adaptação gerada pela IA</div>
-            <div class="result-badge" id="result-badge">—</div>
-          </div>
-          <div class="result-text" id="result-text"></div>
-          <div class="result-actions">
-            <button class="btn-save" onclick="salvar()">Salvar no histórico</button>
-            <button class="btn-copy" onclick="copiarTexto()">Copiar texto</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ HISTÓRICO ══ -->
-      <div id="page-historico" class="page">
-        <h1 class="page-title">Histórico de adaptações</h1>
-        <p class="page-sub">Busque e filtre todas as adaptações salvas.</p>
-        <div class="toolbar">
-          <div class="search-box">
-            <svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <input id="hist-search" placeholder="Buscar por nome do aluno…" oninput="filtrarHistorico()">
-          </div>
-          <select class="filter-sel" id="hist-filter-perfil" onchange="filtrarHistorico()">
-            <option value="">Todos os perfis</option>
-          </select>
-          <select class="filter-sel" id="hist-filter-materia" onchange="filtrarHistorico()">
-            <option value="">Todas as matérias</option>
-          </select>
-          <select class="filter-sel" id="hist-filter-serie" onchange="filtrarHistorico()">
-            <option value="">Todas as séries</option>
-          </select>
-        </div>
-        <div class="alunos-grid" id="hist-grid"></div>
-      </div>
-
-      <!-- ══ ALUNOS ══ -->
-      <div id="page-alunos" class="page">
-        <div class="section-header">
-          <div>
-            <h1 class="page-title">Alunos cadastrados</h1>
-            <p class="page-sub" style="margin-bottom:0">Cadastre alunos para reutilizar nas adaptações.</p>
-          </div>
-          <button class="btn-sm" onclick="abrirModalCadastro()">+ Novo aluno</button>
-        </div>
-        <div class="alunos-lista" id="alunos-lista"></div>
-      </div>
-
+    <main class="main" id="main-content">
+      <!-- Páginas injetadas aqui -->
     </main>
   </div>
 </div>
 
-<!-- MODAL DETALHE ADAPTAÇÃO -->
-<div class="overlay" id="modal-adapt-overlay" onclick="fecharModalAdapt(event)">
-  <div class="modal">
+<!-- ══ MODAL: Detalhe de Adaptação ══ -->
+<div class="overlay" id="modal-adapt" onclick="fecharModal('modal-adapt',event)">
+  <div class="modal md">
     <div class="modal-header">
       <div class="modal-title" id="ma-nome">—</div>
-      <button class="modal-close" onclick="fecharModalAdapt()">×</button>
+      <button class="modal-close" onclick="fecharModal('modal-adapt')">×</button>
     </div>
     <div class="modal-meta" id="ma-meta"></div>
-    <div class="modal-perfis" id="ma-perfis"></div>
+    <div class="modal-tags" id="ma-tags"></div>
     <div class="modal-body" id="ma-body"></div>
     <div class="modal-actions">
-      <button class="btn-copy" onclick="copiarModal()">Copiar texto</button>
+      <button class="btn-copy" onclick="copiarModalAdapt()">Copiar texto</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL CADASTRO ALUNO -->
-<div class="overlay" id="modal-cad-overlay" onclick="fecharModalCad(event)">
+<!-- ══ MODAL: Cadastro de Aluno ══ -->
+<div class="overlay" id="modal-cad" onclick="fecharModal('modal-cad',event)">
   <div class="modal sm">
     <div class="modal-header">
       <div class="modal-title">Cadastrar aluno</div>
-      <button class="modal-close" onclick="fecharModalCad()">×</button>
+      <button class="modal-close" onclick="fecharModal('modal-cad')">×</button>
     </div>
     <div style="margin-top:14px">
       <div class="frow">
         <div><label class="flabel">Nome completo</label><input type="text" id="cad-nome" class="finput" placeholder="Ex: Maria Souza"></div>
-        <div><label class="flabel">Idade</label>
-          <select id="cad-idade" class="fselect">
-            <option value="">Selecione</option>
-            <option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option>
-            <option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option>
-            <option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option>
-            <option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option>
-            <option>18 anos</option><option>19 anos</option><option>20 anos ou mais</option>
-          </select>
-        </div>
+        <div><label class="flabel">Idade</label><select id="cad-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
       </div>
-      <div class="fblock">
-        <label class="flabel">Série / Ano</label>
-        <select id="cad-serie" class="fselect">
-          <option value="">Selecione</option>
-          <optgroup label="Educação Infantil">
-            <option>Maternal (2-3 anos)</option><option>Jardim I (4 anos)</option>
-            <option>Jardim II (5 anos)</option><option>Pré-escola (5-6 anos)</option>
-          </optgroup>
-          <optgroup label="Ensino Fundamental I">
-            <option>1º ano</option><option>2º ano</option><option>3º ano</option><option>4º ano</option><option>5º ano</option>
-          </optgroup>
-          <optgroup label="Ensino Fundamental II">
-            <option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option>
-          </optgroup>
-          <optgroup label="Ensino Médio">
-            <option>1º ano EM</option><option>2º ano EM</option><option>3º ano EM</option>
-          </optgroup>
-          <optgroup label="EJA / Outros">
-            <option>EJA - Fundamental</option><option>EJA - Médio</option><option>AEE / Sala de recursos</option>
-          </optgroup>
-        </select>
-      </div>
-      <div class="fblock">
-        <label class="flabel">Perfis / Diagnósticos</label>
-        <div class="chips-group" id="perfis-chips-cad" style="max-height:120px;overflow-y:auto"></div>
-      </div>
-      <div class="fblock">
-        <label class="flabel">Observações clínicas</label>
-        <textarea id="cad-obs" class="ftarea sm" placeholder="Laudo, pontos fortes, desafios, recursos utilizados…"></textarea>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:16px">
+      <div class="fblock"><label class="flabel">Série / Ano</label><select id="cad-serie" class="fselect"><option value="">Selecione</option><optgroup label="Ed. Infantil"><option>Maternal</option><option>Jardim I</option><option>Jardim II</option><option>Pré-escola</option></optgroup><optgroup label="Fund. I"><option>1º ano</option><option>2º ano</option><option>3º ano</option><option>4º ano</option><option>5º ano</option></optgroup><optgroup label="Fund. II"><option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option></optgroup><optgroup label="Ens. Médio"><option>1º ano EM</option><option>2º ano EM</option><option>3º ano EM</option></optgroup><optgroup label="Outros"><option>EJA - Fundamental</option><option>EJA - Médio</option><option>AEE / Sala de recursos</option></optgroup></select></div>
+      <div class="fblock"><label class="flabel">Perfis / Diagnósticos</label><div class="chips-group" id="chips-cad" style="max-height:110px;overflow-y:auto"></div></div>
+      <div class="fblock"><label class="flabel">Observações clínicas</label><textarea id="cad-obs" class="ftarea sm" placeholder="Laudo, pontos fortes, desafios, recursos utilizados…"></textarea></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
         <button class="btn-sm" onclick="salvarAluno()">Salvar aluno</button>
-        <button class="btn-sm-ghost" onclick="fecharModalCad()">Cancelar</button>
+        <button class="btn-sm-ghost" onclick="fecharModal('modal-cad')">Cancelar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Detalhe de PEI ══ -->
+<div class="overlay" id="modal-pei" onclick="fecharModal('modal-pei',event)">
+  <div class="modal lg">
+    <div class="modal-header">
+      <div class="modal-title" id="mpei-titulo">PEI</div>
+      <button class="modal-close" onclick="fecharModal('modal-pei')">×</button>
+    </div>
+    <div class="modal-meta" id="mpei-meta"></div>
+    <div class="modal-body" id="mpei-body" style="font-size:13px"></div>
+    <div class="modal-actions">
+      <button class="btn-copy" onclick="copiarModalPEI()">Copiar PEI completo</button>
+      <button class="btn-sm" onclick="downloadPEI()">Baixar como .txt</button>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
 
+<!-- ══════════════ SCRIPT ══════════════ -->
 <script>
-// ── CONFIG ──────────────────────────────────────────────────
-const SB_URL  = 'https://wgnrxzoccelzzxwyibwj.supabase.co';
-const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnbnJ4em9jY2Vsenp4d3lpYndqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDIzMDUsImV4cCI6MjA5MjQ3ODMwNX0.gVTkIw9BUtK79LsRtCwUJPla6M3tc3Yv4xh-AouQBpc';
-const CL_KEY  = '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';
+// ── CONFIG ───────────────────────────────────────────────────
+const SB_URL = 'https://wgnrxzoccelzzxwyibwj.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnbnJ4em9jY2Vsenp4d3lpYndqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDIzMDUsImV4cCI6MjA5MjQ3ODMwNX0.gVTkIw9BUtK79LsRtCwUJPla6M3tc3Yv4xh-AouQBpc';
+const CL_KEY = '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';
+const PROXY  = 'https://corsproxy.io/?';
 const db = supabase.createClient(SB_URL, SB_KEY);
 
-// ── PERFIS ──────────────────────────────────────────────────
-const PERFIS = [
-  'TEA — Transtorno do Espectro Autista',
-  'TDAH — Déficit de Atenção/Hiperatividade',
-  'Dislexia','Discalculia','Disgrafia','Disortografia',
-  'D.I. — Deficiência Intelectual','D.F. — Deficiência Física',
-  'D.V. — Deficiência Visual','D.A. — Deficiência Auditiva',
-  'NCC — Neurodivergência / Cognição Complexa','Apraxia de Fala',
-  'Síndrome de Down','Síndrome de Williams',
-  'Altas Habilidades / Superdotação',
-  'TGD — Transtorno Global do Desenvolvimento',
-  'TOD — Transtorno Opositivo Desafiador',
-  'Transtorno de Ansiedade','Transtorno de Processamento Sensorial',
-  'Deficiência Múltipla'
-];
+// ── DADOS GLOBAIS ────────────────────────────────────────────
+const PERFIS = ['TEA — Transtorno do Espectro Autista','TDAH — Déficit de Atenção/Hiperatividade','Dislexia','Discalculia','Disgrafia','Disortografia','D.I. — Deficiência Intelectual','D.F. — Deficiência Física','D.V. — Deficiência Visual','D.A. — Deficiência Auditiva','NCC — Neurodivergência / Cognição Complexa','Apraxia de Fala','Síndrome de Down','Síndrome de Williams','Altas Habilidades / Superdotação','TGD — Transtorno Global do Desenvolvimento','TOD — Transtorno Opositivo Desafiador','Transtorno de Ansiedade','Transtorno de Processamento Sensorial','Deficiência Múltipla'];
 
-// ── TEMPLATES POR MATÉRIA ────────────────────────────────────
+const ESTRATEGIAS = {
+  'TEA':'TEA: linguagem literal e direta, passos numerados e visuais, evitar metáforas, rotina visual previsível, considerar hipersensibilidade sensorial, permitir CAA, antecipar mudanças.',
+  'TDAH':'TDAH: blocos curtos de 5-10 min, uma instrução por vez, pausas ativas, destacar o essencial, gamificar, tarefas com início-meio-fim claro, evitar excesso de texto.',
+  'Dislexia':'Dislexia: frases curtas, fonte maior, imagens de apoio, parágrafos pequenos, leitura em voz alta permitida, não penalizar ortografia na avaliação de compreensão.',
+  'Discalculia':'Discalculia: materiais concretos e manipuláveis, operações passo a passo, tabelas e organizadores visuais, calculadora permitida quando o foco não é cálculo, contextualizar no cotidiano.',
+  'Disgrafia':'Disgrafia: reduzir quantidade de escrita, aceitar respostas orais ou digitadas, linhas largas, não penalizar letra, priorizar conteúdo sobre forma.',
+  'Disortografia':'Disortografia: não penalizar erros ortográficos, foco na compreensão e expressão, permitir dicionário, listas de palavras-chave de apoio.',
+  'D.I. — Deficiência Intelectual':'D.I.: vocabulário concreto do cotidiano, etapas muito pequenas, imagens e objetos reais, repetição com variações, reduzir quantidade mantendo essencial.',
+  'D.F. — Deficiência Física':'D.F.: adaptar suporte físico (teclado adaptado, prancha), eliminar barreiras motoras, permitir respostas orais, ajustar tempo, não reduzir nível cognitivo desnecessariamente.',
+  'D.V. — Deficiência Visual':'D.V.: baixa visão→fonte ampliada, alto contraste; cegueira→descrições detalhadas, áudio e materiais táteis, eliminar elementos visuais sem alternativa.',
+  'D.A. — Deficiência Auditiva':'D.A.: priorizar visual e escrito, eliminar dependência de áudio sem transcrição, Libras quando aplicável, organização visual clara.',
+  'NCC':'NCC: apoio externo às funções executivas, checklists visuais, antecipar transições e mudanças.',
+  'Apraxia':'Apraxia: priorizar escrita ou CAA, não avaliar pela fala quando foco for outro, tempo extra para comunicação, cognição pode ser preservada.',
+  'Síndrome de Down':'Síndrome de Down: linguagem simples e afetiva, aprendizagem por imitação e social, recursos visuais e musicais, repetição com variações, valorizar pontos fortes.',
+  'Síndrome de Williams':'Síndrome de Williams: explorar linguagem verbal e sociabilidade, apoiar nas dificuldades visuoespaciais e matemáticas, usar música e afeto.',
+  'Altas Habilidades':'Altas Habilidades: aprofundar além da série, desafios de pensamento crítico e criativo, evitar repetições, pesquisa autônoma, conectar aos interesses.',
+  'TGD':'TGD: rotina estruturada, reforço positivo, comunicação alternativa, atenção às especificidades do diagnóstico.',
+  'TOD':'TOD: oferecer escolhas, evitar confrontos diretos, linguagem positiva, reforços positivos por etapa, construir vínculo.',
+  'Transtorno de Ansiedade':'Ansiedade: sem pressão de tempo ou surpresas, explicar com antecedência, linguagem encorajadora, pausas, valorizar processo mais que produto.',
+  'Transtorno de Processamento Sensorial':'Processamento Sensorial: adaptar ambiente (iluminação, ruído, textura), permitir equipamentos de regulação (fone, fidgets), antecipar situações sensorialmente desafiadoras.',
+  'Deficiência Múltipla':'Deficiência Múltipla: planejar com base no perfil específico, priorizar comunicação funcional, foco em vida independente e participação, equipe multiprofissional.'
+};
+
 const TEMPLATES = {
-  'Língua Portuguesa':['Interpretação de texto','Produção textual','Ortografia e gramática','Leitura em voz alta','Vocabulário'],
-  'Matemática':['Resolução de problemas','Operações básicas','Geometria','Frações e decimais','Raciocínio lógico'],
-  'Matemática (Montessori)':['Material dourado','Ábaco','Tabela de Seguin','Cadeia de contas','Problemas concretos'],
+  'Língua Portuguesa':['Interpretação de texto','Produção textual','Ortografia','Leitura em voz alta','Vocabulário','Sequência narrativa'],
+  'Matemática':['Resolução de problemas','Operações básicas','Geometria','Frações e decimais','Raciocínio lógico','Visão de conjunto','Tabuleiro de xadrez','A grande divisão','Armário de potências','Raiz quadrada'],
+  'Matemática (Montessori)':['Material dourado','Ábaco','Tabela de Seguin','Cadeia de contas','Visão de conjunto','A grande divisão','Armário de potências','Raiz quadrada','Problemas concretos'],
   'Ciências da Natureza':['Experimento prático','Pesquisa e registro','Ciclo de vida','Corpo humano','Meio ambiente'],
   'Educação Cósmica':['Linha do tempo do universo','Interdependência dos seres','Grandes lições','História da Terra','Civilizações antigas'],
   'Vida Prática':['Autocuidado','Cuidado com o ambiente','Coordenação motora fina','Organização','Socialização'],
@@ -538,472 +387,937 @@ const TEMPLATES = {
   'Biologia':['Célula e organismo','Ecossistemas','Genética simplificada','Anatomia visual','Classificação dos seres vivos'],
   'Física':['Experimento simples','Forças e movimento','Luz e som','Eletricidade básica','Energia'],
   'Química':['Materiais do cotidiano','Misturas','Tabela periódica visual','Reações do dia a dia','Segurança química'],
-  'Redação e Produção Textual':['Carta / bilhete','Notícia adaptada','Texto narrativo','Descrição de imagem','Sequência de fatos'],
+  'Redação e Produção Textual':['Carta/bilhete','Notícia adaptada','Texto narrativo','Descrição de imagem','Sequência de fatos'],
   'Música':['Apreciação musical','Ritmo e percussão','Letras de música','Instrumento adaptado','Criação musical'],
-  'Teatro e Expressão Dramática':['Improviso guiado','Leitura dramática','Fantoche e teatro de sombras','Expressão corporal','Cena curta'],
-  'Projeto de Vida / Protagonismo':['Autoconhecimento','Planejamento de metas','Tomada de decisão','Habilidades socioemocionais','Portfólio pessoal'],
-  'Tecnologia e Computação':['Segurança digital','Criação digital básica','Lógica de programação','Pesquisa orientada','Apresentação digital'],
+  'Teatro e Expressão Dramática':['Improviso guiado','Leitura dramática','Fantoche','Expressão corporal','Cena curta'],
 };
 const TEMPLATES_DEFAULT = ['Atividade de fixação','Avaliação adaptada','Atividade lúdica','Projeto prático','Ficha de registro'];
 
-// ── ESTRATÉGIAS POR PERFIL (para o prompt da IA) ─────────────
-const ESTRATEGIAS = {
-  'TEA':
-    'TEA: Use linguagem clara, direta e literal. Estruture a atividade em passos numerados e visuais. Evite metáforas e linguagem figurada. Inclua rotina visual previsível. Considere hipersensibilidade sensorial. Permita uso de CAA se necessário. Ofereça antecipação de mudanças.',
-  'TDAH':
-    'TDAH: Divida a atividade em blocos curtos (5-10 min). Use instruções objetivas e uma de cada vez. Inclua pausas ativas. Destaque o que é mais importante com negrito ou cor. Gamifique quando possível. Prefira tarefas com início-meio-fim claro. Evite excesso de texto na mesma página.',
-  'Dislexia':
-    'Dislexia: Use frases curtas e simples. Evite blocos densos de texto. Prefira fonte maior (mínimo 14pt). Inclua suporte de imagens. Separe o texto em parágrafos pequenos. Permita leitura em voz alta. Não penalize erros ortográficos na avaliação da compreensão.',
-  'Discalculia':
-    'Discalculia: Use materiais concretos e manipuláveis. Evite abstrações sem apoio visual. Apresente operações passo a passo. Use tabelas e organizadores gráficos. Permita uso de calculadora quando o foco não for cálculo. Contextualize com situações do cotidiano.',
-  'Disgrafia':
-    'Disgrafia: Reduza a quantidade de escrita. Aceite respostas orais ou digitadas. Permita uso de linhas largas ou espaço ampliado. Não penalize a letra. Priorize conteúdo sobre forma. Ofereça textos já impressos para completar ao invés de copiar.',
-  'Disortografia':
-    'Disortografia: Não penalize erros ortográficos. Foque na compreensão e expressão de ideias. Permita verificação com dicionário. Use listas de palavras-chave como apoio. Avalie separadamente ortografia e compreensão.',
-  'D.I. — Deficiência Intelectual':
-    'D.I.: Simplifique ao máximo o vocabulário. Use linguagem concreta e exemplos do cotidiano. Divida em etapas muito pequenas. Use imagens, objetos reais e manipulativos. Repita instruções de formas diferentes. Reduza a quantidade de conteúdo mantendo o essencial. Prefira atividades práticas a abstratas.',
-  'D.F. — Deficiência Física':
-    'D.F.: Adapte o suporte físico da atividade (teclado, mouse adaptado, prancha inclinada). Elimine barreiras motoras desnecessárias. Permita respostas orais. Ajuste o tempo conforme necessidade. Não reduza o nível cognitivo sem necessidade.',
-  'D.V. — Deficiência Visual':
-    'D.V.: Para baixa visão use fonte ampliada, alto contraste e iluminação adequada. Para cegueira use descrições detalhadas, áudio e materiais táteis. Elimine dependência de elementos visuais sem descrição alternativa.',
-  'D.A. — Deficiência Auditiva':
-    'D.A.: Priorize recursos visuais e escritos. Evite dependência de áudio sem transcrição. Use Libras como língua de instrução quando aplicável. Organize o texto visualmente. Reduza o uso de linguagem oral como único canal.',
-  'NCC — Neurodivergência / Cognição Complexa':
-    'NCC: Avalie as funções executivas comprometidas (planejamento, memória de trabalho, flexibilidade). Estruture a atividade com apoio externo a essas funções. Use checklists visuais. Antecipe transições e mudanças.',
-  'Apraxia de Fala':
-    'Apraxia de Fala: Priorize atividades escritas ou com CAA para expressão. Não avalie pela fala quando o objetivo for outro conteúdo. Permita tempo extra para comunicação. Considere que a cognição pode ser preservada.',
-  'Síndrome de Down':
-    'Síndrome de Down: Use linguagem simples e afetiva. Valorize a aprendizagem por imitação e social. Use recursos visuais e musicais. Repita com variações. Valorize os pontos fortes (memória visual, sociabilidade). Não subestime o potencial de aprendizagem.',
-  'Síndrome de Williams':
-    'Síndrome de Williams: Explore pontos fortes como linguagem verbal e sociabilidade. Apoie nas dificuldades visuoespaciais e matemáticas com recursos concretos. Use música e afeto como recursos pedagógicos.',
-  'Altas Habilidades / Superdotação':
-    'Altas Habilidades: Aprofunde o conteúdo além do esperado para a série. Ofereça desafios de pensamento crítico e criativo. Evite repetições desnecessárias. Permita pesquisa autônoma. Conecte o tema a interesses do aluno.',
-  'TGD — Transtorno Global do Desenvolvimento':
-    'TGD: Aplique estratégias similares ao TEA com atenção às especificidades do diagnóstico. Considere atraso global de desenvolvimento. Use rotina estruturada, reforço positivo e comunicação alternativa.',
-  'TOD — Transtorno Opositivo Desafiador':
-    'TOD: Ofereça escolhas dentro da atividade para dar senso de autonomia. Evite confrontos diretos. Use linguagem positiva e instrucional. Quebre a atividade em etapas com reforços positivos. Construa vínculo antes de exigir desempenho.',
-  'Transtorno de Ansiedade':
-    'Ansiedade: Evite pressão de tempo e avaliações surpresa. Explique com antecedência o que será feito. Use linguagem encorajadora. Permita pausas. Reduza estímulos estressantes. Valorize o processo mais que o produto.',
-  'Transtorno de Processamento Sensorial':
-    'Processamento Sensorial: Considere hipo ou hipersensibilidade. Adapte o ambiente (iluminação, ruído, textura dos materiais). Permita uso de equipamentos de regulação (fone, fidgets). Antecipe situações sensorialmente desafiadoras.',
-  'Deficiência Múltipla':
-    'Deficiência Múltipla: Planeje com base no perfil específico da combinação de deficiências. Priorize comunicação funcional. Foque em objetivos de vida independente e participação. Trabalhe em equipe multiprofissional.',
-};
+// ── ESTADO ───────────────────────────────────────────────────
+let user = null, userRole = 'professor';
+let alunosCad = [], adaptacoesList = [], peiList = [], todosPEI = [], todasAdaptacoes = [];
+let alunoSelId = null, tplSelecionado = '';
+let ultimaAdapt = '', dadosUltima = {};
+let peiGerado = '', peiAluno = {};
+let modalAdaptTxt = '', modalPEItxt = '';
 
-// ── ESTADO ──────────────────────────────────────────────────
-let user = null;
-let ultimaAdaptacao = '';
-let dadosUltima = {};
-let alunosCadastrados = [];
-let adaptacoesHistorico = [];
-let alunoSelecionadoId = null;
-let templateSelecionado = '';
-let modalAdaptTexto = '';
-
-// ── INIT ────────────────────────────────────────────────────
-renderChips('perfis-chips-novo');
-renderChips('perfis-chips-cad');
-
-function renderChips(containerId) {
-  document.getElementById(containerId).innerHTML =
-    PERFIS.map(p => `<button class="chip" onclick="toggleChip(this,'${containerId}')">${p}</button>`).join('');
-}
-function toggleChip(el, gid) { el.classList.toggle('active'); }
-function getPerfisAtivos(containerId) {
-  return [...document.querySelectorAll(`#${containerId} .chip.active`)].map(c => c.textContent);
+// ── LOGIN / ROLE ─────────────────────────────────────────────
+function setRole(r) {
+  userRole = r;
+  ['professor','gestao'].forEach(x => {
+    document.getElementById(`role-btn-${x}`).classList.toggle('active', x === r);
+  });
 }
 
-// ── AUTH ────────────────────────────────────────────────────
 async function entrar() {
   clearMsgs();
   const email = document.getElementById('lemail').value.trim();
-  const senha = document.getElementById('lsenha').value;
+  const senha  = document.getElementById('lsenha').value;
+  if (!email || !senha) return showErr('Preencha e-mail e senha.');
   const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
   if (error) return showErr(error.message);
-  user = data.user; iniciarApp();
+  user = data.user;
+  iniciarApp();
 }
+
 async function registrar() {
   clearMsgs();
   const email = document.getElementById('lemail').value.trim();
-  const senha = document.getElementById('lsenha').value;
+  const senha  = document.getElementById('lsenha').value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
-  if (senha.length < 6) return showErr('Senha com mínimo 6 caracteres.');
+  if (senha.length < 6) return showErr('Senha mínima: 6 caracteres.');
   const { error } = await db.auth.signUp({ email, password: senha });
   if (error) return showErr(error.message);
   showOk('Conta criada! Verifique seu e-mail e faça login.');
 }
+
 function iniciarApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
   document.getElementById('user-avatar').textContent = user.email.slice(0,2).toUpperCase();
   document.getElementById('user-email-lbl').textContent = user.email;
-  carregarAlunos(); carregarHistorico();
+
+  const badge = document.getElementById('sb-role-badge');
+  if (userRole === 'gestao') {
+    badge.textContent = '🏫 Gestão';
+    badge.className = 'sb-role gestao';
+    renderNavGestao();
+    carregarDadosGestao();
+    showPage('gestao-painel');
+  } else {
+    badge.textContent = '👩‍🏫 Professor';
+    badge.className = 'sb-role professor';
+    renderNavProfessor();
+    carregarAlunos();
+    carregarAdaptacoes();
+    carregarPEIs();
+    showPage('nova');
+  }
 }
+
 function logout() { db.auth.signOut(); location.reload(); }
 
-// ── NAVEGAÇÃO ───────────────────────────────────────────────
+// ── NAVEGAÇÃO ────────────────────────────────────────────────
+function renderNavProfessor() {
+  document.getElementById('sb-nav').innerHTML = `
+    <div class="nav-section">Pedagógico</div>
+    <div class="nav-item active" id="nav-nova" onclick="showPage('nova')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova adaptação
+    </div>
+    <div class="nav-item" id="nav-historico" onclick="showPage('historico')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico
+    </div>
+    <div class="nav-item" id="nav-pei" onclick="showPage('pei')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Elaborar PEI
+    </div>
+    <div class="nav-section">Alunos</div>
+    <div class="nav-item" id="nav-alunos" onclick="showPage('alunos')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M11 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Meus alunos
+    </div>`;
+  renderPages();
+}
+
+function renderNavGestao() {
+  document.getElementById('sb-nav').innerHTML = `
+    <div class="nav-section">Gestão Escolar</div>
+    <div class="nav-item gestao-item active" id="nav-gestao-painel" onclick="showPage('gestao-painel')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Painel
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-peis" onclick="showPage('gestao-peis')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Todos os PEIs
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-adapt" onclick="showPage('gestao-adapt')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações
+    </div>`;
+  renderPagesGestao();
+}
+
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById(`page-${id}`).classList.add('active');
-  document.getElementById(`nav-${id}`).classList.add('active');
+  const p = document.getElementById(`page-${id}`);
+  const n = document.getElementById(`nav-${id}`);
+  if (p) p.classList.add('active');
+  if (n) n.classList.add('active');
   if (id === 'historico') filtrarHistorico();
+  if (id === 'gestao-peis') filtrarGPEIs();
+  if (id === 'gestao-adapt') filtrarGAdapt();
 }
 
-// ── MODO ALUNO ──────────────────────────────────────────────
-function setModoAluno(modo) {
-  document.getElementById('toggle-cadastrado').classList.toggle('active', modo === 'cadastrado');
-  document.getElementById('toggle-novo').classList.toggle('active', modo === 'novo');
-  document.getElementById('painel-cadastrado').classList.toggle('show', modo === 'cadastrado');
-  document.getElementById('painel-novo').classList.toggle('show', modo === 'novo');
-  alunoSelecionadoId = null;
+// ── RENDERIZAR PÁGINAS PROFESSOR ─────────────────────────────
+function renderPages() {
+  document.getElementById('main-content').innerHTML = `
+  <!-- NOVA ADAPTAÇÃO -->
+  <div id="page-nova" class="page active">
+    <h1 class="page-title">Nova adaptação</h1>
+    <p class="page-sub">Quanto mais detalhes você fornecer, mais precisa será a adaptação gerada pela IA.</p>
+    <div class="info-banner"><strong>💡 Dica:</strong> Selecione um aluno já cadastrado para preencher automaticamente seus dados, ou preencha manualmente.</div>
+
+    <div class="fcard">
+      <div class="fcard-title">Dados do aluno</div>
+      <div class="aluno-toggle">
+        <button class="toggle-btn active" id="tog-cad" onclick="setModoAluno('cad')">Aluno cadastrado</button>
+        <button class="toggle-btn" id="tog-new" onclick="setModoAluno('new')">Preencher manualmente</button>
+      </div>
+      <div id="painel-cadastrado" class="show">
+        <div class="fblock"><label class="flabel">Buscar aluno</label>
+          <div class="aluno-selector">
+            <input class="aluno-search" id="aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSel()">
+            <div id="aluno-lista-sel"></div>
+          </div>
+        </div>
+        <div class="aluno-sel-info" id="aluno-sel-info"></div>
+      </div>
+      <div id="painel-novo">
+        <div class="frow">
+          <div><label class="flabel">Nome do aluno</label><input type="text" id="inp-aluno" class="finput" placeholder="Ex: João Silva"></div>
+          <div><label class="flabel">Idade</label><select id="inp-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
+        </div>
+        <div class="frow">
+          <div><label class="flabel">Série</label><select id="inp-serie" class="fselect"><option value="">Selecione</option><optgroup label="Ed. Infantil"><option>Maternal</option><option>Jardim I</option><option>Jardim II</option><option>Pré-escola</option></optgroup><optgroup label="Fund. I"><option>1º ano</option><option>2º ano</option><option>3º ano</option><option>4º ano</option><option>5º ano</option></optgroup><optgroup label="Fund. II"><option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option></optgroup><optgroup label="Ens. Médio"><option>1º ano EM</option><option>2º ano EM</option><option>3º ano EM</option></optgroup><optgroup label="Outros"><option>EJA - Fundamental</option><option>EJA - Médio</option><option>AEE</option></optgroup></select></div>
+          <div><label class="flabel">Perfis / NEE</label><div class="chips-group" id="chips-nova" style="max-height:80px;overflow-y:auto"></div></div>
+        </div>
+        <div class="fblock"><label class="flabel">Observações clínicas e do laudo</label><textarea id="inp-obs" class="ftarea sm" placeholder="Ex: TEA nível 2, hipersensibilidade sensorial, usa CAA, acompanhado por TO e fono…"></textarea></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">Matéria e tipo de atividade</div>
+      <div class="frow">
+        <div><label class="flabel">Matéria / Área</label>
+          <select id="inp-materia" class="fselect" onchange="atualizarTemplates()">
+            <option value="">Selecione</option>
+            <optgroup label="Montessori">
+              <option>Educação Cósmica</option><option>Vida Prática</option><option>Linguagem Oral e Escrita (Montessori)</option><option>Matemática (Montessori)</option><option>Sensorial</option><option>Cultura Geral</option><option>Arte e Expressão</option><option>Movimento e Coordenação</option><option>Botânica e Zoologia</option><option>Geografia e Geologia</option><option>História do Universo</option><option>Educação para a Paz</option>
+            </optgroup>
+            <optgroup label="Convencional">
+              <option>Língua Portuguesa</option><option>Matemática</option><option>Ciências da Natureza</option><option>História</option><option>Geografia</option><option>Artes</option><option>Educação Física</option><option>Língua Inglesa</option><option>Filosofia</option><option>Sociologia</option><option>Biologia</option><option>Física</option><option>Química</option><option>Ensino Religioso</option><option>Redação e Produção Textual</option>
+            </optgroup>
+            <optgroup label="Outros">
+              <option>Projeto de Vida / Protagonismo</option><option>Tecnologia e Computação</option><option>Música</option><option>Teatro e Expressão Dramática</option><option>Atividade Multidisciplinar</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Templates de atividade</label>
+          <div class="templates-grid" id="templates-grid"><span style="font-size:12px;color:var(--gr400)">Selecione uma matéria</span></div>
+        </div>
+      </div>
+      <div class="fblock"><label class="flabel">Ou descreva livremente o tipo de atividade</label><input type="text" id="inp-tipo-livre" class="finput" placeholder="Ex: Avaliação oral com apoio visual, atividade em dupla com mediação…"></div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">Conteúdo a adaptar</div>
+      <div class="fblock"><label class="flabel">Cole aqui o texto, atividade ou enunciado original</label><textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea></div>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar adaptação com IA
+    </button>
+    <div class="gen-box" id="gen-box"><div class="spin"></div><span>IA gerando adaptação personalizada…</span></div>
+    <div class="result-card" id="result-card">
+      <div class="result-header">
+        <div class="result-title">Adaptação gerada pela IA</div>
+        <div class="result-badge" id="result-badge">—</div>
+      </div>
+      <div class="result-text" id="result-text"></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
+        <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div id="page-historico" class="page">
+    <h1 class="page-title">Histórico de adaptações</h1>
+    <p class="page-sub">Busque e filtre todas as adaptações salvas.</p>
+    <div class="toolbar">
+      <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="hist-q" placeholder="Buscar por aluno…" oninput="filtrarHistorico()"></div>
+      <select class="filter-sel" id="hist-fperfil" onchange="filtrarHistorico()"><option value="">Todos os perfis</option></select>
+      <select class="filter-sel" id="hist-fmat" onchange="filtrarHistorico()"><option value="">Todas as matérias</option></select>
+      <select class="filter-sel" id="hist-fserie" onchange="filtrarHistorico()"><option value="">Todas as séries</option></select>
+    </div>
+    <div class="cards-grid" id="hist-grid"></div>
+  </div>
+
+  <!-- PEI -->
+  <div id="page-pei" class="page">
+    <h1 class="page-title">Elaborar PEI</h1>
+    <p class="page-sub">Plano Educacional Individualizado — documento obrigatório (Lei nº 13.146/2015, art. 28).</p>
+    <div class="pei-legal"><strong>Base legal:</strong> O PEI é obrigatório para alunos com deficiência, TEA, TDAH, Altas Habilidades e transtornos funcionais (LBI, art. 28 · LDB, art. 59 · Decreto nº 12.773/2025). Deve ser elaborado por equipe multidisciplinar com participação da família e atualizado periodicamente.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Selecione o aluno</div><div class="pei-step-sub">O PEI será elaborado com base nos dados já cadastrados</div></div></div>
+      <div class="fblock"><label class="flabel">Aluno</label>
+        <select id="pei-aluno-sel" class="fselect" onchange="carregarDadosPEI()"><option value="">Selecione um aluno cadastrado</option></select>
+      </div>
+      <div id="pei-aluno-info" style="display:none;margin-top:10px;padding:10px 12px;background:var(--g50);border-radius:var(--rsm);font-size:13px;color:var(--g800)"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Período e responsáveis</div></div></div>
+      <div class="frow">
+        <div><label class="flabel">Período de vigência</label><input type="text" id="pei-periodo" class="finput" placeholder="Ex: 1º semestre de 2025"></div>
+        <div><label class="flabel">Professor responsável</label><input type="text" id="pei-professor" class="finput" placeholder="Nome completo do professor"></div>
+      </div>
+      <div class="frow">
+        <div><label class="flabel">Área de atuação / Disciplina</label><input type="text" id="pei-disciplina" class="finput" placeholder="Ex: Professora de sala / AEE"></div>
+        <div><label class="flabel">Profissionais de apoio</label><input type="text" id="pei-apoio" class="finput" placeholder="Ex: TO, Fono, Psicóloga…"></div>
+      </div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Contexto atual do aluno</div><div class="pei-step-sub">Descreva o momento atual de desenvolvimento</div></div></div>
+      <div class="fblock"><label class="flabel">Nível atual de aprendizagem e desenvolvimento</label><textarea id="pei-nivel" class="ftarea sm" placeholder="Ex: Aluno em processo de alfabetização, reconhece letras do próprio nome, apresenta dificuldade em sequências longas de instrução…"></textarea></div>
+      <div class="frow">
+        <div><label class="flabel">Pontos fortes e interesses</label><textarea id="pei-fortes" class="ftarea sm" placeholder="Ex: Boa memória visual, interesse por ciências e dinossauros, habilidades musicais…"></textarea></div>
+        <div><label class="flabel">Principais barreiras à aprendizagem</label><textarea id="pei-barreiras" class="ftarea sm" placeholder="Ex: Dificuldade de regulação emocional, hipersensibilidade sonora, dificuldade de permanecer em atividade por mais de 10 min…"></textarea></div>
+      </div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">4</div><div><div class="pei-step-title">Metas e objetivos individualizados</div></div></div>
+      <div class="fblock"><label class="flabel">Metas acadêmicas (o que o aluno deve alcançar neste período)</label><textarea id="pei-metas-ac" class="ftarea sm" placeholder="Ex: Reconhecer e escrever as letras do alfabeto; resolver adições simples com apoio de material concreto…"></textarea></div>
+      <div class="fblock"><label class="flabel">Metas de desenvolvimento (comunicação, autonomia, social, emocional)</label><textarea id="pei-metas-dev" class="ftarea sm" placeholder="Ex: Ampliar vocabulário funcional usando CAA; aumentar tempo de permanência em atividade para 15 min; iniciar interações com colegas com mediação…"></textarea></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">5</div><div><div class="pei-step-title">Estratégias, recursos e avaliação</div></div></div>
+      <div class="fblock"><label class="flabel">Estratégias pedagógicas que serão utilizadas</label><textarea id="pei-estrategias" class="ftarea sm" placeholder="Ex: Rotina visual diária, instruções em passos numerados, tempo extra para execução, atividades segmentadas…"></textarea></div>
+      <div class="frow">
+        <div><label class="flabel">Recursos e tecnologias assistivas</label><textarea id="pei-recursos" class="ftarea sm" placeholder="Ex: Prancha de CAA, material dourado, audiolivro, fone de abafamento, mesa adaptada…"></textarea></div>
+        <div><label class="flabel">Formas de avaliação adaptada</label><textarea id="pei-avaliacao" class="ftarea sm" placeholder="Ex: Avaliação oral, portfólio, prova com tempo estendido, sem penalização por ortografia…"></textarea></div>
+      </div>
+      <div class="fblock"><label class="flabel">Envolvimento da família</label><textarea id="pei-familia" class="ftarea sm" placeholder="Ex: Família orientada a reforçar rotina em casa, reuniões bimestrais de acompanhamento, compartilhamento de estratégias…"></textarea></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">6</div><div><div class="pei-step-title">Observações adicionais</div></div></div>
+      <div class="fblock"><label class="flabel">Outras informações relevantes (saúde, medicação, rotina, etc.)</label><textarea id="pei-obs-add" class="ftarea sm" placeholder="Ex: Faz uso de medicação às 12h; alergias alimentares; intolerância a mudanças de rotina sem aviso prévio…"></textarea></div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn-gerar" id="btn-gerar-pei" onclick="gerarPEI()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Gerar PEI completo com IA
+      </button>
+    </div>
+    <div class="gen-box" id="gen-pei-box" style="margin-top:13px"><div class="spin"></div><span>IA elaborando o PEI completo…</span></div>
+
+    <div class="result-card" id="pei-result-card">
+      <div class="result-header">
+        <div class="result-title">📋 PEI gerado pela IA</div>
+        <div class="result-badge" id="pei-result-badge">—</div>
+      </div>
+      <div class="result-text" id="pei-result-text"></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarPEI()">Salvar PEI</button>
+        <button class="btn-copy" onclick="copiarAdapt('pei-result-text')">Copiar texto</button>
+        <button class="btn-copy" onclick="downloadPEIdireto()">Baixar .txt</button>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">PEIs salvos</h3>
+      <div class="cards-grid" id="pei-lista"></div>
+    </div>
+  </div>
+
+  <!-- ALUNOS -->
+  <div id="page-alunos" class="page">
+    <div class="section-header">
+      <div><h1 class="page-title">Meus alunos</h1><p class="page-sub" style="margin-bottom:0">Cadastre alunos para reutilizar nas adaptações e no PEI.</p></div>
+      <button class="btn-sm" onclick="abrirModalCad()">+ Novo aluno</button>
+    </div>
+    <div class="cards-grid-3" id="alunos-lista"></div>
+  </div>`;
+
+  // Inicializar chips
+  renderChips('chips-nova');
+  renderChips('chips-cad');
+  renderAlSel();
 }
 
-// ── SELECTOR DE ALUNO CADASTRADO ─────────────────────────────
-function filtrarAlunosSel() {
-  const q = document.getElementById('aluno-search').value.toLowerCase();
-  const filtrados = alunosCadastrados.filter(a => a.nome.toLowerCase().includes(q));
-  renderAlunosSel(filtrados);
+// ── PÁGINAS GESTÃO ───────────────────────────────────────────
+function renderPagesGestao() {
+  document.getElementById('main-content').innerHTML = `
+  <!-- PAINEL GESTÃO -->
+  <div id="page-gestao-painel" class="page active">
+    <h1 class="page-title">Painel de Gestão</h1>
+    <p class="page-sub">Visão geral de toda a plataforma — adaptações, PEIs e perfil dos alunos.</p>
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="stat-alunos">—</div><div class="stat-label">Alunos cadastrados</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-adapt">—</div><div class="stat-label">Adaptações geradas</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-peis">—</div><div class="stat-label">PEIs elaborados</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-prof">—</div><div class="stat-label">Professores ativos</div></div>
+    </div>
+    <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">PEIs recentes</h3>
+    <div class="cards-grid" id="g-peis-recentes"></div>
+  </div>
+
+  <!-- GESTÃO: TODOS OS PEIs -->
+  <div id="page-gestao-peis" class="page">
+    <h1 class="page-title">Todos os PEIs</h1>
+    <p class="page-sub">Acesse, analise e acompanhe todos os PEIs elaborados pelos professores.</p>
+    <div class="toolbar">
+      <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="gpei-q" placeholder="Buscar por aluno ou professor…" oninput="filtrarGPEIs()"></div>
+      <select class="filter-sel" id="gpei-fstatus" onchange="filtrarGPEIs()"><option value="">Todos os status</option><option value="rascunho">Rascunho</option><option value="finalizado">Finalizado</option></select>
+    </div>
+    <div class="cards-grid" id="gpei-grid"></div>
+  </div>
+
+  <!-- GESTÃO: ADAPTAÇÕES -->
+  <div id="page-gestao-adapt" class="page">
+    <h1 class="page-title">Todas as adaptações</h1>
+    <p class="page-sub">Visão geral de todas as adaptações geradas pelos professores.</p>
+    <div class="toolbar">
+      <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="gadapt-q" placeholder="Buscar por aluno…" oninput="filtrarGAdapt()"></div>
+      <select class="filter-sel" id="gadapt-fperfil" onchange="filtrarGAdapt()"><option value="">Todos os perfis</option></select>
+      <select class="filter-sel" id="gadapt-fmat" onchange="filtrarGAdapt()"><option value="">Todas as matérias</option></select>
+    </div>
+    <div class="cards-grid" id="gadapt-grid"></div>
+  </div>`;
 }
 
-function renderAlunosSel(lista) {
+// ── CHIPS ────────────────────────────────────────────────────
+function renderChips(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = PERFIS.map(p => `<button class="chip" onclick="this.classList.toggle('active')">${p}</button>`).join('');
+}
+function getChips(id) { return [...document.querySelectorAll(`#${id} .chip.active`)].map(c => c.textContent); }
+
+// ── MODO ALUNO ───────────────────────────────────────────────
+function setModoAluno(m) {
+  const isCad = m === 'cad';
+  document.getElementById('tog-cad').classList.toggle('active', isCad);
+  document.getElementById('tog-new').classList.toggle('active', !isCad);
+  document.getElementById('painel-cadastrado').classList.toggle('show', isCad);
+  document.getElementById('painel-novo').classList.toggle('show', !isCad);
+  alunoSelId = null;
+}
+
+function renderAlSel() {
+  filtrarAlSel();
+}
+
+function filtrarAlSel() {
+  const q = (document.getElementById('aluno-search')?.value || '').toLowerCase();
+  const lista = alunosCad.filter(a => a.nome.toLowerCase().includes(q));
   const el = document.getElementById('aluno-lista-sel');
-  if (!lista.length) {
-    el.innerHTML = `<div style="padding:12px 13px;font-size:12px;color:var(--gr400)">Nenhum aluno encontrado. Cadastre em "Alunos".</div>`;
-    return;
-  }
+  if (!el) return;
+  if (!lista.length) { el.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:var(--gr400)">Nenhum aluno encontrado. Cadastre em "Meus alunos".</div>`; return; }
   el.innerHTML = lista.map(a => {
     const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
-    const tags = (a.perfis||[]).slice(0,3).map(p=>`<span style="font-size:10px;background:var(--g50);color:var(--g600);padding:1px 6px;border-radius:999px">${p.split('—')[0].trim()}</span>`).join(' ');
-    return `<div class="aluno-opt ${alunoSelecionadoId===a.id?'selected':''}" onclick="selecionarAluno('${a.id}')">
+    return `<div class="aluno-opt ${alunoSelId===a.id?'selected':''}" onclick="selecionarAluno('${a.id}')">
       <div class="aluno-opt-nome">${a.nome}</div>
-      <div class="aluno-opt-meta">${meta} ${tags}</div>
+      <div class="aluno-opt-meta">${meta}</div>
     </div>`;
   }).join('');
 }
 
 function selecionarAluno(id) {
-  alunoSelecionadoId = id;
-  const a = alunosCadastrados.find(x => x.id === id);
+  alunoSelId = id;
+  const a = alunosCad.find(x => x.id === id);
+  if (!a) return;
   const info = document.getElementById('aluno-sel-info');
   const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
-  const perfis = (a.perfis||[]).map(p=>`<span class="ac-tag">${p.split('—')[0].trim()}</span>`).join(' ');
+  const tags = (a.perfis || []).map(p => `<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join(' ');
   info.style.display = 'block';
-  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<br><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${perfis}</div>${a.obs?`<div style="margin-top:6px;font-size:12px;color:var(--gr600)">${a.obs.slice(0,120)}…</div>`:''}`;
-  filtrarAlunosSel();
+  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${tags}</div>${a.observacoes ? `<div style="margin-top:6px;font-size:12px;color:var(--gr600)">${a.observacoes.slice(0,130)}…</div>` : ''}`;
+  filtrarAlSel();
 }
 
-// ── TEMPLATES ───────────────────────────────────────────────
+// ── TEMPLATES ────────────────────────────────────────────────
 function atualizarTemplates() {
   const mat = document.getElementById('inp-materia').value;
   const tpls = TEMPLATES[mat] || TEMPLATES_DEFAULT;
-  templateSelecionado = '';
-  document.getElementById('templates-grid').innerHTML = tpls.map(t =>
-    `<button class="tpl-btn" onclick="selecionarTemplate(this,'${t}')">${t}</button>`
-  ).join('');
+  tplSelecionado = '';
+  const el = document.getElementById('templates-grid');
+  if (!el) return;
+  el.innerHTML = tpls.map(t => `<button class="tpl-btn" onclick="selTpl(this,'${t}')">${t}</button>`).join('');
 }
-function selecionarTemplate(el, t) {
+function selTpl(el, t) {
   document.querySelectorAll('.tpl-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  templateSelecionado = t;
+  tplSelecionado = t;
 }
 
-// ── GERAR ───────────────────────────────────────────────────
+// ── GERAR ADAPTAÇÃO ──────────────────────────────────────────
 async function gerar() {
-  // Coletar dados
   let aluno, idade, serie, perfis, obs;
-  const modoNovo = document.getElementById('toggle-novo').classList.contains('active');
+  const modoNew = document.getElementById('tog-new')?.classList.contains('active');
 
-  if (!modoNovo) {
-    if (!alunoSelecionadoId) return toast('Selecione um aluno cadastrado ou use "Digitar manualmente".');
-    const a = alunosCadastrados.find(x => x.id === alunoSelecionadoId);
-    aluno = a.nome; idade = a.idade; serie = a.serie; perfis = a.perfis||[]; obs = a.obs||'';
+  if (!modoNew) {
+    if (!alunoSelId) return toast('Selecione um aluno ou use "Preencher manualmente".', 'error');
+    const a = alunosCad.find(x => x.id === alunoSelId);
+    aluno = a.nome; idade = a.idade; serie = a.serie;
+    perfis = a.perfis || []; obs = a.observacoes || '';
   } else {
-    aluno  = document.getElementById('inp-aluno').value.trim();
-    idade  = document.getElementById('inp-idade').value;
-    serie  = document.getElementById('inp-serie').value;
-    perfis = getPerfisAtivos('perfis-chips-novo');
-    obs    = document.getElementById('inp-obs').value.trim();
-    if (!aluno) return toast('Informe o nome do aluno.');
-    if (!idade) return toast('Selecione a idade.');
-    if (!serie) return toast('Selecione a série.');
-    if (!perfis.length) return toast('Selecione ao menos um diagnóstico.');
+    aluno  = document.getElementById('inp-aluno')?.value.trim();
+    idade  = document.getElementById('inp-idade')?.value;
+    serie  = document.getElementById('inp-serie')?.value;
+    perfis = getChips('chips-nova');
+    obs    = document.getElementById('inp-obs')?.value.trim();
+    if (!aluno) return toast('Informe o nome do aluno.', 'error');
+    if (!idade) return toast('Selecione a idade.', 'error');
+    if (!serie) return toast('Selecione a série.', 'error');
+    if (!perfis.length) return toast('Selecione ao menos um diagnóstico.', 'error');
   }
 
-  const materia  = document.getElementById('inp-materia').value;
-  const tipoLivre = document.getElementById('inp-tipo-livre').value.trim();
-  const conteudo  = document.getElementById('inp-conteudo').value.trim();
-  const tipoAtiv  = tipoLivre || templateSelecionado || 'atividade pedagógica';
+  const materia   = document.getElementById('inp-materia')?.value;
+  const tipoLivre = document.getElementById('inp-tipo-livre')?.value.trim();
+  const conteudo  = document.getElementById('inp-conteudo')?.value.trim();
+  const tipoAtiv  = tipoLivre || tplSelecionado || 'atividade pedagógica';
 
-  if (!materia)  return toast('Selecione a matéria.');
-  if (!conteudo) return toast('Cole o conteúdo a adaptar.');
+  if (!materia)  return toast('Selecione a matéria.', 'error');
+  if (!conteudo) return toast('Cole o conteúdo a adaptar.', 'error');
 
   const btn = document.getElementById('btn-gerar');
   btn.disabled = true;
   document.getElementById('gen-box').classList.add('show');
   document.getElementById('result-card').classList.remove('show');
 
-  // Montar estratégias específicas por diagnóstico
   const estrategiasTexto = perfis.map(p => {
-    const key = Object.keys(ESTRATEGIAS).find(k => p.includes(k.split('—')[0].trim()) || p.startsWith(k.split(' ')[0]));
-    return key ? ESTRATEGIAS[key] : null;
+    const k = Object.keys(ESTRATEGIAS).find(k => p.includes(k.split('—')[0].trim()) || p.startsWith(k.split(' ')[0]));
+    return k ? ESTRATEGIAS[k] : null;
   }).filter(Boolean).join('\n\n');
 
-  const prompt = `Você é uma especialista em educação inclusiva, neuropsicopedagogia e adaptação curricular com profundo conhecimento na abordagem Montessori e em necessidades educacionais especiais (NEE).
+  const prompt = `Você é especialista em educação inclusiva, neuropsicopedagogia, adaptação curricular e pedagogia Montessori.
 
-═══ DADOS DO ALUNO ═══
-Nome: ${aluno}
-Idade: ${idade}
-Série/Ano: ${serie}
-Matéria/Área: ${materia}
-Tipo de atividade: ${tipoAtiv}
-Diagnóstico(s): ${perfis.join(', ')}
-${obs ? `Observações clínicas: ${obs}` : ''}
+DADOS DO ALUNO:
+- Nome: ${aluno} | Idade: ${idade} | Série: ${serie}
+- Matéria: ${materia} | Tipo de atividade: ${tipoAtiv}
+- Diagnóstico(s): ${perfis.join(', ')}
+${obs ? `- Observações clínicas: ${obs}` : ''}
 
-═══ ESTRATÉGIAS PEDAGÓGICAS OBRIGATÓRIAS POR DIAGNÓSTICO ═══
+ESTRATÉGIAS PEDAGÓGICAS OBRIGATÓRIAS POR DIAGNÓSTICO:
 ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em evidências.'}
 
-═══ CONTEÚDO ORIGINAL A ADAPTAR ═══
+CONTEÚDO ORIGINAL:
 ${conteudo}
 
-═══ INSTRUÇÕES ═══
-Gere uma adaptação pedagógica COMPLETA, respeitosa e IMEDIATAMENTE utilizável em sala de aula. Siga obrigatoriamente:
+Gere uma adaptação COMPLETA com 4 seções:
 
-**SEÇÃO 1 — ANÁLISE DO PERFIL DO ALUNO**
-Descreva brevemente como os diagnósticos do aluno impactam sua aprendizagem nesta atividade e quais barreiras precisam ser removidas.
+**SEÇÃO 1 — ANÁLISE DO PERFIL**
+Como os diagnósticos impactam esta atividade e quais barreiras remover.
 
 **SEÇÃO 2 — ATIVIDADE ADAPTADA**
-Apresente a atividade completamente adaptada, pronta para impressão e uso. Aplique todas as estratégias específicas dos diagnósticos listados acima.
-${materia.includes('Montessori') ? 'Como é uma matéria Montessori, integre os princípios de autonomia, materiais concretos, ambiente preparado e aprendizagem sensorial.' : ''}
+Atividade pronta para uso, com todas as estratégias aplicadas.${materia.includes('Montessori') ? ' Integre princípios Montessori: autonomia, materiais concretos, ambiente preparado.' : ''}
 
-**SEÇÃO 3 — RECURSOS E MATERIAIS DE APOIO**
-Liste recursos concretos, acessíveis e adaptados (visuais, manipulativos, tecnologias assistivas, CAA, etc.) que o professor pode usar.
+**SEÇÃO 3 — RECURSOS DE APOIO**
+Liste recursos concretos e acessíveis (visuais, manipulativos, CAA, tecnologias assistivas).
 
 **SEÇÃO 4 — 💡 DICAS PARA O PROFESSOR**
-Orientações práticas sobre:
-- Como apresentar a atividade
-- Como avaliar sem penalizar a deficiência
-- Como mediar durante a execução
-- Possíveis ajustes para diferentes momentos do dia
-- Como envolver a família quando pertinente
-
-Use linguagem clara, empática e prática. Formate com seções bem definidas.`;
+Como apresentar, mediar, avaliar e ajustar a atividade.`;
 
   try {
-    const resp = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://api.anthropic.com/v1/messages'), {
+    const r = await fetch(PROXY + encodeURIComponent('https://api.anthropic.com/v1/messages'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CL_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2500,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      headers: { 'Content-Type':'application/json', 'x-api-key': CL_KEY, 'anthropic-version':'2023-06-01' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2500, messages:[{role:'user',content:prompt}] })
     });
-
-    if (!resp.ok) {
-      const e = await resp.json().catch(() => ({}));
-      throw new Error(e?.error?.message || `Erro ${resp.status}`);
-    }
-
-    const data = await resp.json();
+    if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || `Erro ${r.status}`); }
+    const data = await r.json();
     const texto = (data.content||[]).map(b=>b.text||'').join('').trim();
     if (!texto) throw new Error('Resposta vazia.');
-
-    ultimaAdaptacao = texto;
-    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelecionadoId };
-
+    ultimaAdapt = texto;
+    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId };
     document.getElementById('result-text').textContent = texto;
     document.getElementById('result-badge').textContent = `${idade} · ${serie} · ${materia}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
-
-  } catch(err) {
-    console.error(err);
-    toast('Erro ao gerar: ' + (err.message || 'Tente novamente.'));
+  } catch(e) {
+    console.error(e);
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
   } finally {
     btn.disabled = false;
     document.getElementById('gen-box').classList.remove('show');
   }
 }
 
-// ── SALVAR ADAPTAÇÃO ─────────────────────────────────────────
-async function salvar() {
-  if (!ultimaAdaptacao) return toast('Gere uma adaptação antes de salvar.');
+async function salvarAdapt() {
+  if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
   const { error } = await db.from('adaptacoes').insert({
-    user_id:     user.id,
-    aluno_id:    dadosUltima.alunoId || null,
-    aluno:       dadosUltima.aluno,
-    idade:       dadosUltima.idade,
-    serie:       dadosUltima.serie,
-    materia:     dadosUltima.materia,
-    tipo_ativ:   dadosUltima.tipoAtiv,
-    perfis:      dadosUltima.perfis,
-    observacoes: dadosUltima.obs,
-    texto:       ultimaAdaptacao
+    user_id: user.id, aluno_id: dadosUltima.alunoId||null,
+    aluno: dadosUltima.aluno, idade: dadosUltima.idade, serie: dadosUltima.serie,
+    materia: dadosUltima.materia, tipo_ativ: dadosUltima.tipoAtiv,
+    perfis: dadosUltima.perfis, observacoes: dadosUltima.obs, texto: ultimaAdapt
   });
-  if (error) return toast('Erro ao salvar: ' + error.message);
-  toast('Adaptação salva!');
-  carregarHistorico();
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Adaptação salva!', 'success');
+  carregarAdaptacoes();
 }
 
-function copiarTexto() {
-  navigator.clipboard.writeText(ultimaAdaptacao)
-    .then(()=>toast('Texto copiado!')).catch(()=>toast('Erro ao copiar.'));
+function copiarAdapt(elId) {
+  const txt = elId ? document.getElementById(elId)?.textContent : ultimaAdapt;
+  navigator.clipboard.writeText(txt||'').then(()=>toast('Copiado!','success')).catch(()=>toast('Erro ao copiar.','error'));
 }
 
-// ── CARREGAR HISTÓRICO ────────────────────────────────────────
-async function carregarHistorico() {
-  const { data } = await db.from('adaptacoes').select('*')
-    .eq('user_id', user.id).order('created_at', { ascending: false });
-  adaptacoesHistorico = data || [];
-  popularFiltros();
+// ── CARREGAR ADAPTAÇÕES ──────────────────────────────────────
+async function carregarAdaptacoes() {
+  const { data } = await db.from('adaptacoes').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+  adaptacoesList = data || [];
+  popularFiltrosHist();
   filtrarHistorico();
 }
 
-function popularFiltros() {
-  const perfisSet = new Set(), materiasSet = new Set(), seriesSet = new Set();
-  adaptacoesHistorico.forEach(r => {
-    (r.perfis||[]).forEach(p => perfisSet.add(p.split('—')[0].trim()));
-    if (r.materia) materiasSet.add(r.materia);
-    if (r.serie) seriesSet.add(r.serie);
+function popularFiltrosHist() {
+  const ps = new Set(), ms = new Set(), ss = new Set();
+  adaptacoesList.forEach(r => {
+    (r.perfis||[]).forEach(p => ps.add(p.split('—')[0].trim()));
+    if (r.materia) ms.add(r.materia);
+    if (r.serie) ss.add(r.serie);
   });
-
-  const fp = document.getElementById('hist-filter-perfil');
-  const fm = document.getElementById('hist-filter-materia');
-  const fs = document.getElementById('hist-filter-serie');
-
-  fp.innerHTML = '<option value="">Todos os perfis</option>' +
-    [...perfisSet].sort().map(p=>`<option>${p}</option>`).join('');
-  fm.innerHTML = '<option value="">Todas as matérias</option>' +
-    [...materiasSet].sort().map(m=>`<option>${m}</option>`).join('');
-  fs.innerHTML = '<option value="">Todas as séries</option>' +
-    [...seriesSet].map(s=>`<option>${s}</option>`).join('');
+  const fp = document.getElementById('hist-fperfil');
+  const fm = document.getElementById('hist-fmat');
+  const fs = document.getElementById('hist-fserie');
+  if (fp) fp.innerHTML = '<option value="">Todos os perfis</option>' + [...ps].sort().map(p=>`<option>${p}</option>`).join('');
+  if (fm) fm.innerHTML = '<option value="">Todas as matérias</option>' + [...ms].sort().map(m=>`<option>${m}</option>`).join('');
+  if (fs) fs.innerHTML = '<option value="">Todas as séries</option>' + [...ss].map(s=>`<option>${s}</option>`).join('');
 }
 
 function filtrarHistorico() {
-  const q       = (document.getElementById('hist-search')?.value||'').toLowerCase();
-  const perfil  = document.getElementById('hist-filter-perfil')?.value||'';
-  const materia = document.getElementById('hist-filter-materia')?.value||'';
-  const serie   = document.getElementById('hist-filter-serie')?.value||'';
-
-  const resultado = adaptacoesHistorico.filter(r => {
-    const nomeOk   = !q || (r.aluno||'').toLowerCase().includes(q);
-    const perfilOk = !perfil || (r.perfis||[]).some(p=>p.includes(perfil));
-    const matOk    = !materia || r.materia === materia;
-    const serieOk  = !serie || r.serie === serie;
-    return nomeOk && perfilOk && matOk && serieOk;
-  });
-
+  const q  = (document.getElementById('hist-q')?.value||'').toLowerCase();
+  const fp = document.getElementById('hist-fperfil')?.value||'';
+  const fm = document.getElementById('hist-fmat')?.value||'';
+  const fs = document.getElementById('hist-fserie')?.value||'';
+  const res = adaptacoesList.filter(r =>
+    (!q || (r.aluno||'').toLowerCase().includes(q)) &&
+    (!fp || (r.perfis||[]).some(p=>p.includes(fp))) &&
+    (!fm || r.materia===fm) &&
+    (!fs || r.serie===fs)
+  );
   const grid = document.getElementById('hist-grid');
-  if (!resultado.length) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhuma adaptação encontrada.</div></div>`;
+  if (!grid) return;
+  if (!res.length) { grid.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhuma adaptação encontrada.</div></div>`; return; }
+  grid.innerHTML = res.map(r => cardAdaptacao(r)).join('');
+}
+
+function cardAdaptacao(r, gestao=false) {
+  const tags = (r.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('');
+  const meta = [r.idade, r.serie, r.materia].filter(Boolean).join(' · ');
+  const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '';
+  return `<div class="item-card" onclick='abrirModalAdapt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+    <div class="ic-nome">${r.aluno||'(sem nome)'}</div>
+    <div class="ic-meta">${meta}</div>
+    <div class="ic-tags">${tags}</div>
+    <div class="ic-prev">${(r.texto||'').slice(0,100)}…</div>
+    <div class="ic-date">${dt}</div>
+  </div>`;
+}
+
+// ── PEI ─────────────────────────────────────────────────────
+function carregarDadosPEI() {
+  const id = document.getElementById('pei-aluno-sel').value;
+  const info = document.getElementById('pei-aluno-info');
+  if (!id) { info.style.display='none'; return; }
+  const a = alunosCad.find(x => x.id === id);
+  if (!a) return;
+  const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+  const tags = (a.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join(' ');
+  info.style.display = 'block';
+  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:3px">${tags}</div>${a.observacoes?`<div style="margin-top:5px;font-size:12px;color:var(--gr600)">${a.observacoes}</div>`:''}`;
+}
+
+async function gerarPEI() {
+  const alunoId  = document.getElementById('pei-aluno-sel').value;
+  const periodo  = document.getElementById('pei-periodo').value.trim();
+  const prof     = document.getElementById('pei-professor').value.trim();
+  const disc     = document.getElementById('pei-disciplina').value.trim();
+  const apoio    = document.getElementById('pei-apoio').value.trim();
+  const nivel    = document.getElementById('pei-nivel').value.trim();
+  const fortes   = document.getElementById('pei-fortes').value.trim();
+  const barreiras= document.getElementById('pei-barreiras').value.trim();
+  const metasAc  = document.getElementById('pei-metas-ac').value.trim();
+  const metasDev = document.getElementById('pei-metas-dev').value.trim();
+  const estrat   = document.getElementById('pei-estrategias').value.trim();
+  const recursos = document.getElementById('pei-recursos').value.trim();
+  const aval     = document.getElementById('pei-avaliacao').value.trim();
+  const familia  = document.getElementById('pei-familia').value.trim();
+  const obsAdd   = document.getElementById('pei-obs-add').value.trim();
+
+  if (!alunoId) return toast('Selecione um aluno.', 'error');
+  if (!prof) return toast('Informe o professor responsável.', 'error');
+  if (!metasAc && !metasDev) return toast('Preencha ao menos um campo de metas.', 'error');
+
+  const aluno = alunosCad.find(x => x.id === alunoId);
+  peiAluno = aluno;
+
+  const btn = document.getElementById('btn-gerar-pei');
+  btn.disabled = true;
+  document.getElementById('gen-pei-box').classList.add('show');
+  document.getElementById('pei-result-card').classList.remove('show');
+
+  const prompt = `Você é um especialista em educação inclusiva e elaboração de Planos Educacionais Individualizados (PEI) conforme a legislação brasileira (Lei nº 13.146/2015, LDB art. 59, Decreto nº 12.773/2025).
+
+DADOS DO ALUNO:
+- Nome: ${aluno.nome} | Idade: ${aluno.idade} | Série: ${aluno.serie}
+- Diagnóstico(s): ${(aluno.perfis||[]).join(', ')}
+- Observações clínicas: ${aluno.observacoes||'Não informado'}
+
+DADOS DO PEI:
+- Período: ${periodo||'Não informado'}
+- Professor responsável: ${prof}
+- Área/Disciplina: ${disc||'Não informado'}
+- Profissionais de apoio: ${apoio||'Não informado'}
+- Nível atual: ${nivel||'Não informado'}
+- Pontos fortes: ${fortes||'Não informado'}
+- Barreiras: ${barreiras||'Não informado'}
+- Metas acadêmicas: ${metasAc||'Não informado'}
+- Metas de desenvolvimento: ${metasDev||'Não informado'}
+- Estratégias: ${estrat||'Não informado'}
+- Recursos/Tecnologias: ${recursos||'Não informado'}
+- Avaliação adaptada: ${aval||'Não informado'}
+- Envolvimento familiar: ${familia||'Não informado'}
+- Observações adicionais: ${obsAdd||'Não informado'}
+
+Elabore um PEI COMPLETO, formal, detalhado e juridicamente embasado, com as seguintes seções:
+
+1. IDENTIFICAÇÃO DO ALUNO
+2. EQUIPE RESPONSÁVEL
+3. BASE LEGAL (citar Lei nº 13.146/2015, LDB, Decreto nº 12.773/2025)
+4. AVALIAÇÃO DIAGNÓSTICA E PERFIL DE APRENDIZAGEM
+5. POTENCIALIDADES E PONTOS FORTES
+6. BARREIRAS À APRENDIZAGEM E PARTICIPAÇÃO
+7. METAS ACADÊMICAS INDIVIDUALIZADAS (com critérios de avaliação)
+8. METAS DE DESENVOLVIMENTO (comunicação, autonomia, social, emocional)
+9. ESTRATÉGIAS PEDAGÓGICAS E METODOLOGIAS
+10. RECURSOS E TECNOLOGIAS ASSISTIVAS
+11. FORMAS DE AVALIAÇÃO ADAPTADA
+12. ENVOLVIMENTO DA FAMÍLIA
+13. ARTICULAÇÃO ENTRE PROFESSORES E EQUIPE MULTIPROFISSIONAL
+14. PERÍODO DE VIGÊNCIA E REVISÃO
+15. OBSERVAÇÕES ADICIONAIS
+16. ASSINATURAS (campo para professor, coordenação e família)
+
+O documento deve ser formal, completo e pronto para ser assinado e arquivado na escola.`;
+
+  try {
+    const r = await fetch(PROXY + encodeURIComponent('https://api.anthropic.com/v1/messages'), {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CL_KEY,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})
+    });
+    if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message||`Erro ${r.status}`); }
+    const data = await r.json();
+    const texto = (data.content||[]).map(b=>b.text||'').join('').trim();
+    if (!texto) throw new Error('Resposta vazia.');
+    peiGerado = texto;
+    document.getElementById('pei-result-text').textContent = texto;
+    document.getElementById('pei-result-badge').textContent = `${aluno.nome} · ${periodo||''}`;
+    document.getElementById('pei-result-card').classList.add('show');
+    document.getElementById('pei-result-card').scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e) {
+    console.error(e);
+    toast('Erro: '+(e.message||'Tente novamente.'), 'error');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('gen-pei-box').classList.remove('show');
+  }
+}
+
+async function salvarPEI() {
+  if (!peiGerado) return toast('Gere o PEI primeiro.', 'error');
+  const alunoId = document.getElementById('pei-aluno-sel').value;
+  const aluno = alunosCad.find(x => x.id === alunoId);
+  const { error } = await db.from('peis').insert({
+    user_id: user.id,
+    aluno_id: alunoId||null,
+    aluno_nome: aluno?.nome||'',
+    periodo: document.getElementById('pei-periodo').value.trim(),
+    professor: document.getElementById('pei-professor').value.trim(),
+    status: 'finalizado',
+    texto: peiGerado
+  });
+  if (error) return toast('Erro: '+error.message, 'error');
+  toast('PEI salvo com sucesso!', 'success');
+  carregarPEIs();
+}
+
+async function carregarPEIs() {
+  const { data } = await db.from('peis').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+  peiList = data || [];
+  renderPeiLista();
+  popularPeiSel();
+}
+
+function popularPeiSel() {
+  const sel = document.getElementById('pei-aluno-sel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
+    alunosCad.map(a => `<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+}
+
+function renderPeiLista() {
+  const el = document.getElementById('pei-lista');
+  if (!el) return;
+  if (!peiList.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PEI salvo ainda.</div></div>`;
     return;
   }
-  grid.innerHTML = resultado.map(r => {
-    const tags = (r.perfis||[]).map(p=>`<span class="ac-tag">${p.split('—')[0].trim()}</span>`).join('');
-    const meta = [r.idade, r.serie, r.materia].filter(Boolean).join(' · ');
-    const preview = (r.texto||'').slice(0,110)+'…';
-    const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '';
-    return `<div class="aluno-card" onclick='abrirModalAdapt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
-      <div class="ac-nome">${r.aluno||'(sem nome)'}</div>
-      <div class="ac-meta">${meta}${r.tipo_ativ?' · '+r.tipo_ativ:''}</div>
-      <div class="ac-perfis">${tags}</div>
-      <div class="ac-prev">${preview}</div>
-      <div class="ac-date">${dt}</div>
+  el.innerHTML = peiList.map(p => {
+    const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
+    return `<div class="item-card" onclick='abrirModalPEI(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+      <div class="ic-nome">${p.aluno_nome||'(sem nome)'}</div>
+      <div class="ic-meta">${p.periodo||''} · ${p.professor||''}</div>
+      <div class="ic-tags"><span class="ic-tag">${p.status==='finalizado'?'✅ Finalizado':'📝 Rascunho'}</span></div>
+      <div class="ic-prev">${(p.texto||'').slice(0,100)}…</div>
+      <div class="ic-date">${dt}</div>
     </div>`;
   }).join('');
 }
 
-// ── ALUNOS CADASTRADOS ────────────────────────────────────────
+function downloadPEIdireto() {
+  const txt = peiGerado;
+  if (!txt) return;
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
+  a.download = `PEI_${peiAluno?.nome||'aluno'}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.txt`;
+  a.click();
+}
+
+// ── ALUNOS CADASTRADOS ───────────────────────────────────────
 async function carregarAlunos() {
-  const { data } = await db.from('alunos').select('*')
-    .eq('user_id', user.id).order('nome');
-  alunosCadastrados = data || [];
-  renderAlunosSel(alunosCadastrados);
+  const { data } = await db.from('alunos').select('*').eq('user_id',user.id).order('nome');
+  alunosCad = data || [];
+  renderAlSel();
   renderAlunosLista();
+  popularPeiSel();
 }
 
 function renderAlunosLista() {
   const el = document.getElementById('alunos-lista');
-  if (!alunosCadastrados.length) {
-    el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👤</div><div class="empty-text">Nenhum aluno cadastrado ainda.<br>Clique em "+ Novo aluno" para começar.</div></div>`;
+  if (!el) return;
+  if (!alunosCad.length) {
+    el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👤</div><div class="empty-text">Nenhum aluno cadastrado.<br>Clique em "+ Novo aluno".</div></div>`;
     return;
   }
-  el.innerHTML = alunosCadastrados.map(a => {
+  el.innerHTML = alunosCad.map(a => {
     const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
-    const tags = (a.perfis||[]).map(p=>`<span class="ar-tag">${p.split('—')[0].trim()}</span>`).join('');
-    return `<div class="aluno-reg">
-      <div class="ar-nome">${a.nome}</div>
-      <div class="ar-meta">${meta}</div>
-      <div class="ar-perfis">${tags}</div>
-      ${a.obs?`<div style="font-size:11.5px;color:var(--gr400);margin-top:8px">${a.obs.slice(0,100)}…</div>`:''}
+    const tags = (a.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('');
+    return `<div class="item-card" style="cursor:default">
+      <div class="ic-nome">${a.nome}</div>
+      <div class="ic-meta">${meta}</div>
+      <div class="ic-tags">${tags}</div>
+      ${a.observacoes?`<div style="font-size:11.5px;color:var(--gr400);margin-top:6px">${a.observacoes.slice(0,100)}…</div>`:''}
     </div>`;
   }).join('');
 }
 
+function abrirModalCad() {
+  ['cad-nome','cad-obs'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['cad-idade','cad-serie'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.querySelectorAll('#chips-cad .chip').forEach(c => c.classList.remove('active'));
+  abrirModal('modal-cad');
+}
+
 async function salvarAluno() {
-  const nome  = document.getElementById('cad-nome').value.trim();
-  const idade = document.getElementById('cad-idade').value;
-  const serie = document.getElementById('cad-serie').value;
-  const perfis = getPerfisAtivos('perfis-chips-cad');
-  const obs   = document.getElementById('cad-obs').value.trim();
-  if (!nome) return toast('Informe o nome do aluno.');
-  const { error } = await db.from('alunos').insert({ user_id:user.id, nome, idade, serie, perfis, obs });
-  if (error) return toast('Erro: ' + error.message);
-  toast('Aluno cadastrado!');
-  fecharModalCad();
+  const nome  = document.getElementById('cad-nome')?.value.trim();
+  const idade = document.getElementById('cad-idade')?.value;
+  const serie = document.getElementById('cad-serie')?.value;
+  const perfis = getChips('chips-cad');
+  const observacoes = document.getElementById('cad-obs')?.value.trim();
+  if (!nome) return toast('Informe o nome.', 'error');
+
+  const { error } = await db.from('alunos').insert({
+    user_id: user.id, nome, idade, serie, perfis, observacoes
+  });
+  if (error) return toast('Erro: '+error.message, 'error');
+  toast('Aluno cadastrado!', 'success');
+  fecharModal('modal-cad');
   carregarAlunos();
 }
 
-// ── MODAIS ───────────────────────────────────────────────────
-function abrirModalCadastro() {
-  document.getElementById('cad-nome').value='';
-  document.getElementById('cad-idade').value='';
-  document.getElementById('cad-serie').value='';
-  document.getElementById('cad-obs').value='';
-  document.querySelectorAll('#perfis-chips-cad .chip').forEach(c=>c.classList.remove('active'));
-  document.getElementById('modal-cad-overlay').classList.add('open');
+// ── GESTÃO ───────────────────────────────────────────────────
+async function carregarDadosGestao() {
+  const [{ data: alunos }, { data: adapts }, { data: peis }] = await Promise.all([
+    db.from('alunos').select('id, user_id'),
+    db.from('adaptacoes').select('*').order('created_at',{ascending:false}),
+    db.from('peis').select('*').order('created_at',{ascending:false})
+  ]);
+
+  todasAdaptacoes = adapts || [];
+  todosPEI = peis || [];
+
+  const profs = new Set([...(alunos||[]).map(a=>a.user_id), ...(adapts||[]).map(a=>a.user_id)]);
+  const sAlunos = document.getElementById('stat-alunos');
+  const sAdapt  = document.getElementById('stat-adapt');
+  const sPEIs   = document.getElementById('stat-peis');
+  const sProf   = document.getElementById('stat-prof');
+  if (sAlunos) sAlunos.textContent = (alunos||[]).length;
+  if (sAdapt)  sAdapt.textContent  = (adapts||[]).length;
+  if (sPEIs)   sPEIs.textContent   = (peis||[]).length;
+  if (sProf)   sProf.textContent   = profs.size;
+
+  const recent = document.getElementById('g-peis-recentes');
+  if (recent) {
+    const slice = todosPEI.slice(0,6);
+    recent.innerHTML = slice.length ? slice.map(p => cardPEI(p)).join('') :
+      `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PEI elaborado ainda.</div></div>`;
+  }
+
+  popularFiltrosGAdapt();
+  filtrarGPEIs();
+  filtrarGAdapt();
 }
-function fecharModalCad(e) {
-  if (!e || e.target===document.getElementById('modal-cad-overlay'))
-    document.getElementById('modal-cad-overlay').classList.remove('open');
+
+function cardPEI(p) {
+  const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
+  return `<div class="item-card" onclick='abrirModalPEI(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+    <div class="ic-nome">${p.aluno_nome||'(sem nome)'}</div>
+    <div class="ic-meta">${p.periodo||''}</div>
+    <div class="ic-tags"><span class="ic-tag ${p.status}">${p.status==='finalizado'?'✅ Finalizado':'📝 Rascunho'}</span></div>
+    <div class="ic-prev">${(p.texto||'').slice(0,100)}…</div>
+    <div class="ic-date">${dt}</div>
+  </div>`;
+}
+
+function filtrarGPEIs() {
+  const q  = (document.getElementById('gpei-q')?.value||'').toLowerCase();
+  const fs = document.getElementById('gpei-fstatus')?.value||'';
+  const res = todosPEI.filter(p =>
+    (!q || (p.aluno_nome||'').toLowerCase().includes(q) || (p.professor||'').toLowerCase().includes(q)) &&
+    (!fs || p.status===fs)
+  );
+  const grid = document.getElementById('gpei-grid');
+  if (!grid) return;
+  grid.innerHTML = res.length ? res.map(p=>cardPEI(p)).join('') :
+    `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum PEI encontrado.</div></div>`;
+}
+
+function popularFiltrosGAdapt() {
+  const ps = new Set(), ms = new Set();
+  todasAdaptacoes.forEach(r => {
+    (r.perfis||[]).forEach(p => ps.add(p.split('—')[0].trim()));
+    if (r.materia) ms.add(r.materia);
+  });
+  const fp = document.getElementById('gadapt-fperfil');
+  const fm = document.getElementById('gadapt-fmat');
+  if (fp) fp.innerHTML = '<option value="">Todos os perfis</option>' + [...ps].sort().map(p=>`<option>${p}</option>`).join('');
+  if (fm) fm.innerHTML = '<option value="">Todas as matérias</option>' + [...ms].sort().map(m=>`<option>${m}</option>`).join('');
+}
+
+function filtrarGAdapt() {
+  const q  = (document.getElementById('gadapt-q')?.value||'').toLowerCase();
+  const fp = document.getElementById('gadapt-fperfil')?.value||'';
+  const fm = document.getElementById('gadapt-fmat')?.value||'';
+  const res = todasAdaptacoes.filter(r =>
+    (!q || (r.aluno||'').toLowerCase().includes(q)) &&
+    (!fp || (r.perfis||[]).some(p=>p.includes(fp))) &&
+    (!fm || r.materia===fm)
+  );
+  const grid = document.getElementById('gadapt-grid');
+  if (!grid) return;
+  grid.innerHTML = res.length ? res.map(r=>cardAdaptacao(r,true)).join('') :
+    `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhuma adaptação encontrada.</div></div>`;
+}
+
+// ── MODAIS ───────────────────────────────────────────────────
+function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+function fecharModal(id, e) {
+  if (!e || e.target === document.getElementById(id)) document.getElementById(id).classList.remove('open');
 }
 
 function abrirModalAdapt(reg) {
-  modalAdaptTexto = reg.texto||'';
-  document.getElementById('ma-nome').textContent = reg.aluno||'(sem nome)';
-  const meta = [reg.idade, reg.serie, reg.materia, reg.tipo_ativ].filter(Boolean).join(' · ');
-  document.getElementById('ma-meta').textContent = meta;
-  document.getElementById('ma-perfis').innerHTML =
-    (reg.perfis||[]).map(p=>`<span class="ac-tag">${p.split('—')[0].trim()}</span>`).join('');
-  document.getElementById('ma-body').textContent = reg.texto||'';
-  document.getElementById('modal-adapt-overlay').classList.add('open');
+  modalAdaptTxt = reg.texto || '';
+  document.getElementById('ma-nome').textContent = reg.aluno || '(sem nome)';
+  document.getElementById('ma-meta').textContent = [reg.idade, reg.serie, reg.materia, reg.tipo_ativ].filter(Boolean).join(' · ');
+  document.getElementById('ma-tags').innerHTML = (reg.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('');
+  document.getElementById('ma-body').textContent = reg.texto || '';
+  abrirModal('modal-adapt');
 }
-function fecharModalAdapt(e) {
-  if (!e || e.target===document.getElementById('modal-adapt-overlay'))
-    document.getElementById('modal-adapt-overlay').classList.remove('open');
+function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(()=>toast('Copiado!','success')); }
+
+function abrirModalPEI(reg) {
+  modalPEItxt = reg.texto || '';
+  document.getElementById('mpei-titulo').textContent = `PEI — ${reg.aluno_nome||''}`;
+  document.getElementById('mpei-meta').textContent = [reg.periodo, reg.professor].filter(Boolean).join(' · ');
+  document.getElementById('mpei-body').textContent = reg.texto || '';
+  abrirModal('modal-pei');
 }
-function copiarModal() {
-  navigator.clipboard.writeText(modalAdaptTexto)
-    .then(()=>toast('Texto copiado!')).catch(()=>toast('Erro ao copiar.'));
+function copiarModalPEI() { navigator.clipboard.writeText(modalPEItxt).then(()=>toast('Copiado!','success')); }
+function downloadPEI() {
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(modalPEItxt);
+  a.download = `PEI_${document.getElementById('mpei-titulo').textContent.replace('PEI — ','')}.txt`;
+  a.click();
 }
 
-// ── HELPERS ──────────────────────────────────────────────────
-function toast(msg) {
+// ── TOAST ────────────────────────────────────────────────────
+function toast(msg, type='') {
   const el = document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),3500);
+  el.textContent = msg;
+  el.className = type ? `show ${type}` : 'show';
+  setTimeout(()=>el.className='', 3500);
 }
-function showErr(msg){ const e=document.getElementById('lerr'); e.textContent=msg; e.style.display='block'; }
-function showOk(msg){ const e=document.getElementById('lok'); e.textContent=msg; e.style.display='block'; }
-function clearMsgs(){
-  document.getElementById('lerr').style.display='none';
-  document.getElementById('lok').style.display='none';
-}
+
+// ── HELPERS LOGIN ────────────────────────────────────────────
+function showErr(m){ const e=document.getElementById('lerr'); e.textContent=m; e.style.display='block'; }
+function showOk(m){ const e=document.getElementById('lok'); e.textContent=m; e.style.display='block'; }
+function clearMsgs(){ document.getElementById('lerr').style.display='none'; document.getElementById('lok').style.display='none'; }
 </script>
 </body>
 </html>
