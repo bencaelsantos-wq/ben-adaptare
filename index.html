@@ -219,9 +219,89 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
 #toast.success{background:var(--g600)}
 #toast.error{background:#C0392B}
 
+/* PROFESSORES GESTÃO */
+.prof-card{background:#fff;border:1px solid var(--gr200);border-radius:var(--rmd);padding:17px 20px;transition:border-color .15s,box-shadow .15s}
+.prof-card:hover{border-color:var(--g400);box-shadow:0 2px 10px rgba(58,157,110,.1)}
+.prof-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.prof-avatar{width:38px;height:38px;border-radius:50%;background:var(--g100);color:var(--g800);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.prof-nome{font-size:14px;font-weight:600;color:var(--gr800)}
+.prof-email{font-size:11.5px;color:var(--gr400);margin-top:1px}
+.prof-info-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.prof-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:999px}
+.prof-badge.mat{background:#EDE9FE;color:#5B21B6}
+.prof-badge.sala{background:var(--blue-light);color:var(--blue)}
+.prof-card-actions{display:flex;gap:7px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gr100)}
+.salas-input-group{display:flex;gap:6px;align-items:center}
+.sala-tag-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.sala-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:500}
+.sala-tag button{background:none;border:none;cursor:pointer;color:var(--blue);font-size:13px;line-height:1;padding:0;opacity:.7}
+.sala-tag button:hover{opacity:1}
+.mat-tag-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.mat-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:#EDE9FE;color:#5B21B6;font-size:12px;font-weight:500}
+.mat-tag button{background:none;border:none;cursor:pointer;color:#5B21B6;font-size:13px;line-height:1;padding:0;opacity:.7}
+.mat-tag button:hover{opacity:1}
+.guia-search{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:14px;outline:none;transition:border-color .18s;background:#fff;margin-bottom:18px}
+.guia-search:focus{border-color:var(--g400);box-shadow:0 0 0 3px rgba(58,157,110,.12)}
+.guia-search-wrap{position:relative;margin-bottom:18px}
+.guia-search-wrap .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px}
+.guia-search-wrap .guia-search{margin-bottom:0}
+.guia-cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+.guia-cat-btn{padding:5px 13px;border-radius:999px;border:1px solid var(--gr200);background:#fff;font-family:inherit;font-size:12px;color:var(--gr600);cursor:pointer;transition:all .15s}
+.guia-cat-btn:hover{border-color:var(--g400);color:var(--g600)}
+.guia-cat-btn.active{background:var(--g600);border-color:var(--g600);color:#fff}
+.guia-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.guia-card{background:#fff;border:1px solid var(--gr200);border-radius:var(--rmd);padding:18px 20px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.guia-card:hover{border-color:var(--g400);box-shadow:0 2px 10px rgba(58,157,110,.1)}
+.guia-card-top{display:flex;align-items:flex-start;gap:11px;margin-bottom:10px}
+.guia-card-emoji{font-size:24px;flex-shrink:0;margin-top:1px}
+.guia-card-nome{font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:2px}
+.guia-card-sigla{font-size:11px;color:var(--gr400)}
+.guia-card-resumo{font-size:13px;color:var(--gr600);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.guia-tag{display:inline-block;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:999px;margin-top:9px}
+.guia-tag.neurodiv{background:#EDE9FE;color:#5B21B6}
+.guia-tag.deficiencia{background:#DBEAFE;color:#1E40AF}
+.guia-tag.transtorno{background:#FEF3C7;color:#92400E}
+.guia-tag.altas{background:#D1FAE5;color:#065F46}
+/* Modal Guia */
+.guia-modal-emoji{font-size:36px;margin-bottom:8px}
+.guia-modal-titulo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gr800);margin-bottom:3px}
+.guia-modal-sigla{font-size:12px;color:var(--gr400);margin-bottom:14px}
+.guia-modal-section{margin-top:14px}
+.guia-modal-section h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gr400);margin-bottom:7px}
+.guia-modal-section p,.guia-modal-section li{font-size:13.5px;color:var(--gr600);line-height:1.7}
+.guia-modal-section ul{padding-left:18px}
+.guia-modal-section li{margin-bottom:3px}
+.guia-pill-group{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.guia-pill{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--g50);color:var(--g600);border:1px solid var(--g100)}
+
+/* DIVERSIDADE & INCLUSÃO */
+.div-hero{background:linear-gradient(135deg,var(--g800) 0%,var(--g400) 100%);border-radius:var(--rlg);padding:28px 30px;color:#fff;margin-bottom:22px}
+.div-hero h2{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px}
+.div-hero p{font-size:13.5px;opacity:.85;line-height:1.6;max-width:600px}
+.div-modulos{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.div-card{background:#fff;border:1px solid var(--gr200);border-radius:var(--rmd);padding:20px 22px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.div-card:hover{border-color:var(--g400);box-shadow:0 3px 14px rgba(58,157,110,.12)}
+.div-card-icon{font-size:28px;margin-bottom:10px}
+.div-card-titulo{font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:5px}
+.div-card-desc{font-size:12.5px;color:var(--gr400);line-height:1.6}
+.div-card-badge{display:inline-block;margin-top:10px;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--g50);color:var(--g600);border:1px solid var(--g100)}
+/* Modal Diversidade */
+.div-modal-icon{font-size:40px;margin-bottom:8px}
+.div-modal-titulo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gr800);margin-bottom:4px}
+.div-modal-sub{font-size:13px;color:var(--gr400);margin-bottom:16px}
+.div-section{margin-top:16px;padding-top:16px;border-top:1px solid var(--gr100)}
+.div-section:first-child{margin-top:0;padding-top:0;border-top:none}
+.div-section h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gr400);margin-bottom:8px}
+.div-section p{font-size:13.5px;color:var(--gr600);line-height:1.7}
+.div-section ul{padding-left:18px;margin-top:5px}
+.div-section li{font-size:13.5px;color:var(--gr600);line-height:1.7;margin-bottom:3px}
+.div-pratica-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+.div-pratica-item{background:var(--gr50);border-radius:var(--rsm);padding:10px 12px;font-size:12.5px;color:var(--gr600);line-height:1.5}
+.div-pratica-item strong{display:block;font-size:11.5px;color:var(--gr800);margin-bottom:2px}
+
 @media(max-width:740px){
   .sidebar{display:none}.main{margin-left:0;padding:18px 14px}
-  .cards-grid,.cards-grid-3,.frow,.frow3,.stats-grid{grid-template-columns:1fr}
+  .cards-grid,.cards-grid-3,.frow,.frow3,.stats-grid,.guia-grid,.div-modulos,.div-pratica-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -333,6 +413,111 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
   </div>
 </div>
 
+<!-- ══ MODAL: Cadastro de Professor ══ -->
+<div class="overlay" id="modal-cad-prof" onclick="fecharModal('modal-cad-prof',event)">
+  <div class="modal md">
+    <div class="modal-header">
+      <div class="modal-title" id="mcadprof-titulo">Cadastrar professor</div>
+      <button class="modal-close" onclick="fecharModal('modal-cad-prof')">×</button>
+    </div>
+    <div style="margin-top:16px">
+      <div class="frow">
+        <div><label class="flabel">Nome completo *</label><input type="text" id="cp-nome" class="finput" placeholder="Ex: Ana Paula Ferreira"></div>
+        <div><label class="flabel">E-mail</label><input type="email" id="cp-email" class="finput" placeholder="professor@escola.com.br"></div>
+      </div>
+      <div class="frow">
+        <div><label class="flabel">Telefone / WhatsApp</label><input type="text" id="cp-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel">Tipo de vínculo</label>
+          <select id="cp-vinculo" class="fselect">
+            <option value="">Selecione</option>
+            <option>Efetivo</option>
+            <option>Contratado</option>
+            <option>Substituto</option>
+            <option>Estagiário</option>
+            <option>Voluntário</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fblock" style="margin-bottom:12px">
+        <label class="flabel">Matérias / Áreas de atuação</label>
+        <div class="salas-input-group">
+          <input type="text" id="cp-mat-inp" class="finput" placeholder="Ex: Matemática, Ciências…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarMatProf()}">
+          <button class="btn-sm" onclick="adicionarMatProf()">+ Adicionar</button>
+        </div>
+        <div class="mat-tag-list" id="cp-mat-tags"></div>
+      </div>
+
+      <div class="fblock" style="margin-bottom:12px">
+        <label class="flabel">Turmas / Salas atendidas</label>
+        <div class="salas-input-group">
+          <input type="text" id="cp-sala-inp" class="finput" placeholder="Ex: 3º ano A, 4º ano B…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarSalaProf()}">
+          <button class="btn-sm" onclick="adicionarSalaProf()">+ Adicionar</button>
+        </div>
+        <div class="sala-tag-list" id="cp-sala-tags"></div>
+      </div>
+
+      <div class="fblock">
+        <label class="flabel">Observações</label>
+        <textarea id="cp-obs" class="ftarea sm" placeholder="Ex: Professora de apoio inclusivo, atende AEE, responsável pela sala de recursos…"></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn-sm" onclick="salvarProfessor()">Salvar professor</button>
+        <button class="btn-sm-ghost" onclick="fecharModal('modal-cad-prof')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Detalhe Professor ══ -->
+<div class="overlay" id="modal-det-prof" onclick="fecharModal('modal-det-prof',event)">
+  <div class="modal md">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="mdp-nome">—</div>
+        <div class="modal-meta" id="mdp-meta"></div>
+      </div>
+      <button class="modal-close" onclick="fecharModal('modal-det-prof')">×</button>
+    </div>
+    <div id="mdp-body"></div>
+    <div class="modal-actions" style="margin-top:14px">
+      <button class="btn-sm" onclick="editarProfessor()">Editar</button>
+      <button class="btn-danger" onclick="excluirProfessor()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Guia de Perfil ══ -->
+<div class="overlay" id="modal-guia" onclick="fecharModal('modal-guia',event)">
+  <div class="modal md">
+    <div class="modal-header">
+      <div>
+        <div class="guia-modal-emoji" id="mg-emoji"></div>
+        <div class="guia-modal-titulo" id="mg-titulo"></div>
+        <div class="guia-modal-sigla" id="mg-sigla"></div>
+      </div>
+      <button class="modal-close" onclick="fecharModal('modal-guia')">×</button>
+    </div>
+    <div id="mg-body"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Diversidade ══ -->
+<div class="overlay" id="modal-div" onclick="fecharModal('modal-div',event)">
+  <div class="modal md">
+    <div class="modal-header">
+      <div>
+        <div class="div-modal-icon" id="md-icon"></div>
+        <div class="div-modal-titulo" id="md-titulo"></div>
+        <div class="div-modal-sub" id="md-sub"></div>
+      </div>
+      <button class="modal-close" onclick="fecharModal('modal-div')">×</button>
+    </div>
+    <div id="md-body"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <!-- ══════════════ SCRIPT ══════════════ -->
@@ -400,6 +585,8 @@ let alunoSelId = null, tplSelecionado = '';
 let ultimaAdapt = '', dadosUltima = {};
 let peiGerado = '', peiAluno = {};
 let modalAdaptTxt = '', modalPEItxt = '';
+let professoresList = [], profEditId = null;
+let cpMats = [], cpSalas = [];
 
 // ── LOGIN / ROLE ─────────────────────────────────────────────
 function setRole(r) {
@@ -473,6 +660,13 @@ function renderNavProfessor() {
     <div class="nav-section">Alunos</div>
     <div class="nav-item" id="nav-alunos" onclick="showPage('alunos')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M11 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Meus alunos
+    </div>
+    <div class="nav-section">Referência</div>
+    <div class="nav-item" id="nav-guia" onclick="showPage('guia')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 7v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Guia de Perfis
+    </div>
+    <div class="nav-item" id="nav-diversidade" onclick="showPage('diversidade')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3.5 4-3.5s3 1 3 1 1-1 3-1 4 1.5 4 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Diversidade & Inclusão
     </div>`;
   renderPages();
 }
@@ -488,6 +682,9 @@ function renderNavGestao() {
     </div>
     <div class="nav-item gestao-item" id="nav-gestao-adapt" onclick="showPage('gestao-adapt')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-professores" onclick="showPage('gestao-professores')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17c0-3 2.686-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 4l1.5 1.5L18 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Professores
     </div>`;
   renderPagesGestao();
 }
@@ -502,6 +699,9 @@ function showPage(id) {
   if (id === 'historico') filtrarHistorico();
   if (id === 'gestao-peis') filtrarGPEIs();
   if (id === 'gestao-adapt') filtrarGAdapt();
+  if (id === 'gestao-professores') { carregarProfessores(); }
+  if (id === 'guia') renderGuia();
+  if (id === 'diversidade') renderDiversidade();
 }
 
 // ── RENDERIZAR PÁGINAS PROFESSOR ─────────────────────────────
@@ -692,6 +892,29 @@ function renderPages() {
       <button class="btn-sm" onclick="abrirModalCad()">+ Novo aluno</button>
     </div>
     <div class="cards-grid-3" id="alunos-lista"></div>
+  </div>
+
+  <!-- GUIA DE PERFIS -->
+  <div id="page-guia" class="page">
+    <h1 class="page-title">Guia de Perfis</h1>
+    <p class="page-sub">Entenda de forma clara e objetiva cada deficiência e transtorno. O laudo não define — ele norteia. Use esta seção para conhecer melhor o perfil de cada criança.</p>
+    <div class="guia-search-wrap">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input class="guia-search" id="guia-search" placeholder="Buscar deficiência, transtorno ou sigla…" oninput="filtrarGuia()">
+    </div>
+    <div class="guia-cats" id="guia-cats"></div>
+    <div class="guia-grid" id="guia-grid"></div>
+  </div>
+
+  <!-- DIVERSIDADE & INCLUSÃO -->
+  <div id="page-diversidade" class="page">
+    <h1 class="page-title">Diversidade & Inclusão</h1>
+    <p class="page-sub">Módulo estratégico para compreender e valorizar a diversidade no contexto escolar.</p>
+    <div class="div-hero">
+      <h2>🌍 A escola que inclui aprende mais</h2>
+      <p>A diversidade enriquece o ambiente de aprendizagem. Conhecer e respeitar as diferenças é o primeiro passo para uma educação verdadeiramente inclusiva. Explore cada dimensão da diversidade presente na sala de aula.</p>
+    </div>
+    <div class="div-modulos" id="div-modulos"></div>
   </div>`;
 
   // Inicializar chips
@@ -738,6 +961,24 @@ function renderPagesGestao() {
       <select class="filter-sel" id="gadapt-fmat" onchange="filtrarGAdapt()"><option value="">Todas as matérias</option></select>
     </div>
     <div class="cards-grid" id="gadapt-grid"></div>
+  </div>
+
+  <!-- GESTÃO: PROFESSORES -->
+  <div id="page-gestao-professores" class="page">
+    <div class="section-header">
+      <div>
+        <h1 class="page-title">Professores</h1>
+        <p class="page-sub" style="margin-bottom:0">Cadastre e gerencie os professores, suas matérias e as turmas que atendem.</p>
+      </div>
+      <button class="btn-sm" onclick="abrirModalCadProf()">+ Cadastrar professor</button>
+    </div>
+    <div class="toolbar">
+      <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="gprof-q" placeholder="Buscar por nome ou e-mail…" oninput="filtrarGProf()"></div>
+      <select class="filter-sel" id="gprof-fmat" onchange="filtrarGProf()"><option value="">Todas as matérias</option></select>
+      <select class="filter-sel" id="gprof-fsala" onchange="filtrarGProf()"><option value="">Todas as turmas</option></select>
+    </div>
+    <div id="gprof-stat" style="font-size:13px;color:var(--gr400);margin-bottom:12px"></div>
+    <div class="cards-grid" id="gprof-grid"></div>
   </div>`;
 }
 
@@ -1314,7 +1555,438 @@ function toast(msg, type='') {
   setTimeout(()=>el.className='', 3500);
 }
 
-// ── HELPERS LOGIN ────────────────────────────────────────────
+// ── PROFESSORES (GESTÃO) ─────────────────────────────────────
+async function carregarProfessores() {
+  const { data } = await db.from('professores').select('*').order('nome', { ascending: true });
+  professoresList = data || [];
+  popularFiltrosGProf();
+  filtrarGProf();
+  // Atualizar stat card
+  const el = document.getElementById('stat-prof');
+  if (el) el.textContent = professoresList.length;
+}
+
+function popularFiltrosGProf() {
+  const mats = new Set(), salas = new Set();
+  professoresList.forEach(p => {
+    (p.materias || []).forEach(m => mats.add(m));
+    (p.salas || []).forEach(s => salas.add(s));
+  });
+  const fm = document.getElementById('gprof-fmat');
+  const fs = document.getElementById('gprof-fsala');
+  if (fm) fm.innerHTML = '<option value="">Todas as matérias</option>' + [...mats].sort().map(m => `<option>${m}</option>`).join('');
+  if (fs) fs.innerHTML = '<option value="">Todas as turmas</option>' + [...salas].sort().map(s => `<option>${s}</option>`).join('');
+}
+
+function filtrarGProf() {
+  const q   = (document.getElementById('gprof-q')?.value || '').toLowerCase();
+  const fm  = document.getElementById('gprof-fmat')?.value  || '';
+  const fs  = document.getElementById('gprof-fsala')?.value || '';
+  const res = professoresList.filter(p =>
+    (!q  || (p.nome||'').toLowerCase().includes(q) || (p.email||'').toLowerCase().includes(q)) &&
+    (!fm || (p.materias||[]).includes(fm)) &&
+    (!fs || (p.salas||[]).includes(fs))
+  );
+  const stat = document.getElementById('gprof-stat');
+  if (stat) stat.textContent = `${res.length} professor${res.length !== 1 ? 'es' : ''} encontrado${res.length !== 1 ? 's' : ''}`;
+  const grid = document.getElementById('gprof-grid');
+  if (!grid) return;
+  grid.innerHTML = res.length ? res.map(p => cardProfessor(p)).join('') :
+    `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👩‍🏫</div><div class="empty-text">Nenhum professor encontrado.<br>Use o botão acima para cadastrar.</div></div>`;
+}
+
+function cardProfessor(p) {
+  const iniciais = (p.nome||'?').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
+  const mats  = (p.materias||[]).map(m=>`<span class="prof-badge mat">📚 ${m}</span>`).join('');
+  const salas = (p.salas||[]).map(s=>`<span class="prof-badge sala">🚪 ${s}</span>`).join('');
+  return `<div class="prof-card">
+    <div class="prof-card-top">
+      <div class="prof-avatar">${iniciais}</div>
+      <div>
+        <div class="prof-nome">${p.nome||'(sem nome)'}</div>
+        <div class="prof-email">${[p.email, p.vinculo].filter(Boolean).join(' · ') || '—'}</div>
+      </div>
+    </div>
+    ${mats ? `<div class="prof-info-row">${mats}</div>` : ''}
+    ${salas ? `<div class="prof-info-row">${salas}</div>` : ''}
+    ${p.obs ? `<div style="font-size:12px;color:var(--gr400);line-height:1.5;margin-top:6px">${p.obs.slice(0,100)}${p.obs.length>100?'…':''}</div>` : ''}
+    <div class="prof-card-actions">
+      <button class="btn-sm" style="font-size:12px;padding:6px 13px" onclick='abrirDetProf(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Ver detalhes</button>
+      <button class="btn-sm-ghost" style="font-size:12px;padding:6px 12px" onclick='prepEditProf(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Editar</button>
+    </div>
+  </div>`;
+}
+
+function abrirModalCadProf() {
+  profEditId = null; cpMats = []; cpSalas = [];
+  document.getElementById('mcadprof-titulo').textContent = 'Cadastrar professor';
+  ['cp-nome','cp-email','cp-tel','cp-obs'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('cp-vinculo').value = '';
+  renderCpMats(); renderCpSalas();
+  abrirModal('modal-cad-prof');
+}
+
+function prepEditProf(p) {
+  profEditId = p.id;
+  cpMats  = [...(p.materias||[])];
+  cpSalas = [...(p.salas||[])];
+  document.getElementById('mcadprof-titulo').textContent = 'Editar professor';
+  document.getElementById('cp-nome').value   = p.nome  || '';
+  document.getElementById('cp-email').value  = p.email || '';
+  document.getElementById('cp-tel').value    = p.tel   || '';
+  document.getElementById('cp-obs').value    = p.obs   || '';
+  document.getElementById('cp-vinculo').value = p.vinculo || '';
+  renderCpMats(); renderCpSalas();
+  fecharModal('modal-det-prof');
+  abrirModal('modal-cad-prof');
+}
+
+function adicionarMatProf() {
+  const inp = document.getElementById('cp-mat-inp');
+  const val = inp.value.trim();
+  if (!val) return;
+  val.split(',').map(v=>v.trim()).filter(Boolean).forEach(v => { if (!cpMats.includes(v)) cpMats.push(v); });
+  inp.value = '';
+  renderCpMats();
+}
+function removerMat(i) { cpMats.splice(i,1); renderCpMats(); }
+function renderCpMats() {
+  document.getElementById('cp-mat-tags').innerHTML = cpMats.map((m,i)=>
+    `<span class="mat-tag">${m}<button onclick="removerMat(${i})">×</button></span>`).join('');
+}
+
+function adicionarSalaProf() {
+  const inp = document.getElementById('cp-sala-inp');
+  const val = inp.value.trim();
+  if (!val) return;
+  val.split(',').map(v=>v.trim()).filter(Boolean).forEach(v => { if (!cpSalas.includes(v)) cpSalas.push(v); });
+  inp.value = '';
+  renderCpSalas();
+}
+function removerSala(i) { cpSalas.splice(i,1); renderCpSalas(); }
+function renderCpSalas() {
+  document.getElementById('cp-sala-tags').innerHTML = cpSalas.map((s,i)=>
+    `<span class="sala-tag">${s}<button onclick="removerSala(${i})">×</button></span>`).join('');
+}
+
+async function salvarProfessor() {
+  const nome = document.getElementById('cp-nome').value.trim();
+  if (!nome) return toast('Informe o nome do professor.','error');
+  const payload = {
+    nome,
+    email:    document.getElementById('cp-email').value.trim() || null,
+    tel:      document.getElementById('cp-tel').value.trim()   || null,
+    vinculo:  document.getElementById('cp-vinculo').value      || null,
+    obs:      document.getElementById('cp-obs').value.trim()   || null,
+    materias: cpMats,
+    salas:    cpSalas,
+    user_id:  user.id,
+  };
+  let error;
+  if (profEditId) {
+    ({ error } = await db.from('professores').update(payload).eq('id', profEditId));
+  } else {
+    ({ error } = await db.from('professores').insert(payload));
+  }
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  fecharModal('modal-cad-prof');
+  toast(profEditId ? 'Professor atualizado!' : 'Professor cadastrado!', 'success');
+  carregarProfessores();
+}
+
+let profDetalheAtual = null;
+function abrirDetProf(p) {
+  profDetalheAtual = p;
+  document.getElementById('mdp-nome').textContent = p.nome || '(sem nome)';
+  document.getElementById('mdp-meta').textContent = [p.vinculo, p.email, p.tel].filter(Boolean).join(' · ') || '—';
+  const mats  = (p.materias||[]).map(m=>`<span class="prof-badge mat">📚 ${m}</span>`).join(' ');
+  const salas = (p.salas||[]).map(s=>`<span class="prof-badge sala">🚪 ${s}</span>`).join(' ');
+  document.getElementById('mdp-body').innerHTML = `
+    ${mats  ? `<div style="margin-bottom:10px"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gr400);margin-bottom:6px">Matérias</div><div style="display:flex;flex-wrap:wrap;gap:5px">${mats}</div></div>` : ''}
+    ${salas ? `<div style="margin-bottom:10px"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gr400);margin-bottom:6px">Turmas / Salas</div><div style="display:flex;flex-wrap:wrap;gap:5px">${salas}</div></div>` : ''}
+    ${p.obs ? `<div style="margin-top:10px;padding:10px 12px;background:var(--gr50);border-radius:var(--rsm);font-size:13px;color:var(--gr600);line-height:1.6">${p.obs}</div>` : ''}
+  `;
+  abrirModal('modal-det-prof');
+}
+function editarProfessor() { if (profDetalheAtual) prepEditProf(profDetalheAtual); }
+async function excluirProfessor() {
+  if (!profDetalheAtual || !confirm(`Excluir ${profDetalheAtual.nome}?`)) return;
+  const { error } = await db.from('professores').delete().eq('id', profDetalheAtual.id);
+  if (error) return toast('Erro ao excluir.', 'error');
+  fecharModal('modal-det-prof');
+  toast('Professor excluído.', 'success');
+  carregarProfessores();
+}
+
+// ── GUIA DE PERFIS ───────────────────────────────────────────
+const GUIA_PERFIS = [
+  { emoji:'🧩', nome:'Transtorno do Espectro Autista', sigla:'TEA', cat:'Neurodivergência',
+    resumo:'O TEA é uma condição do neurodesenvolvimento que afeta a comunicação social e os padrões de comportamento. Cada criança com TEA tem um perfil único — não existe "um TEA só". O laudo indica o nível de suporte necessário (1, 2 ou 3), mas não limita o potencial.',
+    caracteristicas:['Pode ter dificuldade com linguagem figurada (metáforas, ironia, sarcasmo)','Tende a preferir rotinas previsíveis e ter dificuldade com mudanças','Pode apresentar hipo ou hipersensibilidade sensorial (sons, luz, texturas, cheiros)','Pode usar comunicação alternativa (CAA, gestos, imagens)','Frequentemente tem interesses específicos muito intensos','Cognição pode ser preservada — o suporte motor/sensorial é que varia'],
+    estrategias:['Linguagem literal, direta e em passos numerados','Rotina visual previsível com antecipação de mudanças','Reduzir estímulos sensoriais excessivos quando possível','Permitir e valorizar o uso de CAA','Não confundir o suporte com limitação cognitiva'],
+    tag:'neurodiv' },
+  { emoji:'⚡', nome:'TDAH — Transtorno do Déficit de Atenção/Hiperatividade', sigla:'TDAH', cat:'Neurodivergência',
+    resumo:'O TDAH é uma condição neurológica que afeta a atenção, o controle de impulsos e a regulação do comportamento. Não é falta de vontade ou "birra" — o cérebro com TDAH funciona de forma diferente na regulação executiva. Crianças com TDAH podem se concentrar muito bem em atividades que as engajam.',
+    caracteristicas:['Dificuldade em manter atenção em tarefas longas ou repetitivas','Pode apresentar impulsividade nas respostas e ações','Memória de trabalho frequentemente afetada','Dificuldade de organização e planejamento (funções executivas)','Pode ter o tipo predominantemente desatento (sem hiperatividade visível)','Altamente sensível a recompensas imediatas e feedback positivo'],
+    estrategias:['Atividades em blocos curtos (5 a 15 min) com pausas ativas','Uma instrução por vez — simples e clara','Destacar o essencial visualmente','Gamificação e reforço positivo imediato','Ambiente com menos distrações (quando possível)'],
+    tag:'neurodiv' },
+  { emoji:'📖', nome:'Dislexia', sigla:'', cat:'Transtornos de Aprendizagem',
+    resumo:'A dislexia é um transtorno específico de aprendizagem que afeta a leitura, a decodificação e a soletração. Não tem relação com inteligência — muitas pessoas com dislexia têm raciocínio verbal e criatividade excepcionais. O cérebro processa os símbolos escritos de forma diferente.',
+    caracteristicas:['Dificuldade em decodificar palavras (associar letras a sons)','Leitura mais lenta, com hesitações e omissões','Erros ortográficos frequentes e persistentes','Dificuldade em rima e consciência fonológica','Compreensão oral muitas vezes superior à leitura escrita','Pode ter dificuldades com sequências (alfabeto, meses, dias)'],
+    estrategias:['Frases curtas, fonte maior, espaçamento amplo','Não penalizar ortografia quando o foco é compreensão','Permitir leitura em voz alta, áudios e audiobooks','Mais tempo para provas e atividades escritas','Valorizar a compreensão oral e a resposta verbal'],
+    tag:'transtorno' },
+  { emoji:'🔢', nome:'Discalculia', sigla:'', cat:'Transtornos de Aprendizagem',
+    resumo:'A discalculia é um transtorno específico que afeta o processamento numérico e a matemática. A criança pode entender conceitos verbalmente, mas ter grande dificuldade em trabalhar com números, operações e raciocínio espacial quantitativo.',
+    caracteristicas:['Dificuldade em reconhecer quantidades e comparar magnitudes','Erros em cálculos simples que persistem mesmo com prática','Dificuldade em memorizar tabuadas e fatos numéricos','Confusão com sinais e símbolos matemáticos','Dificuldade em ler relógios analógicos e interpretar dinheiro','Pode ter dificuldades com sequências e padrões'],
+    estrategias:['Materiais concretos e manipuláveis (material dourado, ábacos)','Operações passo a passo com apoio visual','Calculadora permitida quando o foco não é o cálculo em si','Contextualizar a matemática em situações reais e significativas','Tabelas e organizadores visuais para apoio'],
+    tag:'transtorno' },
+  { emoji:'✍️', nome:'Disgrafia', sigla:'', cat:'Transtornos de Aprendizagem',
+    resumo:'A disgrafia é um transtorno que afeta a escrita manual — não o conteúdo intelectual, mas a expressão motora da escrita. A caligrafia desorganizada não reflete a capacidade cognitiva da criança.',
+    caracteristicas:['Letra ilegível ou muito irregular, com esforço excessivo','Dor ou desconforto ao escrever por longos períodos','Espaçamento inconsistente entre letras e palavras','Mistura de letras maiúsculas e minúsculas sem intenção','Dificuldade em manter a escrita dentro de linhas','Pode escrever muito devagar para a faixa etária'],
+    estrategias:['Reduzir a quantidade de escrita — qualidade antes de quantidade','Aceitar respostas orais, digitadas ou gravadas','Não penalizar pela apresentação da letra','Linhas largas, papel quadriculado ou de apoio','Tempo extra para copiar do quadro'],
+    tag:'transtorno' },
+  { emoji:'🔡', nome:'Disortografia', sigla:'', cat:'Transtornos de Aprendizagem',
+    resumo:'A disortografia afeta especificamente a ortografia — a criança entende o que escreve, mas tem dificuldade persistente com as regras ortográficas, mesmo com estudo. É diferente de desleixo ou falta de esforço.',
+    caracteristicas:['Erros ortográficos frequentes e variados','Dificuldade em aplicar regras ortográficas mesmo conhecendo-as','Troca, omissão ou inversão de letras','Dificuldade com acentuação e pontuação','Erros que não seguem um padrão fixo — variam a cada vez','Texto com sentido claro, mas com muitos desvios ortográficos'],
+    estrategias:['Não penalizar ortografia em avaliações de compreensão','Foco na expressão e no conteúdo — não na forma','Permitir uso de dicionário ou corretor ortográfico','Listas de palavras-chave de apoio para temas estudados'],
+    tag:'transtorno' },
+  { emoji:'🧠', nome:'Deficiência Intelectual', sigla:'D.I.', cat:'Deficiências',
+    resumo:'A deficiência intelectual (D.I.) é caracterizada por limitações significativas no funcionamento intelectual e no comportamento adaptativo. Mas atenção: o potencial de aprendizagem existe — ele segue um ritmo diferente e precisa de suporte adequado.',
+    caracteristicas:['Desenvolvimento mais lento em áreas cognitivas e adaptativas','Dificuldade com raciocínio abstrato e generalização','Vocabulário e linguagem em ritmo próprio','Pode precisar de mais repetição e exemplos concretos','Habilidades sociais e emocionais frequentemente preservadas','Nível de suporte varia: leve, moderado, grave ou profundo'],
+    estrategias:['Vocabulário concreto e do cotidiano da criança','Atividades em etapas muito pequenas e sequenciadas','Uso de imagens, objetos reais e exemplos práticos','Repetição com variações para consolidar aprendizado','Reduzir conteúdo mantendo o essencial e significativo'],
+    tag:'deficiencia' },
+  { emoji:'♿', nome:'Deficiência Física', sigla:'D.F.', cat:'Deficiências',
+    resumo:'A deficiência física envolve alterações motoras que podem afetar a mobilidade, a coordenação ou o controle motor. É fundamental não reduzir o nível cognitivo desnecessariamente — a maioria das crianças com D.F. tem plena capacidade intelectual.',
+    caracteristicas:['Pode envolver paralisia, amputação, malformações ou lesões neurológicas','A mobilidade pode ser parcial ou total em diferentes regiões','Pode usar cadeira de rodas, órteses, próteses ou tecnologia assistiva','Fala pode ser afetada dependendo do tipo de comprometimento motor','Cognição frequentemente preservada','Pode apresentar cansaço aumentado pelo esforço motor'],
+    estrategias:['Adaptar o suporte físico (teclado adaptado, prancha de apoio, posicionamento)','Eliminar barreiras motoras nas atividades','Permitir respostas orais, gravadas ou digitadas','Ajustar tempo — o ritmo motor pode ser diferente','Não reduzir o nível cognitivo do conteúdo'],
+    tag:'deficiencia' },
+  { emoji:'👁️', nome:'Deficiência Visual', sigla:'D.V.', cat:'Deficiências',
+    resumo:'A deficiência visual abrange desde a baixa visão (visão reduzida mesmo com correção) até a cegueira total. Cada grau exige estratégias específicas. O acesso ao conhecimento precisa ser garantido por outras vias.',
+    caracteristicas:['Baixa visão: enxerga com limitações mesmo usando óculos','Cegueira: ausência total ou quase total de percepção visual','Pode ter visão de campo reduzida ou central afetada','Pode usar bengala, Braille, leitor de tela, lupa eletrônica','Demais sentidos frequentemente mais aguçados','Cognição geralmente preservada'],
+    estrategias:['Baixa visão: fonte ampliada, alto contraste, materiais próximos','Cegueira: descrições verbais detalhadas, materiais em áudio e táteis','Eliminar elementos visuais sem alternativa acessível','Braille para quem usa; descrever imagens e gráficos em voz alta','Tecnologia assistiva: leitores de tela, ampliadores'],
+    tag:'deficiencia' },
+  { emoji:'👂', nome:'Deficiência Auditiva', sigla:'D.A.', cat:'Deficiências',
+    resumo:'A deficiência auditiva varia em grau (leve, moderada, severa e profunda) e impacta o acesso à linguagem oral. A Língua Brasileira de Sinais (Libras) é a língua natural dos surdos e deve ser reconhecida e valorizada.',
+    caracteristicas:['Pode usar aparelho auditivo (AASI) ou implante coclear','Libras pode ser a língua principal — o português seria a segunda língua','Leitura labial é cansativa e limitada — não substitui a comunicação plena','Habilidades visuais e espaciais frequentemente muito desenvolvidas','Cognição preservada — a barreira é de acesso à língua oral','Pode ter variações culturais fortes dentro da comunidade surda'],
+    estrategias:['Priorizar recursos visuais e materiais escritos','Eliminar atividades que dependam apenas de áudio sem alternativa','Usar Libras quando aplicável (com intérprete ou comunicação direta)','Organização visual clara das atividades','Falar de frente, com boa iluminação no rosto'],
+    tag:'deficiencia' },
+  { emoji:'⭐', nome:'Altas Habilidades / Superdotação', sigla:'AH/SD', cat:'Altas Habilidades',
+    resumo:'Alunos com altas habilidades apresentam elevado potencial em uma ou mais áreas — acadêmica, artística, liderança, criatividade, etc. A superdotação não exclui dificuldades: muitos são "duplamente excepcionais" (2e) — podem ter AH e também TEA, TDAH ou dislexia.',
+    caracteristicas:['Alto desempenho ou potencial em área(s) específica(s)','Curiosidade intensa, questionamentos profundos e pensamento crítico precoce','Pode se entediar facilmente com conteúdos repetitivos','Perfeccionismo intenso — pode gerar frustração e bloqueio','Pode ter dificuldades sociais ou emocionais (assincronia no desenvolvimento)','Podem coexistir com outros transtornos (2e — duplamente excepcional)'],
+    estrategias:['Aprofundar além do currículo — enriquecimento, não aceleração forçada','Desafios de pensamento crítico, pesquisa e criação','Evitar repetições desnecessárias de conteúdo já dominado','Conectar aprendizagem aos interesses intensos da criança','Respeitar o ritmo emocional — o cognitivo pode ser bem à frente'],
+    tag:'altas' },
+  { emoji:'🗣️', nome:'Apraxia de Fala', sigla:'', cat:'Transtornos de Linguagem',
+    resumo:'A apraxia de fala é um transtorno motor da fala — o cérebro tem dificuldade em coordenar os movimentos precisos necessários para falar. A cognição da criança pode ser completamente preservada. Não confunda dificuldade de fala com dificuldade de pensar.',
+    caracteristicas:['Dificuldade em sequenciar sons e sílabas de forma consistente','Os erros variam — a criança pode dizer uma palavra certa e na próxima tentativa errar','Esforço visível ao tentar falar — busca do movimento correto','Pode usar CAA (comunicação alternativa aumentativa)','Compreensão oral e inteligência geralmente preservadas','Não é "preguiça" nem déficit intelectual'],
+    estrategias:['Priorizar escrita, imagens ou CAA quando a fala não for fluente','Não avaliar pela fala quando o objetivo for outro conteúdo','Tempo extra para se comunicar','Validar todas as formas de expressão da criança','Nunca completar a frase por ela sem necessidade'],
+    tag:'transtorno' },
+  { emoji:'🌟', nome:'Síndrome de Down', sigla:'SD', cat:'Deficiências',
+    resumo:'A Síndrome de Down é uma condição genética causada pela presença de um cromossomo 21 extra. As crianças com SD têm um ritmo próprio de desenvolvimento e aprendem muito — especialmente em ambientes afetivos, com aprendizagem social e prática.',
+    caracteristicas:['Desenvolvimento cognitivo em ritmo próprio (variado entre as crianças)','Forte inclinação para aprendizagem social e por imitação','Habilidades linguísticas e comunicativas variam bastante','Boa memória de longo prazo; memória de trabalho pode ser mais limitada','Podem ter condições associadas (cardíacas, visuais, auditivas) — avaliar individualmente','Personalidade frequentemente afável e sociável'],
+    estrategias:['Linguagem simples, afetiva e com exemplos concretos','Aprendizagem por imitação e contextos sociais reais','Recursos visuais e musicais — música é um forte aliado','Repetição com variações para consolidar','Valorizar pontos fortes e conquistas — a motivação é chave'],
+    tag:'deficiencia' },
+  { emoji:'🎵', nome:'Síndrome de Williams', sigla:'SW', cat:'Deficiências',
+    resumo:'A Síndrome de Williams é uma condição genética rara que combina habilidades verbais e musicais excepcionais com dificuldades visuoespaciais e matemáticas. Essas crianças costumam ser extremamente sociáveis e afetivas.',
+    caracteristicas:['Habilidades verbais frequentemente bem desenvolvidas para o perfil cognitivo','Amor intenso por música — frequentemente com capacidade musical notável','Dificuldades significativas em habilidades visuoespaciais e matemáticas','Alta sociabilidade — podem ser indiscriminadamente amigáveis','Hipersensibilidade auditiva (sons altos causam desconforto)','Ansiedade pode ser frequente'],
+    estrategias:['Explorar linguagem verbal e sociabilidade como pontos fortes','Usar música como recurso pedagógico — é um elo forte','Apoiar especificamente as dificuldades visuoespaciais e matemáticas','Atividades colaborativas e sociais potencializam o aprendizado','Preparar para sons altos ou imprevistos'],
+    tag:'deficiencia' },
+  { emoji:'🌀', nome:'Transtorno de Processamento Sensorial', sigla:'TPS', cat:'Neurodivergência',
+    resumo:'O Transtorno de Processamento Sensorial afeta como o cérebro processa as informações dos sentidos. A criança pode ser hipersensível (sentidos amplificados) ou hipossensível (busca mais estimulação). Isso impacta diretamente a participação e o conforto na sala de aula.',
+    caracteristicas:['Hipersensibilidade: sons, luzes, texturas, cheiros ou toques causam sofrimento','Hipossensibilidade: busca constantemente mais estimulação sensorial','Pode se desregular em ambientes barulhentos, brilhantes ou com muita gente','Pode apresentar comportamentos de autorregulação (balanço, pressão, movimentos)','Frequentemente associado a TEA, mas pode ocorrer isoladamente','Pode parecer "mimado" ou "agitado" — mas é uma resposta neurológica real'],
+    estrategias:['Adaptar o ambiente (iluminação, nível de ruído, posição na sala)','Permitir equipamentos de regulação: fone abafador, fidgets, colete de peso','Antecipar situações sensorialmente desafiadoras (assembleias, recreio barulhento)','Pausas sensoriais regulamentadas durante o dia','Não forçar o contato físico (abraços, tapinhas) sem consentimento'],
+    tag:'neurodiv' },
+  { emoji:'💢', nome:'Transtorno Opositivo Desafiador', sigla:'TOD', cat:'Transtornos de Comportamento',
+    resumo:'O TOD é caracterizado por um padrão persistente de humor irritável, comportamento argumentativo e desafiador. É importante entender que a criança não age assim por escolha consciente de "ser difícil" — há uma dificuldade real de regulação emocional e relacional.',
+    caracteristicas:['Frequente discussão com adultos e recusa a seguir regras','Irritabilidade e frustração intensas','Culpa os outros por seus erros com frequência','Pode ser rancoroso ou vingativo','Comportamento tende a ser mais intenso com figuras de autoridade próximas','Frequentemente coexiste com TDAH ou transtornos de ansiedade'],
+    estrategias:['Oferecer escolhas — o senso de controle reduz a oposição','Evitar confrontos diretos e públicos','Linguagem positiva e instrucional (diga o que fazer, não só o que não fazer)','Reforço positivo por etapa concluída','Construir vínculo genuíno — a relação é o maior fator protetivo'],
+    tag:'transtorno' },
+  { emoji:'😰', nome:'Transtorno de Ansiedade', sigla:'TA', cat:'Transtornos de Saúde Mental',
+    resumo:'O transtorno de ansiedade vai além da "nervosismo normal". A criança experimenta preocupações excessivas, medo antecipatório e reações físicas (coração acelerado, dor de barriga, falta de ar) que prejudicam sua participação escolar.',
+    caracteristicas:['Preocupações intensas sobre desempenho, julgamento dos colegas ou erros','Pode recusar atividades por medo excessivo de falhar','Sintomas físicos reais em situações de pressão','Evitação de situações temidas (provas, apresentações, falar em público)','Pode se manifestar como mutismo seletivo em alguns contextos','Frequentemente mais visível em transições e novidades'],
+    estrategias:['Sem pressão de tempo ou surpresas sem aviso','Explicar mudanças e novidades com antecedência','Linguagem encorajadora — foco no processo, não no resultado','Permitir pausas quando necessário — não é "fugir", é regular','Provas orais, portfólio ou outras formas alternativas de avaliação'],
+    tag:'transtorno' },
+  { emoji:'🔄', nome:'Transtorno Global do Desenvolvimento', sigla:'TGD', cat:'Neurodivergência',
+    resumo:'O TGD é um diagnóstico mais amplo que inclui condições que afetam múltiplas áreas do desenvolvimento (comunicação, interação social, comportamento). Com o DSM-5, muitos casos de TGD são agora classificados dentro do espectro autista.',
+    caracteristicas:['Afeta comunicação verbal e não-verbal','Dificuldades nas interações sociais','Comportamentos repetitivos ou estereotipados','Pode incluir atraso no desenvolvimento global','Nível de comprometimento varia bastante entre os casos','Inclui diagnósticos como Síndrome de Rett e TDI (em sistemas classificatórios anteriores)'],
+    estrategias:['Rotina estruturada e previsível','Reforço positivo e comunicação alternativa quando necessário','Atenção às especificidades do diagnóstico individual','Equipe multiprofissional para suporte amplo','Adaptações baseadas nas habilidades reais da criança'],
+    tag:'neurodiv' },
+  { emoji:'🧬', nome:'Transtorno Hipercinético', sigla:'', cat:'Transtornos de Comportamento',
+    resumo:'O transtorno hipercinético (CID-10) corresponde ao que o DSM-5 chama de TDAH combinado — com hiperatividade, impulsividade E desatenção pronunciadas. A criança está em movimento constante não por desobediência, mas por uma diferença neurológica real no sistema de controle motor e atencional.',
+    caracteristicas:['Movimento corporal quase constante — dificuldade em permanecer sentado','Impulsividade elevada — age antes de pensar','Dificuldade acentuada de manutenção da atenção','Pode interromper frequentemente os outros','Dificuldade em aguardar sua vez','Reage de forma intensa a frustrações'],
+    estrategias:['Permitir pausas ativas e movimento durante a aula','Assentos adaptados (almofadas de equilíbrio, fidgets)','Tarefas curtas com início-meio-fim claro','Reforço imediato e positivo','Ambiente com menos distrações visuais e sonoras','Uma instrução por vez'],
+    tag:'transtorno' },
+  { emoji:'🔗', nome:'Deficiência Múltipla', sigla:'D.M.', cat:'Deficiências',
+    resumo:'A deficiência múltipla envolve a combinação de duas ou mais deficiências (física, intelectual, sensorial) que juntas criam necessidades muito específicas. O planejamento deve ser altamente individualizado, com foco em comunicação funcional e participação real.',
+    caracteristicas:['Combinação de deficiências cuja interação cria necessidades únicas','O perfil é altamente individual — generalizações são perigosas','Comunicação pode ser alternativa ou aumentativa','Mobilidade pode ser muito limitada','Pode necessitar de cuidados médicos integrados ao dia escolar','Equipe multiprofissional é essencial'],
+    estrategias:['Planejar com base no perfil específico desta criança (não no diagnóstico genérico)','Priorizar comunicação funcional — qualquer forma válida','Foco em vida independente e participação nas atividades do grupo','Envolvimento ativo da família no PEI','Recursos de tecnologia assistiva de acordo com as necessidades motoras e sensoriais'],
+    tag:'deficiencia' },
+];
+
+let guiaFiltrocat = '';
+function renderGuia() {
+  const cats = [...new Set(GUIA_PERFIS.map(p=>p.cat))];
+  document.getElementById('guia-cats').innerHTML =
+    `<button class="guia-cat-btn active" onclick="setGuiaCat('')">Todos</button>` +
+    cats.map(c=>`<button class="guia-cat-btn" onclick="setGuiaCat('${c}')">${c}</button>`).join('');
+  renderGuiaGrid();
+}
+function setGuiaCat(cat) {
+  guiaFiltrocat = cat;
+  document.querySelectorAll('.guia-cat-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent === (cat||'Todos'));
+  });
+  renderGuiaGrid();
+}
+function filtrarGuia() { renderGuiaGrid(); }
+function renderGuiaGrid() {
+  const q = (document.getElementById('guia-search')?.value||'').toLowerCase();
+  const lista = GUIA_PERFIS.filter(p=>
+    (!guiaFiltrocat || p.cat===guiaFiltrocat) &&
+    (!q || p.nome.toLowerCase().includes(q) || (p.sigla||'').toLowerCase().includes(q) || p.resumo.toLowerCase().includes(q))
+  );
+  const grid = document.getElementById('guia-grid');
+  if (!grid) return;
+  grid.innerHTML = lista.length ? lista.map(p=>`
+    <div class="guia-card" onclick='abrirGuiaPerfil(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+      <div class="guia-card-top">
+        <div class="guia-card-emoji">${p.emoji}</div>
+        <div><div class="guia-card-nome">${p.nome}</div><div class="guia-card-sigla">${p.sigla||p.cat}</div></div>
+      </div>
+      <div class="guia-card-resumo">${p.resumo}</div>
+      <span class="guia-tag ${p.tag}">${p.cat}</span>
+    </div>`).join('')
+    : `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum perfil encontrado para essa busca.</div></div>`;
+}
+function abrirGuiaPerfil(p) {
+  document.getElementById('mg-emoji').textContent = p.emoji;
+  document.getElementById('mg-titulo').textContent = p.nome;
+  document.getElementById('mg-sigla').textContent = p.sigla ? `${p.sigla} · ${p.cat}` : p.cat;
+  document.getElementById('mg-body').innerHTML = `
+    <div class="guia-modal-section">
+      <h4>O que é?</h4>
+      <p>${p.resumo}</p>
+    </div>
+    <div class="guia-modal-section">
+      <h4>Como se manifesta na escola</h4>
+      <ul>${p.caracteristicas.map(c=>`<li>${c}</li>`).join('')}</ul>
+    </div>
+    <div class="guia-modal-section">
+      <h4>Estratégias recomendadas</h4>
+      <div class="guia-pill-group">${p.estrategias.map(e=>`<span class="guia-pill">${e}</span>`).join('')}</div>
+    </div>
+    <div class="guia-modal-section" style="background:var(--amber-light);border:1px solid #FCD34D;border-radius:var(--rsm);padding:10px 14px;margin-top:14px">
+      <p style="font-size:12.5px;color:var(--amber)">⚠️ <strong>Lembre-se:</strong> O laudo norteia, mas não define. Cada criança é única — observe, escute e adapte. A melhor estratégia é aquela que funciona para aquela criança específica.</p>
+    </div>`;
+  abrirModal('modal-guia');
+}
+
+// ── DIVERSIDADE & INCLUSÃO ───────────────────────────────────
+const DIV_MODULOS = [
+  { icon:'🧠', titulo:'Neurodiversidade', badge:'Aprendizagem',
+    sub:'Cérebros que funcionam de formas diferentes — e igualmente válidas',
+    desc:'Neurodiversidade é o reconhecimento de que variações no funcionamento neurológico são naturais e fazem parte da diversidade humana. TEA, TDAH, dislexia, discalculia e outras condições não são falhas — são formas diferentes de processar o mundo.',
+    conceitos:['Neurodiversidade vs. neurotipicalidade: não existe um cérebro "padrão" correto','Diagnóstico é ponto de partida, não rótulo definitivo','Ambiente inclusivo reduz a necessidade de adaptação individual','Forças e potências existem em todos os perfis neurodivergentes'],
+    praticas:[
+      {titulo:'Linguagem inclusiva',desc:'Use "criança com autismo" ou "criança autista" — pergunte à família qual preferem'},
+      {titulo:'Currículo flexível',desc:'Ofereça múltiplas formas de aprender, expressar e engajar'},
+      {titulo:'Ambiente sensorial',desc:'Reduza estímulos excessivos — isso beneficia TODOS os alunos'},
+      {titulo:'Celebre diferenças',desc:'Compartilhe com a turma (com autorização) como pessoas diferentes aprendem'},
+    ]},
+  { icon:'🌍', titulo:'Diversidade Cultural', badge:'Pertencimento',
+    sub:'Culturas, tradições e histórias que enriquecem a sala de aula',
+    desc:'A diversidade cultural na escola reflete a pluralidade da sociedade. Crianças trazem consigo práticas, valores, línguas e visões de mundo diferentes — e isso é um recurso pedagógico poderoso, não um obstáculo.',
+    conceitos:['Cultura não é exótica — é o jeito de vida de cada povo','Estereótipos culturais causam danos reais — questione-os ativamente','O currículo eurocêntrico exclui histórias importantes de povos africanos, indígenas e de outras origens','Pertencimento cultural é fundamental para a autoestima e o aprendizado'],
+    praticas:[
+      {titulo:'Calendário cultural diverso',desc:'Inclua datas de diferentes povos e culturas ao longo do ano'},
+      {titulo:'Literaturas plurais',desc:'Use livros com personagens e autores de diferentes origens culturais'},
+      {titulo:'Valorize a língua materna',desc:'Alunos que falam outra língua em casa têm riqueza — não déficit'},
+      {titulo:'Pesquisa com as famílias',desc:'Convide as famílias a compartilhar suas tradições com a turma'},
+    ]},
+  { icon:'💰', titulo:'Diversidade Socioeconômica', badge:'Equidade',
+    sub:'Realidades econômicas diferentes que exigem olhar cuidadoso',
+    desc:'A desigualdade socioeconômica afeta diretamente o acesso a materiais, alimentação, tranquilidade emocional e tempo para estudar. A escola inclusiva considera essas realidades e garante que todos possam participar com dignidade.',
+    conceitos:['Pobreza não é falta de esforço ou de mérito — é uma condição estrutural','Alunos em situação de vulnerabilidade podem ter dificuldades de concentração ligadas à insegurança alimentar ou domiciliar','A escola pública tem papel estratégico de proteção e oportunidade','Evitar situações que exponham ou humilhem alunos com menos recursos'],
+    praticas:[
+      {titulo:'Materiais compartilhados',desc:'Organize um sistema de materiais coletivos para atividades que exijam itens específicos'},
+      {titulo:'Sem cobranças de materiais raros',desc:'Evite exigir materiais custosos sem alternativa acessível'},
+      {titulo:'Olhar cuidadoso à frequência',desc:'Faltas frequentes podem ser sinal de vulnerabilidade — aproxime-se com cuidado'},
+      {titulo:'Linguagem sem julgamento',desc:'Evite comentários sobre o que a criança tem ou não tem em casa'},
+    ]},
+  { icon:'🗣️', titulo:'Diversidade Linguística', badge:'Comunicação',
+    sub:'Línguas, sotaques e formas de comunicar que merecem respeito',
+    desc:'Crianças podem chegar à escola falando línguas indígenas, língua de sinais (Libras), idiomas de outros países ou variantes regionais do português. Cada forma de comunicação é válida e merece ser reconhecida.',
+    conceitos:['Libras é uma língua completa — não é "português sinalizado"','Crianças bilíngues têm vantagens cognitivas comprovadas','Variantes regionais do português não são "erros" — são diversidade linguística','O ensino da norma culta não precisa desvalorizar a língua da casa'],
+    praticas:[
+      {titulo:'Acolha a língua materna',desc:'Nunca corrija a língua de casa — ensine a norma padrão como uma ferramenta adicional'},
+      {titulo:'Intérprete de Libras',desc:'Alunos surdos têm direito ao intérprete — acione a gestão para garantir esse suporte'},
+      {titulo:'Multimodalidade',desc:'Use textos, imagens, gestos e recursos variados para comunicar o conteúdo'},
+      {titulo:'Glossários visuais',desc:'Para alunos com outra língua materna, glossários com imagens facilitam muito'},
+    ]},
+  { icon:'🏳️‍🌈', titulo:'Diversidade de Gênero', badge:'Respeito',
+    sub:'Identidades de gênero e expressões que merecem acolhimento',
+    desc:'A diversidade de gênero inclui crianças e adolescentes trans, não-binárias, ou que expressam seu gênero de formas que não correspondem ao esperado socialmente. A escola tem papel fundamental no acolhimento e proteção dessas identidades.',
+    conceitos:['Identidade de gênero é como a pessoa se percebe — não depende de cirurgia ou documento','Nome social deve ser respeitado em chamadas, trabalhos e registros internos','Crianças trans e não-binárias têm taxas elevadas de sofrimento escolar quando não acolhidas','O acolhimento escolar é fator de proteção para a saúde mental dessas crianças'],
+    praticas:[
+      {titulo:'Nome social',desc:'Use o nome pelo qual a criança se identifica — consulte a família e a própria criança'},
+      {titulo:'Banheiro seguro',desc:'Garanta que a criança tenha acesso a banheiros sem constrangimento'},
+      {titulo:'Combata o bullying de gênero',desc:'Intervenha ativamente em situações de deboche ou exclusão por expressão de gênero'},
+      {titulo:'Evite divisões binárias',desc:'Reduza dinâmicas que dividam a turma em "meninos e meninas"'},
+    ]},
+  { icon:'🦽', titulo:'Deficiências Físicas e Cognitivas', badge:'Acessibilidade',
+    sub:'Garantindo acesso pleno e participação real para todos',
+    desc:'Além das estratégias individuais de adaptação, é fundamental pensar na acessibilidade sistêmica: espaços físicos, materiais, comunicação e avaliação devem ser pensados para incluir todos desde o início — o chamado Design Universal para Aprendizagem (DUA).',
+    conceitos:['Design Universal para Aprendizagem (DUA): projetar para todos desde o início, não adaptar depois','Acessibilidade física: rampas, banheiros adaptados, carteiras adequadas','Acessibilidade comunicativa: materiais em formatos alternativos, CAA, Libras','Acessibilidade pedagógica: múltiplas formas de apresentar, praticar e avaliar'],
+    praticas:[
+      {titulo:'DUA na prática',desc:'Ofereça sempre mais de uma forma de apresentar o conteúdo e mais de uma forma de o aluno responder'},
+      {titulo:'Tecnologia assistiva',desc:'Conheça os recursos disponíveis: CAA, leitores de tela, teclados adaptados, impressão em Braille'},
+      {titulo:'Avaliação flexível',desc:'Provas orais, portfólios, vídeos — avalie o que o aluno sabe, não apenas como ele escreve'},
+      {titulo:'Parceria com a equipe',desc:'TO, fono, psicólogo e o professor juntos fazem mais do que cada um separado'},
+    ]},
+  { icon:'✊', titulo:'Práticas Antirracistas', badge:'Justiça',
+    sub:'Combatendo o racismo estrutural dentro e fora da sala de aula',
+    desc:'O racismo estrutural está presente nas instituições, nos currículos, nas expectativas sobre os alunos e nas relações cotidianas. Práticas antirracistas vão além de "não ser racista" — exigem ação intencional e contínua para desafiar e transformar essas estruturas.',
+    conceitos:['Racismo estrutural: não precisa de intenção para causar dano — está nas normas e expectativas','Colorismo: crianças negras mais escuras frequentemente sofrem mais discriminação','Currículo eurocêntrico invisibiliza contribuições africanas e indígenas','Expectativas implícitas afetam o desempenho — o "efeito Pigmalião" é real'],
+    praticas:[
+      {titulo:'Representatividade no currículo',desc:'Autores negros e indígenas, cientistas, heróis e histórias de outros povos além do europeu'},
+      {titulo:'Intervenção imediata',desc:'Piadas, apelidos e comentários racistas precisam de resposta imediata e educativa'},
+      {titulo:'Expectativas altas para todos',desc:'Espere o mesmo potencial de todos os alunos — suas expectativas moldam o que eles alcançam'},
+      {titulo:'Autoformação contínua',desc:'Leia, forme-se e converse sobre racismo — não é possível combater o que não se conhece'},
+    ]},
+];
+
+function renderDiversidade() {
+  const grid = document.getElementById('div-modulos');
+  if (!grid) return;
+  grid.innerHTML = DIV_MODULOS.map((m,i)=>`
+    <div class="div-card" onclick="abrirDivModulo(${i})">
+      <div class="div-card-icon">${m.icon}</div>
+      <div class="div-card-titulo">${m.titulo}</div>
+      <div class="div-card-desc">${m.sub}</div>
+      <span class="div-card-badge">${m.badge}</span>
+    </div>`).join('');
+}
+function abrirDivModulo(i) {
+  const m = DIV_MODULOS[i];
+  document.getElementById('md-icon').textContent = m.icon;
+  document.getElementById('md-titulo').textContent = m.titulo;
+  document.getElementById('md-sub').textContent = m.sub;
+  document.getElementById('md-body').innerHTML = `
+    <div class="div-section">
+      <h4>O que é?</h4>
+      <p>${m.desc}</p>
+    </div>
+    <div class="div-section">
+      <h4>Conceitos-chave</h4>
+      <ul>${m.conceitos.map(c=>`<li>${c}</li>`).join('')}</ul>
+    </div>
+    <div class="div-section">
+      <h4>Práticas na sala de aula</h4>
+      <div class="div-pratica-grid">${m.praticas.map(p=>`<div class="div-pratica-item"><strong>${p.titulo}</strong>${p.desc}</div>`).join('')}</div>
+    </div>`;
+  abrirModal('modal-div');
+}
+
+
 function showErr(m){ const e=document.getElementById('lerr'); e.textContent=m; e.style.display='block'; }
 function showOk(m){ const e=document.getElementById('lok'); e.textContent=m; e.style.display='block'; }
 function clearMsgs(){ document.getElementById('lerr').style.display='none'; document.getElementById('lok').style.display='none'; }
