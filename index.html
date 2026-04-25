@@ -9,13 +9,65 @@
 <style>
 :root{
   --g50:#EEF0FD;--g100:#D5D9FA;--g400:#5B6FE8;--g600:#3447C7;--g800:#1A2880;
-  --gr50:#F6F7F5;--gr100:#EAEBE8;--gr200:#D5D6D2;--gr400:#9A9B97;--gr600:#5C5D59;--gr800:#2C2D2A;
+  --gr50:#F6F7F5;--gr100:#EAEBE8;--gr200:#D5D6D2;--gr300:#C0C1BC;--gr400:#9A9B97;--gr600:#5C5D59;--gr800:#2C2D2A;
   --white:#fff;--rsm:8px;--rmd:12px;--rlg:18px;--shadow:0 2px 12px rgba(0,0,0,.07);
   --blue:#1A56DB;--blue-light:#EBF5FF;--amber:#B45309;--amber-light:#FFFBEB;
   --clinic:#7C3AED;--clinic-light:#F5F3FF;
   --at:#0891B2;--at-light:#E0F7FA;
   --green:#059669;--green-light:#ECFDF5;
+  --escola-color:#059669;--escola-bg:#ECFDF5;
+  --clinica-color:#7C3AED;--clinica-bg:#F5F3FF;
+  --at-color:#0891B2;--at-bg:#E0F7FA;
+  --gestao-color:#1A56DB;--gestao-bg:#EBF5FF;
+  --gestao-clinica-color:#B45309;--gestao-clinica-bg:#FFFBEB;
 }
+
+/* Cores por perfil — botões de papel */
+.role-btn.active.r-professor{background:var(--escola-bg);border-color:var(--escola-color);color:var(--escola-color);font-weight:600}
+.role-btn.active.r-gestao{background:var(--gestao-bg);border-color:var(--gestao-color);color:var(--gestao-color);font-weight:600}
+.role-btn.active.r-clinica{background:var(--clinica-bg);border-color:var(--clinica-color);color:var(--clinica-color);font-weight:600}
+.role-btn.active.r-at{background:var(--at-bg);border-color:var(--at-color);color:var(--at-color);font-weight:600}
+.role-btn.active.r-gestao-clinica{background:var(--gestao-clinica-bg);border-color:var(--gestao-clinica-color);color:var(--gestao-clinica-color);font-weight:600}
+
+/* Sidebar stripe por papel */
+.sidebar.role-professor{border-left:4px solid var(--escola-color)}
+.sidebar.role-gestao{border-left:4px solid var(--gestao-color)}
+.sidebar.role-clinica,.sidebar.role-gestao-clinica{border-left:4px solid var(--clinica-color)}
+.sidebar.role-at{border-left:4px solid var(--at-color)}
+
+/* Sub-papel clínica */
+.subrole-btn{padding:6px 11px;border:1.5px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:12px;color:var(--gr600);background:var(--white);cursor:pointer;transition:all .15s}
+.subrole-btn.active{background:var(--clinica-bg);border-color:var(--clinica-color);color:var(--clinica-color);font-weight:600}
+
+/* LGPD box */
+.lgpd-box{background:#F0FDF4;border:1px solid #86EFAC;border-radius:var(--rmd);padding:12px 14px;margin-top:14px}
+.lgpd-box p{font-size:12px;color:#166534;line-height:1.6;margin-bottom:9px}
+.lgpd-check{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#166534;line-height:1.5;cursor:pointer}
+.lgpd-check input[type=checkbox]{margin-top:2px;accent-color:var(--green);flex-shrink:0}
+
+/* Tooltip no chip */
+.chip-wrap{position:relative;display:inline-block}
+.chip-tooltip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--gr800);color:#fff;font-size:11.5px;line-height:1.5;padding:8px 11px;border-radius:var(--rsm);width:230px;z-index:99;pointer-events:none;opacity:0;transition:opacity .18s;white-space:normal;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.chip-wrap:hover .chip-tooltip{opacity:1}
+
+/* Estratégia Ouro */
+.btn-ouro{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;border:none;border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;margin-top:10px}
+.btn-ouro:hover{opacity:.88}
+.ouro-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.ouro-card{background:#FFFBEB;border:1px solid #FCD34D;border-radius:var(--rsm);padding:10px 12px;font-size:12.5px;color:#78350F;line-height:1.5}
+.ouro-card strong{display:block;font-size:10.5px;color:#92400E;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+
+/* PDF upload */
+.pdf-upload-area{border:2px dashed var(--gr200);border-radius:var(--rmd);padding:16px;text-align:center;cursor:pointer;transition:border-color .18s;margin-top:8px}
+.pdf-upload-area:hover{border-color:var(--g400)}
+.pdf-list{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.pdf-item{display:flex;align-items:center;gap:8px;padding:7px 11px;background:var(--gr50);border-radius:var(--rsm);font-size:12.5px;color:var(--gr600)}
+.pdf-item .pdf-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdf-item button{background:transparent;border:none;color:#E74C3C;cursor:pointer;font-size:15px;padding:0}
+
+/* btn-danger */
+.btn-danger{padding:6px 13px;background:#FEE2E2;border:1px solid #FECACA;color:#B91C1C;border-radius:var(--rsm);font-family:inherit;font-size:12px;cursor:pointer;transition:background .15s}
+.btn-danger:hover{background:#FECACA}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);min-height:100vh}
 
@@ -302,56 +354,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
 .div-pratica-item{background:var(--gr50);border-radius:var(--rsm);padding:10px 12px;font-size:12.5px;color:var(--gr600);line-height:1.5}
 .div-pratica-item strong{display:block;font-size:11.5px;color:var(--gr800);margin-bottom:2px}
 
-/* MÉTODO PEDAGÓGICO / CLÍNICO */
-.metodo-sel{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
-.metodo-btn{padding:5px 13px;border-radius:999px;border:1.5px solid var(--gr200);background:#fff;font-family:inherit;font-size:12px;color:var(--gr600);cursor:pointer;transition:all .15s;white-space:nowrap}
-.metodo-btn:hover{border-color:var(--g400);color:var(--g600)}
-.metodo-btn.active{background:var(--g600);border-color:var(--g600);color:#fff}
-.metodo-btn.clinic-active{background:var(--clinic);border-color:var(--clinic);color:#fff}
-.metodo-info{font-size:11.5px;color:var(--gr400);padding:6px 10px;background:var(--gr50);border-radius:var(--rsm);margin-bottom:10px;line-height:1.5;display:none}
-/* DEV PANEL */
-.dev-screen{display:none;position:fixed;inset:0;background:#0F172A;z-index:9999;overflow:auto}
-.dev-login{min-height:100vh;display:flex;align-items:center;justify-content:center}
-.dev-login-card{background:#1E293B;border:1px solid #334155;border-radius:16px;padding:40px;width:100%;max-width:380px;color:#fff}
-.dev-logo{font-size:22px;font-weight:700;color:#818CF8;margin-bottom:4px}
-.dev-sub{font-size:12px;color:#64748B;margin-bottom:24px}
-.dev-input{width:100%;padding:10px 14px;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#fff;font-family:inherit;font-size:13px;outline:none;margin-bottom:10px;box-sizing:border-box}
-.dev-input:focus{border-color:#818CF8}
-.dev-btn{width:100%;padding:11px;background:#4F46E5;border:none;border-radius:8px;color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s}
-.dev-btn:hover{background:#4338CA}
-.dev-nav{width:220px;background:#1E293B;border-right:1px solid #334155;min-height:100vh;padding:24px 16px;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto}
-.dev-main{margin-left:220px;padding:28px 32px;min-height:100vh}
-.dev-nav-logo{font-size:16px;font-weight:700;color:#818CF8;margin-bottom:4px}
-.dev-nav-sub{font-size:10px;color:#475569;margin-bottom:24px}
-.dev-nav-item{padding:9px 12px;border-radius:8px;color:#94A3B8;font-size:13px;cursor:pointer;margin-bottom:2px;transition:all .15s;display:flex;align-items:center;gap:8px}
-.dev-nav-item:hover{background:#0F172A;color:#fff}
-.dev-nav-item.active{background:#4F46E5;color:#fff}
-.dev-stat{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:20px 22px}
-.dev-stat-val{font-size:28px;font-weight:700;color:#fff;margin-bottom:2px}
-.dev-stat-lbl{font-size:12px;color:#64748B}
-.dev-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:6px}
-.dev-sub-title{font-size:13px;color:#64748B;margin-bottom:20px}
-.dev-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-.dev-table{width:100%;border-collapse:collapse}
-.dev-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#475569;padding:10px 12px;border-bottom:1px solid #334155}
-.dev-table td{padding:10px 12px;font-size:13px;color:#94A3B8;border-bottom:1px solid #1E293B}
-.dev-table tr:hover td{background:#1E293B}
-.dev-badge{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px}
-.dev-badge.professor{background:#1D4ED8;color:#BFDBFE}
-.dev-badge.gestao{background:#065F46;color:#A7F3D0}
-.dev-badge.clinica{background:#5B21B6;color:#DDD6FE}
-.dev-badge.at{background:#0E7490;color:#A5F3FC}
-.dev-badge.developer{background:#9D174D;color:#FBCFE8}
-.dev-badge.ativo{background:#14532D;color:#86EFAC}
-.dev-badge.inativo{background:#450A0A;color:#FCA5A5}
-.dev-card{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:20px;margin-bottom:14px}
-.dev-section-title{font-size:14px;font-weight:600;color:#E2E8F0;margin-bottom:12px}
-.token-bar{height:6px;background:#1E293B;border-radius:999px;overflow:hidden;margin-top:4px}
-.token-fill{height:100%;background:#4F46E5;border-radius:999px;transition:width .3s}
-/* ESQUECI SENHA */
-.forgot-link{font-size:12px;color:var(--g600);text-decoration:none;cursor:pointer;text-align:center;display:block;margin-top:8px;opacity:.8}
-.forgot-link:hover{opacity:1}
-.forgot-screen{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0F172A 0%,#1E1B4B 100%)}
+/* ROLES EXTRAS */
 .sb-role.at{background:var(--at-light);color:var(--at)}
 .sb-role.clinica{background:var(--clinic-light);color:var(--clinic)}
 .nav-item.at-item.active{background:var(--at-light);color:var(--at)}
@@ -404,64 +407,61 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
   <div class="login-card">
     <div class="login-logo">Pluramente</div>
     <div class="login-sub">Plataforma de Integração Clínica-Pedagógica</div>
-    <div class="login-desc">🔒 Acesso restrito. Faça login com as credenciais fornecidas pelo administrador.</div>
+    <div class="login-desc">🏥➡️🏫 Traduzindo avaliações clínicas em estratégias aplicáveis no cotidiano escolar.</div>
+
+    <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--gr600)">Meu perfil</div>
+    <div class="role-sel" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="role-btn r-professor active" id="role-btn-professor" onclick="setRole('professor')">👩‍🏫 Professor</button>
+      <button class="role-btn r-gestao" id="role-btn-gestao" onclick="setRole('gestao')">🏫 Gestão</button>
+      <button class="role-btn r-clinica" id="role-btn-clinica" onclick="setRole('clinica')">🏥 Clínica</button>
+      <button class="role-btn r-gestao-clinica" id="role-btn-gestao-clinica" onclick="setRole('gestao-clinica')">🏥👔 Gest. Clínica</button>
+      <button class="role-btn r-at" id="role-btn-at" onclick="setRole('at')">🧑‍⚕️ AT</button>
+    </div>
+
+    <!-- Sub-papel clínica -->
+    <div id="subrole-area" style="display:none;margin-bottom:12px">
+      <div style="margin-bottom:5px;font-size:11.5px;font-weight:600;color:var(--gr600)">Especialidade</div>
+      <div class="subrole-sel" id="subrole-sel" style="display:flex;flex-wrap:wrap;gap:5px">
+        <button class="subrole-btn active" onclick="setSubRole(this,'fono')">🗣️ Fono</button>
+        <button class="subrole-btn" onclick="setSubRole(this,'fisio')">🏃 Fisio</button>
+        <button class="subrole-btn" onclick="setSubRole(this,'to')">🖐️ TO</button>
+        <button class="subrole-btn" onclick="setSubRole(this,'psicopedagogo')">📚 Psicopedagogo</button>
+        <button class="subrole-btn" onclick="setSubRole(this,'psicologo')">🧠 Psicólogo</button>
+        <button class="subrole-btn" onclick="setSubRole(this,'musicoterapeuta')">🎵 Musicoterapeuta</button>
+        <button class="subrole-btn" onclick="setSubRole(this,'psicomotricista')">🤸 Psicomotricista</button>
+        <button class="subrole-btn" onclick="setSubRole(this,'outro')">➕ Outro</button>
+      </div>
+    </div>
 
     <div id="lerr" class="err-msg"></div>
     <div id="lok" class="ok-msg"></div>
-    <div class="fg"><label>E-mail</label><input type="email" id="lemail" placeholder="seu@email.com" autocomplete="email"></div>
-    <div class="fg"><label>Senha</label><input type="password" id="lsenha" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrar()"></div>
-    <button class="btn-p" onclick="entrar()">Entrar</button>
-    <a class="forgot-link" onclick="mostrarEsqueciSenha()">Esqueci minha senha</a>
-    <div style="margin-top:14px;padding:10px 14px;background:var(--gr50);border-radius:var(--rsm);border:1px solid var(--gr200);font-size:12px;color:var(--gr400);text-align:center;line-height:1.5">
-      🔒 O acesso é restrito.<br>Solicite seu cadastro ao administrador.
-    </div>
-  </div>
-</div>
 
-<!-- Botão DEV fixo canto inferior direito -->
-<button id="dev-open-btn" onclick="abrirDevPanel()" style="position:fixed;bottom:20px;right:20px;z-index:10000;background:rgba(15,23,42,0.85);border:1px solid #334155;border-radius:10px;padding:10px 16px;font-family:inherit;font-size:12px;color:#94A3B8;cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;gap:6px;transition:all .2s" onmouseover="this.style.background='#1E293B';this.style.color='#fff'" onmouseout="this.style.background='rgba(15,23,42,0.85)';this.style.color='#94A3B8'">
-  ⚙️ Dev
-</button>
-
-<!-- ESQUECI SENHA -->
-<div id="forgot-screen" class="forgot-screen" style="display:none;position:fixed;inset:0;z-index:8000;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:18px;padding:36px 32px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-    <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--g600);margin-bottom:4px">Redefinir senha</div>
-    <div style="font-size:13px;color:var(--gr400);margin-bottom:20px">Insira seu e-mail para receber o link de redefinição.</div>
-    <div id="forgot-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
-    <div class="fg"><label>E-mail</label><input type="email" id="forgot-email" class="finput" placeholder="seu@email.com"></div>
-    <button class="btn-p" onclick="enviarResetSenha()" style="margin-top:8px">Enviar link</button>
-    <a class="forgot-link" onclick="voltarLogin()" style="margin-top:12px">← Voltar ao login</a>
-  </div>
-</div>
-
-<!-- DEV PANEL -->
-<div id="dev-screen" class="dev-screen">
-  <div id="dev-login-view" class="dev-login">
-    <div class="dev-login-card">
-      <div class="dev-logo">⚙️ Dev Panel</div>
-      <div class="dev-sub">Pluramente · Acesso restrito ao desenvolvedor</div>
-      <div id="dev-err" style="font-size:12px;color:#F87171;margin-bottom:10px;display:none"></div>
-      <input type="email" id="dev-email" class="dev-input" placeholder="dev@pluramente.app">
-      <input type="password" id="dev-pass" class="dev-input" placeholder="Senha do desenvolvedor" onkeydown="if(event.key==='Enter')devLogin()">
-      <button class="dev-btn" onclick="devLogin()">Entrar como Desenvolvedor</button>
-      <div style="margin-top:12px;text-align:center"><span style="font-size:11px;color:#475569;cursor:pointer" onclick="fecharDevPanel()">← Voltar ao sistema</span></div>
+    <!-- Abas Login / Cadastro -->
+    <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--gr100)">
+      <button id="tab-login" onclick="setTab('login')" style="flex:1;padding:8px;background:none;border:none;border-bottom:2px solid var(--g600);color:var(--g600);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:-2px">Entrar</button>
+      <button id="tab-cad" onclick="setTab('cad')" style="flex:1;padding:8px;background:none;border:none;border-bottom:2px solid transparent;color:var(--gr400);font-family:inherit;font-size:13px;cursor:pointer;margin-bottom:-2px">Criar conta</button>
     </div>
-  </div>
-  <div id="dev-app-view" style="display:none;min-height:100vh">
-    <div class="dev-nav">
-      <div class="dev-nav-logo">⚙️ Dev Panel</div>
-      <div class="dev-nav-sub">Pluramente · Desenvolvedor</div>
-      <div class="dev-nav-item active" onclick="devPage('dashboard')">📊 Dashboard</div>
-      <div class="dev-nav-item" onclick="devPage('usuarios')">👥 Usuários</div>
-      <div class="dev-nav-item" onclick="devPage('logs')">📋 Logs de uso</div>
-      <div class="dev-nav-item" onclick="devPage('tokens')">💰 Tokens & Custo</div>
-      <div class="dev-nav-item" onclick="devPage('relatorios')">📈 Relatórios</div>
-      <div style="position:absolute;bottom:20px;left:16px;right:16px">
-        <div class="dev-nav-item" onclick="fecharDevPanel()" style="color:#F87171">🚪 Sair do Dev Panel</div>
-      </div>
+
+    <div id="painel-login">
+      <div class="fg"><label>E-mail</label><input type="email" id="lemail" placeholder="seu@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')entrar()"></div>
+      <div class="fg" style="position:relative"><label>Senha</label><input type="password" id="lsenha" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrar()"><button onclick="toggleSenha('lsenha',this)" style="position:absolute;right:12px;top:34px;background:none;border:none;cursor:pointer;font-size:15px;color:var(--gr400)">👁</button></div>
+      <button class="btn-p" onclick="entrar()" id="btn-entrar">Entrar</button>
+      <div style="text-align:center;margin-top:8px"><button onclick="esqueceuSenha()" style="background:none;border:none;font-size:12px;color:var(--gr400);cursor:pointer;text-decoration:underline">Esqueci minha senha</button></div>
     </div>
-    <div class="dev-main" id="dev-main-content"></div>
+
+    <div id="painel-cad" style="display:none">
+      <div class="fg"><label>E-mail</label><input type="email" id="cemail" placeholder="seu@email.com" autocomplete="email"></div>
+      <div class="fg" style="position:relative"><label>Senha (mínimo 6 caracteres)</label><input type="password" id="csenha" placeholder="••••••••" autocomplete="new-password"><button onclick="toggleSenha('csenha',this)" style="position:absolute;right:12px;top:34px;background:none;border:none;cursor:pointer;font-size:15px;color:var(--gr400)">👁</button></div>
+      <button class="btn-p" onclick="registrar()" id="btn-registrar">Criar conta</button>
+      <div style="font-size:11.5px;color:var(--gr400);margin-top:8px;line-height:1.5;text-align:center">Após criar a conta, confirme seu e-mail para fazer login.</div>
+    </div>
+
+    <!-- Botão DEV (modo desenvolvimento) -->
+    <div style="margin-top:18px;padding-top:14px;border-top:1px dashed var(--gr200);text-align:center">
+      <button onclick="entrarDev()" style="background:none;border:1px dashed var(--gr300,#ccc);border-radius:var(--rsm);padding:6px 16px;font-size:11.5px;color:var(--gr400);font-family:inherit;cursor:pointer;transition:all .15s" onmouseover="this.style.background='var(--gr50)'" onmouseout="this.style.background='none'">
+        🛠️ Modo DEV (demonstração)
+      </button>
+    </div>
   </div>
 </div>
 
@@ -813,73 +813,213 @@ let professoresList = [], profEditId = null;
 let cpMats = [], cpSalas = [];
 
 // ── LOGIN / ROLE ─────────────────────────────────────────────
+let userSubRole = 'fono';
+
+/* Alterna aba Login / Criar conta */
+function setTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('painel-login').style.display = isLogin ? '' : 'none';
+  document.getElementById('painel-cad').style.display   = isLogin ? 'none' : '';
+  document.getElementById('tab-login').style.cssText = isLogin
+    ? 'flex:1;padding:8px;background:none;border:none;border-bottom:2px solid var(--g600);color:var(--g600);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:-2px'
+    : 'flex:1;padding:8px;background:none;border:none;border-bottom:2px solid transparent;color:var(--gr400);font-family:inherit;font-size:13px;cursor:pointer;margin-bottom:-2px';
+  document.getElementById('tab-cad').style.cssText = isLogin
+    ? 'flex:1;padding:8px;background:none;border:none;border-bottom:2px solid transparent;color:var(--gr400);font-family:inherit;font-size:13px;cursor:pointer;margin-bottom:-2px'
+    : 'flex:1;padding:8px;background:none;border:none;border-bottom:2px solid var(--g600);color:var(--g600);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:-2px';
+  clearMsgs();
+}
+
+/* Mostrar/ocultar senha */
+function toggleSenha(inputId, btn) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'password' ? '👁' : '🙈';
+}
+
+/* Cores por perfil */
 function setRole(r) {
   userRole = r;
-  ['professor','gestao','clinica','at'].forEach(x => {
+  const allRoles = ['professor','gestao','clinica','at','gestao-clinica'];
+  allRoles.forEach(x => {
     const b = document.getElementById(`role-btn-${x}`);
     if (b) b.classList.toggle('active', x === r);
   });
+  const sub = document.getElementById('subrole-area');
+  if (sub) sub.style.display = r === 'clinica' ? 'block' : 'none';
 }
 
+function setSubRole(btn, role) {
+  userSubRole = role;
+  document.querySelectorAll('.subrole-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* Botão de loading */
+function setBtnLoading(id, loading, txt) {
+  const b = document.getElementById(id);
+  if (!b) return;
+  b.disabled = loading;
+  b.textContent = loading ? '⏳ Aguarde…' : txt;
+}
+
+/* Entrar com Supabase Auth */
 async function entrar() {
   clearMsgs();
   const email = document.getElementById('lemail').value.trim();
   const senha  = document.getElementById('lsenha').value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
-
+  setBtnLoading('btn-entrar', true, 'Entrar');
   const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
-  if (error) return showErr('E-mail ou senha incorretos.');
-
+  setBtnLoading('btn-entrar', false, 'Entrar');
+  if (error) {
+    if (error.message.includes('Invalid login')) return showErr('E-mail ou senha incorretos.');
+    if (error.message.includes('Email not confirmed')) return showErr('Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.');
+    return showErr(error.message);
+  }
   user = data.user;
-
-  // Verificar se usuário está cadastrado e aprovado no sistema
-  const { data: perfil, error: perfilErr } = await db
-    .from('profiles')
-    .select('role, ativo')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (perfilErr || !perfil) {
-    await db.auth.signOut();
-    user = null;
-    return showErr('❌ Acesso não autorizado. Solicite seu cadastro ao administrador.');
-  }
-
-  if (perfil.ativo === false) {
-    await db.auth.signOut();
-    user = null;
-    return showErr('⛔ Sua conta está inativa. Entre em contato com o administrador.');
-  }
-
-  // Role vem do banco — ignora o seletor da tela (que agora é só visual)
-  userRole = perfil.role || 'professor';
   iniciarApp();
 }
 
+/* Criar conta */
+async function registrar() {
+  clearMsgs();
+  const email = document.getElementById('cemail').value.trim();
+  const senha  = document.getElementById('csenha').value;
+  if (!email || !senha) return showErr('Preencha e-mail e senha.');
+  if (senha.length < 6) return showErr('Senha mínima: 6 caracteres.');
+  setBtnLoading('btn-registrar', true, 'Criar conta');
+  const { error } = await db.auth.signUp({ email, password: senha });
+  setBtnLoading('btn-registrar', false, 'Criar conta');
+  if (error) return showErr(error.message);
+  showOk('✅ Conta criada! Verifique seu e-mail e clique no link de confirmação para fazer login.');
+  setTab('login');
+}
+
+/* Recuperar senha */
+async function esqueceuSenha() {
+  const email = document.getElementById('lemail').value.trim();
+  if (!email) return showErr('Digite seu e-mail acima primeiro.');
+  const { error } = await db.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href
+  });
+  if (error) return showErr(error.message);
+  showOk('📧 E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODO DEV — acesso de demonstração sem banco de dados
+   Não cria conta, não salva nada. Serve para testar o sistema.
+───────────────────────────────────────────────────────────── */
+function entrarDev() {
+  user = {
+    id: 'dev-00000000-0000-0000-0000-000000000000',
+    email: 'dev@pluramente.app',
+    user_metadata: { role: userRole }
+  };
+  // Sobrescreve operações de banco com stubs que não erram
+  window._devMode = true;
+  patchSupabaseDev();
+  iniciarApp();
+}
+
+function patchSupabaseDev() {
+  // Cria um proxy que retorna dados vazios para qualquer consulta
+  const stub = () => ({
+    data: [], error: null,
+    select: () => stub(), from: () => stub(),
+    insert: () => Promise.resolve({ data: null, error: null }),
+    update: () => Promise.resolve({ data: null, error: null }),
+    delete: () => Promise.resolve({ data: null, error: null }),
+    eq: () => stub(), order: () => stub(),
+    then: (fn) => Promise.resolve({ data: [], error: null }).then(fn),
+  });
+  // Monkey-patch só o método .from() do cliente
+  const origFrom = db.from.bind(db);
+  db.from = (table) => {
+    const builder = origFrom(table);
+    // Wraps select para retornar array vazio no dev
+    const origSelect = builder.select?.bind(builder);
+    if (origSelect) {
+      builder.select = (...args) => {
+        const q = origSelect(...args);
+        const origThen = q.then?.bind(q);
+        if (origThen) q.then = (fn, ...rest) => Promise.resolve({ data: [], error: null }).then(fn, ...rest);
+        return q;
+      };
+    }
+    return builder;
+  };
+  console.info('🛠️ Pluramente: Modo DEV ativo — dados não são salvos.');
+}
+
+/* Restaura sessão existente ao recarregar */
+async function verificarSessao() {
+  const { data } = await db.auth.getSession();
+  if (data?.session?.user) {
+    user = data.session.user;
+    iniciarApp();
+  }
+}
+
+/* Logout */
+async function logout() {
+  if (!window._devMode) await db.auth.signOut();
+  window._devMode = false;
+  user = null; userRole = 'professor';
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  setRole('professor'); setTab('login');
+  document.getElementById('lemail').value = '';
+  document.getElementById('lsenha').value = '';
+}
+
+/* Helpers de mensagem */
+function showErr(msg) {
+  const el = document.getElementById('lerr'); if (!el) return;
+  el.textContent = '⚠️ ' + msg; el.style.display = 'block';
+  document.getElementById('lok').style.display = 'none';
+}
+function showOk(msg) {
+  const el = document.getElementById('lok'); if (!el) return;
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('lerr').style.display = 'none';
+}
+function clearMsgs() {
+  ['lerr','lok'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+}
 
 function iniciarApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
-  document.getElementById('user-avatar').textContent = user.email.slice(0,2).toUpperCase();
-  document.getElementById('user-email-lbl').textContent = user.email;
+  document.getElementById('user-avatar').textContent = (user.email||'DV').slice(0,2).toUpperCase();
+  document.getElementById('user-email-lbl').textContent = window._devMode ? '🛠️ Modo DEV' : user.email;
 
-  const badge = document.getElementById('sb-role-badge');
-  if (userRole === 'gestao') {
-    badge.textContent = '🏫 Gestão'; badge.className = 'sb-role gestao';
-    renderNavGestao(); carregarDadosGestao(); showPage('gestao-painel');
-  } else if (userRole === 'clinica') {
-    badge.textContent = '🏥 Clínica'; badge.className = 'sb-role clinica';
-    renderNavClinica(); showPage('clinica-perfil');
-  } else if (userRole === 'at') {
-    badge.textContent = '🧑‍⚕️ AT'; badge.className = 'sb-role at';
-    renderNavAT(); carregarRelatoriosAT(); showPage('at-roteiro');
-  } else {
-    badge.textContent = '👩‍🏫 Professor'; badge.className = 'sb-role professor';
-    renderNavProfessor(); carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('nova');
+  const badge   = document.getElementById('sb-role-badge');
+  const sidebar = document.querySelector('.sidebar');
+
+  const colorMap = {
+    professor:      { label:'👩‍🏫 Professor',      cls:'professor', sidebarCls:'role-professor',      nav: renderNavProfessor,      after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('nova'); } },
+    gestao:         { label:'🏫 Gestão',           cls:'gestao',    sidebarCls:'role-gestao',          nav: renderNavGestao,         after: ()=>{ carregarDadosGestao(); showPage('gestao-painel'); } },
+    clinica:        { label:'🏥 Clínica',          cls:'clinica',   sidebarCls:'role-clinica',         nav: renderNavClinica,        after: ()=>{ showPage('clinica-perfil'); } },
+    'gestao-clinica':{ label:'🏥👔 Gestão Clínica',cls:'at',       sidebarCls:'role-gestao-clinica',   nav: renderNavGestaoClinica,  after: ()=>{ showPage('gc-perfis'); } },
+    at:             { label:'🧑‍⚕️ AT',              cls:'at',       sidebarCls:'role-at',              nav: renderNavAT,             after: ()=>{ carregarRelatoriosAT(); showPage('at-roteiro'); } },
+  };
+
+  const cfg = colorMap[userRole] || colorMap['professor'];
+
+  if (userRole === 'clinica') {
+    const subLabel = { fono:'Fono', fisio:'Fisio', to:'TO', psicopedagogo:'Psicopedagogo', psicologo:'Psicólogo', musicoterapeuta:'Musicoterapeuta', psicomotricista:'Psicomotricista', outro:'Clínico' }[userSubRole] || 'Clínica';
+    cfg.label = `🏥 ${subLabel}`;
   }
-}
 
-function logout() { db.auth.signOut(); location.reload(); }
+  badge.textContent = cfg.label;
+  badge.className   = `sb-role ${cfg.cls}`;
+  if (sidebar) sidebar.className = `sidebar ${cfg.sidebarCls}`;
+
+  cfg.nav();
+  cfg.after();
+}
 
 // ── NAVEGAÇÃO ────────────────────────────────────────────────
 function renderNavProfessor() {
@@ -959,6 +1099,8 @@ function renderNavAT() {
     </div>`;
   renderPagesAT();
 }
+
+function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const p = document.getElementById(`page-${id}`);
@@ -1010,19 +1152,6 @@ function renderPages() {
         </div>
         <div class="fblock"><label class="flabel">Observações clínicas e do laudo</label><textarea id="inp-obs" class="ftarea sm" placeholder="Ex: TEA nível 2, hipersensibilidade sensorial, usa CAA, acompanhado por TO e fono…"></textarea></div>
       </div>
-    </div>
-
-    <div class="fcard">
-      <div class="fcard-title">Abordagem pedagógica</div>
-      <div class="metodo-sel" id="metodo-ped-sel">
-        <button class="metodo-btn active" onclick="setMetodoPed(this,'montessori')">🌱 Montessori</button>
-        <button class="metodo-btn" onclick="setMetodoPed(this,'waldorf')">🎨 Waldorf</button>
-        <button class="metodo-btn" onclick="setMetodoPed(this,'tradicional')">📖 Tradicional</button>
-        <button class="metodo-btn" onclick="setMetodoPed(this,'construtivista')">🧱 Construtivismo</button>
-        <button class="metodo-btn" onclick="setMetodoPed(this,'sociointeracionista')">🤝 Sociointeracionismo</button>
-        <button class="metodo-btn" onclick="setMetodoPed(this,'hibrido')">⚡ Híbrido</button>
-      </div>
-      <div class="metodo-info" id="metodo-ped-info"></div>
     </div>
 
     <div class="fcard">
@@ -1271,20 +1400,6 @@ function renderPagesClinica() {
   document.getElementById('main-content').innerHTML = `
   <div id="page-clinica-perfil" class="page active">
     <div class="clinic-hero"><h2>🏥 Módulo Clínico — Perfil Funcional</h2><p>Construa o perfil funcional do aluno. Essas informações alimentam o plano de intervenção integrado e os relatórios para escola e AT.</p></div>
-    <div class="fcard" style="margin-bottom:16px">
-      <div class="fcard-title">Abordagem clínica / terapêutica</div>
-      <div class="metodo-sel" id="metodo-clin-sel">
-        <button class="metodo-btn clinic-active" onclick="setMetodoClin(this,'aba')">🔵 ABA</button>
-        <button class="metodo-btn" onclick="setMetodoClin(this,'denver')">🟢 Denver / ESDM</button>
-        <button class="metodo-btn" onclick="setMetodoClin(this,'floortime')">🟡 DIR/Floortime</button>
-        <button class="metodo-btn" onclick="setMetodoClin(this,'teacch')">🟠 TEACCH</button>
-        <button class="metodo-btn" onclick="setMetodoClin(this,'fonoaudiologia')">🗣️ Fonoaudiologia</button>
-        <button class="metodo-btn" onclick="setMetodoClin(this,'to')">✋ Terapia Ocupacional</button>
-        <button class="metodo-btn" onclick="setMetodoClin(this,'psicologia')">🧠 Psicologia</button>
-        <button class="metodo-btn" onclick="setMetodoClin(this,'hibrido')">⚡ Híbrido</button>
-      </div>
-      <div class="metodo-info" id="metodo-clin-info"></div>
-    </div>
     <div class="section-header">
       <div><h1 class="page-title">Perfis Clínicos</h1><p class="page-sub" style="margin-bottom:0">Cadastre um perfil por aluno acompanhado.</p></div>
       <button class="btn-sm" onclick="abrirModalCadClinica()">+ Novo perfil</button>
@@ -1456,10 +1571,6 @@ async function gerar() {
 
   const prompt = `Você é especialista em educação inclusiva, neuropsicopedagogia, adaptação curricular e pedagogia Montessori.
 
-ABORDAGEM PEDAGÓGICA OBRIGATÓRIA: ${METODOS_PED[metodoPedAtual]?.label || 'Montessori'}
-REGRAS DO MÉTODO (siga rigorosamente, não misture com outros):
-${(METODOS_PED[metodoPedAtual]?.regras || []).map(r=>`- ${r}`).join('\n')}
-
 DADOS DO ALUNO:
 - Nome: ${aluno} | Idade: ${idade} | Série: ${serie}
 - Matéria: ${materia} | Tipo de atividade: ${tipoAtiv}
@@ -1472,19 +1583,19 @@ ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em 
 CONTEÚDO ORIGINAL:
 ${conteudo}
 
-Gere uma adaptação COMPLETA com 4 seções respeitando estritamente o método ${METODOS_PED[metodoPedAtual]?.label || 'selecionado'}:
+Gere uma adaptação COMPLETA com 4 seções:
 
 **SEÇÃO 1 — ANÁLISE DO PERFIL**
 Como os diagnósticos impactam esta atividade e quais barreiras remover.
 
 **SEÇÃO 2 — ATIVIDADE ADAPTADA**
-Atividade pronta para uso, com todas as estratégias do método aplicadas.
+Atividade pronta para uso, com todas as estratégias aplicadas.${materia.includes('Montessori') ? ' Integre princípios Montessori: autonomia, materiais concretos, ambiente preparado.' : ''}
 
 **SEÇÃO 3 — RECURSOS DE APOIO**
 Liste recursos concretos e acessíveis (visuais, manipulativos, CAA, tecnologias assistivas).
 
 **SEÇÃO 4 — 💡 DICAS PARA O PROFESSOR**
-Como apresentar, mediar, avaliar e ajustar a atividade conforme o método ${METODOS_PED[metodoPedAtual]?.label || ''}.`;
+Como apresentar, mediar, avaliar e ajustar a atividade.`;
 
   try {
     const r = await fetch(CLAUDE_PROXY, {
@@ -1496,7 +1607,6 @@ Como apresentar, mediar, avaliar e ajustar a atividade conforme o método ${METO
     const data = await r.json();
     const texto = (data.content||[]).map(b=>b.text||'').join('').trim();
     if (!texto) throw new Error('Resposta vazia.');
-    registrarUso('adaptacao', data.usage?.input_tokens, data.usage?.output_tokens, metodoPedAtual);
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId };
     document.getElementById('result-text').textContent = texto;
@@ -1679,7 +1789,6 @@ O documento deve ser formal, completo e pronto para ser assinado e arquivado na 
     const data = await r.json();
     const texto = (data.content||[]).map(b=>b.text||'').join('').trim();
     if (!texto) throw new Error('Resposta vazia.');
-    registrarUso('pei', data.usage?.input_tokens, data.usage?.output_tokens, metodoPedAtual);
     peiGerado = texto;
     document.getElementById('pei-result-text').textContent = texto;
     document.getElementById('pei-result-badge').textContent = `${aluno.nome} · ${periodo||''}`;
@@ -2514,337 +2623,6 @@ function abrirRelatorio(r) {
   abrirModal('modal-rel');
 }
 
-// ── CONFIGURAÇÕES DE MÉTODOS ──────────────────────────────────
-const METODOS_PED = {
-  montessori:       { label:'Montessori', regras:['Incentivar autonomia e autodescoberta','Evitar instrução direta — use perguntas guiadas','Usar materiais concretos e manipuláveis','Professor como guia, não transmissor','Respeitar o ritmo individual','Ambiente preparado e organizado'] },
-  waldorf:          { label:'Waldorf',    regras:['Usar narrativa, imagens e imaginação','Integrar emoção e conteúdo cognitivo','Evitar abstrações precoces','Trabalhar ritmo, respiração e movimento','Valorizar as artes como caminho para o conhecimento'] },
-  tradicional:      { label:'Tradicional',regras:['Explicar diretamente o conteúdo','Usar exemplos claros e repetição estruturada','Instrução passo a passo','Avaliação objetiva do aprendizado','Reforçar com exercícios e fixação'] },
-  construtivista:   { label:'Construtivismo', regras:['Partir do conhecimento prévio do aluno','Criar situações-problema para construção do saber','Incentivar hipóteses e experimentação','Aprendizagem ativa e investigativa'] },
-  sociointeracionista:{ label:'Sociointeracionismo', regras:['Valorizar a interação social como motor da aprendizagem','Usar a Zona de Desenvolvimento Proximal (ZDP)','Mediação intencional pelo professor','Atividades colaborativas e em duplas'] },
-  hibrido:          { label:'Híbrido',    regras:['Combinar abordagens de forma intencional','Definir método dominante e usar o secundário como apoio','Não misturar de forma aleatória'] },
-};
-const METODOS_CLIN = {
-  aba:           { label:'ABA', regras:['Foco em comportamentos observáveis e mensuráveis','Uso de reforço positivo sistemático','Divisão de habilidades em etapas pequenas (DTT)','Coleta de dados rigorosa','Nunca substituir profissional — conteúdo orientativo'] },
-  denver:        { label:'ESDM/Denver', regras:['Interação naturalista e lúdica','Aprendizagem inserida em contextos sociais','Engajamento e imitação como base','Ambiente rico em oportunidades de comunicação'] },
-  floortime:     { label:'DIR/Floortime', regras:['Seguir a iniciativa da criança','Ampliar e desafiar o nível de engajamento','Relação afetiva como base da intervenção','Promover raciocínio e criatividade'] },
-  teacch:        { label:'TEACCH', regras:['Estruturação visual do ambiente','Rotinas visuais e previsibilidade','Trabalho independente com suporte visual','Respeitar diferenças individuais do espectro'] },
-  fonoaudiologia:{ label:'Fonoaudiologia', regras:['Foco na comunicação funcional','Trabalhar linguagem receptiva e expressiva','Apoio à CAA quando indicado','Integração com escola e família'] },
-  to:            { label:'Terapia Ocupacional', regras:['Foco nas atividades de vida diária e participação','Integração sensorial','Adaptações de ambiente e materiais','Motricidade fina e grossa'] },
-  psicologia:    { label:'Psicologia', regras:['Regulação emocional como foco central','Fortalecer autoestima e identidade','Estratégias cognitivo-comportamentais','Vínculo terapêutico como base'] },
-  hibrido:       { label:'Híbrido Clínico', regras:['Definir método principal e secundário','Intervenção coerente e não contraditória','Registro rigoroso de qual abordagem foi aplicada'] },
-};
-
-let metodoPedAtual = 'montessori', metodoClinAtual = 'aba';
-
-function setMetodoPed(btn, metodo) {
-  metodoPedAtual = metodo;
-  document.querySelectorAll('#metodo-ped-sel .metodo-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const info = document.getElementById('metodo-ped-info');
-  const m = METODOS_PED[metodo];
-  info.innerHTML = `<strong>${m.label}:</strong> ${m.regras.slice(0,3).join(' · ')}`;
-  info.style.display = 'block';
-}
-function setMetodoClin(btn, metodo) {
-  metodoClinAtual = metodo;
-  document.querySelectorAll('#metodo-clin-sel .metodo-btn').forEach(b => b.classList.remove('clinic-active'));
-  btn.classList.add('clinic-active');
-  const info = document.getElementById('metodo-clin-info');
-  const m = METODOS_CLIN[metodo];
-  info.innerHTML = `<strong>${m.label}:</strong> ${m.regras.slice(0,3).join(' · ')}`;
-  info.style.display = 'block';
-}
-
-async function devCriarUsuario() {
-  const email = document.getElementById('new-user-email').value.trim();
-  const senha = document.getElementById('new-user-pass').value;
-  const role  = document.getElementById('new-user-role').value;
-  const nome  = document.getElementById('new-user-nome').value.trim();
-  const msg   = document.getElementById('dev-user-msg');
-
-  const showDevMsg = (txt, ok) => {
-    msg.style.display = 'block';
-    msg.style.color = ok ? '#4ADE80' : '#F87171';
-    msg.textContent = txt;
-  };
-
-  if (!email || !senha) return showDevMsg('Preencha e-mail e senha.', false);
-  if (senha.length < 8) return showDevMsg('Senha mínima: 8 caracteres.', false);
-
-  // Criar via Supabase Auth Admin (usando service role via edge function)
-  // Como não temos service role direto, usamos signUp + insert manual no profiles
-  const { data, error } = await db.auth.signUp({ email, password: senha });
-  if (error) return showDevMsg('Erro: ' + error.message, false);
-
-  const uid = data.user?.id;
-  if (!uid) return showDevMsg('Erro ao obter ID do usuário.', false);
-
-  // Inserir perfil com role e ativo=true
-  const { error: pe } = await db.from('profiles').upsert({
-    id: uid, email, nome: nome || null, role, ativo: true,
-    created_at: new Date().toISOString()
-  });
-  if (pe) return showDevMsg('Usuário criado mas erro no perfil: ' + pe.message, false);
-
-  showDevMsg(`✅ Usuário ${email} (${role}) criado com sucesso!`, true);
-  document.getElementById('new-user-email').value = '';
-  document.getElementById('new-user-pass').value  = '';
-  document.getElementById('new-user-nome').value  = '';
-  setTimeout(() => devPage('usuarios'), 1500);
-}
-
-async function devToggleUser(id, ativoAtual) {
-  const novoStatus = !ativoAtual;
-  await db.from('profiles').update({ ativo: novoStatus }).eq('id', id);
-  devPage('usuarios');
-}
-
-async function devAlterarRole(id, novoRole) {
-  await db.from('profiles').update({ role: novoRole }).eq('id', id);
-  toast && toast('Perfil atualizado!', 'success');
-}
-
-// ── TRACKING DE TOKENS ────────────────────────────────────────
-async function registrarUso(tipo, tokens_in, tokens_out, metodo) {
-  try {
-    await db.from('usage_logs').insert({
-      user_id: user?.id,
-      user_email: user?.email,
-      tipo,
-      metodo: metodo || metodoPedAtual,
-      tokens_input: tokens_in || 0,
-      tokens_output: tokens_out || 0,
-      custo_usd: ((tokens_in||0) * 0.000003) + ((tokens_out||0) * 0.000015),
-      created_at: new Date().toISOString()
-    });
-  } catch(e) { console.warn('Não foi possível registrar uso:', e.message); }
-}
-
-// ── ESQUECI SENHA ─────────────────────────────────────────────
-function mostrarEsqueciSenha() {
-  document.getElementById('forgot-screen').style.display = 'flex';
-}
-function voltarLogin() {
-  document.getElementById('forgot-screen').style.display = 'none';
-}
-async function enviarResetSenha() {
-  const email = document.getElementById('forgot-email').value.trim();
-  const msg   = document.getElementById('forgot-msg');
-  if (!email) { msg.style.display='block'; msg.style.background='#FEE2E2'; msg.style.color='#7F1D1D'; msg.textContent='Informe um e-mail válido.'; return; }
-  const { error } = await db.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '?reset=true'
-  });
-  if (error) { msg.style.display='block'; msg.style.background='#FEE2E2'; msg.style.color='#7F1D1D'; msg.textContent='Erro: ' + error.message; return; }
-  msg.style.display='block'; msg.style.background='#D1FAE5'; msg.style.color='#065F46';
-  msg.textContent = '✅ Link enviado! Verifique seu e-mail.';
-}
-
-// ── DEV PANEL ─────────────────────────────────────────────────
-const DEV_EMAIL = 'dev@pluramente.app';
-const DEV_PASS  = 'Pluramente@Dev2025';
-
-function abrirDevPanel() {
-  const s  = document.getElementById('dev-screen');
-  const lv = document.getElementById('dev-login-view');
-  const av = document.getElementById('dev-app-view');
-  const btn = document.getElementById('dev-open-btn');
-  if (!s) return;
-  s.style.display = 'block';
-  if (lv) { lv.style.display = 'flex'; }
-  if (av) { av.style.display = 'none'; }
-  if (btn) { btn.style.display = 'none'; }
-  const em = document.getElementById('dev-email');
-  const pw = document.getElementById('dev-pass');
-  const err = document.getElementById('dev-err');
-  if (em) em.value = '';
-  if (pw) pw.value = '';
-  if (err) err.style.display = 'none';
-}
-function fecharDevPanel() {
-  const s  = document.getElementById('dev-screen');
-  const btn = document.getElementById('dev-open-btn');
-  if (s)   s.style.display   = 'none';
-  if (btn) btn.style.display = 'flex';
-}
-function fecharDevPanel() {
-  document.getElementById('dev-screen').style.display = 'none';
-}
-function devLogin() {
-  const email = document.getElementById('dev-email').value.trim();
-  const pass  = document.getElementById('dev-pass').value;
-  const err   = document.getElementById('dev-err');
-  if (email !== DEV_EMAIL || pass !== DEV_PASS) {
-    err.style.display = 'block'; err.textContent = '❌ Credenciais inválidas.'; return;
-  }
-  err.style.display = 'none';
-  document.getElementById('dev-login-view').style.display = 'none';
-  document.getElementById('dev-app-view').style.display = 'block';
-  devPage('dashboard');
-}
-
-let devCurrentPage = 'dashboard';
-async function devPage(p) {
-  devCurrentPage = p;
-  document.querySelectorAll('.dev-nav-item').forEach(el => {
-    el.classList.toggle('active', el.textContent.toLowerCase().includes(p) || (p==='dashboard' && el.textContent.includes('Dashboard')));
-  });
-  const main = document.getElementById('dev-main-content');
-  main.innerHTML = '<div style="color:#64748B;font-size:13px">Carregando…</div>';
-
-  if (p === 'dashboard') {
-    const [{ count: totalUsers }, { count: totalLogs }, { data: custoData }] = await Promise.all([
-      db.from('profiles').select('*', { count:'exact', head:true }),
-      db.from('usage_logs').select('*', { count:'exact', head:true }),
-      db.from('usage_logs').select('custo_usd'),
-    ]);
-    const custoTotal = (custoData||[]).reduce((s,r) => s + (r.custo_usd||0), 0);
-    const { data: hoje } = await db.from('usage_logs').select('*').gte('created_at', new Date().toISOString().slice(0,10));
-    main.innerHTML = `
-      <div class="dev-title">📊 Dashboard</div>
-      <div class="dev-sub-title">Visão geral do sistema Pluramente</div>
-      <div class="dev-grid">
-        <div class="dev-stat"><div class="dev-stat-val">${totalUsers||0}</div><div class="dev-stat-lbl">Usuários cadastrados</div></div>
-        <div class="dev-stat"><div class="dev-stat-val">${totalLogs||0}</div><div class="dev-stat-lbl">Requisições IA total</div></div>
-        <div class="dev-stat"><div class="dev-stat-val">$${custoTotal.toFixed(3)}</div><div class="dev-stat-lbl">Custo total estimado (USD)</div></div>
-        <div class="dev-stat"><div class="dev-stat-val">${(hoje||[]).length}</div><div class="dev-stat-lbl">Acessos hoje</div></div>
-      </div>
-      <div class="dev-card">
-        <div class="dev-section-title">📅 Atividade recente</div>
-        ${(hoje||[]).slice(0,8).map(l=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1E293B;font-size:12px">
-          <span style="color:#94A3B8">${l.user_email||'—'}</span>
-          <span style="color:#64748B">${l.tipo||'—'} · ${l.metodo||'—'}</span>
-          <span style="color:#4F46E5">$${(l.custo_usd||0).toFixed(4)}</span>
-        </div>`).join('') || '<div style="color:#475569;font-size:13px">Nenhuma atividade hoje.</div>'}
-      </div>`;
-
-  } else if (p === 'usuarios') {
-    const { data: users } = await db.from('profiles').select('*').order('created_at', { ascending:false });
-    main.innerHTML = `
-      <div class="dev-title">👥 Usuários</div>
-      <div class="dev-sub-title">Gerencie todos os acessos à plataforma Pluramente</div>
-
-      <div class="dev-card" style="margin-bottom:18px">
-        <div class="dev-section-title">➕ Cadastrar novo usuário</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <input type="email" id="new-user-email" class="dev-input" placeholder="email@usuario.com" style="margin:0">
-          <input type="password" id="new-user-pass" class="dev-input" placeholder="Senha (mín. 8 caracteres)" style="margin:0">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-          <select id="new-user-role" class="dev-input" style="margin:0">
-            <option value="professor">👩‍🏫 Professor</option>
-            <option value="gestao">🏫 Gestão</option>
-            <option value="clinica">🏥 Clínica</option>
-            <option value="at">🧑‍⚕️ Acompanhante Terapêutico (AT)</option>
-          </select>
-          <input type="text" id="new-user-nome" class="dev-input" placeholder="Nome completo (opcional)" style="margin:0">
-        </div>
-        <div id="dev-user-msg" style="font-size:12px;margin-bottom:8px;display:none"></div>
-        <button class="dev-btn" style="width:auto;padding:10px 24px" onclick="devCriarUsuario()">✅ Criar usuário</button>
-      </div>
-
-      <div class="dev-card" style="overflow-x:auto">
-        <div class="dev-section-title">Usuários cadastrados (${(users||[]).length})</div>
-        <table class="dev-table">
-          <thead><tr><th>Nome / E-mail</th><th>Perfil</th><th>Cadastro</th><th>Status</th><th>Ações</th></tr></thead>
-          <tbody>
-            ${(users||[]).map(u=>`<tr>
-              <td>
-                <div style="color:#E2E8F0;font-size:13px">${u.nome||'—'}</div>
-                <div style="color:#475569;font-size:11px">${u.email||'—'}</div>
-              </td>
-              <td><span class="dev-badge ${u.role||'professor'}">${u.role||'professor'}</span></td>
-              <td style="font-size:11px;color:#475569">${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—'}</td>
-              <td><span class="dev-badge ${u.ativo===false?'inativo':'ativo'}">${u.ativo===false?'inativo':'ativo'}</span></td>
-              <td style="display:flex;gap:6px">
-                <button onclick="devToggleUser('${u.id}',${u.ativo!==false})" style="padding:4px 10px;border-radius:6px;border:1px solid #334155;background:transparent;color:${u.ativo===false?'#4ADE80':'#F87171'};font-size:11px;cursor:pointer">
-                  ${u.ativo===false?'Ativar':'Desativar'}
-                </button>
-                <select onchange="devAlterarRole('${u.id}',this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #334155;background:#0F172A;color:#94A3B8;font-size:11px;cursor:pointer">
-                  ${['professor','gestao','clinica','at'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${r}</option>`).join('')}
-                </select>
-              </td>
-            </tr>`).join('') || '<tr><td colspan="5" style="color:#475569">Nenhum usuário cadastrado.</td></tr>'}
-          </tbody>
-        </table>
-      </div>`;
-
-
-  } else if (p === 'logs') {
-    const { data: logs } = await db.from('usage_logs').select('*').order('created_at', { ascending:false }).limit(50);
-    main.innerHTML = `
-      <div class="dev-title">📋 Logs de Uso</div>
-      <div class="dev-sub-title">Últimas 50 requisições à IA</div>
-      <div class="dev-card" style="overflow-x:auto">
-        <table class="dev-table">
-          <thead><tr><th>Usuário</th><th>Tipo</th><th>Método</th><th>Tokens entrada</th><th>Tokens saída</th><th>Custo</th><th>Data</th></tr></thead>
-          <tbody>
-            ${(logs||[]).map(l=>`<tr>
-              <td style="color:#E2E8F0;font-size:11px">${l.user_email||'—'}</td>
-              <td><span style="font-size:11px;color:#94A3B8">${l.tipo||'—'}</span></td>
-              <td><span style="font-size:11px;color:#818CF8">${l.metodo||'—'}</span></td>
-              <td style="color:#A5F3FC">${l.tokens_input||0}</td>
-              <td style="color:#A5F3FC">${l.tokens_output||0}</td>
-              <td style="color:#4ADE80">$${(l.custo_usd||0).toFixed(5)}</td>
-              <td style="font-size:11px;color:#475569">${l.created_at ? new Date(l.created_at).toLocaleString('pt-BR') : '—'}</td>
-            </tr>`).join('') || '<tr><td colspan="7" style="color:#475569">Sem logs ainda.</td></tr>'}
-          </tbody>
-        </table>
-      </div>`;
-
-  } else if (p === 'tokens') {
-    const { data: logs } = await db.from('usage_logs').select('user_email,tokens_input,tokens_output,custo_usd');
-    const porUser = {};
-    (logs||[]).forEach(l => {
-      if (!porUser[l.user_email]) porUser[l.user_email] = { ti:0, to:0, custo:0, reqs:0 };
-      porUser[l.user_email].ti    += l.tokens_input||0;
-      porUser[l.user_email].to    += l.tokens_output||0;
-      porUser[l.user_email].custo += l.custo_usd||0;
-      porUser[l.user_email].reqs  += 1;
-    });
-    const totalCusto = Object.values(porUser).reduce((s,v)=>s+v.custo,0);
-    const maxCusto   = Math.max(...Object.values(porUser).map(v=>v.custo), 0.001);
-    main.innerHTML = `
-      <div class="dev-title">💰 Tokens & Custo</div>
-      <div class="dev-sub-title">Consumo por usuário · Custo total: <strong style="color:#4ADE80">$${totalCusto.toFixed(4)}</strong></div>
-      <div class="dev-card">
-        ${Object.entries(porUser).sort((a,b)=>b[1].custo-a[1].custo).map(([email,v])=>`
-          <div style="margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-              <span style="font-size:12.5px;color:#E2E8F0">${email}</span>
-              <span style="font-size:12px;color:#4ADE80">$${v.custo.toFixed(5)} · ${v.reqs} req</span>
-            </div>
-            <div class="token-bar"><div class="token-fill" style="width:${Math.min(100,(v.custo/maxCusto)*100).toFixed(1)}%"></div></div>
-            <div style="font-size:11px;color:#475569;margin-top:2px">↑ ${v.ti.toLocaleString()} tokens in · ${v.to.toLocaleString()} tokens out</div>
-          </div>`).join('') || '<div style="color:#475569">Sem dados de uso ainda.</div>'}
-      </div>`;
-
-  } else if (p === 'relatorios') {
-    const { data: logs } = await db.from('usage_logs').select('tipo,metodo,custo_usd,created_at');
-    const porMetodo = {};
-    (logs||[]).forEach(l => {
-      const k = l.metodo||'desconhecido';
-      if (!porMetodo[k]) porMetodo[k] = { reqs:0, custo:0 };
-      porMetodo[k].reqs++; porMetodo[k].custo += l.custo_usd||0;
-    });
-    main.innerHTML = `
-      <div class="dev-title">📈 Relatórios</div>
-      <div class="dev-sub-title">Uso por método pedagógico/clínico</div>
-      <div class="dev-card">
-        <div class="dev-section-title">Métodos mais usados</div>
-        <table class="dev-table">
-          <thead><tr><th>Método</th><th>Requisições</th><th>Custo total</th></tr></thead>
-          <tbody>
-            ${Object.entries(porMetodo).sort((a,b)=>b[1].reqs-a[1].reqs).map(([m,v])=>`<tr>
-              <td style="color:#818CF8">${m}</td>
-              <td style="color:#E2E8F0">${v.reqs}</td>
-              <td style="color:#4ADE80">$${v.custo.toFixed(5)}</td>
-            </tr>`).join('') || '<tr><td colspan="3" style="color:#475569">Sem dados.</td></tr>'}
-          </tbody>
-        </table>
-      </div>`;
-  }
-}
-
 // ── GUIA DE PERFIS ───────────────────────────────────────────
 const GUIA_PERFIS = [
   { emoji:'🧩', nome:'Transtorno do Espectro Autista', sigla:'TEA', cat:'Neurodivergência',
@@ -3114,9 +2892,9 @@ function abrirDivModulo(i) {
 }
 
 
-function showErr(m){ const e=document.getElementById('lerr'); e.textContent=m; e.style.display='block'; }
-function showOk(m){ const e=document.getElementById('lok'); e.textContent=m; e.style.display='block'; }
-function clearMsgs(){ document.getElementById('lerr').style.display='none'; document.getElementById('lok').style.display='none'; }
+// Helpers de mensagem (duplicatas removidas — funções definidas no bloco de login)
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => verificarSessao());
 </script>
 </body>
 </html>
