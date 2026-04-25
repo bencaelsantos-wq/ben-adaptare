@@ -416,13 +416,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
       🔒 O acesso é restrito.<br>Solicite seu cadastro ao administrador.
     </div>
   </div>
-  <!-- Botão dev FORA do card, fixo na tela -->
-  <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100">
-    <button onclick="abrirDevPanel()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:8px 20px;font-family:inherit;font-size:12px;color:rgba(255,255,255,0.7);cursor:pointer;backdrop-filter:blur(4px);transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.2)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.7)'">
-      ⚙️ Acesso do Desenvolvedor
-    </button>
-  </div>
 </div>
+
+<!-- Botão DEV fixo canto inferior direito -->
+<button id="dev-open-btn" onclick="abrirDevPanel()" style="position:fixed;bottom:20px;right:20px;z-index:10000;background:rgba(15,23,42,0.85);border:1px solid #334155;border-radius:10px;padding:10px 16px;font-family:inherit;font-size:12px;color:#94A3B8;cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;gap:6px;transition:all .2s" onmouseover="this.style.background='#1E293B';this.style.color='#fff'" onmouseout="this.style.background='rgba(15,23,42,0.85)';this.style.color='#94A3B8'">
+  ⚙️ Dev
+</button>
 
 <!-- ESQUECI SENHA -->
 <div id="forgot-screen" class="forgot-screen" style="display:none;position:fixed;inset:0;z-index:8000;align-items:center;justify-content:center">
@@ -2645,20 +2644,27 @@ const DEV_EMAIL = 'dev@pluramente.app';
 const DEV_PASS  = 'Pluramente@Dev2025';
 
 function abrirDevPanel() {
-  const s = document.getElementById('dev-screen');
+  const s  = document.getElementById('dev-screen');
   const lv = document.getElementById('dev-login-view');
   const av = document.getElementById('dev-app-view');
-  if (!s) { alert('Dev panel não encontrado.'); return; }
+  const btn = document.getElementById('dev-open-btn');
+  if (!s) return;
   s.style.display = 'block';
-  if (lv) { lv.style.display = 'flex'; lv.style.alignItems = 'center'; lv.style.justifyContent = 'center'; }
-  if (av) av.style.display = 'none';
-  // Limpar campos
+  if (lv) { lv.style.display = 'flex'; }
+  if (av) { av.style.display = 'none'; }
+  if (btn) { btn.style.display = 'none'; }
   const em = document.getElementById('dev-email');
   const pw = document.getElementById('dev-pass');
+  const err = document.getElementById('dev-err');
   if (em) em.value = '';
   if (pw) pw.value = '';
-  const err = document.getElementById('dev-err');
   if (err) err.style.display = 'none';
+}
+function fecharDevPanel() {
+  const s  = document.getElementById('dev-screen');
+  const btn = document.getElementById('dev-open-btn');
+  if (s)   s.style.display   = 'none';
+  if (btn) btn.style.display = 'flex';
 }
 function fecharDevPanel() {
   document.getElementById('dev-screen').style.display = 'none';
