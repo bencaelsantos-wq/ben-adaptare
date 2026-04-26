@@ -999,11 +999,11 @@ function iniciarApp() {
   const sidebar = document.querySelector('.sidebar');
 
   const colorMap = {
-    professor:      { label:'👩‍🏫 Professor',      cls:'professor', sidebarCls:'role-professor',      nav: renderNavProfessor,      after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('nova'); } },
-    gestao:         { label:'🏫 Gestão',           cls:'gestao',    sidebarCls:'role-gestao',          nav: renderNavGestao,         after: ()=>{ carregarDadosGestao(); showPage('gestao-painel'); } },
-    clinica:        { label:'🏥 Clínica',          cls:'clinica',   sidebarCls:'role-clinica',         nav: renderNavClinica,        after: ()=>{ showPage('clinica-perfil'); } },
-    'gestao-clinica':{ label:'🏥👔 Gestão Clínica',cls:'at',       sidebarCls:'role-gestao-clinica',   nav: renderNavGestaoClinica,  after: ()=>{ showPage('gc-perfis'); } },
-    at:             { label:'🧑‍⚕️ AT',              cls:'at',       sidebarCls:'role-at',              nav: renderNavAT,             after: ()=>{ carregarRelatoriosAT(); showPage('at-roteiro'); } },
+    professor:       { label:'👩‍🏫 Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('nova'); } },
+    gestao:          { label:'🏫 Gestão',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); showPage('gestao-painel'); } },
+    clinica:         { label:'🏥 Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-perfil'); } },
+    'gestao-clinica':{ label:'🏥👔 Gestão Clínica', cls:'at',        sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-perfis'); } },
+    at:              { label:'🧑‍⚕️ AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); showPage('at-roteiro'); } },
   };
 
   const cfg = colorMap[userRole] || colorMap['professor'];
@@ -1100,6 +1100,156 @@ function renderNavAT() {
   renderPagesAT();
 }
 
+// ── GESTÃO CLÍNICA ────────────────────────────────────────────
+function renderNavGestaoClinica() {
+  document.getElementById('sb-nav').innerHTML = `
+    <div class="nav-section">Gestão Clínica</div>
+    <div class="nav-item clinic-item active" id="nav-gc-perfis" onclick="showPage('gc-perfis')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfis dos Alunos
+    </div>
+    <div class="nav-item clinic-item" id="nav-gc-profissionais" onclick="showPage('gc-profissionais')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M11 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Profissionais
+    </div>
+    <div class="nav-item clinic-item" id="nav-gc-relatorios" onclick="showPage('gc-relatorios')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5"/><path d="M8 4v12M4 8h4M4 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios
+    </div>`;
+  renderPagesGestaoClinica();
+}
+
+function renderPagesGestaoClinica() {
+  document.getElementById('main-content').innerHTML = `
+  <div id="page-gc-perfis" class="page active">
+    <div class="section-header">
+      <div><h1 class="page-title">Perfis Clínicos dos Alunos</h1>
+           <p class="page-sub" style="margin-bottom:0">Somente a Gestão Clínica pode excluir perfis.</p></div>
+      <button class="btn-sm" onclick="abrirModalCadClinica()">+ Novo perfil</button>
+    </div>
+    <div class="cards-grid" id="gc-perfis-grid">
+      <div class="empty"><div class="empty-icon">🧠</div><div class="empty-text">Nenhum perfil cadastrado.</div></div>
+    </div>
+  </div>
+
+  <div id="page-gc-profissionais" class="page">
+    <div class="section-header">
+      <div><h1 class="page-title">Profissionais da Clínica</h1>
+           <p class="page-sub" style="margin-bottom:0">Cadastre os profissionais por especialidade.</p></div>
+      <button class="btn-sm" onclick="toast('Cadastro em breve.','')">+ Cadastrar profissional</button>
+    </div>
+    <div class="empty"><div class="empty-icon">👨‍⚕️</div><div class="empty-text">Nenhum profissional cadastrado.</div></div>
+  </div>
+
+  <div id="page-gc-relatorios" class="page">
+    <h1 class="page-title">Relatórios da Clínica</h1>
+    <p class="page-sub">Todos os relatórios gerados pelos profissionais.</p>
+    <div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum relatório encontrado.</div></div>
+  </div>`;
+  carregarPerfisGestaoClinica();
+}
+
+async function carregarPerfisGestaoClinica() {
+  try {
+    const { data } = await db.from('perfis_clinicos').select('*').order('nome');
+    const grid = document.getElementById('gc-perfis-grid');
+    if (!grid) return;
+    const lista = data || [];
+    if (!lista.length) {
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🧠</div><div class="empty-text">Nenhum perfil cadastrado.</div></div>`;
+      return;
+    }
+    grid.innerHTML = lista.map(p => `
+      <div class="item-card">
+        <div class="ic-nome">${p.nome||'(sem nome)'}</div>
+        <div class="ic-meta">${p.nascimento ? '📅 '+new Date(p.nascimento+'T00:00:00').toLocaleDateString('pt-BR') : ''} ${p.idade ? '· '+p.idade : ''}</div>
+        <div class="ic-prev">${p.diagnostico||''}</div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn-sm" onclick='abrirPerfilClinico(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Ver / Editar</button>
+          <button class="btn-danger" onclick="excluirPerfilClinicaGestao('${p.id}','${(p.nome||'').replace(/'/g,"&#39;")}')">Excluir</button>
+        </div>
+      </div>`).join('');
+  } catch(e) { console.error('carregarPerfisGestaoClinica:', e); }
+}
+
+async function excluirPerfilClinicaGestao(id, nome) {
+  if (userRole !== 'gestao-clinica') return toast('Apenas a Gestão Clínica pode excluir perfis.', 'error');
+  if (!confirm(`Excluir perfil de ${nome}? Esta ação não pode ser desfeita.`)) return;
+  const { error } = await db.from('perfis_clinicos').delete().eq('id', id);
+  if (error) return toast('Erro ao excluir: ' + error.message, 'error');
+  toast('Perfil excluído.', 'success');
+  carregarPerfisGestaoClinica();
+}
+
+// Relatórios Gestão Escolar
+let todosRelatoriosG = [];
+async function carregarGRelatorios() {
+  try {
+    const { data } = await db.from('relatorios').select('*').order('created_at', { ascending: false });
+    todosRelatoriosG = data || [];
+    filtrarGRel();
+  } catch(e) { console.error('carregarGRelatorios:', e); }
+}
+function filtrarGRel() {
+  const q  = (document.getElementById('grel-q')?.value||'').toLowerCase();
+  const fo = document.getElementById('grel-forigem')?.value||'';
+  const res = todosRelatoriosG.filter(r =>
+    (!q || (r.aluno_nome||'').toLowerCase().includes(q)) &&
+    (!fo || r.origem === fo)
+  );
+  const grid = document.getElementById('grel-grid');
+  if (!grid) return;
+  grid.innerHTML = res.length ? res.map(r => `
+    <div class="rel-card" onclick='abrirRelatorio(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:${r.origem==='clinica'?'#F5F3FF':'#ECFDF5'};color:${r.origem==='clinica'?'#7C3AED':'#059669'}">${r.origem==='clinica'?'🏥 Clínica':'🏫 Escola'}</span>
+      <div style="font-weight:600;margin-top:6px">${r.titulo||'Relatório'}</div>
+      <div style="font-size:12px;color:var(--gr400)">${r.aluno_nome||'—'} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>`).join('') :
+    `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📋</div><div class="empty-text">Nenhum relatório encontrado.</div></div>`;
+}
+
+// ── EXCLUIR ALUNO (só Gestão Escolar) ─────────────────────────
+async function excluirAluno(id, nome) {
+  if (userRole !== 'gestao') return toast('Apenas a Gestão Escolar pode excluir alunos.', 'error');
+  if (!confirm(`Excluir o aluno "${nome}"? Esta ação não pode ser desfeita.`)) return;
+  const { error } = await db.from('alunos').delete().eq('id', id);
+  if (error) return toast('Erro ao excluir: ' + error.message, 'error');
+  toast('Aluno excluído.', 'success');
+  carregarAlunos();
+}
+
+// ── TOOLTIP DOS CHIPS ──────────────────────────────────────────
+function getChipTooltip(nome) {
+  if (typeof GUIA_PERFIS === 'undefined') return '';
+  const termo = nome.split('—')[0].trim().toLowerCase();
+  const p = GUIA_PERFIS.find(g =>
+    (g.sigla && g.sigla.toLowerCase() === termo) ||
+    g.nome.toLowerCase().startsWith(termo) ||
+    termo.startsWith(g.nome.split(' ')[0].toLowerCase())
+  );
+  return p ? p.resumo.slice(0, 120) + '…' : '';
+}
+
+// ── PDF ANEXOS ─────────────────────────────────────────────────
+let cpPDFs = [];
+function adicionarPDFs(input) {
+  const files = [...input.files];
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = e => { cpPDFs.push({ name: f.name, dataUrl: e.target.result }); renderPDFList(); };
+    reader.readAsDataURL(f);
+  });
+  input.value = '';
+}
+function removerPDF(i) { cpPDFs.splice(i, 1); renderPDFList(); }
+function renderPDFList() {
+  const el = document.getElementById('cp-pdf-list');
+  if (!el) return;
+  el.innerHTML = cpPDFs.map((p, i) => `
+    <div class="pdf-item">
+      <span>📄</span>
+      <span class="pdf-name">${p.name}</span>
+      <button onclick="removerPDF(${i})" title="Remover">×</button>
+    </div>`).join('');
+}
+
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1110,9 +1260,11 @@ function showPage(id) {
   if (id === 'historico') filtrarHistorico();
   if (id === 'gestao-peis') filtrarGPEIs();
   if (id === 'gestao-adapt') filtrarGAdapt();
-  if (id === 'gestao-professores') { carregarProfessores(); }
+  if (id === 'gestao-professores') carregarProfessores();
+  if (id === 'gestao-relatorios') carregarGRelatorios();
   if (id === 'clinica-relatorios') carregarRelatoriosClinica();
   if (id === 'at-relatorios') carregarRelatoriosAT();
+  if (id === 'gc-perfis') carregarPerfisGestaoClinica();
   if (id === 'guia') renderGuia();
   if (id === 'diversidade') renderDiversidade();
 }
