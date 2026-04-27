@@ -2789,14 +2789,23 @@ function cardProfessor(p) {
   const iniciais = (p.nome||'?').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
   const mats  = (p.materias||[]).map(m=>`<span class="prof-badge mat">📚 ${m}</span>`).join('');
   const salas = (p.salas||[]).map(s=>`<span class="prof-badge sala">🚪 ${s}</span>`).join('');
+  const contato = [p.email, p.vinculo, p.telefone].filter(Boolean).join(' · ') || '—';
   return `<div class="prof-card">
     <div class="prof-card-top">
       <div class="prof-avatar">${iniciais}</div>
       <div>
         <div class="prof-nome">${p.nome||'(sem nome)'}</div>
-        <div class="prof-email">${[p.email, p.vinculo].filter(Boolean).join(' · ') || '—'}</div>
+        <div class="prof-email">${contato}</div>
       </div>
     </div>
+    ${mats ? `<div class="prof-info-row">${mats}</div>` : ''}
+    ${salas ? `<div class="prof-info-row">${salas}</div>` : ''}
+    ${p.observacoes ? `<div class="prof-obs">${p.observacoes.slice(0,100)}${p.observacoes.length>100?'…':''}</div>` : ''}
+    <div style="margin-top:10px;display:flex;gap:6px">
+      <button class="btn-sm" style="font-size:12px" onclick='abrirDetProf(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Ver detalhes</button>
+    </div>
+  </div>`;
+}
     ${mats ? `<div class="prof-info-row">${mats}</div>` : ''}
     ${salas ? `<div class="prof-info-row">${salas}</div>` : ''}
     ${p.obs ? `<div style="font-size:12px;color:var(--gr400);line-height:1.5;margin-top:6px">${p.obs.slice(0,100)}${p.obs.length>100?'…':''}</div>` : ''}
@@ -2864,13 +2873,13 @@ async function salvarProfessor() {
   if (!nome) return toast('Informe o nome do professor.','error');
   const payload = {
     nome,
-    email:    document.getElementById('cp-email').value.trim() || null,
-    tel:      document.getElementById('cp-tel').value.trim()   || null,
-    vinculo:  document.getElementById('cp-vinculo').value      || null,
-    obs:      document.getElementById('cp-obs').value.trim()   || null,
-    materias: cpMats,
-    salas:    cpSalas,
-    user_id:  user.id,
+    email:      document.getElementById('cp-email').value.trim()   || null,
+    telefone:   document.getElementById('cp-tel').value.trim()     || null,
+    vinculo:    document.getElementById('cp-vinculo').value         || null,
+    observacoes:document.getElementById('cp-obs').value.trim()     || null,
+    materias:   cpMats,
+    salas:      cpSalas,
+    user_id:    user.id,
   };
   let error;
   if (profEditId) {
@@ -2888,7 +2897,7 @@ let profDetalheAtual = null;
 function abrirDetProf(p) {
   profDetalheAtual = p;
   document.getElementById('mdp-nome').textContent = p.nome || '(sem nome)';
-  document.getElementById('mdp-meta').textContent = [p.vinculo, p.email, p.tel].filter(Boolean).join(' · ') || '—';
+  document.getElementById('mdp-meta').textContent = [p.vinculo, p.email, p.telefone].filter(Boolean).join(' · ') || '—';
   const mats  = (p.materias||[]).map(m=>`<span class="prof-badge mat">📚 ${m}</span>`).join(' ');
   const salas = (p.salas||[]).map(s=>`<span class="prof-badge sala">🚪 ${s}</span>`).join(' ');
   document.getElementById('mdp-body').innerHTML = `
