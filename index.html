@@ -1075,6 +1075,8 @@ async function entrar() {
     return showErr(error.message);
   }
   user = data.user;
+  // Ler perfil do banco — define role e subrole reais
+  await lerPerfilDobanco();
   iniciarApp();
 }
 
@@ -1114,40 +1116,13 @@ function entrarDev() {
     email: 'dev@pluramente.app',
     user_metadata: { role: userRole }
   };
-  // Sobrescreve operações de banco com stubs que não erram
   window._devMode = true;
-  patchSupabaseDev();
   iniciarApp();
 }
 
 function patchSupabaseDev() {
-  // Cria um proxy que retorna dados vazios para qualquer consulta
-  const stub = () => ({
-    data: [], error: null,
-    select: () => stub(), from: () => stub(),
-    insert: () => Promise.resolve({ data: null, error: null }),
-    update: () => Promise.resolve({ data: null, error: null }),
-    delete: () => Promise.resolve({ data: null, error: null }),
-    eq: () => stub(), order: () => stub(),
-    then: (fn) => Promise.resolve({ data: [], error: null }).then(fn),
-  });
-  // Monkey-patch só o método .from() do cliente
-  const origFrom = db.from.bind(db);
-  db.from = (table) => {
-    const builder = origFrom(table);
-    // Wraps select para retornar array vazio no dev
-    const origSelect = builder.select?.bind(builder);
-    if (origSelect) {
-      builder.select = (...args) => {
-        const q = origSelect(...args);
-        const origThen = q.then?.bind(q);
-        if (origThen) q.then = (fn, ...rest) => Promise.resolve({ data: [], error: null }).then(fn, ...rest);
-        return q;
-      };
-    }
-    return builder;
-  };
-  console.info('🛠️ Pluramente: Modo DEV ativo — dados não são salvos.');
+  // Removido — o modo DEV agora apenas simula o usuário sem interceptar o banco
+  console.info('🛠️ Pluramente: Modo DEV ativo.');
 }
 
 /* Restaura sessão existente ao recarregar */
@@ -1163,13 +1138,35 @@ async function verificarSessao() {
 
 async function lerPerfilDobanco() {
   try {
-    const { data } = await db.from('profiles')
-      .select('role, subrole, nome')
+    const { data, error } = await db.from('profiles')
+      .select('role, subrole, nome, ativo')
       .eq('id', user.id)
-      .single();
-    if (data?.role)    userRole    = data.role;
-    if (data?.subrole) userSubRole = data.subrole;
-  } catch(e) { /* usa o papel padrão da sessão */ }
+      .maybeSingle();
+
+    if (error) { console.warn('profiles read error:', error.message); return; }
+
+    if (!data) {
+      // Perfil não existe — cria automaticamente com role padrão
+      await db.from('profiles').upsert({
+        id: user.id, email: user.email,
+        role: userRole || 'professor', ativo: true
+      });
+      return;
+    }
+
+    if (data.ativo === false) {
+      await db.auth.signOut();
+      user = null;
+      showErr('⛔ Sua conta está inativa. Entre em contato com o administrador.');
+      throw new Error('Conta inativa');
+    }
+
+    if (data.role)    userRole    = data.role;
+    if (data.subrole) userSubRole = data.subrole;
+  } catch(e) {
+    if (e.message === 'Conta inativa') throw e;
+    console.warn('lerPerfilDobanco:', e.message);
+  }
 }
 
 /* Logout */
