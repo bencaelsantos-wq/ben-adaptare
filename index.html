@@ -1146,7 +1146,7 @@ async function lerPerfilDobanco() {
     if (error) { console.warn('profiles read error:', error.message); return; }
 
     if (!data) {
-      // Perfil não existe — cria automaticamente com role padrão
+      // Perfil não existe — cria automaticamente com o role escolhido na tela
       await db.from('profiles').upsert({
         id: user.id, email: user.email,
         role: userRole || 'professor', ativo: true
@@ -1161,8 +1161,14 @@ async function lerPerfilDobanco() {
       throw new Error('Conta inativa');
     }
 
-    if (data.role)    userRole    = data.role;
-    if (data.subrole) userSubRole = data.subrole;
+    // ⚠️ O role selecionado na tela de login prevalece sobre o banco.
+    // O banco só é usado como fallback se o usuário não escolheu nada.
+    // Isso permite que um mesmo email acesse perfis diferentes (gestão, clínica, professor).
+    if (!userRole || userRole === 'professor') {
+      if (data.role) userRole = data.role;
+    }
+    if (!userSubRole && data.subrole) userSubRole = data.subrole;
+
   } catch(e) {
     if (e.message === 'Conta inativa') throw e;
     console.warn('lerPerfilDobanco:', e.message);
@@ -2435,7 +2441,128 @@ async function gerar() {
     return k ? ESTRATEGIAS[k] : null;
   }).filter(Boolean).join('\n\n');
 
-  const prompt = `Você é especialista em educação inclusiva, neuropsicopedagogia, adaptação curricular e pedagogia Montessori.
+  // ── BASE DE CONHECIMENTO MONTESSORI ──────────────────────────
+  const isMontessori = materia.toLowerCase().includes('montessori') ||
+    ['Educação Cósmica','Vida Prática','Sensorial','Botânica e Zoologia',
+     'Geografia e Geologia','História do Universo','Educação para a Paz',
+     'Movimento e Coordenação'].includes(materia) ||
+    tipoAtiv.toLowerCase().includes('montessori');
+
+  const MONTESSORI_SISTEMA = isMontessori ? `
+══════════════════════════════════════════════════════════════
+MÉTODO MONTESSORI — CONHECIMENTO COMPLETO E OBRIGATÓRIO
+══════════════════════════════════════════════════════════════
+
+FILOSOFIA CENTRAL:
+A criança é o construtor de si mesma. O adulto prepara o ambiente
+e se retira — nunca faz pela criança o que ela pode fazer sozinha.
+Errar é parte do aprendizado; o material tem controle de erro embutido.
+
+OS 5 GRANDES PRINCÍPIOS QUE DEVEM APARECER NA ADAPTAÇÃO:
+1. MENTE ABSORVENTE (0-6 anos) / RACIOCÍNIO (6-12 anos)
+   - A criança absorve o ambiente de forma inconsciente (0-6)
+   - Usa a imaginação e o raciocínio para aprender (6-12)
+   - NUNCA dê a resposta — provoque a descoberta
+
+2. PERÍODOS SENSÍVEIS — respeite o momento da criança:
+   - Linguagem: até ~6 anos (máximo sensível)
+   - Ordem: 18 meses a 4 anos
+   - Refinamento sensorial: 2 a 6 anos
+   - Leitura/escrita: 3.5 a 5.5 anos
+   - Matemática: 4 a 6 anos
+   - Cultura: 6 a 9 anos
+
+3. AMBIENTE PREPARADO — 6 características obrigatórias:
+   - Ordem física: materiais no lugar fixo, acessíveis à criança
+   - Beleza: ambiente limpo, harmonioso, convidativo
+   - Proporção: tudo no tamanho da criança
+   - Liberdade de movimento: criança se move, escolhe, trabalha no chão
+   - Materiais isolados (1 variável por vez)
+   - Controle de erro no próprio material
+
+4. PAPEL DO ADULTO (GUIA):
+   - Observa ANTES de intervir
+   - Faz apresentação silenciosa (mãos, não palavras)
+   - Diz o mínimo: "Posso te mostrar algo?" — depois silêncio
+   - Nunca corrige em público
+   - Nunca elogia o resultado ("Que bonito!") — elogia o processo ("Você trabalhou muito nisso")
+   - Não interrompe o trabalho concentrado
+
+5. LIBERDADE COM LIMITE:
+   - Liberdade de escolha do material, do lugar, do tempo
+   - Limite: respeito ao trabalho do outro, cuidado com o material, não interromper
+
+ÁREAS DO AMBIENTE E MATERIAIS REAIS:
+┌─ VIDA PRÁTICA ──────────────────────────────────────────────┐
+│ Exercícios: verter, transferir, dobrar, varrer, lavar, abotoar│
+│ Materiais: molduras de amarrar, bandejas, jarras, esponjas   │
+│ Objetivo: independência, coordenação, concentração           │
+│ Adaptação: reduzir etapas, apoio físico gentil, materiais maiores│
+└──────────────────────────────────────────────────────────────┘
+┌─ SENSORIAL ─────────────────────────────────────────────────┐
+│ Torre Rosa, Escada Marrom, Cilindros, Tablete de cores       │
+│ Caixas de som, de cheiro, Tablete de peso, Binômio/Trinômio  │
+│ Objetivo: refinar os sentidos, base para abstração           │
+│ Adaptação: usar 1 sentido por vez, ampliar contrastes        │
+└──────────────────────────────────────────────────────────────┘
+┌─ LINGUAGEM ─────────────────────────────────────────────────┐
+│ Período pré-escrita: caixinha de areia, letras de lixa       │
+│ Período de escrita: alfabeto móvel (escreve ANTES de ler)    │
+│ Período de leitura: objetos-ficha, caixas de leitura         │
+│ Nomenclaturas: 3 períodos (mostrar-nomear-apontar)           │
+│ Adaptação: CAA como extensão do alfabeto móvel               │
+└──────────────────────────────────────────────────────────────┘
+┌─ MATEMÁTICA ────────────────────────────────────────────────┐
+│ Concreto → Semi-concreto → Abstrato (NUNCA pule etapas)      │
+│ Material dourado: unidade(cubo), dezena(barra), centena(placa)│
+│ Tabela de Seguin: composição e decomposição de números       │
+│ Cadeia de contas: potências, sequência, skip counting        │
+│ A grande divisão: 4 pessoas dividindo com material dourado   │
+│ Armário de potências: geometria das formas                   │
+│ Adaptação: sempre concreto, uma operação por sessão          │
+└──────────────────────────────────────────────────────────────┘
+┌─ EDUCAÇÃO CÓSMICA (6-12 anos) ──────────────────────────────┐
+│ As 5 Grandes Lições: origem do universo, vida, humanidade,   │
+│ comunicação, matemática — contadas como narrativa/história   │
+│ Projetos de pesquisa autônomos, linha do tempo, mapas        │
+│ Adaptação: narrativa adaptada, pesquisa com suporte visual   │
+└──────────────────────────────────────────────────────────────┘
+
+LIÇÃO MONTESSORIANA — ESTRUTURA OBRIGATÓRIA:
+1. Convite: "Posso te mostrar algo?"
+2. Buscar o material com a criança
+3. Apresentação LENTA, SILENCIOSA, com as mãos
+4. Devolver à criança: "Agora é sua vez"
+5. Observar sem intervir
+6. Guardar o material junto, no mesmo lugar
+
+ERROS QUE A ADAPTAÇÃO DEVE EXPLICITAMENTE EVITAR:
+❌ Dar a resposta antes que a criança tente
+❌ Corrigir verbalmente ("Errado, é assim")
+❌ Elogiar o produto ("Ficou lindo!") — elogie o esforço
+❌ Interromper período de concentração profunda
+❌ Usar fichas mimeografadas como principal recurso
+❌ Atividades em grupo quando o material é individual
+❌ Pular do concreto para o abstrato sem o semi-concreto
+❌ Mais de um conceito novo por apresentação
+
+CONTROLE DE ERRO — como aplicar na adaptação:
+O material deve permitir que a CRIANÇA perceba o erro sozinha.
+Exemplo: se a Torre Rosa não ficou ordenada, os tamanhos mostram.
+Na adaptação para NEE: use código de cores, texturas, encaixes
+como controle de erro externo quando o material original não basta.
+
+TEMPO DE TRABALHO:
+- Ciclo de trabalho: mínimo 3 horas ininterruptas (ideal)
+- Nunca interromper criança em concentração profunda
+- Adaptação: respeitar o tempo da criança com NEE — pode ser ciclos menores com pausas planejadas
+══════════════════════════════════════════════════════════════
+` : '';
+
+  const prompt = `Você é especialista em educação inclusiva, neuropsicopedagogia e adaptação curricular.
+${isMontessori ? 'Você tem conhecimento PROFUNDO e COMPLETO do Método Montessori e DEVE aplicá-lo integralmente nesta adaptação.' : ''}
+
+${MONTESSORI_SISTEMA}
 
 DADOS DO ALUNO:
 - Nome: ${aluno} | Idade: ${idade} | Série: ${serie}
@@ -2446,28 +2573,36 @@ ${obs ? `- Observações clínicas: ${obs}` : ''}
 ESTRATÉGIAS PEDAGÓGICAS OBRIGATÓRIAS POR DIAGNÓSTICO:
 ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em evidências.'}
 
-CONTEÚDO ORIGINAL:
+CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
 Gere uma adaptação COMPLETA com 4 seções:
 
 **SEÇÃO 1 — ANÁLISE DO PERFIL**
-Como os diagnósticos impactam esta atividade e quais barreiras remover.
+Como os diagnósticos impactam esta atividade específica e quais barreiras precisam ser removidas.${isMontessori ? ' Identifique também em qual período sensível a criança se encontra.' : ''}
 
 **SEÇÃO 2 — ATIVIDADE ADAPTADA**
-Atividade pronta para uso, com todas as estratégias aplicadas.${materia.includes('Montessori') ? ' Integre princípios Montessori: autonomia, materiais concretos, ambiente preparado.' : ''}
+${isMontessori ? `Atividade 100% baseada no Método Montessori:
+• Descreva o material concreto específico a ser usado (com nome real do material Montessori)
+• Escreva o convite e a apresentação passo a passo (lenta, silenciosa, com as mãos)
+• Indique o controle de erro embutido ou adaptado
+• Descreva como a criança trabalhará de forma autônoma
+• Especifique as adaptações para o perfil NEE desta criança mantendo a essência Montessori` :
+'Atividade pronta para uso, com todas as estratégias aplicadas.'}
 
 **SEÇÃO 3 — RECURSOS DE APOIO**
-Liste recursos concretos e acessíveis (visuais, manipulativos, CAA, tecnologias assistivas).
+${isMontessori ? 'Liste os materiais Montessori exatos, adaptações sensoriais, CAA se necessário, e como preparar o ambiente para esta criança.' :
+'Liste recursos concretos e acessíveis (visuais, manipulativos, CAA, tecnologias assistivas).'}
 
-**SEÇÃO 4 — 💡 DICAS PARA O PROFESSOR**
-Como apresentar, mediar, avaliar e ajustar a atividade.`;
+**SEÇÃO 4 — 💡 DICAS PARA O PROFESSOR/GUIA**
+${isMontessori ? `Como apresentar (linguagem mínima, mãos que ensinam), quando observar e quando intervir, como registrar o progresso sem interromper, e o que NUNCA fazer em uma sala Montessori com esta criança.` :
+'Como apresentar, mediar, avaliar e ajustar a atividade.'}`;
 
   try {
     const r = await fetch(CLAUDE_PROXY, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_KEY}` },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2500, messages:[{role:'user',content:prompt}] })
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:3000, messages:[{role:'user',content:prompt}] })
     });
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || `Erro ${r.status}`); }
     const data = await r.json();
@@ -2476,7 +2611,7 @@ Como apresentar, mediar, avaliar e ajustar a atividade.`;
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId };
     document.getElementById('result-text').textContent = texto;
-    document.getElementById('result-badge').textContent = `${idade} · ${serie} · ${materia}`;
+    document.getElementById('result-badge').textContent = `${idade} · ${serie} · ${materia}${isMontessori ? ' · 🌱 Montessori' : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
   } catch(e) {
