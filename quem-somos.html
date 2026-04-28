@@ -166,6 +166,36 @@ body{
   .mv-grid,.equipe-grid,.pq-grid,.contato-grid,.valores-grid{grid-template-columns:1fr}
   .card-footer{padding:14px 24px}
 }
+
+/* ── WHATSAPP ──────────────────────────────────────────────── */
+.wa-float{position:fixed;bottom:24px;right:24px;z-index:9000;display:flex;align-items:center;gap:10px;background:#25D366;color:#fff;border:none;border-radius:999px;padding:12px 20px 12px 14px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 6px 24px rgba(37,211,102,.4);transition:all .2s;text-decoration:none}
+.wa-float:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(37,211,102,.5)}
+.wa-float svg{flex-shrink:0}
+.wa-pulse{position:absolute;top:-3px;right:-3px;width:12px;height:12px;background:#FF3B30;border-radius:50%;border:2px solid #fff;animation:waPulse 2s infinite}
+@keyframes waPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+
+/* ── LGPD BANNER ───────────────────────────────────────────── */
+.lgpd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);z-index:9500;display:flex;align-items:flex-end;justify-content:center;padding:20px}
+.lgpd-banner{background:#fff;border-radius:16px 16px 0 0;max-width:860px;width:100%;padding:24px 28px;box-shadow:0 -8px 40px rgba(0,0,0,.15)}
+.lgpd-title{font-size:15px;font-weight:700;color:#1F2937;margin-bottom:6px}
+.lgpd-text{font-size:12.5px;color:#4B5563;line-height:1.65;margin-bottom:14px}
+.lgpd-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.lgpd-accept{padding:10px 24px;background:#1E3A8A;color:#fff;border:none;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.lgpd-accept:hover{opacity:.88}
+.lgpd-reject{padding:10px 20px;background:#F3F4F6;color:#374151;border:none;border-radius:999px;font-family:inherit;font-size:13px;cursor:pointer}
+.lgpd-terms-link{font-size:12px;color:#6B7280;text-decoration:underline;cursor:pointer}
+
+/* ── TERMOS MODAL ──────────────────────────────────────────── */
+.termos-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:9800;display:flex;align-items:center;justify-content:center;padding:24px}
+.termos-modal{background:#fff;border-radius:20px;max-width:680px;width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.2)}
+.termos-header{padding:20px 24px 16px;border-bottom:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:center}
+.termos-header h3{font-size:16px;font-weight:700;color:#1F2937}
+.termos-close{background:none;border:none;font-size:22px;color:#9CA3AF;cursor:pointer;line-height:1;padding:0}
+.termos-body{padding:20px 24px;overflow-y:auto;flex:1;font-size:13px;color:#374151;line-height:1.75}
+.termos-body h4{font-size:13.5px;font-weight:700;color:#1E3A8A;margin:18px 0 6px}
+.termos-body h4:first-child{margin-top:0}
+.termos-footer{padding:16px 24px;border-top:1px solid #E5E7EB;display:flex;gap:10px;justify-content:flex-end}
+
 </style>
 </head>
 <body>
@@ -304,6 +334,110 @@ body{
   </div>
 
 </div><!-- /card -->
+
+
+<!-- ══ WHATSAPP FLUTUANTE ══ -->
+<a class="wa-float" href="https://wa.me/5511995665193?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20o%20Pluramente." target="_blank" rel="noopener">
+  <div class="wa-pulse"></div>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+  Suporte
+</a>
+
+<!-- ══ LGPD BANNER ══ -->
+<div class="lgpd-overlay" id="lgpd-banner" style="display:none">
+  <div class="lgpd-banner">
+    <div class="lgpd-title">🔒 Privacidade e Proteção de Dados</div>
+    <div class="lgpd-text">O Pluramente trata seus dados em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>. As informações de crianças são protegidas com sigilo total e jamais compartilhadas com terceiros. Ao continuar navegando, você confirma estar ciente das nossas políticas de privacidade.</div>
+    <div class="lgpd-btns">
+      <button class="lgpd-accept" onclick="aceitarLGPD()">Aceitar e continuar</button>
+      <button class="lgpd-reject" onclick="fecharLGPD()">Só essenciais</button>
+      <span class="lgpd-terms-link" onclick="abrirTermos()">Ver Termos e Política de Privacidade</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TERMOS / POLÍTICA MODAL ══ -->
+<div class="termos-overlay" id="termos-modal" style="display:none">
+  <div class="termos-modal">
+    <div class="termos-header">
+      <h3>📄 Termos de Uso e Política de Privacidade</h3>
+      <button class="termos-close" onclick="fecharTermos()">×</button>
+    </div>
+    <div class="termos-body">
+      <h4>1. Sobre o Pluramente</h4>
+      <p>O Pluramente é uma plataforma de integração pedagógica e clínica destinada a apoiar professores, gestores educacionais, equipes clínicas e acompanhantes terapêuticos no acompanhamento do desenvolvimento de crianças com necessidades educacionais especiais.</p>
+
+      <h4>2. Dados coletados</h4>
+      <p>Coletamos dados de usuários (nome, e-mail, papel profissional) e de alunos (nome completo, data de nascimento, diagnósticos, observações clínicas e pedagógicas). Todos os dados são armazenados de forma segura com criptografia em trânsito e em repouso, em conformidade com as melhores práticas de segurança da informação.</p>
+
+      <h4>3. Finalidade do uso dos dados</h4>
+      <p>Os dados são utilizados exclusivamente para: (a) identificação e autenticação dos usuários; (b) apoio ao planejamento pedagógico e clínico individualizado; (c) geração de relatórios internos entre os profissionais da equipe; (d) melhoria contínua da plataforma, de forma agregada e anônima, sem exposição de identidade ou dados pessoais.</p>
+
+      <h4>4. Proteção de dados de crianças (LGPD)</h4>
+      <p>Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), os dados de crianças e adolescentes recebem proteção reforçada. Nenhum dado pessoal identificável é compartilhado com terceiros, exibido publicamente ou utilizado para fins comerciais em qualquer hipótese.</p>
+
+      <h4>5. Responsabilidade do usuário</h4>
+      <p>Ao cadastrar dados no sistema, o usuário declara ter autorização legal para tal e se responsabiliza pela veracidade e adequação das informações inseridas. O uso indevido da plataforma, especialmente no que se refere a dados de crianças, pode implicar responsabilidade civil e criminal prevista na legislação vigente.</p>
+
+      <h4>6. Direitos dos titulares de dados</h4>
+      <p>Em conformidade com o Art. 18 da LGPD, qualquer titular de dados tem direito a: acessar, corrigir, excluir, portar ou revogar o consentimento sobre seus dados. Solicitações devem ser encaminhadas pelo suporte via WhatsApp: <strong>(11) 99566-5193</strong> ou pelo e-mail do administrador da plataforma.</p>
+
+      <h4>7. Suporte e contato</h4>
+      <p>Para dúvidas sobre o sistema, sugestões ou solicitações relacionadas à privacidade e proteção de dados, entre em contato diretamente com o suporte pelo WhatsApp: <strong>(11) 99566-5193</strong>. O atendimento é realizado em horário comercial.</p>
+
+      <h4>8. Alterações nestes termos</h4>
+      <p>Estes termos podem ser atualizados a qualquer momento para refletir melhorias na plataforma ou alterações na legislação. Usuários cadastrados serão notificados sobre mudanças relevantes no próximo acesso à plataforma.</p>
+    </div>
+    <div class="termos-footer">
+      <button class="lgpd-reject" onclick="fecharTermos()">Fechar</button>
+      <button class="lgpd-accept" onclick="aceitarLGPD();fecharTermos()">Aceitar e continuar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── LGPD ──────────────────────────────────────────────────────
+function verificarLGPD() {
+  if (!localStorage.getItem('pluramente_lgpd_ok')) {
+    setTimeout(() => {
+      const el = document.getElementById('lgpd-banner');
+      if (el) el.style.display = 'flex';
+    }, 1200);
+  }
+}
+function aceitarLGPD() {
+  localStorage.setItem('pluramente_lgpd_ok', '1');
+  fecharLGPD();
+}
+function fecharLGPD() {
+  const el = document.getElementById('lgpd-banner');
+  if (el) el.style.display = 'none';
+}
+
+// ── TERMOS ────────────────────────────────────────────────────
+function abrirTermos() {
+  fecharLGPD();
+  const el = document.getElementById('termos-modal');
+  if (el) el.style.display = 'flex';
+}
+function fecharTermos() {
+  const el = document.getElementById('termos-modal');
+  if (el) el.style.display = 'none';
+}
+
+// Fechar modais clicando fora
+document.getElementById('termos-modal')?.addEventListener('click', function(e) {
+  if (e.target === this) fecharTermos();
+});
+document.getElementById('lgpd-banner')?.addEventListener('click', function(e) {
+  if (e.target === this) fecharLGPD();
+});
+
+// Iniciar LGPD check
+document.addEventListener('DOMContentLoaded', verificarLGPD);
+</script>
 
 </body>
 </html>

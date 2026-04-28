@@ -1327,12 +1327,16 @@ function patchSupabaseDev() {
 
 /* Restaura sessão existente ao recarregar */
 async function verificarSessao() {
-  const { data } = await db.auth.getSession();
-  if (data?.session?.user) {
-    user = data.session.user;
-    // Ler papel e sub-papel do banco (pode ter sido definido pela gestão)
-    await lerPerfilDobanco();
-    iniciarApp();
+  try {
+    const { data } = await db.auth.getSession();
+    if (data?.session?.user) {
+      user = data.session.user;
+      await lerPerfilDobanco();
+      iniciarApp();  // pula landing, vai direto ao app
+    }
+    // Se não tem sessão, mostrarLanding() já foi chamado pelo DOMContentLoaded
+  } catch(e) {
+    console.error('verificarSessao:', e);
   }
 }
 
@@ -1404,6 +1408,7 @@ function clearMsgs() {
 
 function iniciarApp() {
   document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('landing-page').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
   document.getElementById('user-avatar').textContent = (user.email||'DV').slice(0,2).toUpperCase();
   document.getElementById('user-email-lbl').textContent = window._devMode ? '🛠️ Modo DEV' : user.email;
@@ -4321,7 +4326,7 @@ function mostrarLanding() {
 
 function irParaLogin() {
   document.getElementById('landing-page').style.display = 'none';
-  mostrarLanding();
+  document.getElementById('login-screen').style.display = 'flex';
 }
 
 // ── WHATSAPP ──────────────────────────────────────────────────
