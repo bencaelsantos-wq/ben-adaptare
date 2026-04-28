@@ -3377,10 +3377,31 @@ function renderCpSalas() {
     `<span class="sala-tag">${s}<button onclick="removerSala(${i})">×</button></span>`).join('');
 }
 
-// Gerar senha temporária aleatória
+// Gerar senha temporária que atende TODOS os requisitos do Supabase:
+// mínimo 1 minúscula + 1 maiúscula + 1 número + 1 especial
 function gerarSenhaTemp() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  return Array.from({length:10}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  const lower   = 'abcdefghjkmnpqrstuvwxyz';
+  const upper   = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits  = '23456789';
+  const special = '!@#$%&*_+-=?';
+  const all     = lower + upper + digits + special;
+
+  // Garantir pelo menos 1 de cada categoria
+  const obrig = [
+    lower  [Math.floor(Math.random() * lower.length)],
+    upper  [Math.floor(Math.random() * upper.length)],
+    digits [Math.floor(Math.random() * digits.length)],
+    special[Math.floor(Math.random() * special.length)],
+  ];
+
+  // Completar até 12 caracteres com chars aleatórios
+  const resto = Array.from({length: 8},
+    () => all[Math.floor(Math.random() * all.length)]
+  );
+
+  // Embaralhar tudo (para as obrigatórias não ficarem sempre no início)
+  const pwd = [...obrig, ...resto].sort(() => Math.random() - 0.5).join('');
+  return pwd;
 }
 
 async function salvarProfessor() {
