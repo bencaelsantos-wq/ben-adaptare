@@ -3003,15 +3003,6 @@ function cardProfessor(p) {
     </div>
   </div>`;
 }
-    ${mats ? `<div class="prof-info-row">${mats}</div>` : ''}
-    ${salas ? `<div class="prof-info-row">${salas}</div>` : ''}
-    ${p.obs ? `<div style="font-size:12px;color:var(--gr400);line-height:1.5;margin-top:6px">${p.obs.slice(0,100)}${p.obs.length>100?'…':''}</div>` : ''}
-    <div class="prof-card-actions">
-      <button class="btn-sm" style="font-size:12px;padding:6px 13px" onclick='abrirDetProf(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Ver detalhes</button>
-      <button class="btn-sm-ghost" style="font-size:12px;padding:6px 12px" onclick='prepEditProf(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Editar</button>
-    </div>
-  </div>`;
-}
 
 function abrirModalCadProf() {
   profEditId = null; cpMats = []; cpSalas = [];
