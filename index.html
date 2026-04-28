@@ -918,7 +918,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
     </div>
     <div style="margin-top:16px">
       <div style="background:#ECFDF5;border:1px solid #6EE7B7;border-radius:10px;padding:14px 16px;margin-bottom:14px">
-        <div style="font-size:13px;font-weight:600;color:#065F46;margin-bottom:8px">📧 E-mail de boas-vindas enviado para:</div>
+        <div style="font-size:13px;font-weight:600;color:#065F46;margin-bottom:8px">✅ Acesso criado para:</div>
         <div id="acesso-prof-email" style="font-size:14px;font-weight:700;color:#059669"></div>
       </div>
       <div style="background:#FFF7ED;border:1px solid #FCD34D;border-radius:10px;padding:14px 16px;margin-bottom:14px">
@@ -927,14 +927,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
           <code id="acesso-prof-senha" style="font-size:18px;font-weight:800;color:#B45309;letter-spacing:.1em;background:#FFFBEB;padding:6px 14px;border-radius:6px;border:1px dashed #FCD34D"></code>
           <button onclick="copiarSenhaProf()" style="padding:6px 12px;background:#F59E0B;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Copiar</button>
         </div>
-        <div style="font-size:11.5px;color:#92400E;margin-top:8px;line-height:1.5">⚠️ Salve esta senha! O professor deverá usá-la no primeiro acesso. Após entrar, poderá trocar pela área de perfil.</div>
+        <div style="font-size:11.5px;color:#92400E;margin-top:8px;line-height:1.5">⚠️ Copie esta senha agora e repasse ao professor. Ela não será exibida novamente.</div>
       </div>
       <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 16px;font-size:12.5px;color:#1E40AF;line-height:1.6">
-        <strong>O que acontece agora:</strong><br>
-        1. O professor recebe um e-mail de confirmação do Supabase<br>
-        2. Após clicar no link, usa o e-mail + senha temporária para entrar<br>
-        3. Seleciona o perfil <strong>Professor</strong> na tela de login<br>
-        4. Acessa a área pedagógica personalizada
+        <strong>📋 Repasse estas informações ao professor:</strong><br>
+        🌐 Acesso: <strong id="acesso-prof-url"></strong><br>
+        📧 E-mail: o e-mail cadastrado acima<br>
+        🔑 Senha: a senha temporária (copie acima)<br>
+        👤 Perfil: selecionar <strong>Educacional → Professor</strong><br><br>
+        <span style="font-size:11px;color:#3B82F6">ℹ️ O Supabase pode enviar um e-mail de confirmação. Se não chegar, o professor já consegue entrar com a senha acima diretamente — basta confirmar o e-mail na primeira vez via link enviado.</span>
       </div>
       <button class="btn-sm" style="margin-top:14px;width:100%" onclick="fecharModal('modal-acesso-prof')">Entendido</button>
     </div>
@@ -950,7 +951,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
     </div>
     <div style="margin-top:16px">
       <div style="background:#ECFDF5;border:1px solid #6EE7B7;border-radius:10px;padding:14px 16px;margin-bottom:14px">
-        <div style="font-size:13px;font-weight:600;color:#065F46;margin-bottom:8px">📧 E-mail enviado para:</div>
+        <div style="font-size:13px;font-weight:600;color:#065F46;margin-bottom:8px">✅ Acesso criado para:</div>
         <div id="acesso-clinica-email" style="font-size:14px;font-weight:700;color:#059669"></div>
         <div id="acesso-clinica-especialidade" style="font-size:12px;color:#065F46;margin-top:4px"></div>
       </div>
@@ -960,11 +961,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
           <code id="acesso-clinica-senha" style="font-size:18px;font-weight:800;color:#B45309;letter-spacing:.1em;background:#FFFBEB;padding:6px 14px;border-radius:6px;border:1px dashed #FCD34D"></code>
           <button onclick="copiarSenhaClinica()" style="padding:6px 12px;background:#F59E0B;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Copiar</button>
         </div>
-        <div style="font-size:11.5px;color:#92400E;margin-top:8px;line-height:1.5">⚠️ Salve esta senha! O profissional usará no primeiro acesso.</div>
+        <div style="font-size:11.5px;color:#92400E;margin-top:8px;line-height:1.5">⚠️ Copie esta senha agora e repasse ao profissional. Ela não será exibida novamente.</div>
       </div>
       <div style="background:#F5F3FF;border:1px solid #C4B5FD;border-radius:10px;padding:12px 16px;font-size:12.5px;color:#4C1D95;line-height:1.6">
-        <strong>Ao entrar no sistema:</strong><br>
-        O profissional selecionará <strong>Clínica</strong> e já verá automaticamente o menu correspondente à sua especialidade cadastrada.
+        <strong>📋 Repasse estas informações ao profissional:</strong><br>
+        🌐 Acesso: <strong id="acesso-clinica-url"></strong><br>
+        📧 E-mail: o e-mail cadastrado acima<br>
+        🔑 Senha: a senha temporária (copie acima)<br>
+        👤 Perfil: selecionar <strong>Clínica</strong> — o menu aparece automaticamente conforme a especialidade cadastrada.<br><br>
+        <span style="font-size:11px;color:#7C3AED">ℹ️ O Supabase pode enviar um e-mail de confirmação. Se não chegar, o profissional já consegue entrar com a senha acima — basta confirmar o e-mail no primeiro acesso via link.</span>
       </div>
       <button class="btn-sm" style="margin-top:14px;width:100%" onclick="fecharModal('modal-acesso-clinica')">Entendido</button>
     </div>
@@ -2048,7 +2053,10 @@ async function salvarProfissionalClinica() {
     const { data: authData, error: authErr } = await authClient.auth.signUp({
       email,
       password: senhaTemp,
-      options: { data: { role: 'clinica', subrole: especialidade, nome } }
+      options: {
+        data: { role: 'clinica', subrole: especialidade, nome },
+        emailRedirectTo: window.location.href,
+      }
     });
     if (authErr && !authErr.message.includes('already registered')) {
       throw new Error('Erro ao criar acesso: ' + authErr.message);
@@ -2084,6 +2092,7 @@ async function salvarProfissionalClinica() {
     document.getElementById('acesso-clinica-especialidade').textContent =
       '🏥 ' + (ESPECIALIDADE_LABELS[especialidade] || especialidade);
     document.getElementById('acesso-clinica-senha').textContent = senhaTemp;
+    document.getElementById('acesso-clinica-url').textContent = window.location.href;
     window._ultimaSenhaClinica = senhaTemp;
     abrirModal('modal-acesso-clinica');
 
@@ -3421,13 +3430,18 @@ async function salvarProfessor() {
     const { data: authData, error: authErr } = await authClient.auth.signUp({
       email,
       password: senhaTemp,
-      options: { data: { role: 'professor', nome } }
+      options: {
+        data: { role: 'professor', nome },
+        emailRedirectTo: window.location.href,
+      }
     });
 
     if (authErr && !authErr.message.includes('already registered')) {
       throw new Error('Erro ao criar acesso: ' + authErr.message);
     }
 
+    // Se usuário já existia, authData.user pode ser null
+    const jaExistia = authErr?.message?.includes('already registered');
     const novoUserId = authData?.user?.id;
 
     // 2. Inserir/atualizar perfil na tabela profiles
@@ -3462,6 +3476,7 @@ async function salvarProfessor() {
     // 4. Mostrar modal com credenciais
     document.getElementById('acesso-prof-email').textContent = email;
     document.getElementById('acesso-prof-senha').textContent = senhaTemp;
+    document.getElementById('acesso-prof-url').textContent = window.location.href;
     window._ultimaSenhaProf = senhaTemp;
     abrirModal('modal-acesso-prof');
     carregarProfessores();
