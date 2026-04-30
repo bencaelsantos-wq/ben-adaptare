@@ -4962,57 +4962,60 @@ function carregarExemploTrad(textoEnc,dir){
   traduzirTexto();
 }
 async function traduzirTexto(){
-  const txt=document.getElementById('trad-input').value.trim();
+  const txt=document.getElementById('trad-input')?.value.trim();
   if(!txt) return toast('Cole um texto para traduzir.','error');
   const genBox=document.getElementById('gen-trad-box');
   const outEl=document.getElementById('trad-output');
+  if(!genBox||!outEl) return toast('Erro: elemento não encontrado. Recarregue a página.','error');
+
   genBox.classList.add('show');
-  if(outEl) outEl.textContent='Traduzindo…';
+  outEl.innerHTML='<span style="color:var(--gr400)">Traduzindo…</span>';
+
   const isC2P=tradDir==='c2p';
   const prompt=isC2P?
-    `Você é especialista em educação inclusiva. Traduza o seguinte texto clínico para linguagem pedagógica clara, que um professor possa entender e aplicar diretamente na sala de aula.
+    `Você é especialista em educação inclusiva e atua como ponte entre clínica e escola. Traduza o seguinte texto clínico para linguagem pedagógica clara e aplicável por um professor em sala de aula.
 
 TEXTO CLÍNICO:
 ${txt}
 
-Produza uma tradução estruturada assim:
+Produza a tradução com estas seções (use os títulos exatamente como estão):
 
-**O que esse texto diz em linguagem simples:**
-[Explique sem jargões técnicos o que o profissional clínico observou]
+O QUE ESSE TEXTO DIZ EM LINGUAGEM SIMPLES:
+Explique sem jargões técnicos o que o profissional clínico observou. Seja direto e humano.
 
-**O que o professor vai ver na sala de aula:**
-[Comportamentos, dificuldades e situações concretas que se manifestam no contexto escolar]
+O QUE O PROFESSOR VAI VER NA SALA DE AULA:
+Liste de 4 a 6 comportamentos, dificuldades e situações concretas que se manifestam no contexto escolar.
 
-**O que o professor pode fazer:**
-[Lista de 5 a 8 estratégias práticas, específicas e aplicáveis imediatamente]
+O QUE O PROFESSOR PODE FAZER:
+Liste de 5 a 8 estratégias práticas, específicas e aplicáveis imediatamente. Seja concreto — evite generalidades como "seja paciente".
 
-**O que evitar:**
-[2 a 4 práticas comuns que atrapalham este perfil]
+O QUE EVITAR:
+Liste de 2 a 4 práticas comuns que atrapalham este perfil e por quê.
 
-**Quando acionar a equipe clínica:**
-[Sinais de que algo precisa ser discutido com o terapeuta]`:
+QUANDO ACIONAR A EQUIPE CLÍNICA:
+Descreva 3 sinais de que algo mudou e precisa ser discutido com o terapeuta.`:
 
-    `Você é especialista em integração clínico-pedagógica. Traduza o seguinte texto pedagógico para linguagem clínica, que um terapeuta possa usar para alinhar seus objetivos terapêuticos com o contexto escolar.
+    `Você é especialista em integração clínico-pedagógica. Traduza o seguinte texto pedagógico para linguagem clínica estruturada, útil para um terapeuta alinhar seus objetivos ao contexto escolar.
 
 TEXTO PEDAGÓGICO:
 ${txt}
 
-Produza uma tradução estruturada assim:
+Produza a tradução com estas seções (use os títulos exatamente como estão):
 
-**O que esse texto diz clinicamente:**
-[Interpretar as dificuldades descritas com linguagem clínica — quais habilidades, funções e processos estão envolvidos]
+O QUE ESSE TEXTO DIZ CLINICAMENTE:
+Interprete as dificuldades descritas com linguagem clínica — quais habilidades, funções e processos estão envolvidos.
 
-**Possíveis hipóteses clínicas relacionadas:**
-[Quais processos neuropsicológicos, motores, sensoriais ou de linguagem podem estar impactando]
+POSSÍVEIS HIPÓTESES CLÍNICAS:
+Quais processos neuropsicológicos, motores, sensoriais ou de linguagem podem estar impactando o que foi descrito.
 
-**Como isso impacta o trabalho terapêutico:**
-[O que a clínica pode contribuir especificamente para resolver ou mitigar as barreiras descritas]
+COMO ISSO IMPACTA O TRABALHO TERAPÊUTICO:
+O que a clínica pode contribuir especificamente para resolver ou mitigar as barreiras descritas.
 
-**Objetivos terapêuticos sugeridos para alinhar com a escola:**
-[3 a 5 objetivos terapêuticos que dialogam diretamente com o que o professor reportou]
+OBJETIVOS TERAPÊUTICOS SUGERIDOS:
+Liste de 3 a 5 objetivos terapêuticos que dialogam diretamente com o que o professor reportou.
 
-**Como comunicar de volta ao professor:**
-[Como o clínico pode reportar o progresso de volta à escola em linguagem pedagógica]`;
+COMO COMUNICAR DE VOLTA AO PROFESSOR:
+Como o clínico pode reportar o progresso em linguagem acessível para o contexto escolar.`;
 
   try{
     const r=await fetch(CLAUDE_PROXY,{
@@ -5021,10 +5024,25 @@ Produza uma tradução estruturada assim:
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1800,messages:[{role:'user',content:prompt}]})
     });
     const data=await r.json();
+    // Detectar erros da API
+    if(data.error){
+      outEl.innerHTML=`<span style="color:#DC2626">Erro da API: ${data.error.message||JSON.stringify(data.error)}</span>`;
+      toast('Erro na API: '+data.error.message,'error');
+      return;
+    }
     const texto=(data.content||[]).map(b=>b.text||'').join('').trim();
-    if(outEl) outEl.textContent=texto;
+    if(!texto){
+      outEl.innerHTML='<span style="color:#DC2626">A IA não retornou conteúdo. Tente novamente.</span>';
+      return;
+    }
+    // Renderizar com formatação
+    outEl.innerHTML = texto
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^([A-ZÁÉÍÓÚÀÂÊÔÃÕÇ\s]{4,}:)$/gm,'<strong style="color:var(--bridge);display:block;margin-top:14px;margin-bottom:4px;font-size:12px;letter-spacing:.04em">$1</strong>')
+      .replace(/\n/g,'<br>');
   }catch(e){
-    if(outEl) outEl.textContent='Erro: '+e.message;
+    outEl.innerHTML=`<span style="color:#DC2626">Erro: ${e.message}</span>`;
     toast('Erro: '+e.message,'error');
   }finally{
     genBox.classList.remove('show');
@@ -5082,6 +5100,7 @@ async function gerarConvergencia(){
   const ctx=window._convContexto||{};
   if(!ctx.alunoNome) return toast('Selecione um aluno primeiro.','error');
   const genBox=document.getElementById('gen-conv-box');
+  if(!genBox) return toast('Erro: elemento não encontrado. Recarregue a página.','error');
   genBox.classList.add('show');
   const peiTexto=ctx.peiAluno?.texto||'Nenhum PEI disponível.';
   const objTer=ctx.objTer;
@@ -5101,14 +5120,8 @@ ${peiTexto.slice(0,800)}
 OBJETIVOS TERAPÊUTICOS (clínica):
 ${objTexto}
 
-Analise e produza em JSON válido sem markdown:
-{
-  "convergencias": [
-    {"titulo": "nome do ponto convergente", "descricao": "como escola e clínica já estão alinhadas neste ponto", "partes": ["escola","clinica"]},
-    ...
-  ],
-  "recomendacoes": "texto corrido com 5-8 recomendações práticas para alinhar escola e clínica em torno deste aluno — o que fazer juntos, como comunicar, quais ajustes priorizar, qual profissional lidera cada frente"
-}
+Analise e produza APENAS JSON válido, sem markdown, sem texto antes ou depois:
+{"convergencias":[{"titulo":"nome do ponto convergente","descricao":"como escola e clínica já estão alinhadas neste ponto","partes":["escola","clinica"]}],"recomendacoes":"texto corrido com 5 a 8 recomendações práticas"}
 Gere 3 a 5 convergências reais baseadas nos dados fornecidos.`;
   try{
     const r=await fetch(CLAUDE_PROXY,{
@@ -5117,7 +5130,12 @@ Gere 3 a 5 convergências reais baseadas nos dados fornecidos.`;
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})
     });
     const data=await r.json();
+    if(data.error){
+      toast('Erro da API: '+data.error.message,'error');
+      return;
+    }
     const txt=(data.content||[]).map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+    if(!txt){ toast('A IA não retornou conteúdo. Tente novamente.','error'); return; }
     const parsed=JSON.parse(txt);
     convGerado=txt;
     const convEl=document.getElementById('conv-convergencias');
@@ -5134,7 +5152,7 @@ Gere 3 a 5 convergências reais baseadas nos dados fornecidos.`;
     document.getElementById('conv-result').style.display='block';
     document.getElementById('conv-result').scrollIntoView({behavior:'smooth',block:'nearest'});
   }catch(e){
-    toast('Erro: '+e.message,'error');
+    toast('Erro ao processar resposta: '+e.message,'error');
   }finally{
     genBox.classList.remove('show');
   }
