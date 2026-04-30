@@ -528,9 +528,100 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
 .mon-btn.nao{border-color:#EF4444;color:#EF4444}
 .mon-btn.nao.sel{background:#EF4444;color:#fff}
 
-@media(max-width:740px){
-  .sidebar{display:none}.main{margin-left:0;padding:18px 14px}
+/* ══ PONTE ESCOLA ↔ CLÍNICA ══════════════════════════════════ */
+:root{
+  --bridge:#0891B2;--bridge-light:#F0FDFA;--bridge-mid:#CCFBF1;
 }
+.bridge-hero{
+  background:linear-gradient(135deg,#0891B2 0%,#0E7490 50%,#1E3A8A 100%);
+  border-radius:var(--rlg);padding:22px 26px;color:#fff;margin-bottom:20px;
+}
+.bridge-hero h2{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:800;margin-bottom:5px}
+.bridge-hero p{font-size:13px;opacity:.88;line-height:1.6}
+.bridge-tabs{display:flex;gap:0;border-bottom:2px solid var(--gr100);margin-bottom:18px;overflow-x:auto}
+.bridge-tab{padding:9px 18px;font-size:13px;color:var(--gr400);border-bottom:2px solid transparent;
+  cursor:pointer;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;
+  font-family:inherit;transition:color .15s;margin-bottom:-2px}
+.bridge-tab.active{color:var(--bridge);border-bottom-color:var(--bridge);font-weight:600}
+.bridge-tab:hover{color:var(--bridge)}
+/* Diário */
+.diario-entry{background:#fff;border:1.5px solid var(--gr100);border-radius:var(--rmd);
+  padding:14px 16px;margin-bottom:10px;border-left:4px solid transparent}
+.diario-entry.origem-escola{border-left-color:var(--escola-color)}
+.diario-entry.origem-clinica{border-left-color:var(--clinica-color)}
+.diario-entry.origem-at{border-left-color:var(--at-color)}
+.diario-entry.origem-professor{border-left-color:var(--p-blue)}
+.diario-header{display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+.diario-origem{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
+.diario-origem.escola{background:var(--escola-bg);color:var(--escola-color)}
+.diario-origem.clinica{background:var(--clinica-bg);color:var(--clinica-color)}
+.diario-origem.at{background:var(--at-bg);color:var(--at-color)}
+.diario-origem.professor{background:var(--blue-light);color:var(--blue)}
+.diario-data{font-size:11px;color:var(--gr400)}
+.diario-autor{font-size:11.5px;font-weight:600;color:var(--gr600)}
+.diario-texto{font-size:13.5px;color:var(--gr600);line-height:1.75;white-space:pre-wrap}
+.diario-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.diario-tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--gr50);
+  color:var(--gr600);border:1px solid var(--gr200)}
+/* Glossário */
+.gloss-search-bar{position:relative;margin-bottom:14px}
+.gloss-search-bar input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--gr200);
+  border-radius:var(--rsm);font-family:inherit;font-size:14px;outline:none;transition:border-color .18s}
+.gloss-search-bar input:focus{border-color:var(--bridge)}
+.gloss-search-bar svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  width:15px;height:15px;color:var(--gr400)}
+.gloss-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.gloss-cat{padding:5px 13px;border-radius:999px;border:1px solid var(--gr200);
+  background:#fff;font-family:inherit;font-size:12px;color:var(--gr600);cursor:pointer;transition:all .15s}
+.gloss-cat:hover,.gloss-cat.active{background:var(--bridge);border-color:var(--bridge);color:#fff}
+.gloss-card{background:#fff;border:1.5px solid var(--gr100);border-radius:var(--rmd);
+  padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.gloss-card:hover{border-color:var(--bridge);box-shadow:0 2px 12px rgba(8,145,178,.10)}
+.gloss-termo{font-size:15px;font-weight:700;color:var(--gr800);margin-bottom:3px}
+.gloss-origem{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;
+  display:inline-block;margin-bottom:8px}
+.gloss-origem.clinico{background:var(--clinica-bg);color:var(--clinica-color)}
+.gloss-origem.pedagogico{background:var(--escola-bg);color:var(--escola-color)}
+.gloss-origem.ambos{background:var(--at-bg);color:var(--at-color)}
+.gloss-resumo{font-size:13px;color:var(--gr600);line-height:1.65;margin-bottom:6px}
+.gloss-escola-label{font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--escola-color);margin-bottom:4px;margin-top:10px}
+.gloss-escola-texto{font-size:13px;color:var(--gr600);line-height:1.6;
+  background:var(--escola-bg);border-radius:var(--rsm);padding:9px 12px}
+.gloss-estrategias{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.gloss-estrategia{font-size:12px;padding:3px 10px;border-radius:999px;
+  background:var(--bridge-light);color:#0E7490;border:1px solid var(--bridge-mid)}
+/* Tradutor */
+.tradutor-box{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tradutor-panel{display:flex;flex-direction:column;gap:8px}
+.tradutor-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--gr400);margin-bottom:2px}
+.tradutor-textarea{width:100%;min-height:140px;padding:12px 14px;border:1.5px solid var(--gr200);
+  border-radius:var(--rsm);font-family:inherit;font-size:13.5px;color:var(--gr800);
+  resize:vertical;outline:none;transition:border-color .18s;line-height:1.65}
+.tradutor-textarea:focus{border-color:var(--bridge)}
+.tradutor-result{min-height:140px;padding:12px 14px;border:1.5px solid var(--bridge-mid);
+  border-radius:var(--rsm);background:var(--bridge-light);font-size:13.5px;
+  color:var(--gr600);line-height:1.75;white-space:pre-wrap}
+/* Objetivos convergentes */
+.obj-conv-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.obj-conv-panel{background:#fff;border:1.5px solid var(--gr100);border-radius:var(--rmd);padding:16px 18px}
+.obj-conv-title{font-size:13px;font-weight:700;color:var(--gr800);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px}
+.obj-conv-item{padding:9px 12px;border-radius:var(--rsm);font-size:13px;color:var(--gr600);
+  line-height:1.6;margin-bottom:6px;border-left:3px solid transparent}
+.obj-conv-item.escola{border-left-color:var(--escola-color);background:var(--escola-bg)}
+.obj-conv-item.clinica{border-left-color:var(--clinica-color);background:var(--clinica-bg)}
+.obj-conv-item.at{border-left-color:var(--at-color);background:var(--at-bg)}
+.convergencia-card{background:linear-gradient(135deg,#F0FDFA,#EFF6FF);border:1.5px solid #93C5FD;
+  border-radius:var(--rmd);padding:14px 16px;margin-bottom:8px}
+.convergencia-titulo{font-size:13.5px;font-weight:700;color:#1E3A8A;margin-bottom:6px}
+.convergencia-desc{font-size:13px;color:var(--gr600);line-height:1.65}
+.convergencia-partes{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.convergencia-parte{font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:999px}
+.convergencia-parte.escola{background:var(--escola-bg);color:var(--escola-color)}
+.convergencia-parte.clinica{background:var(--clinica-bg);color:var(--clinica-color)}
+.convergencia-parte.at{background:var(--at-bg);color:var(--at-color)}
 </style>
 </head>
 <body>
@@ -847,23 +938,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
     <div class="modal-actions">
       <button class="btn-copy" onclick="copiarModalPEI()">Copiar PEI completo</button>
       <button class="btn-sm" onclick="downloadPEI()">Baixar como .txt</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL: Visualizar PAEE (Gestão) ══ -->
-<div class="overlay" id="modal-gpaee" onclick="fecharModal('modal-gpaee',event)">
-  <div class="modal lg">
-    <div class="modal-header">
-      <div class="modal-title" id="mgpaee-titulo">PAEE</div>
-      <button class="modal-close" onclick="fecharModal('modal-gpaee')">×</button>
-    </div>
-    <div class="modal-meta" id="mgpaee-meta"></div>
-    <div id="mgpaee-info" style="margin:10px 0 4px"></div>
-    <div class="modal-body" id="mgpaee-body" style="font-size:13px;white-space:pre-wrap;max-height:60vh;overflow-y:auto"></div>
-    <div class="modal-actions">
-      <button class="btn-copy" onclick="copiarModalGPAEE()">Copiar PAEE completo</button>
-      <button class="btn-sm" onclick="downloadModalGPAEE()">Baixar como .txt</button>
     </div>
   </div>
 </div>
@@ -1477,8 +1551,18 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-pei" onclick="showPage('pei')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Elaborar PEI
     </div>
-    <div class="nav-item" id="nav-paee" onclick="showPage('paee')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 3h10a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="15" cy="15" r="3.5" fill="#14B8A6" stroke="none"/><path d="M13.8 15l.8.8 1.6-1.6" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Elaborar PAEE
+    <div class="nav-section">Escola ↔ Clínica</div>
+    <div class="nav-item" id="nav-ponte-diario" onclick="showPage('ponte-diario')" style="color:#0891B2">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno
+    </div>
+    <div class="nav-item" id="nav-ponte-glossario" onclick="showPage('ponte-glossario')" style="color:#0891B2">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M12 4v4h4M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Glossário Clínico
+    </div>
+    <div class="nav-item" id="nav-ponte-tradutor" onclick="showPage('ponte-tradutor')" style="color:#0891B2">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 5h4M5 8h3M13 6c0 2-1.5 3.5-3 4M13 6c1 2 2.5 3.5 4 4M10 14l2 4M10 14l-2 4M10 14V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Tradutor de Linguagem
+    </div>
+    <div class="nav-item" id="nav-ponte-objetivos" onclick="showPage('ponte-objetivos')" style="color:#0891B2">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes
     </div>
     <div class="nav-section">Alunos</div>
     <div class="nav-item" id="nav-alunos" onclick="showPage('alunos')">
@@ -1506,14 +1590,21 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-gestao-peis" onclick="showPage('gestao-peis')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Todos os PEIs
     </div>
-    <div class="nav-item gestao-item" id="nav-gestao-paees" onclick="showPage('gestao-paees')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 3h10a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="15" cy="15" r="3.5" fill="#14B8A6" stroke="none"/><path d="M13.8 15l.8.8 1.6-1.6" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos os PAEEs
-    </div>
     <div class="nav-item gestao-item" id="nav-gestao-adapt" onclick="showPage('gestao-adapt')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações
     </div>
     <div class="nav-item gestao-item" id="nav-gestao-professores" onclick="showPage('gestao-professores')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17c0-3 2.686-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 4l1.5 1.5L18 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Professores
+    </div>
+    <div class="nav-section">Escola ↔ Clínica</div>
+    <div class="nav-item gestao-item" id="nav-gestao-diario" onclick="showPage('ponte-diario')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-tradutor" onclick="showPage('ponte-tradutor')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 5h4M5 8h3M13 6c0 2-1.5 3.5-3 4M13 6c1 2 2.5 3.5 4 4M10 14l2 4M10 14l-2 4M10 14V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Tradutor de Linguagem
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-objetivos" onclick="showPage('ponte-objetivos')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes
     </div>`;
   renderPagesGestao();
 }
@@ -1536,6 +1627,16 @@ function renderNavClinica() {
     <div class="nav-section">Relatórios</div>
     <div class="nav-item clinic-item" id="nav-clinica-relatorios" onclick="showPage('clinica-relatorios')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M8 4v12M4 8h4M4 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios da Escola
+    </div>
+    <div class="nav-section">Escola ↔ Clínica</div>
+    <div class="nav-item clinic-item" id="nav-ponte-diario" onclick="showPage('ponte-diario')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno
+    </div>
+    <div class="nav-item clinic-item" id="nav-ponte-tradutor" onclick="showPage('ponte-tradutor')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 5h4M5 8h3M13 6c0 2-1.5 3.5-3 4M13 6c1 2 2.5 3.5 4 4M10 14l2 4M10 14l-2 4M10 14V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Tradutor de Linguagem
+    </div>
+    <div class="nav-item clinic-item" id="nav-ponte-objetivos" onclick="showPage('ponte-objetivos')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes
     </div>`;
   renderPagesClinica();
 }
@@ -1548,6 +1649,13 @@ function renderNavAT() {
     </div>
     <div class="nav-item at-item" id="nav-at-relatorios" onclick="showPage('at-relatorios')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios Recebidos
+    </div>
+    <div class="nav-section">Escola ↔ Clínica</div>
+    <div class="nav-item at-item" id="nav-ponte-diario" onclick="showPage('ponte-diario')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno
+    </div>
+    <div class="nav-item at-item" id="nav-ponte-objetivos" onclick="showPage('ponte-objetivos')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes
     </div>`;
   renderPagesAT();
 }
@@ -2190,7 +2298,6 @@ function showPage(id) {
   if (id === 'historico') filtrarHistorico();
   if (id === 'gestao-alunos') carregarAlunosGestao();
   if (id === 'gestao-peis') filtrarGPEIs();
-  if (id === 'gestao-paees') carregarGPAEEs();
   if (id === 'gestao-adapt') filtrarGAdapt();
   if (id === 'gestao-professores') carregarProfessores();
   if (id === 'gestao-relatorios') carregarGRelatorios();
@@ -2200,7 +2307,6 @@ function showPage(id) {
   if (id === 'gc-profissionais') carregarProfissionaisClinica();
   if (id === 'guia') renderGuia();
   if (id === 'diversidade') renderDiversidade();
-  if (id === 'paee') carregarPAEEs();
 }
 
 // ── RENDERIZAR PÁGINAS PROFESSOR ─────────────────────────────
@@ -2373,290 +2479,6 @@ function renderPages() {
     </div>
   </div>
 
-  <!-- PAEE -->
-  <div id="page-paee" class="page">
-    <h1 class="page-title">Elaborar PAEE</h1>
-    <p class="page-sub">Plano de Atendimento Educacional Especializado — obrigatório conforme Decreto nº 12.773/2025 (art. 12) e Decreto nº 12.686/2025.</p>
-    <div class="pei-legal">
-      <strong>⚖️ Base legal:</strong> O PAEE é obrigatório (Dec. 12.773/2025, art. 12) para estudantes público da Educação Especial — pessoas com deficiência, TEA e altas habilidades/superdotação (0 a 18+ anos). Deve derivar do <em>estudo de caso</em>, compor o PPP da escola, ter atualização contínua e orientar: (I) trabalho em sala de aula comum; (II) trabalho no AEE; (III) atividades colaborativas; e (IV) articulação intersetorial. Não depende de laudo ou diagnóstico médico.
-    </div>
-
-    <!-- ETAPA 1: IDENTIFICAÇÃO -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">1</div>
-        <div><div class="pei-step-title">Identificação do estudante e da escola</div><div class="pei-step-sub">Dados que compõem o cabeçalho oficial do PAEE</div></div>
-      </div>
-      <div class="fblock"><label class="flabel">Aluno</label>
-        <select id="paee-aluno-sel" class="fselect" onchange="carregarDadosPAEE()"><option value="">Selecione um aluno cadastrado</option></select>
-      </div>
-      <div id="paee-aluno-info" style="display:none;margin-top:10px;padding:10px 12px;background:var(--at-light);border-radius:var(--rsm);font-size:13px;color:#0F766E"></div>
-      <div class="frow" style="margin-top:12px">
-        <div><label class="flabel">Escola / Instituição de ensino</label><input type="text" id="paee-escola" class="finput" placeholder="Nome completo da escola"></div>
-        <div><label class="flabel">Período de vigência do PAEE</label><input type="text" id="paee-periodo" class="finput" placeholder="Ex: 1º semestre 2025 (fev–jun/2025)"></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Professor(a) da sala comum responsável</label><input type="text" id="paee-prof-sala" class="finput" placeholder="Nome completo"></div>
-        <div><label class="flabel">Professor(a) do AEE</label><input type="text" id="paee-prof-aee" class="finput" placeholder="Nome completo do professor do AEE"></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Coordenador(a) pedagógico(a)</label><input type="text" id="paee-coord" class="finput" placeholder="Nome completo"></div>
-        <div><label class="flabel">Data de elaboração</label><input type="date" id="paee-data" class="finput"></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Data da próxima revisão obrigatória</label><input type="date" id="paee-revisao" class="finput"></div>
-        <div><label class="flabel">Versão do documento</label><input type="text" id="paee-versao" class="finput" placeholder="Ex: v1.0 — Elaboração inicial"></div>
-      </div>
-    </div>
-
-    <!-- ETAPA 2: ESTUDO DE CASO (BASE DO PAEE) -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">2</div>
-        <div><div class="pei-step-title">Estudo de caso — base do PAEE</div><div class="pei-step-sub">Dec. 12.686/2025, art. 11 · O PAEE deriva obrigatoriamente do estudo de caso</div></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Data de realização do estudo de caso</label><input type="date" id="paee-ec-data" class="finput"></div>
-        <div><label class="flabel">Profissionais que participaram</label><input type="text" id="paee-ec-profissionais" class="finput" placeholder="Ex: Prof. AEE, coordenadora, psicóloga escolar…"></div>
-      </div>
-      <div class="fblock"><label class="flabel">Histórico relevante do estudante (trajetória escolar, estratégias anteriores)</label><textarea id="paee-ec-historico" class="ftarea sm" placeholder="Descreva a trajetória do estudante: escolas anteriores, progressos, estratégias já testadas, dificuldades recorrentes, conquistas…"></textarea></div>
-      <div class="fblock"><label class="flabel">Necessidades educacionais identificadas no estudo de caso</label><textarea id="paee-ec-necessidades" class="ftarea sm" placeholder="Liste as barreiras e necessidades identificadas: de comunicação, de locomoção, de acesso ao currículo, socioemocionais, de atenção…"></textarea></div>
-      <div class="fblock"><label class="flabel">Potencialidades e recursos já desenvolvidos pelo estudante</label><textarea id="paee-ec-potencialidades" class="ftarea sm" placeholder="Descreva o que o estudante já sabe fazer, seus pontos fortes, interesses e habilidades que podem ser base para novas aprendizagens…"></textarea></div>
-      <div class="fblock"><label class="flabel">Participação da família/responsáveis no estudo de caso</label><textarea id="paee-ec-familia" class="ftarea sm" placeholder="Descreva como a família participou: o que relatou sobre o histórico em casa, necessidades observadas, estratégias usadas em casa…"></textarea></div>
-    </div>
-
-    <!-- ETAPA 3: PERFIL FUNCIONAL DO ESTUDANTE -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">3</div>
-        <div><div class="pei-step-title">Perfil funcional do estudante</div><div class="pei-step-sub">Caracterização das necessidades nas áreas funcionais — sem depender de laudo (Dec. 12.773/2025)</div></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Condição/perfil (se houver laudo ou indicativo)</label>
-          <select id="paee-condicao" class="fselect">
-            <option value="">Selecione se houver</option>
-            <option>Deficiência intelectual</option>
-            <option>Transtorno do Espectro Autista (TEA)</option>
-            <option>Deficiência física/motora</option>
-            <option>Deficiência visual (cegueira ou baixa visão)</option>
-            <option>Deficiência auditiva / Surdez</option>
-            <option>Surdocegueira</option>
-            <option>Deficiência múltipla</option>
-            <option>Altas habilidades / Superdotação</option>
-            <option>TDAH</option>
-            <option>Dislexia / Transtorno de aprendizagem</option>
-            <option>Transtorno de linguagem / Comunicação</option>
-            <option>Transtorno de ansiedade / Saúde mental</option>
-            <option>Sem diagnóstico formal — necessidade pedagógica identificada</option>
-          </select>
-        </div>
-        <div><label class="flabel">Ano/série e turno</label><input type="text" id="paee-serie" class="finput" placeholder="Ex: 3º ano EF — Manhã"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div><label class="flabel">Comunicação e linguagem</label><textarea id="paee-func-comunicacao" class="ftarea sm" placeholder="Como o estudante se comunica? Usa fala, CAA, gestos, escrita? Quais as dificuldades e recursos já utilizados?"></textarea></div>
-        <div><label class="flabel">Cognição e aprendizagem</label><textarea id="paee-func-cognicao" class="ftarea sm" placeholder="Como aprende melhor? Nível de abstração, memória, atenção, processamento…"></textarea></div>
-        <div><label class="flabel">Mobilidade e locomoção</label><textarea id="paee-func-mobilidade" class="ftarea sm" placeholder="O estudante tem dificuldades de locomoção? Precisa de apoio para se deslocar, sentar, escrever…"></textarea></div>
-        <div><label class="flabel">Alimentação e autocuidado</label><textarea id="paee-func-autocuidado" class="ftarea sm" placeholder="Tem autonomia para se alimentar, usar o banheiro, organizar materiais? Quais apoios necessita?"></textarea></div>
-        <div><label class="flabel">Socialização e comportamento</label><textarea id="paee-func-social" class="ftarea sm" placeholder="Como interage com colegas e professores? Há comportamentos que interferem na participação? Quais situações geram sobrecarga?"></textarea></div>
-        <div><label class="flabel">Regulação sensorial e emocional</label><textarea id="paee-func-sensorial" class="ftarea sm" placeholder="Há hipersensibilidade/hiposensibilidade? Como reage a sons, luzes, texturas, mudanças de rotina?"></textarea></div>
-      </div>
-    </div>
-
-    <!-- ETAPA 4: TRABALHO NA SALA DE AULA COMUM (Dec. 12.773, art. 12, §2º, I) -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">4</div>
-        <div><div class="pei-step-title">Plano para a sala de aula comum</div><div class="pei-step-sub">Dec. 12.773/2025, art. 12, §2º, inciso I — orientação ao trabalho em sala regular</div></div>
-      </div>
-      <div class="fblock"><label class="flabel">Objetivos de aprendizagem priorizados para o período</label><textarea id="paee-sala-objetivos" class="ftarea sm" placeholder="Liste os objetivos curriculares prioritários adaptados ao perfil do estudante para este semestre…"></textarea></div>
-      <div class="fblock"><label class="flabel">Adaptações curriculares e de conteúdo</label><textarea id="paee-sala-adaptcurr" class="ftarea sm" placeholder="Ex: Simplificação dos enunciados, redução da quantidade de exercícios, currículo funcional para determinadas áreas, flexibilização de objetivos…"></textarea></div>
-      <div class="fblock"><label class="flabel">Estratégias pedagógicas diferenciadas</label><textarea id="paee-sala-estrategias" class="ftarea sm" placeholder="Ex: Instrução multissensorial, rotina visual afixada na mesa, atividades em dupla com mediação, uso de suporte pictográfico, aprendizagem por etapas…"></textarea></div>
-      <div class="frow">
-        <div><label class="flabel">Organização do espaço e do tempo</label><textarea id="paee-sala-espaco" class="ftarea sm" placeholder="Ex: Assento próximo ao professor, ambiente com menor estímulo sensorial, tempo extra para execução, pausas programadas…"></textarea></div>
-        <div><label class="flabel">Adaptação das avaliações</label><textarea id="paee-sala-avaliacao" class="ftarea sm" placeholder="Ex: Avaliação oral, prova com imagens de apoio, tempo ampliado, leitura mediada, sem penalização por grafia, portfólio…"></textarea></div>
-      </div>
-      <div class="fblock"><label class="flabel">Recursos e materiais pedagógicos adaptados</label><textarea id="paee-sala-materiais" class="ftarea sm" placeholder="Ex: Material concreto (ábaco, sólidos geométricos), fichas com imagens, texto em fonte ampliada, calculadora, folha quadriculada…"></textarea></div>
-    </div>
-
-    <!-- ETAPA 5: AEE (Dec. 12.773, art. 12, §2º, II) -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">5</div>
-        <div><div class="pei-step-title">Plano de AEE — Atendimento Educacional Especializado</div><div class="pei-step-sub">Dec. 12.773/2025, art. 12, §2º, inciso II · Professor do AEE com 360h formação continuada (art. 13)</div></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Tipo de AEE</label>
-          <select id="paee-aee-tipo" class="fselect">
-            <option value="">Selecione</option>
-            <option>Sala de Recursos Multifuncionais (SRM) — escola comum</option>
-            <option>Centro de AEE especializado (conveniado)</option>
-            <option>Itinerante (profissional vai à escola)</option>
-            <option>Complementar à escolarização regular</option>
-            <option>Suplementar (altas habilidades)</option>
-          </select>
-        </div>
-        <div><label class="flabel">Frequência do AEE</label>
-          <select id="paee-aee-freq" class="fselect">
-            <option value="">Selecione</option>
-            <option>Diariamente</option>
-            <option>2 vezes por semana</option>
-            <option>3 vezes por semana</option>
-            <option>1 vez por semana</option>
-            <option>Quinzenal</option>
-          </select>
-        </div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Duração das sessões de AEE</label><input type="text" id="paee-aee-duracao" class="finput" placeholder="Ex: 50 minutos por sessão"></div>
-        <div><label class="flabel">Local de realização do AEE</label><input type="text" id="paee-aee-local" class="finput" placeholder="Ex: Sala de Recursos — bloco B, sala 12"></div>
-      </div>
-      <div class="fblock"><label class="flabel">Objetivos específicos do AEE para este período</label><textarea id="paee-aee-objetivos" class="ftarea sm" placeholder="Ex: Desenvolver comunicação alternativa via PECS, ampliar habilidades de leitura funcional, fortalecer autonomia nas rotinas escolares…"></textarea></div>
-      <div class="fblock"><label class="flabel">Atividades e metodologias do AEE</label><textarea id="paee-aee-atividades" class="ftarea sm" placeholder="Ex: Treino de CAA (PECS, prancha de comunicação), atividades de estimulação sensorial, uso de softwares educativos acessíveis, jogos pedagógicos estruturados…"></textarea></div>
-      <div class="fblock"><label class="flabel">Recursos e equipamentos do AEE</label><textarea id="paee-aee-recursos" class="ftarea sm" placeholder="Ex: Computador com software de CAA, material dourado, geoplano, alfabeto em Braille, lupa eletrônica, prancha de comunicação…"></textarea></div>
-    </div>
-
-    <!-- ETAPA 6: TECNOLOGIA ASSISTIVA (Dec. 12.686/2025, art. 12, §4º) -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">6</div>
-        <div><div class="pei-step-title">Tecnologia assistiva e acessibilidade</div><div class="pei-step-sub">Dec. 12.686/2025, art. 12, §4º — parecer pedagógico para dispositivos digitais portáteis</div></div>
-      </div>
-      <div class="frow">
-        <div style="grid-column:span 2"><label class="flabel">Necessita de autorização para uso de dispositivo digital portátil como TA?</label>
-          <select id="paee-ta-dispositivo" class="fselect" onchange="togglePareceTA()">
-            <option value="">Selecione</option>
-            <option value="sim">Sim — tablet/smartphone como tecnologia assistiva</option>
-            <option value="nao">Não necessário no momento</option>
-          </select>
-        </div>
-      </div>
-      <div id="paee-ta-parecer-bloco" style="display:none">
-        <div class="fblock"><label class="flabel">Parecer pedagógico para uso de dispositivo digital portátil (obrigatório pelo art. 12, §4º)</label><textarea id="paee-ta-parecer" class="ftarea sm" placeholder="Descreva a justificativa pedagógica: qual app/software será usado, para qual finalidade (comunicação, aprendizagem, socialização), como será monitorado o uso…"></textarea></div>
-      </div>
-      <div class="fblock"><label class="flabel">Outras tecnologias assistivas utilizadas ou necessárias</label><textarea id="paee-ta-outras" class="ftarea sm" placeholder="Ex: Prancha de CAA impressa, material em Braille, audiolivro, lupas, fone de abafamento de som, suporte para lápis adaptado, cadeira de rodas, andador, software leitor de tela…"></textarea></div>
-      <div class="fblock"><label class="flabel">Adaptações de acessibilidade física e arquitetônica necessárias</label><textarea id="paee-ta-acessibilidade" class="ftarea sm" placeholder="Ex: Rampa de acesso, mesa regulável, banheiro adaptado, piso tátil, sinalização visual/tátil, elevador…"></textarea></div>
-    </div>
-
-    <!-- ETAPA 7: PROFISSIONAL DE APOIO ESCOLAR (Dec. 12.773, art. 14) -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">7</div>
-        <div><div class="pei-step-title">Profissional de apoio escolar</div><div class="pei-step-sub">Dec. 12.773/2025, art. 14 — necessidade avaliada pelo estudo de caso; independe de laudo</div></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Necessita de profissional de apoio escolar?</label>
-          <select id="paee-apoio-necessidade" class="fselect" onchange="toggleApoioBloco()">
-            <option value="">Selecione</option>
-            <option value="sim">Sim — indicado pelo estudo de caso</option>
-            <option value="nao">Não — estudante tem autonomia suficiente</option>
-            <option value="parcial">Parcialmente — apoio em atividades específicas</option>
-          </select>
-        </div>
-        <div><label class="flabel">Nome do profissional de apoio (se já designado)</label><input type="text" id="paee-apoio-nome" class="finput" placeholder="Nome do profissional ou 'a designar'"></div>
-      </div>
-      <div id="paee-apoio-bloco" style="display:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-          <div><label class="flabel">Apoio na locomoção</label><textarea id="paee-apoio-locomocao" class="ftarea sm" placeholder="Descreva como o profissional deve apoiar: deslocamento pelos corredores, acesso às salas, uso da escada, transporte…"></textarea></div>
-          <div><label class="flabel">Apoio na alimentação</label><textarea id="paee-apoio-alimentacao" class="ftarea sm" placeholder="Descreva o apoio necessário na hora da merenda/almoço: nível de dependência, utensílios adaptados, consistência dos alimentos…"></textarea></div>
-          <div><label class="flabel">Apoio na comunicação</label><textarea id="paee-apoio-comunicacao" class="ftarea sm" placeholder="Descreva como o profissional deve mediar a comunicação: interpretação de gestos, uso de prancha, facilitação verbal…"></textarea></div>
-          <div><label class="flabel">Apoio na participação nas atividades</label><textarea id="paee-apoio-participacao" class="ftarea sm" placeholder="Descreva como deve apoiar a participação: durante aulas, recreio, atividades de educação física, eventos escolares…"></textarea></div>
-        </div>
-        <div class="fblock" style="margin-top:10px"><label class="flabel">Limites do apoio — garantia de autonomia progressiva</label><textarea id="paee-apoio-limites" class="ftarea sm" placeholder="Descreva o que o profissional NÃO deve fazer para não criar dependência: atividades que o estudante deve fazer sozinho, momentos de retirada gradual do apoio…"></textarea></div>
-      </div>
-    </div>
-
-    <!-- ETAPA 8: ATIVIDADES COLABORATIVAS (Dec. 12.773, art. 12, §2º, III) -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">8</div>
-        <div><div class="pei-step-title">Atividades colaborativas na escola</div><div class="pei-step-sub">Dec. 12.773/2025, art. 12, §2º, inciso III — entre professor comum, AEE e equipe pedagógica</div></div>
-      </div>
-      <div class="fblock"><label class="flabel">Estratégias de co-ensino e colaboração entre professor da sala e professor do AEE</label><textarea id="paee-colab-coensino" class="ftarea sm" placeholder="Ex: Reuniões semanais de planejamento conjunto, professor do AEE presente 1x/semana em sala para co-regência, adaptação prévia de atividades…"></textarea></div>
-      <div class="fblock"><label class="flabel">Estratégias de inclusão e pertencimento com os colegas</label><textarea id="paee-colab-colegas" class="ftarea sm" placeholder="Ex: Tutoria de pares, atividades cooperativas estruturadas, círculo de amigos, projetos em grupo com papéis adaptados, recreio acompanhado…"></textarea></div>
-      <div class="fblock"><label class="flabel">Comunicação e articulação com demais professores da escola</label><textarea id="paee-colab-demais" class="ftarea sm" placeholder="Ex: Repasse do PAEE para todos os professores que atendem o estudante, formulário de feedback mensal, reunião de equipe trimestral…"></textarea></div>
-    </div>
-
-    <!-- ETAPA 9: ARTICULAÇÃO INTERSETORIAL (Dec. 12.773, art. 12, §2º, IV) -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">9</div>
-        <div><div class="pei-step-title">Articulação intersetorial</div><div class="pei-step-sub">Dec. 12.773/2025, art. 12, §2º, inciso IV — rede de proteção: saúde, assistência social e outros</div></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Serviços de saúde que acompanham o estudante</label><textarea id="paee-inter-saude" class="ftarea sm" placeholder="Ex: Acompanhamento com neuropediatra (mensalmente), fonoaudióloga (2x/semana), terapeuta ocupacional (1x/semana no CER…)"></textarea></div>
-        <div><label class="flabel">Serviços de assistência social e proteção</label><textarea id="paee-inter-social" class="ftarea sm" placeholder="Ex: Acompanhamento pelo CRAS, cadastro no BPC, família referenciada no SUAS…"></textarea></div>
-      </div>
-      <div class="fblock"><label class="flabel">Estratégias de articulação escola–rede de apoio</label><textarea id="paee-inter-articulacao" class="ftarea sm" placeholder="Ex: Reunião trimestral com equipe de saúde, compartilhamento de relatórios pedagógicos com a terapeuta, contato com o CRAS em caso de vulnerabilidade…"></textarea></div>
-      <div class="fblock"><label class="flabel">Comunicação e participação da família</label><textarea id="paee-inter-familia" class="ftarea sm" placeholder="Ex: Reuniões bimestrais de acompanhamento do PAEE com a família, agenda de comunicação diária, orientações para continuidade em casa, grupo de WhatsApp com responsáveis…"></textarea></div>
-    </div>
-
-    <!-- ETAPA 10: MONITORAMENTO E AVALIAÇÃO -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">10</div>
-        <div><div class="pei-step-title">Monitoramento, avaliação e revisão do PAEE</div><div class="pei-step-sub">Atualização contínua obrigatória — Dec. 12.773/2025, art. 12</div></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel">Frequência de revisão do PAEE</label>
-          <select id="paee-mon-freq" class="fselect">
-            <option value="">Selecione</option>
-            <option>Mensal</option>
-            <option>Bimestral</option>
-            <option>Trimestral</option>
-            <option>Semestral</option>
-            <option>Mediante demanda (mudança significativa)</option>
-          </select>
-        </div>
-        <div><label class="flabel">Instrumentos de monitoramento utilizados</label><input type="text" id="paee-mon-instrumentos" class="finput" placeholder="Ex: Ficha de observação, portfólio, registro de participação, relatório mensal…"></div>
-      </div>
-      <div class="fblock"><label class="flabel">Indicadores de progresso e critérios de êxito</label><textarea id="paee-mon-indicadores" class="ftarea sm" placeholder="Descreva o que será observado para verificar se os objetivos estão sendo alcançados: comportamentos esperados, produções, participação, autonomia…"></textarea></div>
-      <div class="fblock"><label class="flabel">Observações adicionais e informações de saúde relevantes</label><textarea id="paee-obs" class="ftarea sm" placeholder="Ex: Faz uso de medicação às 12h (comunicar a família caso esqueça a dose), alergias alimentares, intolerância a ruídos intensos, protocolo em caso de crise…"></textarea></div>
-    </div>
-
-    <!-- ASSINATURAS -->
-    <div class="pei-step">
-      <div class="pei-step-header">
-        <div class="pei-step-num">11</div>
-        <div><div class="pei-step-title">Ciência e assinaturas</div><div class="pei-step-sub">Registro de participação e concordância de todos os envolvidos</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div><label class="flabel">Nome do(a) responsável pela família</label><input type="text" id="paee-ass-familia" class="finput" placeholder="Nome completo do responsável"></div>
-        <div><label class="flabel">Relação com o estudante</label><input type="text" id="paee-ass-relacao" class="finput" placeholder="Ex: Mãe, pai, avó, responsável legal…"></div>
-      </div>
-      <div class="fblock" style="margin-top:8px"><label class="flabel">Declaração de ciência</label>
-        <div style="background:var(--blue-light);border-radius:var(--rsm);padding:10px 14px;font-size:12px;color:var(--p-navy);line-height:1.7">
-          Declaro que participei da elaboração deste Plano de Atendimento Educacional Especializado (PAEE), conheço seu conteúdo, e estou ciente de que será incorporado ao Projeto Político-Pedagógico desta instituição de ensino, em conformidade com o Decreto nº 12.773/2025.
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
-      <button class="btn-gerar" id="btn-gerar-paee" onclick="gerarPAEE()" style="background:linear-gradient(135deg,var(--at),#0F766E)">
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        Gerar PAEE completo com IA
-      </button>
-    </div>
-    <div class="gen-box" id="gen-paee-box" style="margin-top:13px"><div class="spin"></div><span>IA elaborando o PAEE conforme Decreto 12.773/2025…</span></div>
-
-    <div class="result-card" id="paee-result-card">
-      <div class="result-header">
-        <div class="result-title">📋 PAEE gerado pela IA</div>
-        <div class="result-badge" id="paee-result-badge">—</div>
-      </div>
-      <div class="result-text" id="paee-result-text"></div>
-      <div class="result-actions">
-        <button class="btn-sm" onclick="salvarPAEE()">Salvar PAEE</button>
-        <button class="btn-copy" onclick="copiarAdapt('paee-result-text')">Copiar texto</button>
-        <button class="btn-copy" onclick="downloadPAEEdireto()">Baixar .txt</button>
-      </div>
-    </div>
-
-    <div style="margin-top:28px">
-      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">PAEEs salvos</h3>
-      <div class="cards-grid" id="paee-lista"></div>
-    </div>
-  </div>
-
   <!-- ALUNOS -->
   <div id="page-alunos" class="page">
     <div class="section-header">
@@ -2716,6 +2538,7 @@ function renderPages() {
   renderChips('chips-nova');
   renderChips('chips-cad');
   renderAlSel();
+  appendBridgePages();
 }
 
 // ── PÁGINAS GESTÃO ───────────────────────────────────────────
@@ -2724,18 +2547,15 @@ function renderPagesGestao() {
   <!-- PAINEL GESTÃO -->
   <div id="page-gestao-painel" class="page active">
     <h1 class="page-title">Painel de Gestão</h1>
-    <p class="page-sub">Visão geral de toda a plataforma — adaptações, PEIs, PAEEs e perfil dos alunos.</p>
+    <p class="page-sub">Visão geral de toda a plataforma — adaptações, PEIs e perfil dos alunos.</p>
     <div class="stats-grid" id="stats-grid">
       <div class="stat-card"><div class="stat-num" id="stat-alunos">—</div><div class="stat-label">Alunos cadastrados</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-adapt">—</div><div class="stat-label">Adaptações geradas</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-peis">—</div><div class="stat-label">PEIs elaborados</div></div>
-      <div class="stat-card" style="border-top:3px solid var(--at)"><div class="stat-num" id="stat-paees" style="color:var(--at)">—</div><div class="stat-label">PAEEs elaborados</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-prof">—</div><div class="stat-label">Professores ativos</div></div>
     </div>
-    <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin:20px 0 12px">PEIs recentes</h3>
+    <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">PEIs recentes</h3>
     <div class="cards-grid" id="g-peis-recentes"></div>
-    <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin:24px 0 12px">PAEEs recentes <span style="font-size:11px;font-weight:400;color:var(--at);background:var(--at-light);padding:2px 8px;border-radius:20px;margin-left:6px">Dec. 12.773/2025</span></h3>
-    <div class="cards-grid" id="g-paees-recentes"></div>
   </div>
 
   <!-- GESTÃO: ALUNOS -->
@@ -2756,18 +2576,6 @@ function renderPagesGestao() {
       <select class="filter-sel" id="gpei-fstatus" onchange="filtrarGPEIs()"><option value="">Todos os status</option><option value="rascunho">Rascunho</option><option value="finalizado">Finalizado</option></select>
     </div>
     <div class="cards-grid" id="gpei-grid"></div>
-  </div>
-
-  <!-- GESTÃO: TODOS OS PAEEs -->
-  <div id="page-gestao-paees" class="page">
-    <h1 class="page-title">Todos os PAEEs</h1>
-    <p class="page-sub">Acesse, analise e acompanhe todos os PAEEs elaborados pelos professores — conforme Decreto 12.773/2025.</p>
-    <div class="toolbar">
-      <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="gpaee-q" placeholder="Buscar por aluno, professor ou escola…" oninput="filtrarGPAEEs()"></div>
-      <select class="filter-sel" id="gpaee-fperiodo" onchange="filtrarGPAEEs()"><option value="">Todos os períodos</option></select>
-    </div>
-    <div id="gpaee-stat" style="font-size:13px;color:var(--gr400);margin-bottom:12px"></div>
-    <div class="cards-grid" id="gpaee-grid"></div>
   </div>
 
   <!-- GESTÃO: ADAPTAÇÕES -->
@@ -2799,6 +2607,7 @@ function renderPagesGestao() {
     <div id="gprof-stat" style="font-size:13px;color:var(--gr400);margin-bottom:12px"></div>
     <div class="cards-grid" id="gprof-grid"></div>
   </div>`;
+  appendBridgePages();
 }
 
 // ── PÁGINAS CLÍNICA ───────────────────────────────────────────
@@ -2853,6 +2662,7 @@ function renderPagesClinica() {
     <p class="page-sub">Relatórios enviados pela escola para a equipe clínica. Você não acessa o sistema escolar — apenas os documentos compartilhados.</p>
     <div id="clinica-rel-grid"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum relatório recebido da escola ainda.</div></div></div>
   </div>`;
+  appendBridgePages();
   carregarAlunosClinica();
 }
 
@@ -2870,6 +2680,7 @@ function renderPagesAT() {
     <p class="page-sub">Relatórios enviados pela escola e pela clínica para embasar sua atuação diária. Você não acessa os sistemas internos — apenas o que foi compartilhado com você.</p>
     <div id="at-rel-grid"><div class="empty"><div class="empty-icon">📨</div><div class="empty-text">Nenhum relatório recebido ainda.</div></div></div>
   </div>`;
+  appendBridgePages();
   carregarAlunosAT();
 }
 function renderChips(id) {
@@ -3386,287 +3197,6 @@ function downloadPEIdireto() {
   a.click();
 }
 
-// ── PAEE ──────────────────────────────────────────────────────
-let paeeGerado = '', paeeAluno = null;
-
-function popularPaeeSel() {
-  const sel = document.getElementById('paee-aluno-sel');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    alunosCad.map(a => `<option value="${a.id}">${a.nome}${a.serie?' — '+a.serie:''}</option>`).join('');
-}
-
-function carregarDadosPAEE() {
-  const sel = document.getElementById('paee-aluno-sel');
-  const info = document.getElementById('paee-aluno-info');
-  if (!sel || !info) return;
-  const id = sel.value;
-  if (!id) { info.style.display='none'; paeeAluno=null; return; }
-  const a = alunosCad.find(x=>x.id===id);
-  if (!a) return;
-  paeeAluno = a;
-  const perfis = (a.perfis||[]).join(', ') || '—';
-  info.style.display = 'block';
-  info.innerHTML = `<strong>${a.nome}</strong> · ${a.idade||'—'} · ${a.serie||'—'}<br>
-    <span style="color:#0F766E;font-size:12px">Perfil: ${perfis}</span>
-    ${a.observacoes?`<br><span style="font-size:11.5px;color:#4B5563">${a.observacoes}</span>`:''}`;
-  // Pre-fill some fields from student data
-  if (a.nome) {
-    const escola = document.getElementById('paee-escola');
-    const serie = document.getElementById('paee-serie');
-    if (serie && a.serie) serie.value = a.serie;
-  }
-  const data = document.getElementById('paee-data');
-  if (data && !data.value) data.value = new Date().toISOString().slice(0,10);
-}
-
-function togglePareceTA() {
-  const v = document.getElementById('paee-ta-dispositivo').value;
-  const bloco = document.getElementById('paee-ta-parecer-bloco');
-  if (bloco) bloco.style.display = v==='sim' ? 'block' : 'none';
-}
-
-function toggleApoioBloco() {
-  const v = document.getElementById('paee-apoio-necessidade').value;
-  const bloco = document.getElementById('paee-apoio-bloco');
-  if (bloco) bloco.style.display = (v==='sim'||v==='parcial') ? 'block' : 'none';
-}
-
-function coletarCamposPAEE() {
-  const g = id => (document.getElementById(id)||{}).value || '';
-  return {
-    aluno: paeeAluno?.nome || g('paee-aluno-sel'),
-    escola: g('paee-escola'), periodo: g('paee-periodo'),
-    profSala: g('paee-prof-sala'), profAEE: g('paee-prof-aee'),
-    coord: g('paee-coord'), data: g('paee-data'),
-    revisao: g('paee-revisao'), versao: g('paee-versao'),
-    // Estudo de caso
-    ecData: g('paee-ec-data'), ecProfissionais: g('paee-ec-profissionais'),
-    ecHistorico: g('paee-ec-historico'), ecNecessidades: g('paee-ec-necessidades'),
-    ecPotencialidades: g('paee-ec-potencialidades'), ecFamilia: g('paee-ec-familia'),
-    // Perfil
-    condicao: g('paee-condicao'), serie: g('paee-serie'),
-    funcComunicacao: g('paee-func-comunicacao'), funcCognicao: g('paee-func-cognicao'),
-    funcMobilidade: g('paee-func-mobilidade'), funcAutocuidado: g('paee-func-autocuidado'),
-    funcSocial: g('paee-func-social'), funcSensorial: g('paee-func-sensorial'),
-    // Sala comum
-    salaObjetivos: g('paee-sala-objetivos'), salaAdaptcurr: g('paee-sala-adaptcurr'),
-    salaEstrategias: g('paee-sala-estrategias'), salaEspaco: g('paee-sala-espaco'),
-    salaAvaliacao: g('paee-sala-avaliacao'), salaMateriais: g('paee-sala-materiais'),
-    // AEE
-    aeeTipo: g('paee-aee-tipo'), aeeFreq: g('paee-aee-freq'),
-    aeeDuracao: g('paee-aee-duracao'), aeeLocal: g('paee-aee-local'),
-    aeeObjetivos: g('paee-aee-objetivos'), aeeAtividades: g('paee-aee-atividades'),
-    aeeRecursos: g('paee-aee-recursos'),
-    // TA
-    taDispositivo: g('paee-ta-dispositivo'), taParecer: g('paee-ta-parecer'),
-    taOutras: g('paee-ta-outras'), taAcessibilidade: g('paee-ta-acessibilidade'),
-    // Apoio
-    apoioNecessidade: g('paee-apoio-necessidade'), apoioNome: g('paee-apoio-nome'),
-    apoioLocomocao: g('paee-apoio-locomocao'), apoioAlimentacao: g('paee-apoio-alimentacao'),
-    apoioComunicacao: g('paee-apoio-comunicacao'), apoioParticipacao: g('paee-apoio-participacao'),
-    apoioLimites: g('paee-apoio-limites'),
-    // Colaborativo
-    colabCoensino: g('paee-colab-coensino'), colabColegas: g('paee-colab-colegas'),
-    colabDemais: g('paee-colab-demais'),
-    // Intersetorial
-    interSaude: g('paee-inter-saude'), interSocial: g('paee-inter-social'),
-    interArticulacao: g('paee-inter-articulacao'), interFamilia: g('paee-inter-familia'),
-    // Monitoramento
-    monFreq: g('paee-mon-freq'), monInstrumentos: g('paee-mon-instrumentos'),
-    monIndicadores: g('paee-mon-indicadores'), obs: g('paee-obs'),
-    assFamilia: g('paee-ass-familia'), assRelacao: g('paee-ass-relacao'),
-  };
-}
-
-async function gerarPAEE() {
-  const c = coletarCamposPAEE();
-  if (!c.aluno) { alert('Selecione um aluno antes de gerar o PAEE.'); return; }
-  const btn = document.getElementById('btn-gerar-paee');
-  const box = document.getElementById('gen-paee-box');
-  const card = document.getElementById('paee-result-card');
-  btn.disabled = true; btn.textContent = 'Gerando…';
-  box.style.display = 'flex'; card.style.display = 'none';
-
-  const prompt = `Você é especialista em Educação Especial Inclusiva e deve elaborar um PAEE (Plano de Atendimento Educacional Especializado) completo, formal e detalhado, em conformidade com o Decreto nº 12.773/2025 e o Decreto nº 12.686/2025.
-
-DADOS COLETADOS:
-IDENTIFICAÇÃO:
-- Estudante: ${c.aluno} | Escola: ${c.escola} | Série/Turno: ${c.serie}
-- Período: ${c.periodo} | Data: ${c.data} | Revisão: ${c.revisao} | Versão: ${c.versao}
-- Professor(a) sala comum: ${c.profSala} | Professor(a) AEE: ${c.profAEE}
-- Coordenador(a): ${c.coord}
-
-ESTUDO DE CASO (base legal — art. 11, Dec. 12.686/2025):
-- Data do estudo: ${c.ecData} | Participantes: ${c.ecProfissionais}
-- Histórico: ${c.ecHistorico}
-- Necessidades identificadas: ${c.ecNecessidades}
-- Potencialidades: ${c.ecPotencialidades}
-- Participação da família: ${c.ecFamilia}
-
-PERFIL FUNCIONAL:
-- Condição/Perfil: ${c.condicao}
-- Comunicação: ${c.funcComunicacao}
-- Cognição: ${c.funcCognicao}
-- Mobilidade: ${c.funcMobilidade}
-- Autocuidado: ${c.funcAutocuidado}
-- Socialização: ${c.funcSocial}
-- Regulação sensorial: ${c.funcSensorial}
-
-PLANO SALA DE AULA COMUM (art. 12, §2º, I):
-- Objetivos priorizados: ${c.salaObjetivos}
-- Adaptações curriculares: ${c.salaAdaptcurr}
-- Estratégias pedagógicas: ${c.salaEstrategias}
-- Organização espaço/tempo: ${c.salaEspaco}
-- Avaliação adaptada: ${c.salaAvaliacao}
-- Materiais adaptados: ${c.salaMateriais}
-
-PLANO AEE (art. 12, §2º, II):
-- Tipo: ${c.aeeTipo} | Frequência: ${c.aeeFreq} | Duração: ${c.aeeDuracao} | Local: ${c.aeeLocal}
-- Objetivos AEE: ${c.aeeObjetivos}
-- Atividades: ${c.aeeAtividades}
-- Recursos: ${c.aeeRecursos}
-
-TECNOLOGIA ASSISTIVA (art. 12, §4º):
-- Dispositivo digital portátil: ${c.taDispositivo} | Parecer: ${c.taParecer}
-- Outras TAs: ${c.taOutras}
-- Acessibilidade física: ${c.taAcessibilidade}
-
-PROFISSIONAL DE APOIO (art. 14):
-- Necessidade: ${c.apoioNecessidade} | Profissional: ${c.apoioNome}
-- Locomoção: ${c.apoioLocomocao} | Alimentação: ${c.apoioAlimentacao}
-- Comunicação: ${c.apoioComunicacao} | Participação: ${c.apoioParticipacao}
-- Limites do apoio: ${c.apoioLimites}
-
-ATIVIDADES COLABORATIVAS (art. 12, §2º, III):
-- Co-ensino: ${c.colabCoensino}
-- Inclusão com pares: ${c.colabColegas}
-- Articulação com demais professores: ${c.colabDemais}
-
-ARTICULAÇÃO INTERSETORIAL (art. 12, §2º, IV):
-- Saúde: ${c.interSaude} | Assistência social: ${c.interSocial}
-- Estratégias de articulação: ${c.interArticulacao}
-- Família: ${c.interFamilia}
-
-MONITORAMENTO:
-- Frequência de revisão: ${c.monFreq} | Instrumentos: ${c.monInstrumentos}
-- Indicadores de progresso: ${c.monIndicadores}
-- Observações adicionais: ${c.obs}
-
-ASSINATURA/CIÊNCIA:
-- Responsável familiar: ${c.assFamilia} (${c.assRelacao})
-
-Com base em todos esses dados, elabore o PAEE completo e estruturado com:
-1. Cabeçalho oficial com todos os dados de identificação
-2. Síntese do estudo de caso
-3. Perfil funcional detalhado do estudante
-4. Plano para sala de aula comum com objetivos, estratégias e avaliação
-5. Plano de AEE completo
-6. Seção de tecnologia assistiva (incluindo parecer pedagógico se aplicável)
-7. Profissional de apoio escolar (funções e limites)
-8. Atividades colaborativas
-9. Articulação intersetorial
-10. Plano de monitoramento e revisão
-11. Campos de assinatura
-
-Use linguagem técnica-pedagógica formal, cite artigos dos Decretos 12.773/2025 e 12.686/2025 quando relevante, e torne o documento completo o suficiente para integrar o PPP da escola.`;
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:4000,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data = await resp.json();
-    paeeGerado = data.content?.map(b=>b.text||'').join('') || 'Erro ao gerar PAEE.';
-    document.getElementById('paee-result-text').innerHTML = paeeGerado.replace(/\n/g,'<br>');
-    document.getElementById('paee-result-badge').textContent = paeeAluno?.nome || c.aluno;
-    card.style.display = 'block';
-  } catch(e) {
-    document.getElementById('paee-result-text').textContent = 'Erro: '+e.message;
-    card.style.display = 'block';
-  } finally {
-    box.style.display = 'none';
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg> Gerar PAEE completo com IA';
-  }
-}
-
-async function salvarPAEE() {
-  if (!paeeGerado) { alert('Gere o PAEE antes de salvar.'); return; }
-  if (!user) { alert('Faça login para salvar.'); return; }
-  const c = coletarCamposPAEE();
-  const { error } = await db.from('paees').insert({
-    usuario_id: user.id,
-    aluno_nome: paeeAluno?.nome || c.aluno,
-    aluno_id: paeeAluno?.id || null,
-    escola: c.escola,
-    periodo: c.periodo,
-    conteudo: paeeGerado,
-    dados_formulario: c,
-    criado_em: new Date().toISOString()
-  });
-  if (error) {
-    // Se a tabela não existir ainda, avisa o usuário
-    if (error.code === '42P01') {
-      alert('A tabela de PAEEs ainda não foi criada no banco. Salve o texto manualmente por enquanto.');
-    } else {
-      alert('Erro ao salvar: ' + error.message);
-    }
-    return;
-  }
-  alert('PAEE salvo com sucesso!');
-  carregarPAEEs();
-}
-
-async function carregarPAEEs() {
-  if (!user) return;
-  const lista = document.getElementById('paee-lista');
-  if (!lista) return;
-  const { data, error } = await db.from('paees').select('*').eq('usuario_id',user.id).order('criado_em',{ascending:false});
-  if (error || !data?.length) {
-    lista.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PAEE salvo ainda.</div></div>';
-    return;
-  }
-  lista.innerHTML = data.map(p=>`
-    <div class="item-card">
-      <div class="ic-nome">${p.aluno_nome || '—'}</div>
-      <div class="ic-meta">${p.escola || ''} · ${p.periodo || ''}</div>
-      <div class="ic-meta" style="font-size:11px;color:var(--gr400)">${new Date(p.criado_em).toLocaleDateString('pt-BR')}</div>
-      <div style="display:flex;gap:6px;margin-top:10px">
-        <button class="btn-sm" style="font-size:12px;padding:5px 12px" onclick="verPAEE('${p.id}')">Ver PAEE</button>
-        <button class="btn-danger" onclick="excluirPAEE('${p.id}')">Excluir</button>
-      </div>
-    </div>`).join('');
-}
-
-async function verPAEE(id) {
-  const { data } = await db.from('paees').select('*').eq('id',id).single();
-  if (!data) return;
-  paeeGerado = data.conteudo;
-  document.getElementById('paee-result-text').innerHTML = paeeGerado.replace(/\n/g,'<br>');
-  document.getElementById('paee-result-badge').textContent = data.aluno_nome;
-  document.getElementById('paee-result-card').style.display = 'block';
-  document.getElementById('paee-result-card').scrollIntoView({behavior:'smooth'});
-}
-
-async function excluirPAEE(id) {
-  if (!confirm('Excluir este PAEE?')) return;
-  await db.from('paees').delete().eq('id',id);
-  carregarPAEEs();
-}
-
-function downloadPAEEdireto() {
-  if (!paeeGerado) return;
-  const a = document.createElement('a');
-  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(paeeGerado);
-  a.download = `PAEE_${paeeAluno?.nome||'estudante'}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.txt`;
-  a.click();
-}
-
 // ── ALUNOS CADASTRADOS ───────────────────────────────────────
 async function carregarAlunos() {
   const { data } = await db.from('alunos').select('*').order('nome');
@@ -3674,8 +3204,6 @@ async function carregarAlunos() {
   renderAlSel();
   renderAlunosLista();
   popularPeiSel();
-  popularPaeeSel();
-  carregarPAEEs();
 }
 
 async function carregarAlunosGestao() {
@@ -3748,27 +3276,23 @@ async function salvarAluno() {
 
 // ── GESTÃO ───────────────────────────────────────────────────
 async function carregarDadosGestao() {
-  const [{ data: alunos }, { data: adapts }, { data: peis }, { data: paees }] = await Promise.all([
+  const [{ data: alunos }, { data: adapts }, { data: peis }] = await Promise.all([
     db.from('alunos').select('id, user_id'),
     db.from('adaptacoes').select('*').order('created_at',{ascending:false}),
-    db.from('peis').select('*').order('created_at',{ascending:false}),
-    db.from('paees').select('*').order('criado_em',{ascending:false})
+    db.from('peis').select('*').order('created_at',{ascending:false})
   ]);
 
   todasAdaptacoes = adapts || [];
   todosPEI = peis || [];
-  todosPAEE = paees || [];
 
   const profs = new Set([...(alunos||[]).map(a=>a.user_id), ...(adapts||[]).map(a=>a.user_id)]);
   const sAlunos = document.getElementById('stat-alunos');
   const sAdapt  = document.getElementById('stat-adapt');
   const sPEIs   = document.getElementById('stat-peis');
-  const sPAEEs  = document.getElementById('stat-paees');
   const sProf   = document.getElementById('stat-prof');
   if (sAlunos) sAlunos.textContent = (alunos||[]).length;
   if (sAdapt)  sAdapt.textContent  = (adapts||[]).length;
   if (sPEIs)   sPEIs.textContent   = (peis||[]).length;
-  if (sPAEEs)  sPAEEs.textContent  = (paees||[]).length;
   if (sProf)   sProf.textContent   = profs.size;
 
   const recent = document.getElementById('g-peis-recentes');
@@ -3778,18 +3302,9 @@ async function carregarDadosGestao() {
       `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PEI elaborado ainda.</div></div>`;
   }
 
-  const recentPAEE = document.getElementById('g-paees-recentes');
-  if (recentPAEE) {
-    const slice = todosPAEE.slice(0,6);
-    recentPAEE.innerHTML = slice.length ? slice.map(p => cardGPAEE(p)).join('') :
-      `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PAEE elaborado ainda.</div></div>`;
-  }
-
   popularFiltrosGAdapt();
-  popularFiltrosGPAEEs();
   filtrarGPEIs();
   filtrarGAdapt();
-  filtrarGPAEEs();
 }
 
 function cardPEI(p) {
@@ -3814,89 +3329,6 @@ function filtrarGPEIs() {
   if (!grid) return;
   grid.innerHTML = res.length ? res.map(p=>cardPEI(p)).join('') :
     `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum PEI encontrado.</div></div>`;
-}
-
-// ── GESTÃO: PAEEs ─────────────────────────────────────────────
-let todosPAEE = [];
-
-async function carregarGPAEEs() {
-  const { data } = await db.from('paees').select('*').order('criado_em', { ascending: false });
-  todosPAEE = data || [];
-  popularFiltrosGPAEEs();
-  filtrarGPAEEs();
-}
-
-function popularFiltrosGPAEEs() {
-  const periodos = [...new Set(todosPAEE.map(p => p.periodo).filter(Boolean))].sort();
-  const fp = document.getElementById('gpaee-fperiodo');
-  if (fp) fp.innerHTML = '<option value="">Todos os períodos</option>' + periodos.map(p=>`<option>${p}</option>`).join('');
-}
-
-function filtrarGPAEEs() {
-  const q = (document.getElementById('gpaee-q')?.value||'').toLowerCase();
-  const fp = document.getElementById('gpaee-fperiodo')?.value||'';
-  const res = todosPAEE.filter(p =>
-    (!q || (p.aluno_nome||'').toLowerCase().includes(q) ||
-           (p.escola||'').toLowerCase().includes(q) ||
-           (p.dados_formulario?.profSala||'').toLowerCase().includes(q)) &&
-    (!fp || p.periodo === fp)
-  );
-  const grid = document.getElementById('gpaee-grid');
-  const stat = document.getElementById('gpaee-stat');
-  if (!grid) return;
-  if (stat) stat.textContent = res.length ? `${res.length} PAEE${res.length>1?'s':''} encontrado${res.length>1?'s':''}` : '';
-  grid.innerHTML = res.length ? res.map(p => cardGPAEE(p)).join('') :
-    `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PAEE encontrado.<br><span style="font-size:12px">Os PAEEs elaborados pelos professores aparecerão aqui.</span></div></div>`;
-}
-
-function cardGPAEE(p) {
-  const dt = p.criado_em ? new Date(p.criado_em).toLocaleDateString('pt-BR') : '';
-  const dados = p.dados_formulario || {};
-  const condicao = dados.condicao || '';
-  const profSala = dados.profSala || '';
-  const profAEE = dados.profAEE || '';
-  const apoio = dados.apoioNecessidade === 'sim' ? '🧑‍🤝‍🧑 Apoio escolar' : '';
-  return `<div class="item-card" onclick='abrirModalGPAEE(${JSON.stringify(p).replace(/'/g,"&#39;")})' style="cursor:pointer">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start">
-      <div class="ic-nome">${p.aluno_nome||'(sem nome)'}</div>
-      <span style="font-size:10px;background:var(--at-light);color:var(--at);padding:2px 7px;border-radius:20px;white-space:nowrap;font-weight:600">PAEE</span>
-    </div>
-    <div class="ic-meta">${p.escola||''} ${p.periodo ? '· '+p.periodo : ''}</div>
-    ${condicao ? `<div class="ic-meta" style="font-size:11.5px;color:var(--gr400)">${condicao}</div>` : ''}
-    <div class="ic-tags">
-      ${profSala ? `<span class="ic-tag">👩‍🏫 ${profSala}</span>` : ''}
-      ${profAEE ? `<span class="ic-tag">🏫 AEE: ${profAEE}</span>` : ''}
-      ${apoio ? `<span class="ic-tag">${apoio}</span>` : ''}
-    </div>
-    <div class="ic-prev">${(p.conteudo||'').slice(0,120)}…</div>
-    <div class="ic-date">${dt}</div>
-  </div>`;
-}
-
-let modalGPAEEtxt = '';
-function abrirModalGPAEE(reg) {
-  modalGPAEEtxt = reg.conteudo || '';
-  const dados = reg.dados_formulario || {};
-  document.getElementById('mgpaee-titulo').textContent = `PAEE — ${reg.aluno_nome||''}`;
-  document.getElementById('mgpaee-meta').textContent = [reg.escola, reg.periodo, dados.condicao].filter(Boolean).join(' · ');
-  document.getElementById('mgpaee-info').innerHTML = `
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      ${dados.profSala?`<span class="ic-tag">👩‍🏫 Sala: ${dados.profSala}</span>`:''}
-      ${dados.profAEE?`<span class="ic-tag">🏫 AEE: ${dados.profAEE}</span>`:''}
-      ${dados.coord?`<span class="ic-tag">🎓 Coord: ${dados.coord}</span>`:''}
-      ${dados.apoioNecessidade==='sim'?`<span class="ic-tag" style="background:#FEF3C7;color:#92400E">🧑‍🤝‍🧑 Apoio escolar designado</span>`:''}
-      ${dados.taDispositivo==='sim'?`<span class="ic-tag" style="background:#ECFDF5;color:#065F46">📱 Parecer TA digital</span>`:''}
-    </div>
-    <div style="font-size:11.5px;color:var(--gr400)">Elaborado em: ${reg.criado_em ? new Date(reg.criado_em).toLocaleDateString('pt-BR') : '—'} · Próxima revisão: ${dados.revisao||'—'}</div>`;
-  document.getElementById('mgpaee-body').textContent = modalGPAEEtxt;
-  abrirModal('modal-gpaee');
-}
-function copiarModalGPAEE() { navigator.clipboard.writeText(modalGPAEEtxt).then(()=>toast('Copiado!','success')); }
-function downloadModalGPAEE() {
-  const a = document.createElement('a');
-  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(modalGPAEEtxt);
-  a.download = `PAEE_${document.getElementById('mgpaee-titulo').textContent.replace('PAEE — ','')}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.txt`;
-  a.click();
 }
 
 function popularFiltrosGAdapt() {
@@ -5105,6 +4537,626 @@ function abrirTermos() {
 function fecharTermos() {
   const el = document.getElementById('termos-modal');
   if (el) el.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// MÓDULOS PONTE ESCOLA ↔ CLÍNICA
+// ══════════════════════════════════════════════════════════════
+
+// ── appendBridgePages: injects bridge pages into any profile's main-content ──
+function appendBridgePages() {
+  const mc = document.getElementById('main-content');
+  if (!mc || mc.querySelector('#page-ponte-diario')) return; // already injected
+  const frag = document.createElement('div');
+  frag.innerHTML = `
+  <div id="page-ponte-diario" class="page">
+    <div class="bridge-hero">
+      <h2>📓 Diário do Aluno</h2>
+      <p>Registro compartilhado entre escola, clínica e AT. Cada profissional documenta observações, evoluções e alertas — tudo visível para a equipe, organizado por aluno.</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+      <select id="diario-aluno-sel" class="fselect" style="max-width:280px" onchange="carregarDiario()"><option value="">Selecione um aluno</option></select>
+      <button class="btn-sm" id="btn-nova-entrada" onclick="mostrarFormDiario()" disabled>+ Nova entrada</button>
+      <select id="diario-filtro-origem" class="fselect" style="max-width:160px" onchange="filtrarDiario()">
+        <option value="">Todas as origens</option>
+        <option value="escola">🏫 Escola</option>
+        <option value="professor">👩‍🏫 Professor</option>
+        <option value="clinica">🏥 Clínica</option>
+        <option value="at">🧑‍⚕️ AT</option>
+      </select>
+      <span id="diario-count" style="font-size:12px;color:var(--gr400)"></span>
+    </div>
+    <div id="diario-form-card" style="display:none;background:var(--bg2);border:1.5px solid var(--bridge-mid);border-radius:var(--rmd);padding:16px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label class="flabel">Tipo de registro</label>
+          <select id="diario-tipo" class="fselect">
+            <option value="observacao">📝 Observação</option>
+            <option value="evolucao">📈 Evolução</option>
+            <option value="conquista">⭐ Conquista / Marco</option>
+            <option value="alerta">⚠️ Alerta / Regressão</option>
+            <option value="estrategia">💡 Estratégia que funcionou</option>
+            <option value="comunicado">📢 Comunicado à equipe</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Área de desenvolvimento</label>
+          <select id="diario-area" class="fselect">
+            <option value="">Geral</option>
+            <option value="comunicacao">💬 Comunicação</option>
+            <option value="cognicao">🧠 Cognição</option>
+            <option value="social">🤝 Socialização</option>
+            <option value="emocional">🎭 Regulação emocional</option>
+            <option value="motor">🚶 Motor / Mobilidade</option>
+            <option value="curriculo">📚 Currículo</option>
+            <option value="sensorial">👁️ Sensorial</option>
+          </select>
+        </div>
+      </div>
+      <label class="flabel">Registro</label>
+      <textarea id="diario-texto" class="ftarea" style="min-height:90px;margin-bottom:10px" placeholder="Descreva o que observou, a conquista, o alerta ou a estratégia…"></textarea>
+      <div style="margin-bottom:10px">
+        <label class="flabel">Visível para</label>
+        <div id="diario-visivel-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+          <span class="chip active" data-dest="escola">🏫 Escola</span>
+          <span class="chip active" data-dest="clinica">🏥 Clínica</span>
+          <span class="chip active" data-dest="at">🧑‍⚕️ AT</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm" onclick="salvarEntradaDiario()">Salvar registro</button>
+        <button class="btn-sm-ghost" onclick="document.getElementById('diario-form-card').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+    <div id="diario-timeline" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <div id="page-ponte-glossario" class="page">
+    <div class="bridge-hero">
+      <h2>📖 Glossário Escola ↔ Clínica</h2>
+      <p>Termos clínicos traduzidos para a sala de aula — e termos pedagógicos explicados para terapeutas. Clique em qualquer termo para ver o que significa na prática.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+      <div class="search-box" style="flex:1;max-width:320px"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="gloss-busca" placeholder="Buscar termo…" oninput="filtrarGlossario()"></div>
+      <div id="gloss-cats" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+    <div id="gloss-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+  </div>
+
+  <div id="page-ponte-tradutor" class="page">
+    <div class="bridge-hero">
+      <h2>🔄 Tradutor de Linguagem</h2>
+      <p>Cole um texto clínico e veja o que significa na sala de aula — ou cole um relatório escolar e veja a interpretação clínica. A IA faz a ponte entre os dois mundos.</p>
+    </div>
+    <div class="bridge-tabs">
+      <button class="bridge-tab active" id="ttab-c2p" onclick="setTradutorDir('c2p')">🏥 Clínico → Pedagógico</button>
+      <button class="bridge-tab" id="ttab-p2c" onclick="setTradutorDir('p2c')">🏫 Pedagógico → Clínico</button>
+    </div>
+    <div style="margin-bottom:10px">
+      <span style="font-size:12px;color:var(--gr400);margin-right:6px">Exemplos rápidos:</span>
+      <span id="trad-exemplos" style="display:inline-flex;gap:6px;flex-wrap:wrap"></span>
+    </div>
+    <div class="tradutor-box">
+      <div class="tradutor-panel">
+        <div class="tradutor-label" id="trad-label-in">Texto clínico (laudo, relatório)</div>
+        <textarea class="tradutor-textarea" id="trad-input" placeholder="Cole aqui o texto do laudo, avaliação clínica ou relatório terapêutico…"></textarea>
+        <button class="btn-gerar" onclick="traduzirTexto()" style="margin-top:10px;background:linear-gradient(135deg,#0891B2,#0E7490)">🔄 Traduzir</button>
+      </div>
+      <div class="tradutor-panel">
+        <div class="tradutor-label" id="trad-label-out">Tradução pedagógica — o que isso significa na sala de aula</div>
+        <div class="tradutor-result" id="trad-output">A tradução aparecerá aqui…</div>
+        <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('trad-output').textContent).then(()=>toast('Copiado!','success'))" style="margin-top:8px">Copiar tradução</button>
+      </div>
+    </div>
+    <div class="gen-box" id="gen-trad-box" style="margin-top:12px;background:var(--bridge-light);border-color:var(--bridge-mid)">
+      <div class="spin" style="border-top-color:var(--bridge)"></div><span>IA traduzindo…</span>
+    </div>
+  </div>
+
+  <div id="page-ponte-objetivos" class="page">
+    <div class="bridge-hero">
+      <h2>🎯 Objetivos Convergentes</h2>
+      <p>Selecione um aluno para ver lado a lado os objetivos pedagógicos da escola e os objetivos terapêuticos da clínica — a IA identifica as convergências e gera um plano integrado.</p>
+    </div>
+    <div style="margin-bottom:16px">
+      <select id="conv-aluno-sel" class="fselect" style="max-width:280px" onchange="carregarObjetivosConvergentes()"><option value="">Selecione um aluno</option></select>
+    </div>
+    <div id="conv-body"></div>
+    <div id="conv-result" style="display:none;margin-top:16px">
+      <h3 style="font-size:14px;font-weight:600;color:var(--bridge);margin-bottom:10px">🔗 Convergências identificadas</h3>
+      <div id="conv-convergencias" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+      <h3 style="font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:8px">📋 Recomendações para a equipe</h3>
+      <div id="conv-recomendacoes" class="result-text" style="background:var(--bridge-light);border-radius:var(--rsm);padding:14px;font-size:13.5px;color:var(--gr600);line-height:1.8;border:1px solid var(--bridge-mid)"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-sm" onclick="salvarConvergencia()">Salvar plano</button>
+        <button class="btn-copy" onclick="copiarConvergencia()">Copiar tudo</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;margin-top:14px">
+      <button class="btn-gerar" id="btn-gerar-convergencia" onclick="gerarConvergencia()" disabled style="background:linear-gradient(135deg,#0891B2,#1E3A8A)">
+        ✨ Gerar plano integrado com IA
+      </button>
+    </div>
+    <div class="gen-box" id="gen-conv-box" style="background:var(--bridge-light);border-color:var(--bridge-mid)">
+      <div class="spin" style="border-top-color:var(--bridge)"></div><span>IA identificando convergências…</span>
+    </div>
+  </div>`;
+  Array.from(frag.children).forEach(el => mc.appendChild(el));
+}
+
+// ── PATCH ÚNICO: showPage para módulos da ponte ──────────────
+const _origShowPage_bridge = window.showPage;
+window.showPage = function(id) {
+  if (typeof _origShowPage_bridge === 'function') _origShowPage_bridge(id);
+  if (id === 'ponte-glossario')  renderGlossario();
+  if (id === 'ponte-tradutor')   renderTradutorExemplos();
+  if (id === 'ponte-diario' || id === 'ponte-objetivos') popularSelectsPonte();
+};
+
+// ── PATCH ÚNICO: iniciarApp para popular selects da ponte ────
+const _origIniciarApp_bridge = window.iniciarApp;
+window.iniciarApp = function() {
+  if (typeof _origIniciarApp_bridge === 'function') _origIniciarApp_bridge();
+  setTimeout(popularSelectsPonte, 500);
+};
+
+// ── Popular selects da ponte com alunos ──────────────────────
+function popularSelectsPonte(){
+  // Escola: alunosCad | Clínica: perfisClinicaList | Ambos se disponíveis
+  const todosAlunos = [
+    ...(alunosCad||[]).map(a=>({id:'escola_'+a.id,nome:a.nome,tipo:'escola'})),
+    ...(perfisClinicaList||[]).map(p=>({id:'clinica_'+p.id,nome:p.nome,tipo:'clinica'})),
+  ];
+  // Deduplicar por nome (aluno que existe dos dois lados)
+  const vistos = new Set();
+  const lista  = todosAlunos.filter(a=>{ if(vistos.has(a.nome)) return false; vistos.add(a.nome); return true; });
+  const opts   = '<option value="">Selecione um aluno</option>' +
+    lista.map(a=>`<option value="${a.id}">${a.nome}</option>`).join('');
+  ['diario-aluno-sel','conv-aluno-sel'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.innerHTML=opts;
+  });
+}
+let diarioEntries=[], diarioAlunoAtual=null;
+
+function mostrarFormDiario(){
+  const el=document.getElementById('diario-form-card');
+  if(el){ el.style.display='block'; el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+
+async function carregarDiario(){
+  const alunoId=document.getElementById('diario-aluno-sel').value;
+  const btn=document.getElementById('btn-nova-entrada');
+  if(!alunoId){ if(btn) btn.disabled=true; return; }
+  if(btn) btn.disabled=false;
+  diarioAlunoAtual=alunoId;
+  const alunoNome=document.getElementById('diario-aluno-sel').selectedOptions[0]?.text||'';
+  try{
+    const { data }=await db.from('diario_aluno').select('*')
+      .eq('aluno_nome',alunoNome).order('created_at',{ascending:false});
+    diarioEntries=data||[];
+    filtrarDiario();
+  }catch(e){ console.error('carregarDiario:',e); }
+}
+
+function filtrarDiario(){
+  const origem=document.getElementById('diario-filtro-origem')?.value||'';
+  const lista=diarioEntries.filter(e=>!origem||e.origem===origem);
+  const tl=document.getElementById('diario-timeline');
+  const ct=document.getElementById('diario-count');
+  if(ct) ct.textContent=`${lista.length} registro${lista.length!==1?'s':''}`;
+  if(!tl) return;
+  if(!lista.length){
+    tl.innerHTML=`<div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Nenhum registro encontrado para este aluno.<br>Clique em "+ Nova entrada" para começar.</div></div>`;
+    return;
+  }
+  const origemLabel={escola:'🏫 Escola',clinica:'🏥 Clínica',at:'🧑‍⚕️ AT',professor:'👩‍🏫 Professor'};
+  const tipoIcon={observacao:'📝',evolucao:'📈',alerta:'⚠️',conquista:'⭐',estrategia:'💡',comunicado:'📢'};
+  tl.innerHTML=lista.map(e=>{
+    const dt=e.created_at?new Date(e.created_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    const icon=tipoIcon[e.tipo]||'📝';
+    return `<div class="diario-entry origem-${e.origem||'escola'}">
+      <div class="diario-header">
+        <span class="diario-origem ${e.origem||'escola'}">${origemLabel[e.origem]||e.origem}</span>
+        <span class="diario-autor">${e.autor_nome||'—'}</span>
+        <span class="diario-data">${dt}</span>
+        <span style="margin-left:auto;font-size:16px">${icon}</span>
+      </div>
+      <div class="diario-texto">${e.texto||''}</div>
+      ${e.area?`<div class="diario-tags"><span class="diario-tag">${e.area}</span></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function salvarEntradaDiario(){
+  const alunoId=document.getElementById('diario-aluno-sel').value;
+  if(!alunoId) return toast('Selecione um aluno.','error');
+  const texto=document.getElementById('diario-texto').value.trim();
+  if(!texto) return toast('Escreva o registro.','error');
+  const alunoNome=document.getElementById('diario-aluno-sel').selectedOptions[0]?.text||'';
+  const tipo=document.getElementById('diario-tipo').value;
+  const area=document.getElementById('diario-area').value;
+  // visibilidade
+  const destinos=[...(document.querySelectorAll('#diario-visivel-chips .chip.active'))]
+    .map(c=>c.dataset.dest);
+  // origem baseada no papel
+  const origemMap={professor:'professor',gestao:'escola',clinica:'clinica','gestao-clinica':'clinica',at:'at'};
+  const origem=origemMap[userRole]||'escola';
+  const autorNome=user?.email?.split('@')[0]||'—';
+  const { error }=await db.from('diario_aluno').insert({
+    aluno_nome:alunoNome, user_id:user.id, origem, autor_nome:autorNome,
+    tipo, area, texto, destinos, created_at:new Date().toISOString()
+  });
+  if(error) return toast('Erro: '+error.message,'error');
+  toast('Registro salvo!','success');
+  document.getElementById('diario-texto').value='';
+  document.getElementById('diario-form-card').style.display='none';
+  carregarDiario();
+}
+
+// chips de visibilidade do diário
+document.addEventListener('click',e=>{
+  if(e.target.closest('#diario-visivel-chips .chip'))
+    e.target.closest('.chip').classList.toggle('active');
+});
+
+// ── 2. GLOSSÁRIO INTELIGENTE ──────────────────────────────────
+const GLOSSARIO=[
+  // TERMOS CLÍNICOS → para professores
+  {termo:'Função executiva',origem:'clinico',cat:'Neuropsicologia',
+   resumo:'Conjunto de processos mentais que controlam e regulam outros comportamentos: planejamento, memória de trabalho, controle inibitório, flexibilidade cognitiva.',
+   escola:'Na sala de aula, a criança com dificuldades nas funções executivas tem problema em: organizar a mochila, iniciar tarefas sem ajuda, mudar de atividade, lembrar de regras, planejar um projeto em etapas.',
+   estrategias:['Checklist visual para organização','Uma instrução por vez','Timer visível','Rotina previsível','Aviso antecipado de mudanças']},
+  {termo:'Regulação sensorial / Integração sensorial',origem:'clinico',cat:'Terapia Ocupacional',
+   resumo:'Capacidade do sistema nervoso de processar e organizar os estímulos dos sentidos (tato, audição, visão, propriocepção, vestibular) para produzir respostas adaptativas.',
+   escola:'Na prática: a criança pode reagir com choro, agressão ou "travamento" a sons, toques, texturas ou ambientes barulhentos. Não é frescura — é o cérebro sobrecarregado. Ou pode buscar excesso de movimento sem conseguir parar.',
+   estrategias:['Fone abafador no refeitório','Assento com almofada de equilíbrio','Aviso antes de tocar','Materiais de textura previsível','Pausas sensoriais no horário']},
+  {termo:'Praxia / Dispraxia',origem:'clinico',cat:'Terapia Ocupacional',
+   resumo:'Praxia é a capacidade de planejar, organizar e executar sequências de movimentos propositais. Dispraxia é a dificuldade nessa habilidade.',
+   escola:'A criança com dispraxia tem dificuldade em: escrever (pegar o lápis, controlar a pressão), cortar com tesoura, montar algo, jogar bola, copiar sequências. Não é falta de prática — é uma dificuldade real de planejamento motor.',
+   estrategias:['Não penalizar pela caligrafia','Aceitar respostas digitadas ou orais','Atividades com passo a passo motor explícito','Tesoura adaptada','Tempo extra']},
+  {termo:'Processamento auditivo central',origem:'clinico',cat:'Fonoaudiologia',
+   resumo:'Habilidade do sistema nervoso central de interpretar e dar sentido aos sons da fala — mesmo sem deficiência auditiva periférica.',
+   escola:'O aluno ouve, mas não processa bem: tem dificuldade em entender em ambientes com ruído, perde partes de instruções longas, confunde fonemas similares, demora para responder oralmente.',
+   estrategias:['Falar de frente, devagar, com frases curtas','Reduzir barulho de fundo','Repetir instrução individualmente','Usar suporte visual junto com o oral','Assento próximo ao professor']},
+  {termo:'Memória de trabalho',origem:'clinico',cat:'Neuropsicologia',
+   resumo:'Capacidade de manter e manipular temporariamente informações enquanto realiza outra tarefa. É como a "mesa de trabalho" da mente.',
+   escola:'A criança "esquece" o que estava fazendo no meio de uma tarefa, perde o fio da instrução quando tem mais de 2 etapas, tem dificuldade em copiar do quadro porque perde o que estava lendo.',
+   estrategias:['Instruções em no máximo 2 etapas','Checklist escrito na mesa','Deixar o enunciado visível durante a tarefa','Não apagar o quadro enquanto copia','Repetição frequente']},
+  {termo:'Hipersensibilidade tátil',origem:'clinico',cat:'Terapia Ocupacional',
+   resumo:'Resposta exagerada a estímulos de toque. O sistema nervoso interpreta toques inofensivos como desconfortáveis ou dolorosos.',
+   escola:'A criança reage negativamente a toques inesperados (colega que passa na fila), a certas texturas de papel, tecidos ou materiais de artes. Pode parecer "agitada" ou "grossa", mas é uma resposta neurológica real.',
+   estrategias:['Não tocar sem avisar antes','Posição na fila que evite contato involuntário','Materiais alternativos em artes','Luvas para atividades de tinta','Validar a sensação sem punir a reação']},
+  {termo:'CAA — Comunicação Alternativa e Aumentativa',origem:'clinico',cat:'Fonoaudiologia',
+   resumo:'Conjunto de estratégias e recursos para apoiar ou substituir a comunicação oral — pranchas, cartões de imagem, aplicativos, gestos, olhar.',
+   escola:'A criança pode comunicar necessidades, escolhas, opiniões e conteúdo acadêmico através da CAA — mesmo sem falar. A CAA não atrasa a fala; pelo contrário, estimula. O professor não precisa ser especialista: precisa valorizar e aguardar.',
+   estrategias:['Aceitar todas as formas de comunicação','Aguardar o tempo de resposta (sem completar)','Ter a prancha sempre acessível','Aprender 10 símbolos básicos da prancha do aluno','Capacitar toda a turma a comunicar com CAA']},
+  {termo:'TEA — níveis de suporte',origem:'clinico',cat:'Psicologia / Psiquiatria',
+   resumo:'Nível 1 (requer suporte), Nível 2 (requer suporte substancial), Nível 3 (requer suporte muito substancial). Os níveis descrevem necessidade de apoio — não inteligência ou potencial.',
+   escola:'Nível 1 não significa "leve" — pode ter grande sofrimento social e sensorial. Nível 3 não significa "não aprende". Os níveis guiam o quanto de suporte adaptar, não o quanto esperar do aluno.',
+   estrategias:['Não reduzir expectativas por causa do nível','Adaptar o suporte ao perfil real','Consultar o laudo + conhecer o aluno','Evitar comparar com outros TEA']},
+  {termo:'TPS — Transtorno de Processamento Sensorial',origem:'clinico',cat:'Terapia Ocupacional',
+   resumo:'Dificuldade do sistema nervoso em processar e responder adequadamente a estímulos sensoriais. Pode ocorrer com ou sem TEA.',
+   escola:'Manifestações em sala: fuga de atividades sensoriais (massinha, tinta, areia), comportamentos de busca sensorial (morder lápis, balançar na cadeira, bater a cabeça), dificuldade em ambientes ruidosos.',
+   estrategias:['Dieta sensorial programada ao longo do dia','Canto de regulação na sala','Materiais sensoriais disponíveis','Comunicar com a TO sobre o perfil sensorial','Não punir comportamentos de autorregulação']},
+  {termo:'Propriocepção',origem:'clinico',cat:'Terapia Ocupacional',
+   resumo:'Sentido interno que informa o cérebro sobre a posição do corpo no espaço e a força dos movimentos.',
+   escola:'A criança com dificuldade proprioceptiva pode: usar força excessiva ao escrever (rompe o papel), bater nos colegas sem intenção, não estimar bem distâncias, ter dificuldade em ficar sentada sem apoio.',
+   estrategias:['Atividades de "pressão profunda" antes de tarefas finas','Peso terapêutico no colo durante atividades','Almofada de equilíbrio','Exercícios de carga corporal','Parceria com TO']},
+  {termo:'Disfunção do processamento auditivo',origem:'clinico',cat:'Fonoaudiologia',
+   resumo:'O sistema auditivo periférico funciona, mas o cérebro tem dificuldade de processar o que ouve — distinguir sons, localizar fonte sonora, entender no ruído.',
+   escola:'O aluno pode parecer desatento ou desobediente quando na verdade não processou a instrução. Perde partes de palavras, confunde palavras similares, tem desempenho muito melhor em ambientes silenciosos.',
+   estrategias:['Reduzir barulho de fundo durante instruções','Posicionar próximo ao professor','Confirmar compreensão individualmente','Suporte visual para toda informação oral','Mic/amplificação se possível']},
+  // TERMOS PEDAGÓGICOS → para clínicos
+  {termo:'BNCC — Base Nacional Comum Curricular',origem:'pedagogico',cat:'Currículo',
+   resumo:'Documento normativo que define as aprendizagens essenciais para cada etapa da educação básica brasileira — Educação Infantil, Fundamental e Médio.',
+   escola:'Para o clínico: as "habilidades" do relatório escolar (ex: EF15LP01) são objetivos de aprendizagem da BNCC. Quando o professor diz que o aluno "não atingiu a habilidade", significa que não alcançou aquele objetivo curricular específico.',
+   estrategias:['Ler o código de habilidade junto ao professor','Verificar o que é esperado vs o que o aluno consegue','Alinhar objetivos terapêuticos com habilidades BNCC do ano','Contribuir com estratégias para habilidades específicas']},
+  {termo:'AEE — Atendimento Educacional Especializado',origem:'pedagogico',cat:'Educação Especial',
+   resumo:'Serviço obrigatório para estudantes com deficiência, TEA e altas habilidades. Ocorre em sala de recursos multifuncionais, no contraturno, e é complementar — não substitui a sala regular.',
+   escola:'Para o clínico: o AEE é feito por um professor especialista, não por terapeuta. As estratégias do AEE devem ser alinhadas com as estratégias terapêuticas. O PAEE (Plano de AEE) é o documento que guia este serviço.',
+   estrategias:['Solicitar o PAEE para alinhar objetivos','Enviar contribuições por escrito ao professor do AEE','Oferecer formação em horário de planejamento','Participar das reuniões de equipe multidisciplinar']},
+  {termo:'Adaptação curricular',origem:'pedagogico',cat:'Planejamento',
+   resumo:'Modificações no conteúdo, metodologia, avaliação ou tempo para garantir que o aluno com NEE possa participar e aprender dentro do currículo comum.',
+   escola:'Para o clínico: adaptação não é "dar menos" — é dar diferente. Um aluno pode aprender a mesma coisa com um percurso diferente. O relatório clínico que descreve funcionalidades ajuda o professor a adaptar com mais precisão.',
+   estrategias:['Descrever no relatório "o que o aluno consegue fazer"','Sugerir estratégias específicas por área','Distinguir o que é barreira vs o que é limitação real','Validar adaptações que o professor já usa']},
+  {termo:'PEI — Plano Educacional Individualizado',origem:'pedagogico',cat:'Documentação',
+   resumo:'Documento que registra as metas, estratégias, recursos e avaliações individualizadas para o aluno com NEE. É elaborado pela escola com participação da família.',
+   escola:'Para o clínico: o PEI é o equivalente escolar do plano terapêutico. Os objetivos do PEI e do plano clínico deveriam ser alinhados. Solicitar acesso ao PEI permite identificar pontos de convergência.',
+   estrategias:['Solicitar cópia do PEI com autorização da família','Contribuir com objetivos funcionais para o PEI','Informar sobre o plano terapêutico atual','Reunião conjunta para alinhamento']},
+  {termo:'Avaliação formativa',origem:'pedagogico',cat:'Avaliação',
+   resumo:'Avaliação contínua e processual que acompanha o processo de aprendizagem — observação, registros, portfólio, rubricas — em oposição à avaliação somativa (provas, notas finais).',
+   escola:'Para o clínico: quando o professor usa avaliação formativa para o aluno com NEE, significa que o progresso é medido pelo percurso, não pela nota. Os registros de sessão clínica têm o mesmo valor — compartilhá-los enriquece a avaliação.',
+   estrategias:['Compartilhar registros de sessão relevantes','Sugerir o que observar em contexto escolar','Alinhar indicadores de evolução com o professor','Contribuir com itens para o portfólio do aluno']},
+  {termo:'Projeto de vida / Habilidades socioemocionais',origem:'pedagogico',cat:'Currículo',
+   resumo:'Competências relacionadas a autoconhecimento, autorregulação, empatia, responsabilidade e projeto de futuro — integradas ao currículo pela BNCC e LGBTQIA+ do IBGE.',
+   escola:'Para o clínico: as habilidades socioemocionais trabalhadas na escola têm grande interface com objetivos terapêuticos de regulação emocional, autoconhecimento e autonomia. As estratégias se alimentam mutuamente.',
+   estrategias:['Alinhar objetivos de autorregulação','Compartilhar estratégias de regulação usadas na clínica','Informar sobre gatilhos e estratégias que funcionam','Contribuir com habilidades de vida independente']},
+  {termo:'Mediação / Mediador escolar',origem:'pedagogico',cat:'Apoio',
+   resumo:'Profissional de apoio que facilita a participação do aluno com NEE nas atividades escolares — é diferente do AT (acompanhante terapêutico). O mediador escolar atua no contexto pedagógico.',
+   escola:'Para o clínico: o mediador escolar não tem (necessariamente) formação clínica. Orientações escritas e objetivas do clínico para o mediador são muito bem-vindas e impactam o dia a dia do aluno diretamente.',
+   estrategias:['Enviar orientações escritas e práticas ao mediador','Descrever reações esperadas e como responder','Listar o que NÃO fazer','Oferecer uma reunião de orientação presencial ou por vídeo']},
+];
+
+let glossFiltrocat='';
+function renderGlossario(){
+  const cats=[...new Set(GLOSSARIO.map(g=>g.cat))];
+  const catsEl=document.getElementById('gloss-cats');
+  if(catsEl) catsEl.innerHTML=
+    `<button class="gloss-cat active" onclick="setGlossCat('')">Todos</button>`+
+    cats.map(c=>`<button class="gloss-cat" onclick="setGlossCat('${c}')">${c}</button>`).join('');
+  filtrarGlossario();
+}
+function setGlossCat(cat){
+  glossFiltrocat=cat;
+  document.querySelectorAll('.gloss-cat').forEach(b=>{
+    b.classList.toggle('active',b.textContent===(cat||'Todos'));
+  });
+  filtrarGlossario();
+}
+function filtrarGlossario(){
+  const q=(document.getElementById('gloss-busca')?.value||'').toLowerCase();
+  const lista=GLOSSARIO.filter(g=>
+    (!glossFiltrocat||g.cat===glossFiltrocat)&&
+    (!q||g.termo.toLowerCase().includes(q)||g.resumo.toLowerCase().includes(q)||
+        g.escola.toLowerCase().includes(q)||(g.cat||'').toLowerCase().includes(q))
+  );
+  const grid=document.getElementById('gloss-grid');
+  if(!grid) return;
+  const origemLabel={clinico:'🏥 Termo clínico',pedagogico:'🏫 Termo pedagógico',ambos:'↔ Ambos'};
+  grid.innerHTML=lista.length?lista.map((g,i)=>`
+    <div class="gloss-card" onclick="toggleGlossItem(${i})">
+      <div class="gloss-termo">${g.termo}</div>
+      <span class="gloss-origem ${g.origem}">${origemLabel[g.origem]||g.origem} · ${g.cat}</span>
+      <div class="gloss-resumo">${g.resumo}</div>
+      <div id="gloss-detalhe-${i}" style="display:none">
+        <div class="gloss-escola-label">${g.origem==='pedagogico'?'💡 O que isso significa para a clínica:':'💡 O que isso significa na sala de aula:'}</div>
+        <div class="gloss-escola-texto">${g.escola}</div>
+        <div class="gloss-escola-label" style="color:var(--bridge);margin-top:10px">🛠️ Estratégias práticas:</div>
+        <div class="gloss-estrategias">${(g.estrategias||[]).map(e=>`<span class="gloss-estrategia">${e}</span>`).join('')}</div>
+      </div>
+    </div>`).join('')
+    :`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum termo encontrado.</div></div>`;
+  // mantém os índices reais
+  window._glossListaAtual=lista;
+}
+function toggleGlossItem(i){
+  const el=document.getElementById('gloss-detalhe-'+i);
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+
+// ── 3. TRADUTOR DE LINGUAGEM ──────────────────────────────────
+let tradDir='c2p'; // c2p = clínico para pedagógico
+function setTradutorDir(dir){
+  tradDir=dir;
+  const isC2P=dir==='c2p';
+  document.getElementById('ttab-c2p').classList.toggle('active',isC2P);
+  document.getElementById('ttab-p2c').classList.toggle('active',!isC2P);
+  document.getElementById('trad-label-in').textContent=
+    isC2P?'Texto clínico (laudo, relatório terapêutico)':'Texto pedagógico (objetivo, planejamento, relatório escolar)';
+  document.getElementById('trad-label-out').textContent=
+    isC2P?'Tradução pedagógica — o que isso significa na sala de aula':'Tradução clínica — o que isso significa do ponto de vista terapêutico';
+  document.getElementById('trad-input').placeholder=
+    isC2P?'Cole o laudo, relatório ou avaliação clínica…\n\nEx: O paciente apresenta déficit nas funções executivas com comprometimento do controle inibitório e da memória de trabalho, impactando o sequenciamento de atividades complexas.':
+    'Cole o objetivo pedagógico, planejamento ou relatório escolar…\n\nEx: O aluno não atingiu as habilidades EF01MA01 e EF01MA02 da BNCC. Apresenta dificuldades na correspondência um-a-um e na contagem sequencial com apoio concreto.';
+}
+function renderTradutorExemplos(){
+  const exemplos=[
+    {label:'Disfunção executiva',texto:'O paciente apresenta déficit nas funções executivas com comprometimento do controle inibitório, memória de trabalho e flexibilidade cognitiva, impactando o sequenciamento de atividades complexas e a adaptação a novas demandas.',dir:'c2p'},
+    {label:'Integração sensorial',texto:'Criança com hiperresponsividade tátil e vestibular apresentando comportamentos de evitação sensorial e respostas de luta/fuga em contextos de estimulação moderada. Dieta sensorial indicada.',dir:'c2p'},
+    {label:'Apraxia de fala',texto:'Criança com apraxia verbal de desenvolvimento apresenta inconsistência nos erros articulatórios, dificuldade de sequenciamento motor da fala com presença de tentativas e aproximações.',dir:'c2p'},
+    {label:'Objetivo BNCC',texto:'Aluno não atingiu EF15LP01 (identificar a função social de textos) nem EF15LP03 (produção de textos com sequência lógica). Apresenta dificuldade em identificar ideia principal e organizar informações.',dir:'p2c'},
+    {label:'Relatório escolar',texto:'O aluno apresenta comportamento desafiador frequente, recusa de atividades e dificuldade em permanecer em sala. As estratégias de incentivo positivo não surtiram efeito. A família relata comportamentos similares em casa.',dir:'p2c'},
+  ];
+  const el=document.getElementById('trad-exemplos');
+  if(!el) return;
+  el.innerHTML=exemplos.map(ex=>`
+    <button onclick="carregarExemploTrad('${encodeURIComponent(ex.texto)}','${ex.dir}')"
+      style="padding:5px 12px;background:#fff;border:1px solid var(--gr200);border-radius:6px;font-size:11.5px;color:var(--gr600);cursor:pointer;transition:all .15s"
+      onmouseover="this.style.borderColor='var(--bridge)';this.style.color='var(--bridge)'"
+      onmouseout="this.style.borderColor='var(--gr200)';this.style.color='var(--gr600)'"
+    >${ex.label}</button>`).join('');
+}
+function carregarExemploTrad(textoEnc,dir){
+  setTradutorDir(dir);
+  document.getElementById('trad-input').value=decodeURIComponent(textoEnc);
+  traduzirTexto();
+}
+async function traduzirTexto(){
+  const txt=document.getElementById('trad-input').value.trim();
+  if(!txt) return toast('Cole um texto para traduzir.','error');
+  const genBox=document.getElementById('gen-trad-box');
+  const outEl=document.getElementById('trad-output');
+  genBox.classList.add('show');
+  if(outEl) outEl.textContent='Traduzindo…';
+  const isC2P=tradDir==='c2p';
+  const prompt=isC2P?
+    `Você é especialista em educação inclusiva. Traduza o seguinte texto clínico para linguagem pedagógica clara, que um professor possa entender e aplicar diretamente na sala de aula.
+
+TEXTO CLÍNICO:
+${txt}
+
+Produza uma tradução estruturada assim:
+
+**O que esse texto diz em linguagem simples:**
+[Explique sem jargões técnicos o que o profissional clínico observou]
+
+**O que o professor vai ver na sala de aula:**
+[Comportamentos, dificuldades e situações concretas que se manifestam no contexto escolar]
+
+**O que o professor pode fazer:**
+[Lista de 5 a 8 estratégias práticas, específicas e aplicáveis imediatamente]
+
+**O que evitar:**
+[2 a 4 práticas comuns que atrapalham este perfil]
+
+**Quando acionar a equipe clínica:**
+[Sinais de que algo precisa ser discutido com o terapeuta]`:
+
+    `Você é especialista em integração clínico-pedagógica. Traduza o seguinte texto pedagógico para linguagem clínica, que um terapeuta possa usar para alinhar seus objetivos terapêuticos com o contexto escolar.
+
+TEXTO PEDAGÓGICO:
+${txt}
+
+Produza uma tradução estruturada assim:
+
+**O que esse texto diz clinicamente:**
+[Interpretar as dificuldades descritas com linguagem clínica — quais habilidades, funções e processos estão envolvidos]
+
+**Possíveis hipóteses clínicas relacionadas:**
+[Quais processos neuropsicológicos, motores, sensoriais ou de linguagem podem estar impactando]
+
+**Como isso impacta o trabalho terapêutico:**
+[O que a clínica pode contribuir especificamente para resolver ou mitigar as barreiras descritas]
+
+**Objetivos terapêuticos sugeridos para alinhar com a escola:**
+[3 a 5 objetivos terapêuticos que dialogam diretamente com o que o professor reportou]
+
+**Como comunicar de volta ao professor:**
+[Como o clínico pode reportar o progresso de volta à escola em linguagem pedagógica]`;
+
+  try{
+    const r=await fetch(CLAUDE_PROXY,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_KEY}`},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1800,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await r.json();
+    const texto=(data.content||[]).map(b=>b.text||'').join('').trim();
+    if(outEl) outEl.textContent=texto;
+  }catch(e){
+    if(outEl) outEl.textContent='Erro: '+e.message;
+    toast('Erro: '+e.message,'error');
+  }finally{
+    genBox.classList.remove('show');
+  }
+}
+
+// ── 4. OBJETIVOS CONVERGENTES ─────────────────────────────────
+let convGerado='';
+async function carregarObjetivosConvergentes(){
+  const alunoId=document.getElementById('conv-aluno-sel').value;
+  const btn=document.getElementById('btn-gerar-convergencia');
+  const body=document.getElementById('conv-body');
+  document.getElementById('conv-result').style.display='none';
+  if(!btn||!body) return;
+  if(!alunoId){ btn.disabled=true; return; }
+  btn.disabled=false;
+  const alunoNome=document.getElementById('conv-aluno-sel').selectedOptions[0]?.text||'';
+  // Busca objetivos pedagógicos (PEI)
+  const peiAluno=todosPEI.find(p=>p.aluno_nome===alunoNome)||(peiList||[]).find(p=>p.aluno_nome===alunoNome)||null;
+  // Busca objetivos terapêuticos
+  const alunoReal=alunosCad.find(a=>a.nome===alunoNome)||null;
+  const perfilClinico=perfisClinicaList.find(p=>p.nome===alunoNome)||null;
+  let objTer=null;
+  if(perfilClinico){
+    const { data }=await db.from('objetivos_terapeuticos').select('*').eq('perfil_id',perfilClinico.id).maybeSingle();
+    objTer=data||null;
+  }
+  body.innerHTML=`
+    <div class="obj-conv-grid">
+      <div class="obj-conv-panel">
+        <div class="obj-conv-title">🏫 Objetivos Pedagógicos (Escola)</div>
+        ${peiAluno?`
+          <div class="obj-conv-item escola">📋 PEI: ${peiAluno.periodo||''}</div>
+          <div style="font-size:12.5px;color:var(--gr600);margin-top:8px;white-space:pre-wrap;line-height:1.65">${(peiAluno.texto||'').slice(0,500)}…</div>
+        `:`<div class="empty" style="padding:20px 0"><div class="empty-icon" style="font-size:24px">📋</div><div class="empty-text" style="font-size:12px">Nenhum PEI encontrado para ${alunoNome}. Elabore o PEI primeiro.</div></div>`}
+      </div>
+      <div class="obj-conv-panel">
+        <div class="obj-conv-title">🏥 Objetivos Terapêuticos (Clínica)</div>
+        ${objTer?['cognitivo','comunicacao','social','comportamental','academico']
+          .filter(a=>objTer[a])
+          .map(a=>{
+            const l={cognitivo:'🧠 Cognitivo',comunicacao:'🗣️ Comunicação',social:'👥 Social',comportamental:'💢 Comportamental',academico:'📚 Acadêmico'};
+            return `<div class="obj-conv-item clinica"><strong>${l[a]}:</strong> ${objTer[a]}</div>`;
+          }).join('')||'<div style="color:var(--gr400);font-size:13px">Sem objetivos cadastrados nesta área.</div>'
+          :`<div class="empty" style="padding:20px 0"><div class="empty-icon" style="font-size:24px">🎯</div><div class="empty-text" style="font-size:12px">Nenhum objetivo terapêutico encontrado. Cadastre no módulo Clínico.</div></div>`}
+      </div>
+    </div>
+    ${(!peiAluno&&!objTer)?'<div class="info-banner">⚠️ Para gerar o plano convergente, é necessário ter pelo menos um PEI elaborado ou objetivos terapêuticos cadastrados para este aluno.</div>':''}`;
+  if(!peiAluno&&!objTer) btn.disabled=true;
+  // guardar contexto para gerar IA
+  window._convContexto={alunoNome,peiAluno,objTer,perfilClinico,alunoReal};
+}
+
+async function gerarConvergencia(){
+  const ctx=window._convContexto||{};
+  if(!ctx.alunoNome) return toast('Selecione um aluno primeiro.','error');
+  const genBox=document.getElementById('gen-conv-box');
+  genBox.classList.add('show');
+  const peiTexto=ctx.peiAluno?.texto||'Nenhum PEI disponível.';
+  const objTer=ctx.objTer;
+  const perfil=ctx.perfilClinico;
+  const objTexto=objTer?
+    ['cognitivo','comunicacao','social','comportamental','academico']
+      .filter(a=>objTer[a]).map(a=>`${a}: ${objTer[a]}`).join('\n')
+    :'Nenhum objetivo terapêutico cadastrado.';
+  const prompt=`Você é especialista em integração clínico-pedagógica e coordenador de equipes multidisciplinares.
+
+ALUNO: ${ctx.alunoNome}
+${perfil?`PERFIL CLÍNICO: ${perfil.diagnostico||''} · Comunicação: ${perfil.comunicacao||''} · Preservadas: ${perfil.preservadas||''} · Comprometidas: ${perfil.comprometidas||''}`:''}
+
+OBJETIVOS PEDAGÓGICOS (PEI da escola):
+${peiTexto.slice(0,800)}
+
+OBJETIVOS TERAPÊUTICOS (clínica):
+${objTexto}
+
+Analise e produza em JSON válido sem markdown:
+{
+  "convergencias": [
+    {"titulo": "nome do ponto convergente", "descricao": "como escola e clínica já estão alinhadas neste ponto", "partes": ["escola","clinica"]},
+    ...
+  ],
+  "recomendacoes": "texto corrido com 5-8 recomendações práticas para alinhar escola e clínica em torno deste aluno — o que fazer juntos, como comunicar, quais ajustes priorizar, qual profissional lidera cada frente"
+}
+Gere 3 a 5 convergências reais baseadas nos dados fornecidos.`;
+  try{
+    const r=await fetch(CLAUDE_PROXY,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_KEY}`},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await r.json();
+    const txt=(data.content||[]).map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(txt);
+    convGerado=txt;
+    const convEl=document.getElementById('conv-convergencias');
+    const recEl=document.getElementById('conv-recomendacoes');
+    if(convEl) convEl.innerHTML=(parsed.convergencias||[]).map(c=>`
+      <div class="convergencia-card">
+        <div class="convergencia-titulo">🔗 ${c.titulo}</div>
+        <div class="convergencia-desc">${c.descricao}</div>
+        <div class="convergencia-partes">
+          ${(c.partes||[]).map(p=>`<span class="convergencia-parte ${p}">${p==='escola'?'🏫 Escola':p==='clinica'?'🏥 Clínica':'🧑‍⚕️ AT'}</span>`).join('')}
+        </div>
+      </div>`).join('');
+    if(recEl) recEl.textContent=parsed.recomendacoes||'';
+    document.getElementById('conv-result').style.display='block';
+    document.getElementById('conv-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){
+    toast('Erro: '+e.message,'error');
+  }finally{
+    genBox.classList.remove('show');
+  }
+}
+
+async function salvarConvergencia(){
+  const ctx=window._convContexto||{};
+  if(!convGerado) return toast('Gere o plano primeiro.','error');
+  const { error }=await db.from('relatorios').insert({
+    user_id:user.id, origem:'convergencia', destino:'escola',
+    aluno_nome:ctx.alunoNome,
+    titulo:`Objetivos Convergentes — ${ctx.alunoNome}`,
+    conteudo:convGerado, created_at:new Date().toISOString()
+  });
+  if(error) return toast('Erro: '+error.message,'error');
+  toast('Plano de convergência salvo!','success');
+}
+function copiarConvergencia(){
+  const c=document.getElementById('conv-convergencias')?.textContent||'';
+  const r=document.getElementById('conv-recomendacoes')?.textContent||'';
+  navigator.clipboard.writeText('CONVERGÊNCIAS:\n'+c+'\n\nRECOMENDAÇÕES:\n'+r);
+  toast('Copiado!','success');
 }
 
 document.addEventListener('DOMContentLoaded', () => { verificarSessao(); verificarLGPD(); mostrarLanding(); });
