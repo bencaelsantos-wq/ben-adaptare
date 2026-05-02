@@ -2058,9 +2058,8 @@ function iniciarApp() {
   registrarAcessoDev(user.email||"dev", userRole);
   ocultarWA();
 }
-// ⚠️ CRÍTICO: expor iniciarApp em window ANTES dos patches abaixo.
-// Patches em linhas ~7400 e ~7860 dependem de window.iniciarApp existir.
-// NÃO remova esta linha — sem ela os botões de login param de funcionar.
+// ⚠️ CRÍTICO — expõe iniciarApp em window ANTES dos patches.
+// NUNCA remova esta linha — sem ela os botões de login param de funcionar.
 window.iniciarApp = iniciarApp;
 
 // ── NAVEGAÇÃO ────────────────────────────────────────────────
@@ -3597,8 +3596,8 @@ function showPage(id) {
   if (id === 'gestao-rel-clinica') { gcFiltrarRelatorios(); }
   if (id === 'gc-demandas') { gcdFiltrar(); }
 }
-// ⚠️ CRÍTICO: expor showPage em window ANTES do patch em ~7411.
-// Sem esta linha o patch captura undefined e showPage deixa de funcionar.
+// ⚠️ CRÍTICO — expõe showPage em window ANTES do patch em ~linha 7411.
+// NUNCA remova esta linha — sem ela a navegação para de funcionar.
 window.showPage = showPage;
 
 // ── RENDERIZAR PÁGINAS PROFESSOR ─────────────────────────────
@@ -6553,7 +6552,7 @@ function abrirModalCadClinica(p) {
   }
   lgpdResetarModal('clinica','btn-salvar-clinica');
   abrirModal('modal-cad-clinica');
-}(p) { abrirModalCadClinica(p); }
+}
 
 async function salvarPerfilClinico() {
   const nome = document.getElementById('cc-nome').value.trim();
@@ -7864,8 +7863,6 @@ function copiarConvergencia(){
 }
 
 // ── Patch iniciarApp para popular pontes ───────────────────────
-// NOTA: window.iniciarApp já é exposto logo após a definição da função (linha ~2062).
-// Este patch encadeia corretamente sobre o patch anterior (bridge).
 const _patchIniciarApp=window.iniciarApp;
 window.iniciarApp=function(){
   if(typeof _patchIniciarApp==='function') _patchIniciarApp();
