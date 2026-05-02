@@ -1258,21 +1258,102 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
 
 <!-- ══ MODAL: Cadastro de Aluno ══ -->
 <div class="overlay" id="modal-cad" onclick="fecharModal('modal-cad',event)">
-  <div class="modal sm">
+  <div class="modal lg">
     <div class="modal-header">
       <div class="modal-title">Cadastrar aluno</div>
       <button class="modal-close" onclick="fecharModal('modal-cad')">×</button>
     </div>
     <div style="margin-top:14px">
+
+      <!-- ── Seção: Identificação ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:4px">👤 Identificação</div>
       <div class="frow">
-        <div><label class="flabel">Nome completo</label><input type="text" id="cad-nome" class="finput" placeholder="Ex: Maria Souza"></div>
+        <div style="flex:2"><label class="flabel">Nome completo *</label><input type="text" id="cad-nome" class="finput" placeholder="Ex: Maria Luíza Souza"></div>
+        <div><label class="flabel">Data de nascimento</label><input type="date" id="cad-nasc" class="finput"></div>
         <div><label class="flabel">Idade</label><select id="cad-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
       </div>
-      <div class="fblock"><label class="flabel">Série / Ano</label><select id="cad-serie" class="fselect"><option value="">Selecione</option><optgroup label="Ed. Infantil"><option>Maternal</option><option>Jardim I</option><option>Jardim II</option><option>Pré-escola</option></optgroup><optgroup label="Fund. I"><option>1º ano</option><option>2º ano</option><option>3º ano</option><option>4º ano</option><option>5º ano</option></optgroup><optgroup label="Fund. II"><option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option></optgroup><optgroup label="Ens. Médio"><option>1º ano EM</option><option>2º ano EM</option><option>3º ano EM</option></optgroup><optgroup label="Outros"><option>EJA - Fundamental</option><option>EJA - Médio</option><option>AEE / Sala de recursos</option></optgroup></select></div>
-      <div class="fblock"><label class="flabel">Perfis / Diagnósticos</label><div class="chips-group" id="chips-cad" style="max-height:110px;overflow-y:auto"></div></div>
-      <div class="fblock"><label class="flabel">Observações clínicas</label><textarea id="cad-obs" class="ftarea sm" placeholder="Laudo, pontos fortes, desafios, recursos utilizados…"></textarea></div>
 
-      <!-- LGPD — Cadastro de Aluno -->
+      <!-- ── Seção: Filiação ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍👩‍👧 Filiação</div>
+      <div class="frow">
+        <div style="flex:2"><label class="flabel">Nome do pai / responsável</label><input type="text" id="cad-pai" class="finput" placeholder="Ex: Carlos Eduardo Souza"></div>
+        <div><label class="flabel">Telefone do pai</label><input type="text" id="cad-pai-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel">E-mail do pai</label><input type="email" id="cad-pai-email" class="finput" placeholder="carlos@email.com"></div>
+      </div>
+      <div class="frow">
+        <div style="flex:2"><label class="flabel">Nome da mãe / responsável</label><input type="text" id="cad-mae" class="finput" placeholder="Ex: Fernanda Lima Souza"></div>
+        <div><label class="flabel">Telefone da mãe</label><input type="text" id="cad-mae-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel">E-mail da mãe</label><input type="email" id="cad-mae-email" class="finput" placeholder="fernanda@email.com"></div>
+      </div>
+
+      <!-- ── Seção: Escolaridade ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">🏫 Escolaridade</div>
+      <div class="frow">
+        <div style="flex:2">
+          <label class="flabel">Abordagem / Método pedagógico</label>
+          <select id="cad-metodo" class="fselect">
+            <option value="">Selecione</option>
+            <option>Tradicional</option>
+            <option>Montessori</option>
+            <option>Waldorf</option>
+            <option>Construtivismo</option>
+            <option>Sócio-interacionismo (Vygotsky)</option>
+            <option>Reggio Emilia</option>
+            <option>High Scope</option>
+            <option>Freinet</option>
+            <option>ABA (Análise do Comportamento Aplicada)</option>
+            <option>Outro / Híbrido</option>
+          </select>
+        </div>
+        <div style="flex:2">
+          <label class="flabel">Série / Ano</label>
+          <select id="cad-serie" class="fselect">
+            <option value="">Selecione</option>
+            <optgroup label="Ed. Infantil"><option>Maternal</option><option>Jardim I</option><option>Jardim II</option><option>Pré-escola</option></optgroup>
+            <optgroup label="Fund. I"><option>1º ano</option><option>2º ano</option><option>3º ano</option><option>4º ano</option><option>5º ano</option></optgroup>
+            <optgroup label="Fund. II"><option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option></optgroup>
+            <optgroup label="Ens. Médio"><option>1º ano EM</option><option>2º ano EM</option><option>3º ano EM</option></optgroup>
+            <optgroup label="Outros"><option>EJA - Fundamental</option><option>EJA - Médio</option><option>AEE / Sala de recursos</option><option>Não se aplica</option></optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── Seção: Perfis / Diagnósticos ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">🧠 Perfis / Diagnósticos</div>
+      <div class="fblock"><div class="chips-group" id="chips-cad" style="max-height:130px;overflow-y:auto"></div></div>
+      <div class="fblock" style="margin-top:10px"><label class="flabel">Observações clínicas</label><textarea id="cad-obs" class="ftarea sm" placeholder="Laudo, pontos fortes, desafios, recursos utilizados, estratégias de manejo…"></textarea></div>
+
+      <!-- ── Seção: Dados da Clínica ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">🏥 Dados da Clínica / Equipe terapêutica</div>
+      <div class="frow">
+        <div style="flex:2"><label class="flabel">Nome da clínica</label><input type="text" id="cad-clinica-nome" class="finput" placeholder="Ex: Clínica Integrar"></div>
+        <div><label class="flabel">Telefone da clínica</label><input type="text" id="cad-clinica-tel" class="finput" placeholder="(11) 3333-4444"></div>
+      </div>
+      <div class="frow">
+        <div style="flex:2"><label class="flabel">E-mail da clínica</label><input type="email" id="cad-clinica-email" class="finput" placeholder="contato@clinica.com.br"></div>
+        <div style="flex:2"><label class="flabel">Endereço da clínica</label><input type="text" id="cad-clinica-end" class="finput" placeholder="Rua, número, bairro, cidade"></div>
+      </div>
+      <div class="fblock">
+        <label class="flabel">Profissionais da clínica</label>
+        <div class="salas-input-group">
+          <input type="text" id="cad-prof-inp" class="finput" placeholder="Ex: Dra. Ana — Fonoaudióloga, Dr. Paulo — Psicólogo…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarProfClinicaAluno()}">
+          <button class="btn-sm" onclick="adicionarProfClinicaAluno()">+ Adicionar</button>
+        </div>
+        <div class="mat-tag-list" id="cad-prof-tags"></div>
+      </div>
+
+      <!-- ── Seção: Documentos ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">📎 Documentos (laudos, relatórios)</div>
+      <div class="fblock">
+        <label class="flabel">Anexar arquivos PDF <span style="color:var(--gr400);font-weight:400">(somente PDF · máx. 5 MB por arquivo)</span></label>
+        <div id="cad-docs-drop" onclick="document.getElementById('cad-docs-input').click()" style="border:2px dashed var(--gr300);border-radius:10px;padding:18px;text-align:center;cursor:pointer;color:var(--gr400);font-size:13px;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--p-blue)'" onmouseleave="this.style.borderColor='var(--gr300)'" ondragover="event.preventDefault();this.style.borderColor='var(--p-blue)'" ondragleave="this.style.borderColor='var(--gr300)'" ondrop="handleDocsDrop(event)">
+          📄 Clique ou arraste arquivos PDF aqui
+        </div>
+        <input type="file" id="cad-docs-input" accept="application/pdf" multiple style="display:none" onchange="handleDocsSelect(this)">
+        <div id="cad-docs-list" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <!-- LGPD — Cadastro de Aluno (inalterado) -->
       <div class="lgpd-bloco" id="lgpd-bloco-aluno">
         <div class="lgpd-bloco-titulo">⚖️ Proteção de dados — LGPD (Lei nº 13.709/2018)</div>
         <div class="lgpd-bloco-aviso">Diagnósticos, laudos e informações de saúde são <strong>dados sensíveis</strong> (Art. 11º) e exigem proteção reforçada. Dados de crianças e adolescentes têm proteção especial adicional (Art. 14º). Confirme cada item individualmente.</div>
@@ -1848,7 +1929,7 @@ async function esqueceuSenha() {
 ───────────────────────────────────────────────────────────── */
 function entrarDev() {
   user = {
-    id: '00000000-0000-0000-0000-000000000000',
+    id: 'dev-00000000-0000-0000-0000-000000000000',
     email: 'dev@pluramente.app',
     user_metadata: { role: userRole }
   };
@@ -5562,30 +5643,112 @@ function renderAlunosLista() {
 }
 
 function abrirModalCad() {
-  ['cad-nome','cad-obs'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  ['cad-idade','cad-serie'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['cad-nome','cad-obs','cad-nasc','cad-pai','cad-pai-tel','cad-pai-email','cad-mae','cad-mae-tel','cad-mae-email',
+   'cad-clinica-nome','cad-clinica-tel','cad-clinica-email','cad-clinica-end','cad-prof-inp']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['cad-idade','cad-serie','cad-metodo']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.querySelectorAll('#chips-cad .chip').forEach(c => c.classList.remove('active'));
+  const tags = document.getElementById('cad-prof-tags');
+  if (tags) tags.innerHTML = '';
+  const docsList = document.getElementById('cad-docs-list');
+  if (docsList) docsList.innerHTML = '';
+  window._cadDocs = [];
   lgpdResetarModal('aluno','btn-salvar-aluno');
   abrirModal('modal-cad');
+}
+
+// Gestão de profissionais da clínica no modal de aluno
+function adicionarProfClinicaAluno() {
+  const inp = document.getElementById('cad-prof-inp');
+  const val = inp?.value.trim();
+  if (!val) return;
+  if (!window._cadProfs) window._cadProfs = [];
+  window._cadProfs.push(val);
+  renderProfTagsAluno();
+  inp.value = '';
+}
+function renderProfTagsAluno() {
+  const el = document.getElementById('cad-prof-tags');
+  if (!el) return;
+  el.innerHTML = (window._cadProfs||[]).map((p,i) =>
+    `<span class="mat-tag">${p}<button onclick="window._cadProfs.splice(${i},1);renderProfTagsAluno()" style="background:none;border:none;cursor:pointer;margin-left:4px;color:inherit">×</button></span>`
+  ).join('');
+}
+
+// Upload de documentos PDF
+window._cadDocs = [];
+function handleDocsSelect(input) {
+  Array.from(input.files).forEach(f => processDocFile(f));
+  input.value = '';
+}
+function handleDocsDrop(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = 'var(--gr300)';
+  Array.from(e.dataTransfer.files).forEach(f => processDocFile(f));
+}
+function processDocFile(f) {
+  if (f.type !== 'application/pdf') return toast('Apenas PDFs são aceitos.', 'error');
+  if (f.size > 5 * 1024 * 1024) return toast(`"${f.name}" excede 5 MB.`, 'error');
+  if (!window._cadDocs) window._cadDocs = [];
+  window._cadDocs.push(f);
+  renderDocsListAluno();
+}
+function renderDocsListAluno() {
+  const el = document.getElementById('cad-docs-list');
+  if (!el) return;
+  el.innerHTML = (window._cadDocs||[]).map((f,i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--gr100);border-radius:8px;padding:6px 10px;font-size:12.5px">
+      <span style="flex:1">📄 ${f.name} <span style="color:var(--gr400)">(${(f.size/1024).toFixed(0)} KB)</span></span>
+      <button onclick="window._cadDocs.splice(${i},1);renderDocsListAluno()" style="background:none;border:none;cursor:pointer;color:var(--gr400);font-size:16px;line-height:1">×</button>
+    </div>`).join('');
 }
 
 async function salvarAluno() {
   const nome  = document.getElementById('cad-nome')?.value.trim();
   const idade = document.getElementById('cad-idade')?.value;
+  const nasc  = document.getElementById('cad-nasc')?.value || null;
   const serie = document.getElementById('cad-serie')?.value;
+  const metodo = document.getElementById('cad-metodo')?.value || null;
   const perfis = getChips('chips-cad');
   const observacoes = document.getElementById('cad-obs')?.value.trim();
+  const pai_nome = document.getElementById('cad-pai')?.value.trim() || null;
+  const pai_email = document.getElementById('cad-pai-email')?.value.trim() || null;
+  const pai_tel  = document.getElementById('cad-pai-tel')?.value.trim() || null;
+  const mae_nome = document.getElementById('cad-mae')?.value.trim() || null;
+  const mae_email = document.getElementById('cad-mae-email')?.value.trim() || null;
+  const mae_tel  = document.getElementById('cad-mae-tel')?.value.trim() || null;
+  const clinica_nome  = document.getElementById('cad-clinica-nome')?.value.trim() || null;
+  const clinica_tel   = document.getElementById('cad-clinica-tel')?.value.trim() || null;
+  const clinica_email = document.getElementById('cad-clinica-email')?.value.trim() || null;
+  const clinica_end   = document.getElementById('cad-clinica-end')?.value.trim() || null;
+  const clinica_profs = window._cadProfs?.length ? [...window._cadProfs] : null;
+
   if (!nome) return toast('Informe o nome.', 'error');
   if (!lgpdValidar('aluno')) return;
 
   const { data, error } = await db.from('alunos').insert({
-    user_id: user.id, nome, idade, serie, perfis, observacoes
+    user_id: user.id, nome, idade, nasc, serie, metodo, perfis, observacoes,
+    pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
+    clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs
   }).select('id').single();
   if (error) return toast('Erro: '+error.message, 'error');
+
+  // Upload de PDFs para Supabase Storage
+  const docs = window._cadDocs || [];
+  if (docs.length && !window._devMode) {
+    for (const f of docs) {
+      const path = `laudos/${data.id}/${Date.now()}_${f.name.replace(/\s+/g,'_')}`;
+      await db.storage.from('documentos-alunos').upload(path, f, { upsert: false });
+    }
+  }
+
   await lgpdRegistrarConsentimento('aluno', data?.id, ['pedagogico','clinico','autorizacao_legal']);
   toast('Aluno cadastrado!', 'success');
   fecharModal('modal-cad');
   lgpdResetarModal('aluno','btn-salvar-aluno');
+  window._cadDocs = [];
+  window._cadProfs = [];
   carregarAlunos();
 }
 
