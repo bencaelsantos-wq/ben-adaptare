@@ -1982,13 +1982,8 @@ async function lerPerfilDobanco() {
       throw new Error('Conta inativa');
     }
 
-    // ⚠️ O role selecionado na tela de login prevalece sobre o banco.
-    // O banco só é usado como fallback se o usuário não escolheu nada.
-    // Isso permite que um mesmo email acesse perfis diferentes (gestão, clínica, professor).
-    if (!userRole || userRole === 'professor') {
-      if (data.role) userRole = data.role;
-    }
-    if (!userSubRole && data.subrole) userSubRole = data.subrole;
+    userRole    = data.role    || 'professor';
+    userSubRole = data.subrole || null;
 
   } catch(e) {
     if (e.message === 'Conta inativa') throw e;
