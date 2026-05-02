@@ -2058,6 +2058,10 @@ function iniciarApp() {
   registrarAcessoDev(user.email||"dev", userRole);
   ocultarWA();
 }
+// ⚠️ CRÍTICO: expor iniciarApp em window ANTES dos patches abaixo.
+// Patches em linhas ~7400 e ~7860 dependem de window.iniciarApp existir.
+// NÃO remova esta linha — sem ela os botões de login param de funcionar.
+window.iniciarApp = iniciarApp;
 
 // ── NAVEGAÇÃO ────────────────────────────────────────────────
 function renderNavProfessor() {
@@ -3593,6 +3597,9 @@ function showPage(id) {
   if (id === 'gestao-rel-clinica') { gcFiltrarRelatorios(); }
   if (id === 'gc-demandas') { gcdFiltrar(); }
 }
+// ⚠️ CRÍTICO: expor showPage em window ANTES do patch em ~7411.
+// Sem esta linha o patch captura undefined e showPage deixa de funcionar.
+window.showPage = showPage;
 
 // ── RENDERIZAR PÁGINAS PROFESSOR ─────────────────────────────
 function renderPages() {
@@ -7399,7 +7406,8 @@ function popularSelectsPonte(){
 // Patch iniciarApp para popular os selects da ponte
 const _origIniciarApp_bridge = window.iniciarApp;
 window.iniciarApp = function(){
-  _origIniciarApp_bridge ? _origIniciarApp_bridge() : undefined;
+  if(typeof _origIniciarApp_bridge === 'function') _origIniciarApp_bridge();
+  setTimeout(popularSelectsPonte, 400);
 };
 
 // Patch showPage para carregar módulos da ponte
@@ -7856,6 +7864,8 @@ function copiarConvergencia(){
 }
 
 // ── Patch iniciarApp para popular pontes ───────────────────────
+// NOTA: window.iniciarApp já é exposto logo após a definição da função (linha ~2062).
+// Este patch encadeia corretamente sobre o patch anterior (bridge).
 const _patchIniciarApp=window.iniciarApp;
 window.iniciarApp=function(){
   if(typeof _patchIniciarApp==='function') _patchIniciarApp();
