@@ -3454,32 +3454,21 @@ async function salvarProfissionalClinica() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Criando acesso…'; }
 
   try {
-    const senhaTemp = gerarSenhaTemp();
-
-    // 1. Criar usuário auth (sessão isolada)
-    const authClient = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
-    const { data: authData, error: authErr } = await authClient.auth.signUp({
-      email,
-      password: senhaTemp,
-      options: {
-        data: { role: 'clinica', subrole: especialidade, nome },
-        emailRedirectTo: window.location.href,
-      }
+    // 1. Convidar via Supabase — envia e-mail "Ativar minha conta"
+    const { error: conviteErr } = await db.functions.invoke('convidar-usuario', {
+      body: { email, nome, papel: 'clinica', sub_papel: especialidade, redirect_to: window.location.href }
     });
-    if (authErr && !authErr.message.includes('already registered')) {
-      throw new Error('Erro ao criar acesso: ' + authErr.message);
-    }
-    const novoUserId = authData?.user?.id;
+    if (conviteErr) throw new Error('Erro ao enviar convite: ' + conviteErr.message);
 
-    // 2. Perfil com role + subrole (define o menu automático)
-    if (novoUserId) {
-      await db.from('profiles').upsert({
-        id: novoUserId, email, role: 'clinica',
-        subrole: especialidade, nome, ativo: true
-      }, { onConflict: 'id' });
-    }
+    // 2. Registrar convite na tabela convites
+    await db.from('convites').insert({
+      email, papel: 'clinica', sub_papel: especialidade,
+      convidado_por: user.id,
+      instituicao_nome: document.getElementById('cpc-vinculo')?.value || null,
+      status: 'pendente'
+    });
 
-    // 3. Salvar na tabela perfis_clinicos (ou profissionais)
+    // 3. Salvar na tabela profissionais_clinica
     const payload = {
       user_id:     user.id,
       nome,
@@ -3494,17 +3483,8 @@ async function salvarProfissionalClinica() {
     await db.from('profissionais_clinica').insert(payload);
 
     fecharModal('modal-cad-prof-clinica');
-    await lgpdRegistrarConsentimento('profissional_clinica', novoUserId || null, ['vinculo_etico','sigilo_profissional','dpa_operadora']);
     lgpdResetarModal('prof-clinica','btn-salvar-prof-clinica');
-
-    // 4. Mostrar modal de confirmação
-    document.getElementById('acesso-clinica-email').textContent = email;
-    document.getElementById('acesso-clinica-especialidade').textContent =
-      '🏥 ' + (ESPECIALIDADE_LABELS[especialidade] || especialidade);
-    document.getElementById('acesso-clinica-senha').textContent = senhaTemp;
-    document.getElementById('acesso-clinica-url').textContent = window.location.href;
-    window._ultimaSenhaClinica = senhaTemp;
-    abrirModal('modal-acesso-clinica');
+    toast(`✅ Convite enviado para ${email}. O profissional receberá um e-mail para ativar a conta.`, 'success');
 
     // Recarregar lista
     if (typeof carregarProfissionaisClinica === 'function') carregarProfissionaisClinica();
@@ -6392,43 +6372,30 @@ async function salvarProfessor() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Criando acesso…'; }
 
   try {
-    // 1. Criar usuário auth sem derrubar sessão da gestão
-    const senhaTemp = gerarSenhaTemp();
-    const authClient = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
-    const { data: authData, error: authErr } = await authClient.auth.signUp({
-      email,
-      password: senhaTemp,
-      options: {
-        data: { role: 'professor', nome },
-        emailRedirectTo: window.location.href,
-      }
+    // 1. Convidar via Supabase — envia e-mail "Ativar minha conta"
+    const { error: conviteErr } = await db.functions.invoke('convidar-usuario', {
+      body: { email, nome, papel: 'professor', redirect_to: window.location.href }
     });
+    if (conviteErr) throw new Error('Erro ao enviar convite: ' + conviteErr.message);
 
-    if (authErr && !authErr.message.includes('already registered')) {
-      throw new Error('Erro ao criar acesso: ' + authErr.message);
-    }
-
-    // Se usuário já existia, authData.user pode ser null
-    const jaExistia = authErr?.message?.includes('already registered');
-    const novoUserId = authData?.user?.id;
-
-    // 2. Inserir/atualizar perfil na tabela profiles
-    if (novoUserId) {
-      await db.from('profiles').upsert({
-        id: novoUserId, email, role: 'professor', nome, ativo: true
-      }, { onConflict: 'id' });
-    }
+    // 2. Registrar convite na tabela convites
+    await db.from('convites').insert({
+      email, papel: 'professor',
+      convidado_por: user.id,
+      instituicao_nome: document.getElementById('cp-vinculo')?.value || null,
+      status: 'pendente'
+    });
 
     // 3. Salvar na tabela professores
     const payload = {
       nome,
       email,
-      telefone:    document.getElementById('cp-tel').value.trim()    || null,
-      vinculo:     document.getElementById('cp-vinculo').value        || null,
-      observacoes: document.getElementById('cp-obs').value.trim()    || null,
+      telefone:    document.getElementById('cp-tel').value.trim()  || null,
+      vinculo:     document.getElementById('cp-vinculo').value      || null,
+      observacoes: document.getElementById('cp-obs').value.trim()  || null,
       materias:    cpMats,
       salas:       cpSalas,
-      user_id:     user.id,  // gestão que cadastrou
+      user_id:     user.id,
     };
 
     let dbError;
@@ -6440,15 +6407,8 @@ async function salvarProfessor() {
     if (dbError) throw new Error('Erro ao salvar dados: ' + dbError.message);
 
     fecharModal('modal-cad-prof');
-    await lgpdRegistrarConsentimento('professor', novoUserId || null, ['sigilo_pedagogico','autorizacao_institucional']);
     lgpdResetarModal('prof','btn-salvar-prof');
-
-    // 4. Mostrar modal com credenciais
-    document.getElementById('acesso-prof-email').textContent = email;
-    document.getElementById('acesso-prof-senha').textContent = senhaTemp;
-    document.getElementById('acesso-prof-url').textContent = window.location.href;
-    window._ultimaSenhaProf = senhaTemp;
-    abrirModal('modal-acesso-prof');
+    toast(`✅ Convite enviado para ${email}. O professor receberá um e-mail para ativar a conta.`, 'success');
     carregarProfessores();
 
   } catch(e) {
