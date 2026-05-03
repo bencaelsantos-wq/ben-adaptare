@@ -6263,43 +6263,45 @@ function atualizarBadgeFamilia() {
 function filtrarSolFamilia() {
   const q = (document.getElementById('sfam-q')?.value || '').toLowerCase();
   const fs = document.getElementById('sfam-fstatus')?.value || '';
-  const lista = solFamiliaList.filter(s =>
-    (!q || (s.aluno_nome || '').toLowerCase().includes(q)) &&
-    (!fs || s.status === fs)
-  );
+  const lista = solFamiliaList.filter(function(s) {
+    return (!q || (s.aluno_nome || '').toLowerCase().includes(q)) &&
+           (!fs || s.status === fs);
+  });
   const el = document.getElementById('sfam-lista');
   if (!el) return;
   if (!lista.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">👨‍👩‍👧</div><div class="empty-text">Nenhuma solicitação encontrada.</div></div>';
     return;
   }
-  el.innerHTML = lista.map(s => {
+  el.innerHTML = lista.map(function(s) {
     const dt = s.criado_em ? new Date(s.criado_em).toLocaleDateString('pt-BR') : '';
     const statusColor = s.status === 'pendente' ? '#92400E' : s.status === 'concluido' ? '#065F46' : '#1E40AF';
     const statusBg = s.status === 'pendente' ? '#FEF3C7' : s.status === 'concluido' ? '#D1FAE5' : '#DBEAFE';
     const statusLabel = s.status === 'pendente' ? '⏳ Pendente' : s.status === 'concluido' ? '✅ Concluído' : '🔄 Em andamento';
     const tipoLabel = s.tipo === 'relatorio_evolucao' ? 'Relatório de evolução' : s.tipo === 'relatorio_clinico' ? 'Relatório clínico' : 'Outro';
-    return \`<div style="background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div>
-          <div style="font-size:13.5px;font-weight:600;color:var(--gr800)">\${s.aluno_nome} — \${tipoLabel}</div>
-          <div style="font-size:12px;color:var(--gr400);margin-top:2px">Solicitante: \${s.solicitante} · \${dt}</div>
-        </div>
-        <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:\${statusBg};color:\${statusColor}">\${statusLabel}</span>
-      </div>
-      \${s.mensagem ? \`<div style="font-size:13px;color:var(--gr600);line-height:1.65;margin-bottom:10px">\${s.mensagem}</div>\` : ''}
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        \${s.status !== 'concluido' ? \`
-          <button class="btn-sm" style="font-size:12px" onclick="responderSolFamilia('\${s.id}', '\${s.aluno_nome}', '\${s.destinatario}')">📤 Enviar relatório</button>
-          <button class="btn-sm" style="font-size:12px;background:var(--bg2);color:var(--gr600);border-color:var(--b)" onclick="atualizarStatusSol('\${s.id}','em_andamento')">🔄 Marcar em andamento</button>
-        \` : ''}
-        \${s.status === 'concluido' ? \`<span style="font-size:12px;color:var(--gr400)">✅ Respondido em \${s.respondido_em ? new Date(s.respondido_em).toLocaleDateString('pt-BR') : ''}</span>\` : ''}
-      </div>
-    </div>\`;
+    const acoes = s.status !== 'concluido'
+      ? '<button class="btn-sm" style="font-size:12px" onclick="responderSolFamilia(this)" data-id="'+s.id+'" data-nome="'+s.aluno_nome+'" data-dest="'+(s.destinatario||'escola')+'">📤 Enviar relatório</button>' +
+        '<button class="btn-sm" style="font-size:12px;background:var(--bg2);color:var(--gr600);border-color:var(--b)" onclick="atualizarStatusSol(this)" data-id="'+s.id+'" data-status="em_andamento">🔄 Em andamento</button>'
+      : '<span style="font-size:12px;color:var(--gr400)">✅ Respondido</span>';
+    const msg = s.mensagem ? '<div style="font-size:13px;color:var(--gr600);line-height:1.65;margin-bottom:10px">'+s.mensagem+'</div>' : '';
+    return '<div style="background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
+        '<div>' +
+          '<div style="font-size:13.5px;font-weight:600;color:var(--gr800)">' + s.aluno_nome + ' — ' + tipoLabel + '</div>' +
+          '<div style="font-size:12px;color:var(--gr400);margin-top:2px">Solicitante: ' + s.solicitante + ' · ' + dt + '</div>' +
+        '</div>' +
+        '<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:' + statusBg + ';color:' + statusColor + '">' + statusLabel + '</span>' +
+      '</div>' +
+      msg +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">' + acoes + '</div>' +
+    '</div>';
   }).join('');
 }
 
-async function atualizarStatusSol(id, status) {
+
+async function atualizarStatusSol(btn, statusDireto, idDireto) {
+  const id = idDireto || (btn ? btn.dataset.id : null);
+  const status = statusDireto || (btn ? btn.dataset.status : null);
   const { error } = await db.from('solicitacoes_familia')
     .update({ status, respondido_em: status === 'concluido' ? new Date().toISOString() : null })
     .eq('id', id);
@@ -6307,7 +6309,9 @@ async function atualizarStatusSol(id, status) {
   await carregarSolFamilia();
 }
 
-async function responderSolFamilia(id, alunoNome, destinatario) {
+async function responderSolFamilia(btn) {
+  const id = btn.dataset.id;
+  const alunoNome = btn.dataset.nome;
   // Buscar dados do aluno para pegar contatos da família
   const { data: aluno } = await db.from('alunos')
     .select('mae_email, mae_tel, pai_email, pai_tel, mae_nome, pai_nome')
@@ -6321,12 +6325,14 @@ async function responderSolFamilia(id, alunoNome, destinatario) {
   if (!contatos.length) return toast('Nenhum contato cadastrado para este aluno.', 'error');
 
   const contato = contatos[0];
-  const whatsLink = contato.tel ? \`https://wa.me/55\${contato.tel.replace(/\D/g,'')}?text=\${encodeURIComponent('Olá ' + contato.nome + ', segue o relatório solicitado de ' + alunoNome + '.')}\` : null;
+  const tel = (contato.tel || '').replace(/\D/g,'');
+  const whatsMsg = encodeURIComponent('Olá ' + contato.nome + ', segue o relatório solicitado de ' + alunoNome + '.');
+  const whatsLink = tel ? 'https://wa.me/55' + tel + '?text=' + whatsMsg : null;
 
-  toast(\`Enviando para \${contato.nome} (\${contato.email})\`, 'success');
+  toast('Enviando para ' + contato.nome + ' (' + contato.email + ')', 'success');
   if (whatsLink) window.open(whatsLink, '_blank');
 
-  await atualizarStatusSol(id, 'concluido');
+  await atualizarStatusSol(null, 'concluido', id);
 }
 
 async function carregarProfessores() {
