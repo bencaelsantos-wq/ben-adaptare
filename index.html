@@ -2146,6 +2146,7 @@ function renderNavGestao() {
       </svg>Pauta Multidisciplinar
     </div>`;
   renderPagesGestao();
+  setTimeout(function() { carregarLogoEscola(); }, 500);
 }
 
 function renderNavClinica() {
@@ -4406,6 +4407,27 @@ function renderPagesGestao() {
   <div id="page-gestao-painel" class="page active">
     <h1 class="page-title">Painel de Gestão</h1>
     <p class="page-sub">Visão geral de toda a plataforma — adaptações, PEIs e perfil dos alunos.</p>
+
+    <!-- Card de identidade visual da escola -->
+    <div class="fcard" style="margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div id="logo-preview" style="width:120px;height:60px;border:1.5px dashed var(--gr200);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-shrink:0">
+        <span id="logo-placeholder" style="font-size:11px;color:var(--gr400);text-align:center">Sem logo<br>cadastrado</span>
+        <img id="logo-img" src="" style="display:none;max-width:116px;max-height:56px;object-fit:contain;border-radius:4px">
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div class="fcard-title" style="margin-bottom:4px">🏫 Identidade visual da escola</div>
+        <p style="font-size:12px;color:var(--gr500);margin:0 0 10px">O logo aparecerá no cabeçalho de todos os PDFs gerados (PEIs, adaptações, relatórios).</p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label class="btn-sm" style="cursor:pointer;margin:0">
+            📤 Enviar logo
+            <input type="file" id="logo-upload" accept="image/png,image/jpeg,image/svg+xml" style="display:none" onchange="uploadLogoEscola(this)">
+          </label>
+          <span id="logo-status" style="font-size:12px;color:var(--gr400)">PNG, JPG ou SVG · máx. 2MB</span>
+          <button id="btn-remover-logo" class="btn-sm-ghost" style="font-size:12px;display:none" onclick="removerLogoEscola()">🗑️ Remover</button>
+        </div>
+      </div>
+    </div>
+
     <div class="stats-grid" id="stats-grid">
       <div class="stat-card"><div class="stat-num" id="stat-alunos">—</div><div class="stat-label">Alunos cadastrados</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-adapt">—</div><div class="stat-label">Adaptações geradas</div></div>
@@ -5613,25 +5635,47 @@ function gerarPDFDocumento(opts) {
     let y = mt;
 
     // ── CABEÇALHO ────────────────────────────────────────────
-    // Barra azul topo
-    doc.setFillColor(30, 58, 138);
-    doc.rect(0, 0, W, 22, 'F');
-
-    // Nome da plataforma
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text('PLURAMENTE', ml, 10);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text('Plataforma de Integração Clínica-Pedagógica', ml, 16);
-
-    // Data no canto direito
-    doc.setFontSize(8);
     const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-    doc.text(dataHoje, W - mr, 14, { align: 'right' });
+    const logoUrl = window._logoEscolaUrl || null;
 
-    y = 30;
+    if (logoUrl) {
+      // Cabeçalho com timbrado da escola
+      doc.setFillColor(248, 250, 252);
+      doc.rect(0, 0, W, 28, 'F');
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(0.3);
+      doc.line(0, 28, W, 28);
+
+      // Logo da escola (lado esquerdo)
+      try {
+        doc.addImage(logoUrl, 'PNG', ml, 4, 50, 20, '', 'FAST');
+      } catch(e) {
+        try { doc.addImage(logoUrl, 'JPEG', ml, 4, 50, 20, '', 'FAST'); } catch(e2) {}
+      }
+
+      // Nome da plataforma (lado direito, discreto)
+      doc.setTextColor(150, 150, 150);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.text('Gerado via Pluramente · pluramente.ia.br', W - mr, 10, { align: 'right' });
+      doc.text(dataHoje, W - mr, 16, { align: 'right' });
+      doc.setTextColor(30, 30, 30);
+      y = 36;
+    } else {
+      // Cabeçalho padrão Pluramente
+      doc.setFillColor(30, 58, 138);
+      doc.rect(0, 0, W, 22, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.text('PLURAMENTE', ml, 10);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text('Plataforma de Integração Clínica-Pedagógica', ml, 16);
+      doc.setFontSize(8);
+      doc.text(dataHoje, W - mr, 14, { align: 'right' });
+      y = 30;
+    }
 
     // ── TÍTULO DO DOCUMENTO ──────────────────────────────────
     doc.setTextColor(30, 58, 138);
@@ -5746,13 +5790,27 @@ function gerarPDFDocumento(opts) {
   }
 }
 
+var _iconePluramento = "data:image/png;base64,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";
+
 function adicionarRodapePagina(doc, W, H, ml, mr, numPag) {
-  doc.setFontSize(7.5);
-  doc.setTextColor(150, 150, 150);
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.3);
+  doc.line(ml, H - 12, W - mr, H - 12);
+
+  // Ícone centralizado no rodapé
+  try {
+    doc.addImage(_iconePluramento, 'PNG', W/2 - 3, H - 10.5, 6, 6, '', 'FAST');
+  } catch(e) {}
+
+  // Texto centralizado
+  doc.setFontSize(7);
+  doc.setTextColor(170, 170, 170);
   doc.setFont('helvetica', 'normal');
-  doc.line(ml, H - 10, W - mr, H - 10);
-  doc.text('Pluramente — Plataforma de Integração Clínica-Pedagógica | pluramente.ia.br', ml, H - 6);
-  doc.text('Pág. ' + numPag, W - mr, H - 6, { align: 'right' });
+  doc.text('Pluramente — Plataforma de Integração Clínica-Pedagógica | pluramente.ia.br', W / 2, H - 3, { align: 'center' });
+
+  // Número de página à direita
+  doc.setFontSize(7);
+  doc.text('Pág. ' + numPag, W - mr, H - 3, { align: 'right' });
   doc.setTextColor(30, 30, 30);
 }
 
@@ -6500,6 +6558,93 @@ async function responderSolFamilia(btn) {
   if (whatsLink) window.open(whatsLink, '_blank');
 
   await atualizarStatusSol(null, 'concluido', id);
+}
+
+
+// ── LOGO DA ESCOLA ────────────────────────────────────────────
+async function carregarLogoEscola() {
+  try {
+    const { data } = await db.from('profiles')
+      .select('subrole')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    // Verificar se existe logo salvo
+    const path = 'escola_' + user.id + '/logo';
+    const { data: urlData } = db.storage
+      .from('logos-instituicoes')
+      .getPublicUrl(path);
+
+    if (urlData?.publicUrl) {
+      // Testar se o arquivo existe
+      const resp = await fetch(urlData.publicUrl, { method: 'HEAD' });
+      if (resp.ok) {
+        window._logoEscolaUrl = urlData.publicUrl;
+        mostrarLogoPreview(urlData.publicUrl);
+      }
+    }
+  } catch(e) {
+    console.warn('Logo não encontrado:', e);
+  }
+}
+
+function mostrarLogoPreview(url) {
+  const img = document.getElementById('logo-img');
+  const placeholder = document.getElementById('logo-placeholder');
+  const btnRemover = document.getElementById('btn-remover-logo');
+  if (img) { img.src = url; img.style.display = 'block'; }
+  if (placeholder) placeholder.style.display = 'none';
+  if (btnRemover) btnRemover.style.display = 'inline-flex';
+}
+
+async function uploadLogoEscola(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) return toast('Logo deve ter no máximo 2MB.', 'error');
+
+  const status = document.getElementById('logo-status');
+  if (status) status.textContent = '⏳ Enviando...';
+
+  try {
+    const path = 'escola_' + user.id + '/logo';
+    const { error } = await db.storage
+      .from('logos-instituicoes')
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (error) throw error;
+
+    const { data: urlData } = db.storage
+      .from('logos-instituicoes')
+      .getPublicUrl(path);
+
+    window._logoEscolaUrl = urlData.publicUrl + '?t=' + Date.now();
+    mostrarLogoPreview(window._logoEscolaUrl);
+    if (status) status.textContent = '✅ Logo salvo com sucesso!';
+    toast('Logo cadastrado! Aparecerá nos próximos PDFs.', 'success');
+  } catch(e) {
+    if (status) status.textContent = 'PNG, JPG ou SVG · máx. 2MB';
+    toast('Erro ao enviar logo: ' + e.message, 'error');
+  }
+  input.value = '';
+}
+
+async function removerLogoEscola() {
+  try {
+    const path = 'escola_' + user.id + '/logo';
+    await db.storage.from('logos-instituicoes').remove([path]);
+    window._logoEscolaUrl = null;
+    const img = document.getElementById('logo-img');
+    const placeholder = document.getElementById('logo-placeholder');
+    const btnRemover = document.getElementById('btn-remover-logo');
+    const status = document.getElementById('logo-status');
+    if (img) { img.src = ''; img.style.display = 'none'; }
+    if (placeholder) placeholder.style.display = 'block';
+    if (btnRemover) btnRemover.style.display = 'none';
+    if (status) status.textContent = 'PNG, JPG ou SVG · máx. 2MB';
+    toast('Logo removido.', 'success');
+  } catch(e) {
+    toast('Erro ao remover logo.', 'error');
+  }
 }
 
 async function carregarProfessores() {
