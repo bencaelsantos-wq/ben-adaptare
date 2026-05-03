@@ -5338,7 +5338,7 @@ ${isMontessori ? `Como apresentar (linguagem mínima, mãos que ensinam), quando
     const r = await fetch(CLAUDE_PROXY, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_KEY}` },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:3000, messages:[{role:'user',content:prompt}] })
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:3000, messages:[{role:'user',content:prompt}] })
     });
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || `Erro ${r.status}`); }
     const data = await r.json();
@@ -5520,7 +5520,7 @@ O documento deve ser formal, completo e pronto para ser assinado e arquivado na 
     const r = await fetch(CLAUDE_PROXY, {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_KEY}`},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:3000,messages:[{role:'user',content:prompt}]})
     });
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message||`Erro ${r.status}`); }
     const data = await r.json();
@@ -6146,7 +6146,7 @@ Regras importantes:
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_KEY}` },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 3500,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -6934,7 +6934,7 @@ Responda APENAS em JSON válido, sem markdown, neste formato exato:
     const r = await fetch(CLAUDE_PROXY, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_KEY}` },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
     });
     const data = await r.json();
     const txt  = (data.content || []).map(b => b.text || '').join('').trim();
@@ -7142,7 +7142,7 @@ Gere entre 4 e 6 situações do cotidiano escolar.`;
     const r = await fetch(CLAUDE_PROXY, {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_KEY}`},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,messages:[{role:'user',content:prompt}]})
     });
     const d = await r.json();
     const txt = (d.content||[]).map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
@@ -7973,7 +7973,7 @@ Produza uma tradução estruturada assim:
     const r=await fetch(CLAUDE_PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_KEY}`},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1800,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1800,messages:[{role:'user',content:prompt}]})
     });
     const data=await r.json();
     const texto=(data.content||[]).map(b=>b.text||'').join('').trim();
@@ -8069,7 +8069,7 @@ Gere 3 a 5 convergências reais baseadas nos dados fornecidos.`;
     const r=await fetch(CLAUDE_PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_KEY}`},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1500,messages:[{role:'user',content:prompt}]})
     });
     const data=await r.json();
     const txt=(data.content||[]).map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
