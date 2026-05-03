@@ -1385,7 +1385,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
       </div>
 
       <div style="display:flex;gap:8px;margin-top:14px">
-        <button class="btn-sm lgpd-btn-bloqueado" id="btn-salvar-aluno" onclick="salvarAluno()">Salvar aluno — confirme os 3 itens acima</button>
+        <button class="btn-sm lgpd-btn-bloqueado" id="btn-salvar-aluno" onclick="salvarAluno()" disabled>Salvar aluno — confirme os 3 itens acima</button>
         <button class="btn-sm-ghost" onclick="fecharModal('modal-cad')">Cancelar</button>
       </div>
     </div>
@@ -1481,7 +1481,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
       </div>
 
       <div style="display:flex;gap:8px;margin-top:16px">
-        <button class="btn-sm lgpd-btn-bloqueado" id="btn-salvar-prof" onclick="salvarProfessor()">Salvar professor — confirme os itens acima</button>
+        <button class="btn-sm lgpd-btn-bloqueado" id="btn-salvar-prof" onclick="salvarProfessor()" disabled>Salvar professor — confirme os itens acima</button>
         <button class="btn-sm-ghost" onclick="fecharModal('modal-cad-prof')">Cancelar</button>
       </div>
     </div>
@@ -1702,7 +1702,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
       </div>
 
       <div style="display:flex;gap:8px;margin-top:16px">
-        <button class="btn-sm lgpd-btn-bloqueado" id="btn-salvar-clinica" onclick="salvarPerfilClinico()">Salvar perfil — confirme os 3 itens acima</button>
+        <button class="btn-sm lgpd-btn-bloqueado" id="btn-salvar-clinica" onclick="salvarPerfilClinico()" disabled>Salvar perfil — confirme os 3 itens acima</button>
         <button class="btn-sm-ghost" onclick="fecharModal('modal-cad-clinica')">Cancelar</button>
       </div>
     </div>
@@ -2683,13 +2683,14 @@ function lgpdAtualizarBotao(grupoId, btnId) {
   const todosOk = todos.length > 0 && todos.every(c => c.checked);
   if (todosOk) {
     btn.classList.remove('lgpd-btn-bloqueado');
+    btn.disabled = false;
     btn.style.opacity = '';
     btn.style.cursor  = '';
     btn.style.pointerEvents = '';
-    // Atualiza texto do botão removendo a instrução
     btn.textContent = btn.textContent.split('—')[0].trim();
   } else {
     btn.classList.add('lgpd-btn-bloqueado');
+    btn.disabled = true;
     const faltam = todos.filter(c => !c.checked).length;
     const base   = btn.textContent.split('—')[0].trim();
     btn.textContent = base + ' — confirme ' + faltam + (faltam === 1 ? ' item' : ' itens') + ' acima';
@@ -2746,6 +2747,7 @@ function lgpdResetarModal(grupoId, btnId) {
   }
   if (btn) {
     btn.classList.add('lgpd-btn-bloqueado');
+    btn.disabled = true;
     // Restaurar texto original do botão
     const mapa = {
       'btn-salvar-aluno'        : 'Salvar aluno — confirme os 3 itens acima',
