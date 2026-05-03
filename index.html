@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pluramente · Plataforma de Integração Clínica-Pedagógica</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1403,7 +1404,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
     <div class="modal-body" id="mpei-body" style="font-size:13px"></div>
     <div class="modal-actions">
       <button class="btn-copy" onclick="copiarModalPEI()">Copiar PEI completo</button>
-      <button class="btn-sm" onclick="downloadPEI()">Baixar como .txt</button>
+      <button class="btn-sm" onclick="downloadPEI()">⬇️ Baixar PDF</button>
     </div>
   </div>
 </div>
@@ -3767,7 +3768,7 @@ function renderPages() {
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarPEI()">Salvar PEI</button>
         <button class="btn-copy" onclick="copiarAdapt('pei-result-text')">Copiar texto</button>
-        <button class="btn-copy" onclick="downloadPEIdireto()">Baixar .txt</button>
+        <button class="btn-copy" onclick="downloadPEIdireto()">⬇️ Baixar PDF</button>
       </div>
     </div>
 
@@ -4613,7 +4614,7 @@ function renderPagesGestao() {
         📋 Copiar
       </button>
       <button class="btn-copy" id="btn-baixar-pauta" onclick="baixarPautaGerada()" style="display:none">
-        ⬇️ Baixar .txt
+        ⬇️ Baixar PDF
       </button>
     </div>
 
@@ -5592,11 +5593,167 @@ function renderPeiLista() {
 
 function downloadPEIdireto() {
   const txt = peiGerado;
-  if (!txt) return;
-  const a = document.createElement('a');
-  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
-  a.download = `PEI_${peiAluno?.nome||'aluno'}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.txt`;
-  a.click();
+  if (!txt) return toast('Gere o PEI primeiro.', 'error');
+  gerarPDFDocumento({
+    tipo: 'PEI',
+    titulo: 'Plano Educacional Individualizado',
+    subtitulo: 'Documento obrigatório — Lei nº 13.146/2015, Decreto nº 12.773/2025',
+    aluno: peiAluno?.nome || 'Aluno',
+    conteudo: txt,
+    nomeArquivo: 'PEI_' + (peiAluno?.nome || 'aluno').replace(/\s+/g, '_') + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')
+  });
+}
+
+function gerarPDFDocumento(opts) {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, H = 297;
+    const ml = 18, mr = 18, mt = 18;
+    let y = mt;
+
+    // ── CABEÇALHO ────────────────────────────────────────────
+    // Barra azul topo
+    doc.setFillColor(30, 58, 138);
+    doc.rect(0, 0, W, 22, 'F');
+
+    // Nome da plataforma
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('PLURAMENTE', ml, 10);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Plataforma de Integração Clínica-Pedagógica', ml, 16);
+
+    // Data no canto direito
+    doc.setFontSize(8);
+    const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+    doc.text(dataHoje, W - mr, 14, { align: 'right' });
+
+    y = 30;
+
+    // ── TÍTULO DO DOCUMENTO ──────────────────────────────────
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text(opts.titulo, W / 2, y, { align: 'center' });
+    y += 7;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text(opts.subtitulo, W / 2, y, { align: 'center' });
+    y += 5;
+
+    // Linha divisória
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.5);
+    doc.line(ml, y, W - mr, y);
+    y += 6;
+
+    // ── DADOS DO ALUNO ───────────────────────────────────────
+    doc.setFillColor(239, 246, 255);
+    doc.roundedRect(ml, y, W - ml - mr, 12, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(30, 58, 138);
+    doc.text('ALUNO:', ml + 3, y + 5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(30, 30, 30);
+    doc.text(opts.aluno, ml + 20, y + 5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 58, 138);
+    doc.text('DATA:', W / 2, y + 5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(30, 30, 30);
+    doc.text(dataHoje, W / 2 + 12, y + 5);
+    y += 18;
+
+    // ── CONTEÚDO ─────────────────────────────────────────────
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(30, 30, 30);
+
+    const maxW = W - ml - mr;
+    const linhas = doc.splitTextToSize(opts.conteudo, maxW);
+    const altLinha = 5;
+    const rodapeH = 35; // espaço reservado para assinaturas
+
+    for (let i = 0; i < linhas.length; i++) {
+      if (y + altLinha > H - rodapeH) {
+        // Rodapé da página atual
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        // Cabeçalho simplificado nas páginas seguintes
+        doc.setFillColor(30, 58, 138);
+        doc.rect(0, 0, W, 10, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text('PLURAMENTE — ' + opts.titulo.toUpperCase(), ml, 7);
+        doc.setTextColor(30, 30, 30);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        y = 16;
+      }
+      // Destacar seções em negrito
+      const linha = linhas[i];
+      if (/^\d+\.|^[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s]{4,}:/.test(linha.trim()) && linha.trim().length < 60) {
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 58, 138);
+        doc.text(linha, ml, y);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(30, 30, 30);
+      } else {
+        doc.text(linha, ml, y);
+      }
+      y += altLinha;
+    }
+
+    // ── ASSINATURAS ──────────────────────────────────────────
+    if (y + rodapeH > H - 10) {
+      adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+      doc.addPage();
+      y = 20;
+    } else {
+      y += 10;
+    }
+
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.3);
+
+    const colW = (W - ml - mr) / 3;
+    const assinaturas = ['Professor(a) Responsável', 'Coordenação Pedagógica', 'Responsável pelo Aluno'];
+    assinaturas.forEach(function(label, i) {
+      const x = ml + (colW * i);
+      doc.line(x + 4, y + 12, x + colW - 4, y + 12);
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 100, 100);
+      doc.text(label, x + colW / 2, y + 17, { align: 'center' });
+      doc.text('Data: ____/____/______', x + colW / 2, y + 22, { align: 'center' });
+    });
+
+    // Rodapé final
+    adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+
+    doc.save(opts.nomeArquivo + '.pdf');
+    toast('PDF gerado com sucesso!', 'success');
+
+  } catch(e) {
+    console.error('Erro ao gerar PDF:', e);
+    toast('Erro ao gerar PDF. Tente novamente.', 'error');
+  }
+}
+
+function adicionarRodapePagina(doc, W, H, ml, mr, numPag) {
+  doc.setFontSize(7.5);
+  doc.setTextColor(150, 150, 150);
+  doc.setFont('helvetica', 'normal');
+  doc.line(ml, H - 10, W - mr, H - 10);
+  doc.text('Pluramente — Plataforma de Integração Clínica-Pedagógica | pluramente.ia.br', ml, H - 6);
+  doc.text('Pág. ' + numPag, W - mr, H - 6, { align: 'right' });
+  doc.setTextColor(30, 30, 30);
 }
 
 // ── ALUNOS CADASTRADOS ───────────────────────────────────────
@@ -6057,12 +6214,16 @@ function copiarPautaGerada() {
 }
 
 function baixarPautaGerada() {
-  if (!pautaGeradaTxt) return;
-  const dt = (document.getElementById('pauta-data') || {}).value || new Date().toISOString().slice(0, 10);
-  const a = document.createElement('a');
-  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(pautaGeradaTxt);
-  a.download = `Pauta_Reuniao_${dt}.txt`;
-  a.click();
+  if (!pautaGeradaTxt) return toast('Gere a pauta primeiro.', 'error');
+  const dt = (document.getElementById('pauta-data') || {}).value || new Date().toISOString().slice(0,10);
+  gerarPDFDocumento({
+    tipo: 'PAUTA',
+    titulo: 'Pauta de Reunião Multidisciplinar',
+    subtitulo: 'Gerada com IA — Decreto nº 12.686/2025 (art. 14)',
+    aluno: 'Equipe Multidisciplinar',
+    conteudo: pautaGeradaTxt,
+    nomeArquivo: 'Pauta_Reuniao_' + dt
+  });
 }
 
 async function carregarHistoricoPautas() {
@@ -6223,10 +6384,16 @@ function abrirModalPEI(reg) {
 }
 function copiarModalPEI() { navigator.clipboard.writeText(modalPEItxt).then(()=>toast('Copiado!','success')); }
 function downloadPEI() {
-  const a = document.createElement('a');
-  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(modalPEItxt);
-  a.download = `PEI_${document.getElementById('mpei-titulo').textContent.replace('PEI — ','')}.txt`;
-  a.click();
+  if (!modalPEItxt) return toast('PEI não encontrado.', 'error');
+  const nomeAluno = (document.getElementById('mpei-titulo')?.textContent || 'PEI').replace('PEI — ','');
+  gerarPDFDocumento({
+    tipo: 'PEI',
+    titulo: 'Plano Educacional Individualizado',
+    subtitulo: 'Documento obrigatório — Lei nº 13.146/2015, Decreto nº 12.773/2025',
+    aluno: nomeAluno,
+    conteudo: modalPEItxt,
+    nomeArquivo: 'PEI_' + nomeAluno.replace(/\s+/g,'_') + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')
+  });
 }
 
 // ── TOAST ────────────────────────────────────────────────────
