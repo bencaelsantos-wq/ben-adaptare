@@ -1358,7 +1358,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
         <div class="lgpd-bloco-titulo">⚖️ Proteção de dados — LGPD (Lei nº 13.709/2018)</div>
         <div class="lgpd-bloco-aviso">Diagnósticos, laudos e informações de saúde são <strong>dados sensíveis</strong> (Art. 11º) e exigem proteção reforçada. Dados de crianças e adolescentes têm proteção especial adicional (Art. 14º). Confirme cada item individualmente.</div>
         <label class="lgpd-item" id="lgpd-aluno-1" onclick="lgpdToggle('lgpd-aluno-1','lgpd-cb-aluno-1','lgpd-aluno','btn-salvar-aluno')">
-          <input type="checkbox" id="lgpd-cb-aluno-1" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-aluno-1" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-aluno','btn-salvar-aluno')">
           <div class="lgpd-item-texto">
             <strong>Uso pedagógico interno</strong>
             <span>Autorizo o uso dos dados deste aluno para fins pedagógicos exclusivamente dentro desta instituição de ensino — adaptações curriculares, PEIs e diário pedagógico.</span>
@@ -1366,7 +1366,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
         <label class="lgpd-item" id="lgpd-aluno-2" onclick="lgpdToggle('lgpd-aluno-2','lgpd-cb-aluno-2','lgpd-aluno','btn-salvar-aluno')">
-          <input type="checkbox" id="lgpd-cb-aluno-2" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-aluno-2" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-aluno','btn-salvar-aluno')">
           <div class="lgpd-item-texto">
             <strong>Compartilhamento com equipe clínica vinculada</strong>
             <span>Autorizo o compartilhamento de informações pedagógicas com a equipe clínica cadastrada para este aluno, exclusivamente para fins terapêuticos.</span>
@@ -1374,7 +1374,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
         <label class="lgpd-item" id="lgpd-aluno-3" onclick="lgpdToggle('lgpd-aluno-3','lgpd-cb-aluno-3','lgpd-aluno','btn-salvar-aluno')">
-          <input type="checkbox" id="lgpd-cb-aluno-3" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-aluno-3" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-aluno','btn-salvar-aluno')">
           <div class="lgpd-item-texto">
             <strong>Declaração de autorização legal</strong>
             <span>Declaro possuir autorização dos responsáveis legais pela criança para registrar e tratar os dados inseridos neste formulário, conforme Art. 14º da LGPD.</span>
@@ -1462,7 +1462,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
         <div class="lgpd-bloco-titulo">⚖️ Proteção de dados — LGPD (Lei nº 13.709/2018)</div>
         <div class="lgpd-bloco-aviso">O professor terá acesso a dados de alunos com necessidades educacionais especiais, incluindo diagnósticos e informações clínicas de natureza sensível. Confirme os itens abaixo.</div>
         <label class="lgpd-item" id="lgpd-prof-1" onclick="lgpdToggle('lgpd-prof-1','lgpd-cb-prof-1','lgpd-prof','btn-salvar-prof')">
-          <input type="checkbox" id="lgpd-cb-prof-1" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-prof-1" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-prof','btn-salvar-prof')">
           <div class="lgpd-item-texto">
             <strong>Sigilo e uso restrito dos dados</strong>
             <span>Confirmo que os dados acessados serão utilizados exclusivamente para fins pedagógicos e não serão compartilhados fora do sistema Pluramente.</span>
@@ -1470,7 +1470,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
         <label class="lgpd-item" id="lgpd-prof-2" onclick="lgpdToggle('lgpd-prof-2','lgpd-cb-prof-2','lgpd-prof','btn-salvar-prof')">
-          <input type="checkbox" id="lgpd-cb-prof-2" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-prof-2" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-prof','btn-salvar-prof')">
           <div class="lgpd-item-texto">
             <strong>Responsabilidade pelo acesso</strong>
             <span>Declaro que este profissional possui vínculo com esta instituição e que tenho autorização para cadastrá-lo como usuário do sistema, nos termos da LGPD e do Decreto nº 12.686/2025.</span>
@@ -1675,7 +1675,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
         <div class="lgpd-bloco-titulo">⚖️ Proteção de dados sensíveis de saúde — LGPD Art. 11º e 14º</div>
         <div class="lgpd-bloco-aviso">Diagnósticos, hipóteses clínicas e observações comportamentais são <strong>dados sensíveis de saúde</strong> e têm proteção máxima sob a LGPD. Dados de crianças exigem autorização expressa dos responsáveis legais. Confirme cada item.</div>
         <label class="lgpd-item" id="lgpd-cli-1" onclick="lgpdToggle('lgpd-cli-1','lgpd-cb-cli-1','lgpd-cli','btn-salvar-clinica')">
-          <input type="checkbox" id="lgpd-cb-cli-1" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-cli-1" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-cli','btn-salvar-clinica')">
           <div class="lgpd-item-texto">
             <strong>Finalidade exclusivamente terapêutica</strong>
             <span>Confirmo que os dados clínicos registrados serão utilizados exclusivamente para elaboração de planos terapêuticos e integração com a equipe pedagógica deste paciente.</span>
@@ -1683,7 +1683,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
         <label class="lgpd-item" id="lgpd-cli-2" onclick="lgpdToggle('lgpd-cli-2','lgpd-cb-cli-2','lgpd-cli','btn-salvar-clinica')">
-          <input type="checkbox" id="lgpd-cb-cli-2" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-cli-2" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-cli','btn-salvar-clinica')">
           <div class="lgpd-item-texto">
             <strong>Compartilhamento restrito e com autorização</strong>
             <span>Dados clínicos só serão compartilhados com a escola vinculada mediante formulário fechado e rastreável. Nenhuma informação será enviada a terceiros não autorizados.</span>
@@ -1691,7 +1691,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
         <label class="lgpd-item" id="lgpd-cli-3" onclick="lgpdToggle('lgpd-cli-3','lgpd-cb-cli-3','lgpd-cli','btn-salvar-clinica')">
-          <input type="checkbox" id="lgpd-cb-cli-3" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-cli-3" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-cli','btn-salvar-clinica')">
           <div class="lgpd-item-texto">
             <strong>Autorização do responsável legal</strong>
             <span>Declaro possuir autorização expressa dos responsáveis legais pelo paciente para registrar, tratar e compartilhar as informações clínicas aqui inseridas, conforme Art. 14º da LGPD e normas do conselho profissional competente.</span>
@@ -4931,6 +4931,28 @@ function renderPagesGestao() {
       <button class="btn-sm" onclick="showPage('gestao-comunicacao')">+ Nova comunicação com clínica</button>
     </div>
   </div>`;
+
+  <!-- ══ SOLICITAÇÕES DA FAMÍLIA ══ -->
+  <div id="page-gestao-familia" class="page">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <h1 class="page-title">Solicitações da família</h1>
+      <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#FEF3C7;color:#92400E">Novo</span>
+    </div>
+    <p class="page-sub">Pedidos de relatório enviados pelos responsáveis dos alunos.</p>
+    <div class="toolbar" style="margin-bottom:16px">
+      <div class="search-box" style="flex:1"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="sfam-q" placeholder="Buscar por aluno…" oninput="filtrarSolFamilia()"></div>
+      <select class="filter-sel" id="sfam-fstatus" onchange="filtrarSolFamilia()">
+        <option value="">Todos os status</option>
+        <option value="pendente">⏳ Pendente</option>
+        <option value="em_andamento">🔄 Em andamento</option>
+        <option value="concluido">✅ Concluído</option>
+      </select>
+    </div>
+    <div id="sfam-lista">
+      <div class="empty"><div class="empty-icon">👨‍👩‍👧</div><div class="empty-text">Nenhuma solicitação recebida ainda.</div></div>
+    </div>
+  </div>
+  <!-- /SOLICITAÇÕES DA FAMÍLIA -->
 }
 
 // ── PÁGINAS CLÍNICA ───────────────────────────────────────────
@@ -6209,6 +6231,97 @@ function toast(msg, type='') {
 }
 
 // ── PROFESSORES (GESTÃO) ─────────────────────────────────────
+
+// ── SOLICITAÇÕES DA FAMÍLIA ──────────────────────────────────
+let solFamiliaList = [];
+
+async function carregarSolFamilia() {
+  const { data } = await db.from('solicitacoes_familia')
+    .select('*')
+    .order('criado_em', { ascending: false });
+  solFamiliaList = data || [];
+  filtrarSolFamilia();
+  atualizarBadgeFamilia();
+}
+
+function atualizarBadgeFamilia() {
+  const pendentes = solFamiliaList.filter(s => s.status === 'pendente').length;
+  const badge = document.getElementById('badge-familia');
+  if (badge) {
+    badge.textContent = pendentes > 0 ? pendentes : '';
+    badge.style.display = pendentes > 0 ? 'inline-flex' : 'none';
+  }
+}
+
+function filtrarSolFamilia() {
+  const q = (document.getElementById('sfam-q')?.value || '').toLowerCase();
+  const fs = document.getElementById('sfam-fstatus')?.value || '';
+  const lista = solFamiliaList.filter(s =>
+    (!q || (s.aluno_nome || '').toLowerCase().includes(q)) &&
+    (!fs || s.status === fs)
+  );
+  const el = document.getElementById('sfam-lista');
+  if (!el) return;
+  if (!lista.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👨‍👩‍👧</div><div class="empty-text">Nenhuma solicitação encontrada.</div></div>';
+    return;
+  }
+  el.innerHTML = lista.map(s => {
+    const dt = s.criado_em ? new Date(s.criado_em).toLocaleDateString('pt-BR') : '';
+    const statusColor = s.status === 'pendente' ? '#92400E' : s.status === 'concluido' ? '#065F46' : '#1E40AF';
+    const statusBg = s.status === 'pendente' ? '#FEF3C7' : s.status === 'concluido' ? '#D1FAE5' : '#DBEAFE';
+    const statusLabel = s.status === 'pendente' ? '⏳ Pendente' : s.status === 'concluido' ? '✅ Concluído' : '🔄 Em andamento';
+    const tipoLabel = s.tipo === 'relatorio_evolucao' ? 'Relatório de evolução' : s.tipo === 'relatorio_clinico' ? 'Relatório clínico' : 'Outro';
+    return \`<div style="background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--gr800)">\${s.aluno_nome} — \${tipoLabel}</div>
+          <div style="font-size:12px;color:var(--gr400);margin-top:2px">Solicitante: \${s.solicitante} · \${dt}</div>
+        </div>
+        <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:\${statusBg};color:\${statusColor}">\${statusLabel}</span>
+      </div>
+      \${s.mensagem ? \`<div style="font-size:13px;color:var(--gr600);line-height:1.65;margin-bottom:10px">\${s.mensagem}</div>\` : ''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        \${s.status !== 'concluido' ? \`
+          <button class="btn-sm" style="font-size:12px" onclick="responderSolFamilia('\${s.id}', '\${s.aluno_nome}', '\${s.destinatario}')">📤 Enviar relatório</button>
+          <button class="btn-sm" style="font-size:12px;background:var(--bg2);color:var(--gr600);border-color:var(--b)" onclick="atualizarStatusSol('\${s.id}','em_andamento')">🔄 Marcar em andamento</button>
+        \` : ''}
+        \${s.status === 'concluido' ? \`<span style="font-size:12px;color:var(--gr400)">✅ Respondido em \${s.respondido_em ? new Date(s.respondido_em).toLocaleDateString('pt-BR') : ''}</span>\` : ''}
+      </div>
+    </div>\`;
+  }).join('');
+}
+
+async function atualizarStatusSol(id, status) {
+  const { error } = await db.from('solicitacoes_familia')
+    .update({ status, respondido_em: status === 'concluido' ? new Date().toISOString() : null })
+    .eq('id', id);
+  if (error) return toast('Erro: ' + error.message, 'error');
+  await carregarSolFamilia();
+}
+
+async function responderSolFamilia(id, alunoNome, destinatario) {
+  // Buscar dados do aluno para pegar contatos da família
+  const { data: aluno } = await db.from('alunos')
+    .select('mae_email, mae_tel, pai_email, pai_tel, mae_nome, pai_nome')
+    .eq('nome', alunoNome)
+    .maybeSingle();
+
+  const contatos = [];
+  if (aluno?.mae_email) contatos.push({ nome: aluno.mae_nome || 'Mãe', email: aluno.mae_email, tel: aluno.mae_tel });
+  if (aluno?.pai_email) contatos.push({ nome: aluno.pai_nome || 'Pai', email: aluno.pai_email, tel: aluno.pai_tel });
+
+  if (!contatos.length) return toast('Nenhum contato cadastrado para este aluno.', 'error');
+
+  const contato = contatos[0];
+  const whatsLink = contato.tel ? \`https://wa.me/55\${contato.tel.replace(/\D/g,'')}?text=\${encodeURIComponent('Olá ' + contato.nome + ', segue o relatório solicitado de ' + alunoNome + '.')}\` : null;
+
+  toast(\`Enviando para \${contato.nome} (\${contato.email})\`, 'success');
+  if (whatsLink) window.open(whatsLink, '_blank');
+
+  await atualizarStatusSol(id, 'concluido');
+}
+
 async function carregarProfessores() {
   try {
     const { data, error } = await db.from('professores')
@@ -8060,7 +8173,7 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
         <div class="lgpd-bloco-titulo">⚖️ Proteção de dados — LGPD + Ética Profissional</div>
         <div class="lgpd-bloco-aviso">Este profissional terá acesso a dados clínicos sensíveis de pacientes e poderá receber comunicações das escolas vinculadas. Confirme os itens abaixo antes de criar o acesso.</div>
         <label class="lgpd-item" id="lgpd-prc-1" onclick="lgpdToggle('lgpd-prc-1','lgpd-cb-prc-1','lgpd-prc','btn-salvar-prof-clinica')">
-          <input type="checkbox" id="lgpd-cb-prc-1" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-prc-1" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-prof-clinica','btn-salvar-prof-clinica')">
           <div class="lgpd-item-texto">
             <strong>Vínculo profissional e ético</strong>
             <span>Confirmo que este profissional possui registro ativo no conselho competente (CRP, CRFa, COFFITO ou similar) e está ciente das obrigações éticas relativas ao sigilo e ao uso de dados de pacientes.</span>
@@ -8068,7 +8181,7 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
         <label class="lgpd-item" id="lgpd-prc-2" onclick="lgpdToggle('lgpd-prc-2','lgpd-cb-prc-2','lgpd-prc','btn-salvar-prof-clinica')">
-          <input type="checkbox" id="lgpd-cb-prc-2" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-prc-2" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-prof-clinica','btn-salvar-prof-clinica')">
           <div class="lgpd-item-texto">
             <strong>Responsabilidade pelo acesso e sigilo</strong>
             <span>Declaro que tenho autorização institucional para cadastrar este profissional e que ele está ciente de que todo acesso a dados sensíveis é registrado em log de auditoria conforme a LGPD.</span>
@@ -8076,7 +8189,7 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
         <label class="lgpd-item" id="lgpd-prc-3" onclick="lgpdToggle('lgpd-prc-3','lgpd-cb-prc-3','lgpd-prc','btn-salvar-prof-clinica')">
-          <input type="checkbox" id="lgpd-cb-prc-3" onclick="event.stopPropagation()">
+          <input type="checkbox" id="lgpd-cb-prc-3" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-prof-clinica','btn-salvar-prof-clinica')">
           <div class="lgpd-item-texto">
             <strong>Acordo de processamento de dados (DPA)</strong>
             <span>Confirmo que esta clínica atua como operadora de dados pessoais e sensíveis dos pacientes, nos termos do Art. 37 e 39 da LGPD, e que possui políticas internas de proteção de dados compatíveis.</span>
