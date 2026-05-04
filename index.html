@@ -2462,6 +2462,7 @@ async function excluirPerfilClinicaGestao(id, nome) {
 
 async function carregarProfissionaisClinica() {
   const { data } = await db.from('professores').select('*').order('nome');
+  if (data) { window._professoresList = data; popularDropdownProf(); }
   const grid = document.getElementById('gc-prof-grid');
   if (!grid) return;
   const lista = data || [];
@@ -3714,11 +3715,27 @@ function renderPages() {
       <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Período e responsáveis</div></div></div>
       <div class="frow">
         <div><label class="flabel">Período de vigência</label><input type="text" id="pei-periodo" class="finput" placeholder="Ex: 1º semestre de 2025"></div>
-        <div><label class="flabel">Professor responsável</label><input type="text" id="pei-professor" class="finput" placeholder="Nome completo do professor"></div>
+        <div><label class="flabel">Professor responsável</label>
+          <select id="pei-professor" class="fselect" onchange="peiProfSelecionado(this)">
+            <option value="">Selecione o professor responsável</option>
+          </select>
+        </div>
       </div>
       <div class="frow">
         <div><label class="flabel">Área de atuação / Disciplina</label><input type="text" id="pei-disciplina" class="finput" placeholder="Ex: Professora de sala / AEE"></div>
-        <div><label class="flabel">Profissionais de apoio</label><input type="text" id="pei-apoio" class="finput" placeholder="Ex: TO, Fono, Psicóloga…"></div>
+        <div>
+          <label class="flabel">Profissionais de apoio</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="pei-apoio-chips">
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Fonoaudióloga</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Terapeuta Ocupacional</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Psicóloga</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Fisioterapeuta</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Neuropediatra</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">AT</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Prof. AEE</button>
+          </div>
+          <input type="hidden" id="pei-apoio">
+        </div>
       </div>
     </div>
 
@@ -3739,10 +3756,50 @@ function renderPages() {
 
     <div class="pei-step">
       <div class="pei-step-header"><div class="pei-step-num">5</div><div><div class="pei-step-title">Estratégias, recursos e avaliação</div></div></div>
-      <div class="fblock"><label class="flabel">Estratégias pedagógicas que serão utilizadas</label><textarea id="pei-estrategias" class="ftarea sm" placeholder="Ex: Rotina visual diária, instruções em passos numerados, tempo extra para execução, atividades segmentadas…"></textarea></div>
+      <div class="fblock">
+        <label class="flabel">Estratégias pedagógicas que serão utilizadas</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-estrat-chips">
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Rotina visual</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Instruções em passos</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Tempo extra</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Atividades segmentadas</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Antecipação de mudanças</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Reforço positivo</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Modelagem</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Aprendizagem cooperativa</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Material concreto</button>
+          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Pausas programadas</button>
+        </div>
+        <textarea id="pei-estrategias" class="ftarea sm" placeholder="Outras estratégias não listadas acima…"></textarea>
+      </div>
       <div class="frow">
-        <div><label class="flabel">Recursos e tecnologias assistivas</label><textarea id="pei-recursos" class="ftarea sm" placeholder="Ex: Prancha de CAA, material dourado, audiolivro, fone de abafamento, mesa adaptada…"></textarea></div>
-        <div><label class="flabel">Formas de avaliação adaptada</label><textarea id="pei-avaliacao" class="ftarea sm" placeholder="Ex: Avaliação oral, portfólio, prova com tempo estendido, sem penalização por ortografia…"></textarea></div>
+        <div>
+          <label class="flabel">Recursos e tecnologias assistivas</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-recursos-chips">
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Prancha CAA</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Material dourado</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Audiolivro</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Fone de abafamento</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Mesa adaptada</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Tablet/dispositivo</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Letras de lixa</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Timer visual</button>
+          </div>
+          <textarea id="pei-recursos" class="ftarea sm" placeholder="Outros recursos não listados acima…"></textarea>
+        </div>
+        <div>
+          <label class="flabel">Formas de avaliação adaptada</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-aval-chips">
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Avaliação oral</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Portfólio</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Tempo estendido</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Sem penalização ortografia</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Prova em partes</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Leitura do enunciado</button>
+            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Apoio de imagens</button>
+          </div>
+          <textarea id="pei-avaliacao" class="ftarea sm" placeholder="Outras formas não listadas acima…"></textarea>
+        </div>
       </div>
       <div class="fblock"><label class="flabel">Envolvimento da família</label><textarea id="pei-familia" class="ftarea sm" placeholder="Ex: Família orientada a reforçar rotina em casa, reuniões bimestrais de acompanhamento, compartilhamento de estratégias…"></textarea></div>
     </div>
@@ -5465,20 +5522,69 @@ function carregarDadosPEI() {
   info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:3px">${tags}</div>${a.observacoes?`<div style="margin-top:5px;font-size:12px;color:var(--gr600)">${a.observacoes}</div>`:''}`;
 }
 
+
+// ── CHIPS E DROPDOWN PEI ─────────────────────────────────────
+function toggleChipPEI(btn, grupoId) {
+  btn.classList.toggle('active');
+}
+
+function getChipsPEI(grupoId) {
+  const chips = document.querySelectorAll('#' + grupoId + ' .chip.active');
+  return Array.from(chips).map(function(c) { return c.textContent.trim(); }).join(', ');
+}
+
+function popularDropdownProf() {
+  const sel = document.getElementById('pei-professor');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione o professor responsável</option>';
+  if (window._professoresList && window._professoresList.length) {
+    window._professoresList.forEach(function(p) {
+      const opt = document.createElement('option');
+      opt.value = p.nome;
+      opt.textContent = p.nome + (p.materias && p.materias.length ? ' — ' + p.materias.slice(0,2).join(', ') : '');
+      sel.appendChild(opt);
+    });
+  }
+  // Opção de digitar manualmente
+  const optManual = document.createElement('option');
+  optManual.value = '__manual__';
+  optManual.textContent = '✏️ Digitar manualmente...';
+  sel.appendChild(optManual);
+}
+
+function peiProfSelecionado(sel) {
+  if (sel.value === '__manual__') {
+    const nome = prompt('Digite o nome do professor responsável:');
+    if (nome) {
+      const opt = document.createElement('option');
+      opt.value = nome;
+      opt.textContent = nome;
+      sel.insertBefore(opt, sel.lastElementChild);
+      sel.value = nome;
+    } else {
+      sel.value = '';
+    }
+  }
+}
+
 async function gerarPEI() {
   const alunoId  = document.getElementById('pei-aluno-sel').value;
   const periodo  = document.getElementById('pei-periodo').value.trim();
   const prof     = document.getElementById('pei-professor').value.trim();
   const disc     = document.getElementById('pei-disciplina').value.trim();
-  const apoio    = document.getElementById('pei-apoio').value.trim();
+  // Ler chips selecionados
+  const apoio    = getChipsPEI('pei-apoio-chips') || document.getElementById('pei-apoio').value.trim();
+  const estratChips = getChipsPEI('pei-estrat-chips');
+  const recursosChips = getChipsPEI('pei-recursos-chips');
+  const avalChips = getChipsPEI('pei-aval-chips');
   const nivel    = document.getElementById('pei-nivel').value.trim();
   const fortes   = document.getElementById('pei-fortes').value.trim();
   const barreiras= document.getElementById('pei-barreiras').value.trim();
   const metasAc  = document.getElementById('pei-metas-ac').value.trim();
   const metasDev = document.getElementById('pei-metas-dev').value.trim();
-  const estrat   = document.getElementById('pei-estrategias').value.trim();
-  const recursos = document.getElementById('pei-recursos').value.trim();
-  const aval     = document.getElementById('pei-avaliacao').value.trim();
+  const estrat   = [estratChips, document.getElementById('pei-estrategias').value.trim()].filter(Boolean).join('; ');
+  const recursos = [recursosChips, document.getElementById('pei-recursos').value.trim()].filter(Boolean).join('; ');
+  const aval     = [avalChips, document.getElementById('pei-avaliacao').value.trim()].filter(Boolean).join('; ');
   const familia  = document.getElementById('pei-familia').value.trim();
   const obsAdd   = document.getElementById('pei-obs-add').value.trim();
 
@@ -5631,7 +5737,7 @@ function gerarPDFDocumento(opts) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const W = 210, H = 297;
-    const ml = 18, mr = 18, mt = 18;
+    const ml = 20, mr = 20, mt = 18;
     let y = mt;
 
     // ── CABEÇALHO ────────────────────────────────────────────
@@ -5678,41 +5784,52 @@ function gerarPDFDocumento(opts) {
     }
 
     // ── TÍTULO DO DOCUMENTO ──────────────────────────────────
+    // Box de título
+    doc.setFillColor(241, 245, 255);
+    doc.roundedRect(ml, y, W - ml - mr, 18, 2, 2, 'F');
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.8);
+    doc.line(ml, y, ml, y + 18);
+
     doc.setTextColor(30, 58, 138);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text(opts.titulo, W / 2, y, { align: 'center' });
-    y += 7;
+    doc.setFontSize(14);
+    doc.text(opts.titulo.toUpperCase(), ml + 5, y + 7);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text(opts.subtitulo, W / 2, y, { align: 'center' });
-    y += 5;
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 120);
+    doc.text(opts.subtitulo, ml + 5, y + 14);
+    y += 24;
 
     // Linha divisória
-    doc.setDrawColor(30, 58, 138);
-    doc.setLineWidth(0.5);
+    doc.setDrawColor(200, 210, 230);
+    doc.setLineWidth(0.3);
     doc.line(ml, y, W - mr, y);
     y += 6;
 
     // ── DADOS DO ALUNO ───────────────────────────────────────
-    doc.setFillColor(239, 246, 255);
-    doc.roundedRect(ml, y, W - ml - mr, 12, 2, 2, 'F');
+    // Box dados do aluno com 3 colunas
+    doc.setFillColor(245, 248, 255);
+    doc.roundedRect(ml, y, W - ml - mr, 16, 2, 2, 'F');
+    doc.setDrawColor(200, 215, 240);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(ml, y, W - ml - mr, 16, 2, 2, 'S');
+
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 120, 160);
     doc.setFont('helvetica', 'bold');
+    doc.text('ALUNO', ml + 3, y + 5);
+    doc.text('DATA DE EMISSÃO', W / 2 - 10, y + 5);
+    doc.text('DOCUMENTO', W - mr - 40, y + 5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(20, 20, 60);
     doc.setFontSize(9);
-    doc.setTextColor(30, 58, 138);
-    doc.text('ALUNO:', ml + 3, y + 5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(30, 30, 30);
-    doc.text(opts.aluno, ml + 20, y + 5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 58, 138);
-    doc.text('DATA:', W / 2, y + 5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(30, 30, 30);
-    doc.text(dataHoje, W / 2 + 12, y + 5);
-    y += 18;
+    doc.text(opts.aluno, ml + 3, y + 12);
+    doc.text(dataHoje, W / 2 - 10, y + 12);
+    doc.text(opts.tipo || 'PEI', W - mr - 40, y + 12);
+    y += 22;
 
     // ── CONTEÚDO ─────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
@@ -5743,14 +5860,57 @@ function gerarPDFDocumento(opts) {
       }
       // Destacar seções em negrito
       const linha = linhas[i];
-      if (/^\d+\.|^[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s]{4,}:/.test(linha.trim()) && linha.trim().length < 60) {
+      const linhaT = linha.trim();
+      const isH1 = /^#{1,2}\s/.test(linhaT) || (/^\d+\.\s[A-Z]/.test(linhaT) && linhaT.length < 80);
+      const isH2 = /^#{3}\s/.test(linhaT) || (/^\d+\.\d+\s/.test(linhaT) && linhaT.length < 80);
+      const isSep = /^---+$/.test(linhaT) || linhaT === '';
+      if (isSep) {
+        if (linhaT !== '') { doc.setDrawColor(220,225,240); doc.setLineWidth(0.2); doc.line(ml, y, W-mr, y); }
+        y += 2; continue;
+      }
+      const linhaClean = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
+      if (isH1) {
+        y += 2;
+        doc.setFillColor(235, 241, 255);
+        doc.rect(ml, y - 3.5, W - ml - mr, 7, 'F');
+        doc.setDrawColor(30, 58, 138);
+        doc.setLineWidth(0.6);
+        doc.line(ml, y - 3.5, ml, y + 3.5);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(30, 58, 138);
-        doc.text(linha, ml, y);
+        doc.setFontSize(9.5);
+        doc.setTextColor(20, 40, 120);
+        doc.text(linhaClean, ml + 3, y + 0.5);
         doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(30, 30, 30);
+        y += 8; continue;
+      }
+      if (isH2) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(50, 70, 140);
+        doc.text(linhaClean, ml, y);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
         doc.setTextColor(30, 30, 30);
       } else {
-        doc.text(linha, ml, y);
+        // Negrito inline **texto**
+        if (linhaClean.includes('**')) {
+          const parts = linhaClean.split('**');
+          let xPos = ml;
+          parts.forEach(function(part, idx) {
+            if (idx % 2 === 1) {
+              doc.setFont('helvetica', 'bold');
+            } else {
+              doc.setFont('helvetica', 'normal');
+            }
+            doc.text(part, xPos, y);
+            xPos += doc.getTextWidth(part);
+          });
+          doc.setFont('helvetica', 'normal');
+        } else {
+          doc.text(linhaClean || linha, ml, y);
+        }
       }
       y += altLinha;
     }
@@ -6658,8 +6818,10 @@ async function carregarProfessores() {
       return;
     }
     professoresList = data || [];
+    window._professoresList = professoresList;
     popularFiltrosGProf();
     filtrarGProf();
+    popularDropdownProf();
     const el = document.getElementById('stat-prof');
     if (el) el.textContent = professoresList.length;
   } catch(e) {
