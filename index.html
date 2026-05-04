@@ -2030,7 +2030,7 @@ function iniciarApp() {
   const sidebar = document.querySelector('.sidebar');
 
   const colorMap = {
-    professor:       { label:'👩‍🏫 Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); } },
+    professor:       { label:'👩‍🏫 Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); } },
     gestao:          { label:'🏫 Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); showPage('gestao-painel'); } },
     clinica:         { label:'🏥 Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); } },
     'gestao-clinica':{ label:'🏥👔 Gestão Clínica', cls:'at',        sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
@@ -5441,10 +5441,16 @@ ${isMontessori ? `Como apresentar (linguagem mínima, mãos que ensinam), quando
 async function salvarAdapt() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
   const { error } = await db.from('adaptacoes').insert({
-    user_id: user.id, aluno_id: dadosUltima.alunoId||null,
-    aluno: dadosUltima.aluno, idade: dadosUltima.idade, serie: dadosUltima.serie,
-    materia: dadosUltima.materia, tipo_ativ: dadosUltima.tipoAtiv,
-    perfis: dadosUltima.perfis, observacoes: dadosUltima.obs, texto: ultimaAdapt
+    user_id: user.id,
+    aluno_id:   dadosUltima.alunoId  || null,
+    aluno_nome: dadosUltima.aluno    || null,
+    idade:      dadosUltima.idade    || null,
+    serie:      dadosUltima.serie    || null,
+    materia:    dadosUltima.materia  || null,
+    tipo_ativ:  dadosUltima.tipoAtiv || null,
+    perfis:     dadosUltima.perfis   || [],
+    observacoes:dadosUltima.obs      || null,
+    adaptacao:  ultimaAdapt
   });
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
   toast('Adaptação salva!', 'success');
@@ -5522,6 +5528,22 @@ function carregarDadosPEI() {
   info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:3px">${tags}</div>${a.observacoes?`<div style="margin-top:5px;font-size:12px;color:var(--gr600)">${a.observacoes}</div>`:''}`;
 }
 
+
+
+// ── CARREGAR PROFESSORES PARA DROPDOWN DO PEI ────────────────
+async function carregarProfessoresParaDropdown() {
+  try {
+    const { data } = await db.from('professores')
+      .select('nome, materias')
+      .order('nome', { ascending: true });
+    if (data && data.length) {
+      window._professoresList = data;
+      popularDropdownProf();
+    }
+  } catch(e) {
+    console.warn('carregarProfessoresParaDropdown:', e);
+  }
+}
 
 // ── CHIPS E DROPDOWN PEI ─────────────────────────────────────
 function toggleChipPEI(btn, grupoId) {
