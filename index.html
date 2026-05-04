@@ -2950,93 +2950,104 @@ function mudarTabGuiaEns(btn, tab) {
 
 // ── DASHBOARDS POR PERFIL ────────────────────────────────────
 
-function carregarDashboardProfessor() {
-  // KPIs
-  const totalAlunos = (window.alunosData||[]).length;
-  const totalAdapt  = (window.adaptacoesData||[]).length;
-  const totalPEIs   = (window.peisData||[]).length;
+async function carregarDashboardProfessor() {
   const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  el('dash-prof-alunos', totalAlunos||'0');
-  el('dash-prof-adapt',  totalAdapt||'0');
-  el('dash-prof-peis',   totalPEIs||'0');
-  el('dash-prof-clinica','—');
+  el('dash-prof-alunos','…'); el('dash-prof-adapt','…');
+  el('dash-prof-peis','…'); el('dash-prof-clinica','…');
+  try {
+    const [{ data: alunos },{ data: adapts },{ data: peis },{ data: diario }] = await Promise.all([
+      db.from('alunos').select('id,nome,serie',{count:'exact'}),
+      db.from('adaptacoes').select('id,aluno_nome,materia,created_at').eq('user_id',user.id).order('created_at',{ascending:false}),
+      db.from('peis').select('id,aluno_nome,status,created_at').eq('user_id',user.id).order('created_at',{ascending:false}),
+      db.from('diario_aluno').select('id',{count:'exact'}).neq('origem','professor')
+    ]);
+    const na=alunos?.length||0, nd=adapts?.length||0, np=peis?.length||0, nr=diario?.length||0;
+    el('dash-prof-alunos',na); el('dash-prof-adapt',nd);
+    el('dash-prof-peis',np); el('dash-prof-clinica',nr||'0');
 
-  // Últimas adaptações
-  const adapt = (window.adaptacoesData||[]).slice(-4).reverse();
-  const listaAdapt = document.getElementById('dash-prof-adapt-lista');
-  if(listaAdapt) {
-    if(!adapt.length){ listaAdapt.innerHTML='<span style="color:var(--gr300)">Nenhuma adaptação ainda.</span>'; }
-    else { listaAdapt.innerHTML = adapt.map(a=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between;align-items:center"><span>${a.aluno||'Aluno'} — <em style="color:var(--gr400)">${a.materia||''}</em></span><span style="font-size:11px;color:var(--gr300)">${(a.created_at||'').slice(0,10)}</span></div>`).join(''); }
-  }
-  // Últimos PEIs
-  const peis = (window.peisData||[]).slice(-4).reverse();
-  const listaPEI = document.getElementById('dash-prof-peis-lista');
-  if(listaPEI) {
-    if(!peis.length){ listaPEI.innerHTML='<span style="color:var(--gr300)">Nenhum PEI elaborado ainda.</span>'; }
-    else { listaPEI.innerHTML = peis.map(p=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${p.aluno_nome||p.aluno||'Aluno'}</span><span style="font-size:11px;padding:2px 8px;background:${p.status==='finalizado'?'#DCFCE7':'#FEF3C7'};color:${p.status==='finalizado'?'#166534':'#92400E'};border-radius:999px">${p.status||'rascunho'}</span></div>`).join(''); }
-  }
-  // Sugestões
-  const acoes = document.getElementById('dash-prof-acoes');
-  if(acoes) {
-    const sugestoes = [];
-    if(!totalAdapt) sugestoes.push('📝 Crie sua primeira adaptação pedagógica para um aluno com NEE.');
-    if(!totalPEIs)  sugestoes.push('📋 Elabore um PEI — é obrigatório pela Lei nº 13.146/2015.');
-    if(!totalAlunos) sugestoes.push('👦 Aguarde a Gestão Escolar cadastrar os alunos da turma.');
-    if(totalAlunos&&totalAdapt&&totalPEIs) sugestoes.push('✅ Parabéns! Você tem alunos, adaptações e PEIs. Acione a clínica pelo Diário do Aluno quando precisar de suporte.');
-    acoes.innerHTML = sugestoes.length ? sugestoes.map(s=>`<div style="margin-bottom:4px">${s}</div>`).join('') : '✅ Tudo em dia!';
-  }
+    const listaAdapt=document.getElementById('dash-prof-adapt-lista');
+    if(listaAdapt){ const sl=(adapts||[]).slice(0,4);
+      listaAdapt.innerHTML=sl.length?sl.map(a=>'<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between;align-items:center"><span>'+(a.aluno_nome||'Aluno')+' — <em style="color:var(--gr400)">'+(a.materia||'')+'</em></span><span style="font-size:11px;color:var(--gr300)">'+(a.created_at||'').slice(0,10)+'</span></div>').join(''):'<span style="color:var(--gr300)">Nenhuma adaptação ainda.</span>'; }
+
+    const listaPEI=document.getElementById('dash-prof-peis-lista');
+    if(listaPEI){ const sl=(peis||[]).slice(0,4);
+      listaPEI.innerHTML=sl.length?sl.map(p=>'<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>'+(p.aluno_nome||'Aluno')+'</span><span style="font-size:11px;padding:2px 8px;background:'+(p.status==='finalizado'?'#DCFCE7':'#FEF3C7')+';color:'+(p.status==='finalizado'?'#166534':'#92400E')+';border-radius:999px">'+(p.status||'rascunho')+'</span></div>').join(''):'<span style="color:var(--gr300)">Nenhum PEI elaborado ainda.</span>'; }
+
+    const acoes=document.getElementById('dash-prof-acoes');
+    if(acoes){ const s=[];
+      if(!nd) s.push('📝 Crie sua primeira adaptação pedagógica para um aluno com NEE.');
+      if(!np) s.push('📋 Elabore um PEI — é obrigatório pela Lei nº 13.146/2015.');
+      if(!na) s.push('👦 Aguarde a Gestão Escolar cadastrar os alunos da turma.');
+      if(na&&nd&&np) s.push('✅ Você tem alunos, adaptações e PEIs. Acione a clínica pelo Diário quando precisar.');
+      acoes.innerHTML=s.length?s.map(x=>'<div style="margin-bottom:4px">'+x+'</div>').join(''):'✅ Tudo em dia!'; }
+  } catch(e){ console.error('carregarDashboardProfessor:',e); }
 }
 
-function carregarDashboardClinica() {
-  const perfis  = (window.clinicaPerfis||[]).length;
-  const rel     = (window.clinicaRelatorios||[]).length;
+async function carregarDashboardClinica() {
   const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  el('dash-cli-alunos', perfis||'0');
-  el('dash-cli-obj',    '—');
-  el('dash-cli-rel',    rel||'0');
-  el('dash-cli-planos', '—');
+  el('dash-cli-alunos','…'); el('dash-cli-obj','…');
+  el('dash-cli-rel','…'); el('dash-cli-planos','…');
+  try {
+    const [{ data: perfis },{ data: obj },{ data: rel },{ data: planos }] = await Promise.all([
+      db.from('perfis_clinicos').select('id,nome,diagnostico').eq('user_id',user.id).order('nome'),
+      db.from('objetivos_terapeuticos').select('id',{count:'exact'}).eq('user_id',user.id),
+      db.from('relatorios').select('id,aluno_nome,created_at').eq('user_id',user.id).order('created_at',{ascending:false}),
+      db.from('devolutivas').select('id',{count:'exact'}).eq('usuario_id',user.id)
+    ]);
+    const np=perfis?.length||0, no=obj?.length||0, nr=rel?.length||0, npl=planos?.length||0;
+    el('dash-cli-alunos',np); el('dash-cli-obj',no);
+    el('dash-cli-rel',nr); el('dash-cli-planos',npl);
+    window.clinicaPerfis=perfis||[];
+    window.clinicaRelatorios=rel||[];
 
-  const listaA = document.getElementById('dash-cli-alunos-lista');
-  if(listaA) {
-    const p = (window.clinicaPerfis||[]).slice(0,4);
-    listaA.innerHTML = p.length ? p.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${x.aluno_nome||x.nome||'Aluno'} <span style="float:right;font-size:11px;color:var(--gr300)">${x.especialidade||''}</span></div>`).join('') : '<span style="color:var(--gr300)">Nenhum perfil cadastrado ainda.</span>';
-  }
-  const listaR = document.getElementById('dash-cli-rel-lista');
-  if(listaR) {
-    const r = (window.clinicaRelatorios||[]).slice(0,4);
-    listaR.innerHTML = r.length ? r.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${x.aluno_nome||'Aluno'} — <em style="color:var(--gr400)">${(x.created_at||'').slice(0,10)}</em></div>`).join('') : '<span style="color:var(--gr300)">Nenhuma demanda da escola recebida ainda.</span>';
-  }
-  const acoes = document.getElementById('dash-cli-acoes');
-  if(acoes) {
-    const s = [];
-    if(!perfis) s.push('🧠 Cadastre o primeiro perfil clínico de um aluno.');
-    if(perfis && !rel) s.push('📋 Aguarde relatórios da escola para responder com estratégias terapêuticas.');
-    if(perfis && rel) s.push('✅ Você tem perfis e demandas. Use o Plano de Intervenção para gerar estratégias integradas.');
-    acoes.innerHTML = s.length ? s.map(x=>`<div style="margin-bottom:4px">${x}</div>`).join('') : '✅ Tudo em dia!';
-  }
+    const listaA=document.getElementById('dash-cli-alunos-lista');
+    if(listaA){ const sl=(perfis||[]).slice(0,4);
+      listaA.innerHTML=sl.length?sl.map(x=>'<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">'+(x.nome||'Aluno')+'<span style="float:right;font-size:11px;color:var(--gr300)">'+(x.diagnostico||'')+'</span></div>').join(''):'<span style="color:var(--gr300)">Nenhum perfil cadastrado ainda.</span>'; }
+
+    const listaR=document.getElementById('dash-cli-rel-lista');
+    if(listaR){ const sl=(rel||[]).slice(0,4);
+      listaR.innerHTML=sl.length?sl.map(x=>'<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">'+(x.aluno_nome||'Aluno')+' — <em style="color:var(--gr400)">'+(x.created_at||'').slice(0,10)+'</em></div>').join(''):'<span style="color:var(--gr300)">Nenhuma demanda recebida ainda.</span>'; }
+
+    const acoes=document.getElementById('dash-cli-acoes');
+    if(acoes){ const s=[];
+      if(!np) s.push('🧠 Cadastre o primeiro perfil clínico de um aluno.');
+      if(np&&!nr) s.push('📋 Aguarde demandas da escola para responder com estratégias.');
+      if(np&&nr) s.push('✅ Você tem perfis e demandas. Use o Plano de Intervenção para estratégias integradas.');
+      acoes.innerHTML=s.length?s.map(x=>'<div style="margin-bottom:4px">'+x+'</div>').join(''):'✅ Tudo em dia!'; }
+  } catch(e){ console.error('carregarDashboardClinica:',e); }
 }
 
-function carregarDashboardAT() {
-  const rel = (window.atRelatorios||[]).length;
-  const el  = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  el('dash-at-alunos', '—');
-  el('dash-at-rel',    rel||'0');
-  el('dash-at-obj',    '—');
-  el('dash-at-estrategias','—');
+async function carregarDashboardAT() {
+  const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  el('dash-at-alunos','…'); el('dash-at-rel','…');
+  el('dash-at-obj','…'); el('dash-at-estrategias','…');
+  try {
+    const [{ data: alunos },{ data: rel },{ data: diario }] = await Promise.all([
+      db.from('alunos').select('id,nome,serie').eq('at_id',user.id).order('nome'),
+      db.from('relatorios').select('id,aluno_nome,created_at').eq('user_id',user.id).order('created_at',{ascending:false}),
+      db.from('diario_aluno').select('id',{count:'exact'}).eq('user_id',user.id)
+    ]);
+    const na=alunos?.length||0, nr=rel?.length||0, nd=diario?.length||0;
+    el('dash-at-alunos',na); el('dash-at-rel',nr);
+    el('dash-at-obj',nd); el('dash-at-estrategias',nr||'0');
+    window.atRelatorios=rel||[];
+    window._alunosDiario=alunos||[];
 
-  const listaA = document.getElementById('dash-at-alunos-lista');
-  if(listaA) listaA.innerHTML = '<span style="color:var(--gr300)">Selecione um aluno no Roteiro de Atuação para ver detalhes.</span>';
+    const listaA=document.getElementById('dash-at-alunos-lista');
+    if(listaA){ const sl=(alunos||[]).slice(0,4);
+      listaA.innerHTML=sl.length?sl.map(x=>'<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">'+(x.nome||'Aluno')+'<span style="float:right;font-size:11px;color:var(--gr300)">'+(x.serie||'')+'</span></div>').join(''):'<span style="color:var(--gr300)">Nenhum aluno vinculado ainda. A gestão deve vincular o AT no cadastro do aluno.</span>'; }
 
-  const listaR = document.getElementById('dash-at-rel-lista');
-  if(listaR) {
-    const r = (window.atRelatorios||[]).slice(0,4);
-    listaR.innerHTML = r.length ? r.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${x.aluno_nome||'Aluno'} — <em style="color:var(--gr400)">${(x.created_at||'').slice(0,10)}</em></div>`).join('') : '<span style="color:var(--gr300)">Nenhum relatório recebido ainda.</span>';
-  }
-  const acoes = document.getElementById('dash-at-acoes');
-  if(acoes) {
-    const s = rel ? ['✅ Você tem relatórios recebidos. Acesse o Roteiro de Atuação para ver as estratégias do aluno.'] : ['📋 Aguarde relatórios da clínica para iniciar o acompanhamento.','🎯 Use os Objetivos Convergentes para alinhar com escola e clínica.'];
-    acoes.innerHTML = s.map(x=>`<div style="margin-bottom:4px">${x}</div>`).join('');
-  }
+    const listaR=document.getElementById('dash-at-rel-lista');
+    if(listaR){ const sl=(rel||[]).slice(0,4);
+      listaR.innerHTML=sl.length?sl.map(x=>'<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">'+(x.aluno_nome||'Aluno')+' — <em style="color:var(--gr400)">'+(x.created_at||'').slice(0,10)+'</em></div>').join(''):'<span style="color:var(--gr300)">Nenhum relatório ainda.</span>'; }
+
+    const acoes=document.getElementById('dash-at-acoes');
+    if(acoes){ const s=[];
+      if(!na) s.push('👦 Aguarde a gestão vincular alunos ao seu perfil de AT.');
+      if(na&&!nr) s.push('📋 Aguarde relatórios da clínica para iniciar o acompanhamento.');
+      if(na&&nr) s.push('✅ Você tem alunos e relatórios. Use o Roteiro de Atuação para gerar estratégias.');
+      acoes.innerHTML=s.length?s.map(x=>'<div style="margin-bottom:4px">'+x+'</div>').join(''):'✅ Tudo em dia!'; }
+  } catch(e){ console.error('carregarDashboardAT:',e); }
 }
 
 async function carregarColaboracao() {
