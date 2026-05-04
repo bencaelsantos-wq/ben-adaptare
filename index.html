@@ -5500,12 +5500,7 @@ function downloadAdaptacaoPDF() {
     subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv : ''),
     aluno: nomeAluno,
     professor: profNome,
-    conteudo: folhaAluno + (incluiGuia && guiaProf ? '
-
-
----USO EXCLUSIVO DO PROFESSOR---
-
-' + guiaProf : ''),
+    conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
     nomeArquivo: 'Adaptacao_' + nomeAluno.replace(/\s+/g,'_') + '_' + materia.replace(/\s+/g,'_') + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g,'-'),
     isAtividade: true,
     guiaProf: incluiGuia ? guiaProf : null
@@ -6271,8 +6266,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     // Conteúdo do guia
     const guiaLimpo = guia
       .replace(/═+/g, '')
-      .replace(/PARTE 2.*PROFESSOR.*
-/gi, '')
+      .replace(/PARTE 2[\s\S]*?PROFESSOR[^\n]*/gi, '')
       .replace(/---USO EXCLUSIVO DO PROFESSOR---/gi, '')
       .trim();
 
