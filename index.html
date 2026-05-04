@@ -3664,6 +3664,18 @@ function renderPages() {
     <div class="fcard">
       <div class="fcard-title">Conteúdo a adaptar</div>
       <div class="fblock"><label class="flabel">Cole aqui o texto, atividade ou enunciado original</label><textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea></div>
+
+      <!-- Opções de saída -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
+          <input type="checkbox" id="inp-pictogramas" style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+          <span>🖼️ Incluir pictogramas na atividade do aluno</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
+          <input type="checkbox" id="inp-guia-prof" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+          <span>📋 Incluir guia do professor no PDF</span>
+        </label>
+      </div>
     </div>
 
     <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
@@ -3680,6 +3692,7 @@ function renderPages() {
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
+        <button class="btn-copy" onclick="downloadAdaptacaoPDF()">⬇️ Baixar PDF</button>
       </div>
     </div>
   </div>
@@ -3720,6 +3733,10 @@ function renderPages() {
             <option value="">Selecione o professor responsável</option>
           </select>
         </div>
+      </div>
+      <div class="frow">
+        <div><label class="flabel">Coordenador(a) Pedagógico(a)</label><input type="text" id="pei-coordenador" class="finput" placeholder="Nome do coordenador pedagógico"></div>
+        <div><label class="flabel">Acompanhante Terapêutico (AT)</label><input type="text" id="pei-at" class="finput" placeholder="Nome do AT responsável"></div>
       </div>
       <div class="frow">
         <div><label class="flabel">Área de atuação / Disciplina</label><input type="text" id="pei-disciplina" class="finput" placeholder="Ex: Professora de sala / AEE"></div>
@@ -5238,10 +5255,12 @@ async function gerar() {
   aluno = a.nome; idade = a.idade; serie = a.serie;
   perfis = a.perfis || []; obs = a.observacoes || '';
 
-  const materia   = document.getElementById('inp-materia')?.value;
-  const tipoLivre = document.getElementById('inp-tipo-livre')?.value.trim();
-  const conteudo  = document.getElementById('inp-conteudo')?.value.trim();
-  const tipoAtiv  = tipoLivre || tplSelecionado || 'atividade pedagógica';
+  const materia      = document.getElementById('inp-materia')?.value;
+  const tipoLivre    = document.getElementById('inp-tipo-livre')?.value.trim();
+  const conteudo     = document.getElementById('inp-conteudo')?.value.trim();
+  const tipoAtiv     = tipoLivre || tplSelecionado || 'atividade pedagógica';
+  const usaPictograma = document.getElementById('inp-pictogramas')?.checked || false;
+  const incluiGuia    = document.getElementById('inp-guia-prof')?.checked !== false;
 
   if (!materia)  return toast('Selecione a matéria.', 'error');
   if (!conteudo) return toast('Cole o conteúdo a adaptar.', 'error');
@@ -5391,27 +5410,48 @@ ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em 
 CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
-Gere uma adaptação COMPLETA com 4 seções:
+Gere o documento em DUAS PARTES separadas por uma linha de asteriscos (***GUIA_PROFESSOR***):
 
-**SEÇÃO 1 — ANÁLISE DO PERFIL**
-Como os diagnósticos impactam esta atividade específica e quais barreiras precisam ser removidas.${isMontessori ? ' Identifique também em qual período sensível a criança se encontra.' : ''}
+═══════════════════════════════════════════
+PARTE 1 — FOLHA DO ALUNO
+═══════════════════════════════════════════
 
-**SEÇÃO 2 — ATIVIDADE ADAPTADA**
-${isMontessori ? `Atividade 100% baseada no Método Montessori:
-• Descreva o material concreto específico a ser usado (com nome real do material Montessori)
-• Escreva o convite e a apresentação passo a passo (lenta, silenciosa, com as mãos)
-• Indique o controle de erro embutido ou adaptado
-• Descreva como a criança trabalhará de forma autônoma
-• Especifique as adaptações para o perfil NEE desta criança mantendo a essência Montessori` :
-'Atividade pronta para uso, com todas as estratégias aplicadas.'}
+Crie uma atividade PRONTA PARA IMPRIMIR E ENTREGAR AO ALUNO. 
+Linguagem simples, direta, adaptada ao perfil do aluno.
+${usaPictograma ? 'USE PICTOGRAMAS (emojis representativos) em cada instrução e item. Ex: 👀 OLHE, ✋ PEGUE, ✔️ CONFIRA. Organize em passos visuais claros.' : 'Linguagem textual clara e objetiva, sem pictogramas.'}
+${isMontessori ? 'Atividade 100% baseada no Método Montessori com materiais concretos e controle de erro.' : ''}
 
-**SEÇÃO 3 — RECURSOS DE APOIO**
-${isMontessori ? 'Liste os materiais Montessori exatos, adaptações sensoriais, CAA se necessário, e como preparar o ambiente para esta criança.' :
-'Liste recursos concretos e acessíveis (visuais, manipulativos, CAA, tecnologias assistivas).'}
+Estrutura da folha do aluno:
+- Nome do aluno: _______________ | Data: ___/___/___
+- Título da atividade (simples e motivador)
+- Instruções claras (máx. 3-4 passos)
+- A atividade adaptada em si (espaços para resposta quando necessário)
+- Espaço de avaliação: ( ) Consegui sozinho ( ) Com ajuda ( ) Precisei de mais apoio
 
-**SEÇÃO 4 — 💡 DICAS PARA O PROFESSOR/GUIA**
-${isMontessori ? `Como apresentar (linguagem mínima, mãos que ensinam), quando observar e quando intervir, como registrar o progresso sem interromper, e o que NUNCA fazer em uma sala Montessori com esta criança.` :
-'Como apresentar, mediar, avaliar e ajustar a atividade.'}`;
+***GUIA_PROFESSOR***
+
+═══════════════════════════════════════════
+PARTE 2 — GUIA DO PROFESSOR (uso exclusivo)
+═══════════════════════════════════════════
+
+**ANÁLISE DO PERFIL**
+Como o diagnóstico (${perfis.join(', ')}) impacta esta atividade e quais barreiras foram removidas.${isMontessori ? ' Período sensível identificado.' : ''}
+
+**OBJETIVO PEDAGÓGICO**
+O que o aluno deve desenvolver com esta atividade.
+
+**MATERIAIS NECESSÁRIOS**
+${isMontessori ? 'Materiais Montessori específicos + adaptações.' : 'Lista de recursos concretos, visuais e assistivos necessários.'}
+
+**COMO APLICAR**
+Passo a passo de mediação: como apresentar, quando intervir, quando observar.
+Tempo estimado: ___ minutos.
+
+**COMO AVALIAR**
+Critérios de avaliação adaptados ao perfil. O que registrar no diário do aluno.
+
+**⚠️ ATENÇÃO**
+O que NUNCA fazer com este aluno nesta atividade.`;
 
   try {
     const r = await fetch(CLAUDE_PROXY, {
@@ -5424,7 +5464,7 @@ ${isMontessori ? `Como apresentar (linguagem mínima, mãos que ensinam), quando
     const texto = (data.content||[]).map(b=>b.text||'').join('').trim();
     if (!texto) throw new Error('Resposta vazia.');
     ultimaAdapt = texto;
-    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId };
+    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia };
     document.getElementById('result-text').textContent = texto;
     document.getElementById('result-badge').textContent = `${idade} · ${serie} · ${materia}${isMontessori ? ' · 🌱 Montessori' : ''}`;
     document.getElementById('result-card').classList.add('show');
@@ -5436,6 +5476,40 @@ ${isMontessori ? `Como apresentar (linguagem mínima, mãos que ensinam), quando
     btn.disabled = false;
     document.getElementById('gen-box').classList.remove('show');
   }
+}
+
+
+// ── DOWNLOAD PDF DA ADAPTAÇÃO ────────────────────────────────
+function downloadAdaptacaoPDF() {
+  if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
+
+  const separador = '***GUIA_PROFESSOR***';
+  const partes = ultimaAdapt.split(separador);
+  const folhaAluno = partes[0].trim();
+  const guiaProf = partes[1] ? partes[1].trim() : null;
+  const incluiGuia = dadosUltima.incluiGuia !== false;
+
+  const nomeAluno = dadosUltima.aluno || 'Aluno';
+  const materia = dadosUltima.materia || '';
+  const profNome = document.getElementById('pei-professor')?.value || '';
+
+  // Gerar PDF da folha do aluno
+  gerarPDFDocumento({
+    tipo: 'ATIVIDADE ADAPTADA',
+    titulo: 'Atividade Adaptada',
+    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv : ''),
+    aluno: nomeAluno,
+    professor: profNome,
+    conteudo: folhaAluno + (incluiGuia && guiaProf ? '
+
+
+---USO EXCLUSIVO DO PROFESSOR---
+
+' + guiaProf : ''),
+    nomeArquivo: 'Adaptacao_' + nomeAluno.replace(/\s+/g,'_') + '_' + materia.replace(/\s+/g,'_') + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g,'-'),
+    isAtividade: true,
+    guiaProf: incluiGuia ? guiaProf : null
+  });
 }
 
 async function salvarAdapt() {
@@ -5594,6 +5668,8 @@ async function gerarPEI() {
   const periodo  = document.getElementById('pei-periodo').value.trim();
   const prof     = document.getElementById('pei-professor').value.trim();
   const disc     = document.getElementById('pei-disciplina').value.trim();
+  const coordenador = document.getElementById('pei-coordenador')?.value.trim() || '';
+  const atResponsavel = document.getElementById('pei-at')?.value.trim() || '';
   // Ler chips selecionados
   const apoio    = getChipsPEI('pei-apoio-chips') || document.getElementById('pei-apoio').value.trim();
   const estratChips = getChipsPEI('pei-estrat-chips');
@@ -5631,7 +5707,9 @@ DADOS DO ALUNO:
 
 DADOS DO PEI:
 - Período: ${periodo||'Não informado'}
-- Professor responsável: ${prof}
+- Professor responsável: \${prof}
+- Coordenador(a) Pedagógico(a): ${coordenador||'Não informado'}
+- Acompanhante Terapêutico (AT): ${atResponsavel||'Não informado'}
 - Área/Disciplina: ${disc||'Não informado'}
 - Profissionais de apoio: ${apoio||'Não informado'}
 - Nível atual: ${nivel||'Não informado'}
@@ -5749,6 +5827,9 @@ function downloadPEIdireto() {
     titulo: 'Plano Educacional Individualizado',
     subtitulo: 'Documento obrigatório — Lei nº 13.146/2015, Decreto nº 12.773/2025',
     aluno: peiAluno?.nome || 'Aluno',
+    professor: document.getElementById('pei-professor')?.value || '',
+    coordenador: document.getElementById('pei-coordenador')?.value || '',
+    at: document.getElementById('pei-at')?.value || '',
     conteudo: txt,
     nomeArquivo: 'PEI_' + (peiAluno?.nome || 'aluno').replace(/\s+/g, '_') + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')
   });
@@ -5761,6 +5842,14 @@ function gerarPDFDocumento(opts) {
     const W = 210, H = 297;
     const ml = 20, mr = 20, mt = 18;
     let y = mt;
+
+    // ── MODO ATIVIDADE: layout especial para folha do aluno ──
+    if (opts.isAtividade) {
+      gerarPDFAtividade(doc, opts, W, H, ml, mr);
+      doc.save(opts.nomeArquivo + '.pdf');
+      toast('PDF gerado com sucesso!', 'success');
+      return;
+    }
 
     // ── CABEÇALHO ────────────────────────────────────────────
     const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
@@ -5790,19 +5879,21 @@ function gerarPDFDocumento(opts) {
       doc.setTextColor(30, 30, 30);
       y = 36;
     } else {
-      // Cabeçalho padrão Pluramente
+      // Cabeçalho padrão — só linha azul discreta
       doc.setFillColor(30, 58, 138);
-      doc.rect(0, 0, W, 22, 'F');
-      doc.setTextColor(255, 255, 255);
+      doc.rect(0, 0, W, 4, 'F');
+      doc.setFillColor(245, 248, 255);
+      doc.rect(0, 4, W, 18, 'F');
+      doc.setTextColor(30, 58, 138);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(13);
-      doc.text('PLURAMENTE', ml, 10);
+      doc.setFontSize(11);
+      doc.text(opts.titulo.toUpperCase(), ml, 15);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.text('Plataforma de Integração Clínica-Pedagógica', ml, 16);
-      doc.setFontSize(8);
-      doc.text(dataHoje, W - mr, 14, { align: 'right' });
-      y = 30;
+      doc.setFontSize(7.5);
+      doc.setTextColor(120, 130, 160);
+      doc.text(dataHoje, W - mr, 15, { align: 'right' });
+      doc.setTextColor(30, 30, 30);
+      y = 28;
     }
 
     // ── TÍTULO DO DOCUMENTO ──────────────────────────────────
@@ -5838,20 +5929,68 @@ function gerarPDFDocumento(opts) {
     doc.setLineWidth(0.3);
     doc.roundedRect(ml, y, W - ml - mr, 16, 2, 2, 'S');
 
-    doc.setFontSize(7.5);
+    // Linha 1: Aluno / Data / Tipo
+    doc.setFontSize(7);
     doc.setTextColor(100, 120, 160);
     doc.setFont('helvetica', 'bold');
     doc.text('ALUNO', ml + 3, y + 5);
     doc.text('DATA DE EMISSÃO', W / 2 - 10, y + 5);
-    doc.text('DOCUMENTO', W - mr - 40, y + 5);
-
+    doc.text('DOCUMENTO', W - mr - 35, y + 5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(20, 20, 60);
     doc.setFontSize(9);
-    doc.text(opts.aluno, ml + 3, y + 12);
-    doc.text(dataHoje, W / 2 - 10, y + 12);
-    doc.text(opts.tipo || 'PEI', W - mr - 40, y + 12);
-    y += 22;
+    doc.text(opts.aluno, ml + 3, y + 11);
+    doc.text(dataHoje, W / 2 - 10, y + 11);
+    doc.text(opts.tipo || 'PEI', W - mr - 35, y + 11);
+    // Linha 2: Professor / Coordenador / AT
+    if (opts.professor || opts.coordenador || opts.at) {
+      doc.setFontSize(7);
+      doc.setTextColor(100, 120, 160);
+      doc.setFont('helvetica', 'bold');
+      if (opts.professor)    doc.text('PROFESSOR', ml + 3, y + 17);
+      if (opts.coordenador)  doc.text('COORDENADOR', W / 2 - 10, y + 17);
+      if (opts.at)           doc.text('AT', W - mr - 35, y + 17);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(20, 20, 60);
+      doc.setFontSize(8.5);
+      if (opts.professor)    doc.text(opts.professor, ml + 3, y + 23);
+      if (opts.coordenador)  doc.text(opts.coordenador, W / 2 - 10, y + 23);
+      if (opts.at)           doc.text(opts.at, W - mr - 35, y + 23);
+      // Redimensionar o box
+      doc.setFillColor(245, 248, 255);
+      doc.roundedRect(ml, y, W - ml - mr, 26, 2, 2, 'F');
+      doc.setDrawColor(200, 215, 240);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(ml, y, W - ml - mr, 26, 2, 2, 'S');
+      // Redesenhar textos por cima
+      doc.setFontSize(7);
+      doc.setTextColor(100, 120, 160);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ALUNO', ml + 3, y + 5);
+      doc.text('DATA DE EMISSÃO', W / 2 - 10, y + 5);
+      doc.text('DOCUMENTO', W - mr - 35, y + 5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(20, 20, 60);
+      doc.setFontSize(9);
+      doc.text(opts.aluno, ml + 3, y + 11);
+      doc.text(dataHoje, W / 2 - 10, y + 11);
+      doc.text(opts.tipo || 'PEI', W - mr - 35, y + 11);
+      doc.setFontSize(7);
+      doc.setTextColor(100, 120, 160);
+      doc.setFont('helvetica', 'bold');
+      if (opts.professor)    doc.text('PROFESSOR', ml + 3, y + 17);
+      if (opts.coordenador)  doc.text('COORDENADOR', W / 2 - 10, y + 17);
+      if (opts.at)           doc.text('AT', W - mr - 35, y + 17);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(20, 20, 60);
+      doc.setFontSize(8.5);
+      if (opts.professor)    doc.text(opts.professor, ml + 3, y + 23);
+      if (opts.coordenador)  doc.text(opts.coordenador, W / 2 - 10, y + 23);
+      if (opts.at)           doc.text(opts.at, W - mr - 35, y + 23);
+      y += 30;
+    } else {
+      y += 22;
+    }
 
     // ── CONTEÚDO ─────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
@@ -5870,11 +6009,13 @@ function gerarPDFDocumento(opts) {
         doc.addPage();
         // Cabeçalho simplificado nas páginas seguintes
         doc.setFillColor(30, 58, 138);
-        doc.rect(0, 0, W, 10, 'F');
-        doc.setTextColor(255, 255, 255);
+        doc.rect(0, 0, W, 3, 'F');
+        doc.setFillColor(245, 248, 255);
+        doc.rect(0, 3, W, 9, 'F');
+        doc.setTextColor(30, 58, 138);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
-        doc.text('PLURAMENTE — ' + opts.titulo.toUpperCase(), ml, 7);
+        doc.text(opts.titulo.toUpperCase(), ml, 9);
         doc.setTextColor(30, 30, 30);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9.5);
@@ -5972,27 +6113,225 @@ function gerarPDFDocumento(opts) {
   }
 }
 
+
+// ── PDF DE ATIVIDADE ADAPTADA ─────────────────────────────────
+function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
+  const logoUrl = window._logoEscolaUrl || null;
+  const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+  let y = 0;
+
+  // ── CABEÇALHO DA FOLHA DO ALUNO ──────────────────────────
+  if (logoUrl) {
+    doc.setFillColor(250, 251, 255);
+    doc.rect(0, 0, W, 24, 'F');
+    doc.setDrawColor(200, 210, 230);
+    doc.setLineWidth(0.3);
+    doc.line(0, 24, W, 24);
+    try {
+      doc.addImage(logoUrl, 'PNG', ml, 3, 45, 18, '', 'FAST');
+    } catch(e) {
+      try { doc.addImage(logoUrl, 'JPEG', ml, 3, 45, 18, '', 'FAST'); } catch(e2) {}
+    }
+    if (opts.professor) {
+      doc.setFontSize(7.5);
+      doc.setTextColor(120, 130, 160);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Professor(a): ' + opts.professor, W - mr, 10, { align: 'right' });
+      doc.text(opts.subtitulo || '', W - mr, 16, { align: 'right' });
+    }
+    y = 30;
+  } else {
+    // Cabeçalho sem logo — faixa azul fina
+    doc.setFillColor(30, 58, 138);
+    doc.rect(0, 0, W, 3, 'F');
+    doc.setFillColor(245, 248, 255);
+    doc.rect(0, 3, W, 16, 'F');
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('ATIVIDADE ADAPTADA', ml, 13);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 120, 160);
+    if (opts.professor) doc.text('Prof.: ' + opts.professor + '  |  ' + (opts.subtitulo || ''), W - mr, 13, { align: 'right' });
+    y = 24;
+  }
+
+  // ── DADOS DO ALUNO (compacto) ─────────────────────────────
+  doc.setFillColor(240, 244, 255);
+  doc.roundedRect(ml, y, W - ml - mr, 10, 1.5, 1.5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(50, 70, 140);
+  doc.text('ALUNO:', ml + 3, y + 6);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(20, 20, 60);
+  doc.text(opts.aluno, ml + 18, y + 6);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(50, 70, 140);
+  doc.text('DATA:', W / 2, y + 6);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(20, 20, 60);
+  doc.text('_____ / _____ / _______', W / 2 + 14, y + 6);
+  y += 16;
+
+  // ── CONTEÚDO DA FOLHA DO ALUNO ────────────────────────────
+  // Separar folha do aluno do guia do professor
+  const sepIdx = opts.conteudo.indexOf('---USO EXCLUSIVO DO PROFESSOR---');
+  const folha = sepIdx >= 0 ? opts.conteudo.substring(0, sepIdx).trim() : opts.conteudo;
+  const guia = sepIdx >= 0 ? opts.conteudo.substring(sepIdx + 35).trim() : null;
+
+  // Remover marcadores de PARTE 1
+  const folhaLimpa = folha
+    .replace(/═+/g, '')
+    .replace(/PARTE 1.*ALUNO/gi, '')
+    .replace(/═+/g, '')
+    .trim();
+
+  const maxW = W - ml - mr;
+  const altLinha = 5.2;
+  const rodapeH = 20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(25, 25, 25);
+
+  const linhas = doc.splitTextToSize(folhaLimpa, maxW);
+
+  for (let i = 0; i < linhas.length; i++) {
+    if (y + altLinha > H - rodapeH) {
+      adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+      doc.addPage();
+      doc.setFillColor(30, 58, 138);
+      doc.rect(0, 0, W, 3, 'F');
+      y = 10;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(25, 25, 25);
+    }
+    const linha = linhas[i];
+    const linhaT = linha.trim();
+    const isH = /^#{1,3}\s/.test(linhaT) || (/^\*\*[^*]/.test(linhaT) && linhaT.endsWith('**'));
+    const isSep = /^-{3,}$/.test(linhaT) || linhaT === '';
+    if (isSep) { y += isSep ? 2 : 0; continue; }
+    const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
+    if (isH) {
+      y += 2;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(30, 58, 138);
+      doc.text(limpa, ml, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(25, 25, 25);
+      y += altLinha + 1;
+    } else {
+      doc.text(limpa || linha, ml, y);
+      y += altLinha;
+    }
+  }
+
+  adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+
+  // ── GUIA DO PROFESSOR (nova página) ──────────────────────
+  if (guia && opts.guiaProf !== null) {
+    doc.addPage();
+    y = 0;
+
+    // Cabeçalho do guia — visual diferente para destacar
+    doc.setFillColor(30, 58, 138);
+    doc.rect(0, 0, W, 18, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('GUIA DO PROFESSOR — USO EXCLUSIVO', W / 2, 8, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Orientações para aplicação da atividade adaptada', W / 2, 14, { align: 'center' });
+    y = 24;
+
+    // Dados do aluno no guia
+    doc.setFillColor(240, 244, 255);
+    doc.roundedRect(ml, y, W - ml - mr, 10, 1.5, 1.5, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(50, 70, 140);
+    doc.text('ALUNO:', ml + 3, y + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(20, 20, 60);
+    doc.text(opts.aluno, ml + 18, y + 6);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(50, 70, 140);
+    doc.text('MATÉRIA:', W / 2, y + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(20, 20, 60);
+    doc.text(opts.subtitulo || '', W / 2 + 20, y + 6);
+    y += 16;
+
+    // Conteúdo do guia
+    const guiaLimpo = guia
+      .replace(/═+/g, '')
+      .replace(/PARTE 2.*PROFESSOR.*
+/gi, '')
+      .replace(/---USO EXCLUSIVO DO PROFESSOR---/gi, '')
+      .trim();
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(25, 25, 25);
+
+    const linhasGuia = doc.splitTextToSize(guiaLimpo, maxW);
+    for (let i = 0; i < linhasGuia.length; i++) {
+      if (y + altLinha > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        doc.setFillColor(30, 58, 138);
+        doc.rect(0, 0, W, 3, 'F');
+        y = 10;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(25, 25, 25);
+      }
+      const linha = linhasGuia[i];
+      const linhaT = linha.trim();
+      const isH = /^\*\*[^*]/.test(linhaT) && linhaT.includes('**');
+      const isSep = /^-{3,}$/.test(linhaT) || linhaT === '';
+      if (isSep) { y += 2; continue; }
+      const limpa = linhaT.replace(/\*\*/g, '');
+      if (isH) {
+        y += 2;
+        doc.setFillColor(235, 241, 255);
+        doc.rect(ml, y - 3.5, W - ml - mr, 7, 'F');
+        doc.setDrawColor(30, 58, 138);
+        doc.setLineWidth(0.5);
+        doc.line(ml, y - 3.5, ml, y + 3.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(20, 40, 120);
+        doc.text(limpa, ml + 3, y + 0.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(25, 25, 25);
+        y += 9;
+      } else {
+        doc.text(limpa || linha, ml, y);
+        y += altLinha;
+      }
+    }
+    adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+  }
+}
+
 var _iconePluramento = "data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABSAFoDASIAAhEBAxEB/8QAHAAAAQUBAQEAAAAAAAAAAAAABQABAgMGBAcI/8QAORAAAQMDAgQCBwYGAwEAAAAAAQIDBAAFEQYhBxIxQRNhFDRRUnKRsSIyM3GBkggjQlNzoRXR4fD/xAAaAQEAAgMBAAAAAAAAAAAAAAAAAwUBAgQG/8QAKxEAAQQCAQIFAwUBAAAAAAAAAQACAxEhMQRBcRIiUWGBE5GhBTKxwdHx/9oADAMBAAIRAxEAPwD68qbTZXv0A71WeuO52ruSnlSEjtRFBLKB2zT+E37tTplGiKPhN+6Kbwke7WTvfEvRNnuC4E2+M+kNnDiWkKdDZ9iikEA1pLPc4F3gNz7bLZlxXRlDrSuZJ/8AfKpn8eWNoe9pAPUhQs5EUjixrgSOlro8JHuikGke6Kzs/Xuk4U1UN+8NeKlXKrkSpaUnzUBitBDkx5kZuTFebfZcGULQoFKh5GoA4E0CsxzxSEtY4Ej0Kl4Tfu1W4zgZRv5V0Y86VZUq4M0+9PJHK/jsoZpqIoKVh5vzWPrRChjnrDPxp+tFM0RUy5DMSM7JkuoaZaQVuLWcJSkDJJ8sV5pMvmuNd22SNGxIdqs76FNM3GctSXXwdittKR9kewmun+IO6RY2hzbHJrbDlykssFvm+2414g8TlHU7da6uLdnvMvh6u1aSl/8AHvocZbbCHC1zNghIbChuM5Hyq34cTY2xyOAt7qBdoAVmuu+2PtWcuR0hexpNNFkDZu8e2u6PaS0pZtM6eZtMSIxyIbAecUgFTysfaWsnrk5615noyNLkQNbv6ZCodtmXb0OMhs/y2EJ2eeSO2R2HkK22k7FKOkocTU8t653OGz4UlDzhU1zjcHl2C9sYUrOaxPDHUitL8BGbyxAMp1uY+laeiUqL6hzKx2G3+q2Pi+hMS7xEloPobs3+PyuTlCMBniHgaGuONjAFY79PRbHhPP0/etOvxrVafR48R3wHA82kl44zzE9ye4PSh1uhav07Nuq9PxLfNthmLUIKnChad+jfYZBFH+H93jydKQZMe0yo4faLy+VkFKlknmVkdSTv+ooZY9YLn6zumn4MAtOKcUtL0gnCSlISolAGe2wz8q87OGtLQ40dYWWmIQweJ9OOiBWx6f6tRpS/RdQW70phLjLjay2/HdGHGVjqlQox3rCx5cS08VX4i5bbZuFvbU4FkI8R8KwCB0yU5rcgdya3heXAg7GFacWUyNIdsEgrguSsSmR7Un60+ahdPXGPhP1FSqZdKrd9YZ+NP1ok5snNDXPWGfjT9aJkZFEXlfCCG1qWfdOIV4bTKly5rse3hwcwiRmlcqQgHoSQST/2aJz+INikcU4ehlJkCSy7zLdKf5anQ2VJR7e+c4xkCsyzqMcH37nY75EeNmkyXJVmnJQVNDxDlTLmN0lJyfyzWzestkjXa16wbjxZU9xSEPXHwxzOocTypWMbDcoweoTtXouSxn1nSyAljgRHWtY+2iN2qeEu+mGMIDgQX33z99j2VvETUDWntMT9UwnIrztvbKFoWolDn2gAhXL0UFHb2ZPtrOcGGoml+G9va1PcoEN68PuTW2JDiUAB0hQQAo77YP61mde2J/RV+nau0ey4/bUOJOoLWsc0dwLOSQDtnfJ93IPTIrO8aNOam1jqa3al01bpN5s1ygspiqZAIYwDlChn7O5znp19lTcbhxSQNhL6a42XHBwMNrpsm7yFbs4bXzCUuxRHz1XrszUj1l181pNEMNx7knxYcoqyELVnmASB93IOBnqfYdjk1Nktzcm4NPxI82IgLkPZT4igB91zuebz74x0rz66SLowrTuhbR4T+qmLchmXcSMmG2UjmAV2OAN+uMY3Na/Quk7XpZM2IGi5MeHiuSnVcypSB3wemCTkeYOTmqTkcdjQCd9PfO/a1SQyyHkPibTmhx83RuP2j1IPahi7St8zT3E7SjzjcdxKA4ppKnUAOMuAAhSSOnUHrRDhxcZNy0swZq/Elx3FxXl5+8ptRTn9Riht8vdp0dFYs9tgc9xkoK4kCIxjxFkn7RwMAZzn8qL6Bs71k01HhylBUtRU9IIO3iLPMr5Zx+lVzmVKHN1X/P7U/Gc4zhpILg3zkavFfO/juu26eux/hP1FS2qN09dj/CfqKltUitVW76wz/kT9aKULd/HZ/wAifrRPFEXlnF5tMriPw6hT0JctrlykKcQsZQt0NfywQdjvn/dE+Ieip0jRdzjaKfXark+2Ahpl8tsrHMCocv3UKIzhQAOe9GuJOlE6s096G1JMO4Rnky7fKA3YfRulX5dj5Gsg1xfjacItvEW0z7HcWxhT6I6nYsg++2tOdj1x2q947ppYojxsuj2318xcDXUZo+lLgdG1sjxJp2j8VV9NI/wvs11a4WwbVqh9EyXIYcElRVzlaHCogKUfvHlIBNZb+GG4rVoe6Wl9RWLRdn46FH3NlfXm+dBWuMrlx0q7B0fb5DrsNlxUm7SWuSJDaSVYXvutfLjCdskgb0a/hYtLjHDZ+5yysru892TlXVSdkc36kKNT8rjyxced84oucKHvnp0wu+GhAQ04FK/gGhVzf1JqyUAuTcLitpKj/S2nfA+Y/aK1fFF27psIb082ty7BwLQloAuJb3CyM/Lf2+2sBoKXO0/pXV9hhQpEm42+a6QyyvDobWOUOJ7nBAO3tq3hprixae0qWLxdpk27OuFbrHorinUdg2CRvjc9e5qu5MbjMXgXVUPasfFLyfH5kTOMzjPd4fEHEuuqN5q9m77I/qF24qg6GmXdhtm+m6NIWlOM4UFc428gCR0zXo6RtmsBpmBd9UaoY1bfYTluhQkKTaoLv4gKhhTzg7HGwH/x9BG1cMtCgrn9OYfPJmjVXsgACz3/AIpDbn65H+E/UVLA9tNc/XGPhP1FSqJWaomL8Plc91QNFUqBSCk5BGRQ2UjnbIrigXUQl+izMhsH7DnXl8j5URaAmqZMZiS34chlt5HXlcSFD5GpNOtuoC2nEOJPdJyKsG3trINZCLA8RuGMHWrttZk3afAtcRRL9viEIak5II5gOh2677dMda2tuhRrdAYgQmW2IsdtLTTSBhKEgYAFdO9L9KmfyZZI2xuPlbod1kuJFLMS9HQntbxdWR5MiHNbSUSEtEckpOMALHy+Q9laL0ZjxfFLLZc98pHN86sPkDS3qN0jnVZ1hQsgjjJLRVmz39UulOKY4Az0/OhtyvEaKC20pLz52CEnOPzPatFKoz3Au5IQP6Eb/mauxQ62IcUVPOnK1nKjRGiJz0NBbskHOw+VKlRFm5ClNqy2oo+E4rnVIfz+O7+80qVEUDIkZ/Hd/eadMh/l/Hd/eaVKiJzIkf33f3mnEiR/fd/eaVKiKSHnlHCnVkHsVGjFrSOYbD5UqVEWmjbNiraVKiL/2Q==";
 
 function adicionarRodapePagina(doc, W, H, ml, mr, numPag) {
   doc.setDrawColor(220, 220, 220);
   doc.setLineWidth(0.3);
-  doc.line(ml, H - 12, W - mr, H - 12);
-
-  // Ícone centralizado no rodapé
-  try {
-    doc.addImage(_iconePluramento, 'PNG', W/2 - 3, H - 10.5, 6, 6, '', 'FAST');
-  } catch(e) {}
-
-  // Texto centralizado
+  doc.line(ml, H - 10, W - mr, H - 10);
   doc.setFontSize(7);
   doc.setTextColor(170, 170, 170);
   doc.setFont('helvetica', 'normal');
-  doc.text('Pluramente — Plataforma de Integração Clínica-Pedagógica | pluramente.ia.br', W / 2, H - 3, { align: 'center' });
-
-  // Número de página à direita
-  doc.setFontSize(7);
-  doc.text('Pág. ' + numPag, W - mr, H - 3, { align: 'right' });
+  doc.text('Pluramente — Plataforma de Integração Clínica-Pedagógica | pluramente.ia.br', W / 2, H - 5, { align: 'center' });
+  doc.text('Pág. ' + numPag, W - mr, H - 5, { align: 'right' });
   doc.setTextColor(30, 30, 30);
 }
 
