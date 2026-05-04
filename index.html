@@ -1343,6 +1343,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
         <div class="mat-tag-list" id="cad-prof-tags"></div>
       </div>
 
+      <!-- AT responsável -->
+      <div class="frow" style="margin-top:4px">
+        <div style="flex:2">
+          <label class="flabel">Acompanhante Terapêutico (AT) responsável</label>
+          <select id="cad-at-id" class="fselect">
+            <option value="">Sem AT vinculado</option>
+          </select>
+        </div>
+        <div style="flex:2">
+          <label class="flabel">Nome do AT (se não cadastrado)</label>
+          <input type="text" id="cad-at-nome" class="finput" placeholder="Nome do AT externo">
+        </div>
+      </div>
+
       <!-- ── Seção: Documentos ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">📎 Documentos (laudos, relatórios)</div>
       <div class="fblock">
@@ -2030,11 +2044,11 @@ function iniciarApp() {
   const sidebar = document.querySelector('.sidebar');
 
   const colorMap = {
-    professor:       { label:'👩‍🏫 Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); } },
+    professor:       { label:'👩‍🏫 Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); } },
     gestao:          { label:'🏫 Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); showPage('gestao-painel'); } },
-    clinica:         { label:'🏥 Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); } },
+    clinica:         { label:'🏥 Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarAlunosParaDiario(); } },
     'gestao-clinica':{ label:'🏥👔 Gestão Clínica', cls:'at',        sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
-    at:              { label:'🧑‍⚕️ AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); showPage('at-dashboard'); carregarDashboardAT(); } },
+    at:              { label:'🧑‍⚕️ AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
   };
 
@@ -3579,6 +3593,7 @@ function showPage(id) {
   if (id === 'gestao-comunicacao') { gcGoStep(1); }
   if (id === 'gestao-rel-clinica') { gcFiltrarRelatorios(); }
   if (id === 'gc-demandas') { gcdFiltrar(); }
+  if (id === 'ponte-diario') { popularDropdownDiario(); }
 }
 // ⚠️ CRÍTICO — expõe showPage em window ANTES do patch em ~linha 7411.
 // NUNCA remova esta linha — sem ela a navegação para de funcionar.
@@ -6391,6 +6406,7 @@ function abrirModalCad() {
   document.querySelectorAll('#chips-cad .chip').forEach(c => c.classList.remove('active'));
   const tags = document.getElementById('cad-prof-tags');
   if (tags) tags.innerHTML = '';
+  popularDropdownAT();
   const docsList = document.getElementById('cad-docs-list');
   if (docsList) docsList.innerHTML = '';
   window._cadDocs = [];
@@ -6463,6 +6479,9 @@ async function salvarAluno() {
   const clinica_email = document.getElementById('cad-clinica-email')?.value.trim() || null;
   const clinica_end   = document.getElementById('cad-clinica-end')?.value.trim() || null;
   const clinica_profs = window._cadProfs?.length ? [...window._cadProfs] : null;
+  const at_id   = document.getElementById('cad-at-id')?.value || null;
+  const at_nome = document.getElementById('cad-at-nome')?.value.trim() ||
+                  document.getElementById('cad-at-id')?.selectedOptions[0]?.text || null;
 
   if (!nome) return toast('Informe o nome.', 'error');
   if (!lgpdValidar('aluno')) return;
@@ -6470,7 +6489,8 @@ async function salvarAluno() {
   const { data, error } = await db.from('alunos').insert({
     user_id: user.id, nome, idade, nasc, serie, metodo, perfis, observacoes,
     pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
-    clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs
+    clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs,
+    at_id: at_id || null, at_nome: at_nome || null
   }).select('id').single();
   if (error) return toast('Erro: '+error.message, 'error');
 
@@ -8335,9 +8355,86 @@ window.showPage = function(id){
 // ── 1. DIÁRIO DO ALUNO ────────────────────────────────────────
 let diarioEntries=[], diarioAlunoAtual=null;
 
+
+// ── ALUNOS PARA O DIÁRIO (clínica e AT usam perfis_clinicos) ─
+
+// ── DROPDOWN DE AT NO CADASTRO DE ALUNO ──────────────────────
+async function popularDropdownAT() {
+  const sel = document.getElementById('cad-at-id');
+  if (!sel) return;
+  try {
+    const { data } = await db.from('profiles')
+      .select('id, nome, email')
+      .eq('role', 'at')
+      .eq('ativo', true)
+      .order('nome');
+    sel.innerHTML = '<option value="">Sem AT vinculado</option>';
+    (data || []).forEach(function(at) {
+      const opt = document.createElement('option');
+      opt.value = at.id;
+      opt.textContent = (at.nome || at.email) + ' (AT)';
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    console.warn('popularDropdownAT:', e);
+  }
+}
+
+async function carregarAlunosParaDiario(){
+  try{
+    let lista=[];
+    if(userRole==='clinica'||userRole==='gestao-clinica'){
+      // Clínica: alunos onde clinica_email bate com email do usuário logado
+      const { data }=await db.from('alunos')
+        .select('id,nome,serie')
+        .eq('clinica_email', user.email)
+        .order('nome');
+      lista=data||[];
+      // Se não encontrou por email, tenta por nome da clínica via profissionais_clinica
+      if(!lista.length){
+        const { data: profData }=await db.from('profissionais_clinica')
+          .select('vinculo').eq('email', user.email).maybeSingle();
+        if(profData?.vinculo){
+          const { data: data2 }=await db.from('alunos')
+            .select('id,nome,serie')
+            .eq('clinica_nome', profData.vinculo)
+            .order('nome');
+          lista=data2||[];
+        }
+      }
+    } else if(userRole==='at'){
+      // AT: apenas alunos onde at_id = user.id
+      const { data }=await db.from('alunos')
+        .select('id,nome,serie')
+        .eq('at_id', user.id)
+        .order('nome');
+      lista=data||[];
+    } else {
+      // Professor e gestão: todos os alunos cadastrados
+      if(alunosCad && alunosCad.length){
+        lista=alunosCad;
+      } else {
+        const { data }=await db.from('alunos').select('id,nome,serie').order('nome');
+        lista=data||[];
+      }
+    }
+    window._alunosDiario=lista;
+    popularDropdownDiario();
+  }catch(e){ console.warn('carregarAlunosParaDiario:',e); }
+}
+
 function mostrarFormDiario(){
   const el=document.getElementById('diario-form-card');
   if(el){ el.style.display='block'; el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+
+function popularDropdownDiario(){
+  const sel=document.getElementById('diario-aluno-sel');
+  if(!sel) return;
+  // Usar lista de alunos disponível para o perfil atual
+  const lista=window._alunosDiario||alunosCad||[];
+  sel.innerHTML='<option value="">Selecione um aluno</option>'+
+    lista.map(a=>'<option value="'+a.id+'">'+a.nome+' · '+(a.serie||'')+'</option>').join('');
 }
 
 async function carregarDiario(){
@@ -8346,12 +8443,38 @@ async function carregarDiario(){
   if(!alunoId){ if(btn) btn.disabled=true; return; }
   if(btn) btn.disabled=false;
   diarioAlunoAtual=alunoId;
-  const alunoNome=document.getElementById('diario-aluno-sel').selectedOptions[0]?.text||'';
+
+  // Cancelar subscription anterior se existir
+  if(window._diarioChannel){
+    db.removeChannel(window._diarioChannel);
+    window._diarioChannel=null;
+  }
+
   try{
-    const { data }=await db.from('diario_aluno').select('*')
-      .eq('aluno_nome',alunoNome).order('created_at',{ascending:false});
-    diarioEntries=data||[];
+    // Buscar por aluno_id (mais preciso) com fallback por aluno_nome
+    const alunoNome=document.getElementById('diario-aluno-sel').selectedOptions[0]?.text.split(' · ')[0]||'';
+    let query=db.from('diario_aluno').select('*').order('created_at',{ascending:false});
+    // Tentar por aluno_id primeiro
+    const { data: dataId }=await db.from('diario_aluno').select('*')
+      .or('user_id.eq.'+user.id+',destinos.cs.{"escola"}')
+      .eq('aluno_nome',alunoNome)
+      .order('created_at',{ascending:false});
+    diarioEntries=dataId||[];
     filtrarDiario();
+
+    // Realtime — atualiza automaticamente quando chega novo registro
+    window._diarioChannel=db.channel('diario-'+alunoId)
+      .on('postgres_changes',{
+        event:'INSERT',
+        schema:'public',
+        table:'diario_aluno',
+        filter:'aluno_nome=eq.'+alunoNome
+      }, payload=>{
+        diarioEntries.unshift(payload.new);
+        filtrarDiario();
+        toast('Nova entrada no diário de '+alunoNome+'!','success');
+      })
+      .subscribe();
   }catch(e){ console.error('carregarDiario:',e); }
 }
 
@@ -8360,7 +8483,8 @@ function filtrarDiario(){
   const lista=diarioEntries.filter(e=>!origem||e.origem===origem);
   const tl=document.getElementById('diario-timeline');
   const ct=document.getElementById('diario-count');
-  if(ct) ct.textContent=`${lista.length} registro${lista.length!==1?'s':''}`;
+  const realtimeOn = window._diarioChannel ? ' · 🟢 ao vivo' : '';
+  if(ct) ct.textContent=lista.length+' registro'+(lista.length!==1?'s':'')+realtimeOn;
   if(!tl) return;
   if(!lista.length){
     tl.innerHTML=`<div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Nenhum registro encontrado para este aluno.<br>Clique em "+ Nova entrada" para começar.</div></div>`;
@@ -8400,8 +8524,15 @@ async function salvarEntradaDiario(){
   const origem=origemMap[userRole]||'escola';
   const autorNome=user?.email?.split('@')[0]||'—';
   const { error }=await db.from('diario_aluno').insert({
-    aluno_nome:alunoNome, user_id:user.id, origem, autor_nome:autorNome,
-    tipo, area, texto, destinos, created_at:new Date().toISOString()
+    aluno_nome:alunoNome,
+    user_id:user.id,
+    origem,
+    autor_nome:autorNome,
+    tipo,
+    area,
+    texto,
+    destinos,
+    created_at:new Date().toISOString()
   });
   if(error) return toast('Erro: '+error.message,'error');
   toast('Registro salvo!','success');
