@@ -1324,11 +1324,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
       <div style="font-size:11.5px;color:var(--gr400);margin-top:8px;line-height:1.5;text-align:center">Após criar a conta, confirme seu e-mail para fazer login.</div>
     </div>
 
-    <!-- Botão DEV (modo desenvolvimento) -->
-    <div style="margin-top:18px;padding-top:14px;border-top:1px dashed var(--gr200);text-align:center">
-      <button onclick="entrarDev()" style="background:none;border:1px dashed var(--gr300,#ccc);border-radius:var(--rsm);padding:6px 16px;font-size:11.5px;color:var(--gr400);font-family:inherit;cursor:pointer;transition:all .15s" onmouseover="this.style.background='var(--gr50)'" onmouseout="this.style.background='none'">
-        🛠️ Modo DEV (demonstração)
+    <!-- Acesso Developer (separado) -->
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gr100);text-align:center">
+      <button id="dev-access-toggle" onclick="toggleDevAccess()" style="background:none;border:none;font-size:11px;color:var(--gr300);cursor:pointer;letter-spacing:.04em;display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;transition:all .15s" onmouseover="this.style.color='var(--gr500)'" onmouseout="this.style.color='var(--gr300)'">
+        <svg width="11" height="11" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 9v-4m0 6h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Acesso técnico
       </button>
+      <div id="dev-access-panel" style="display:none;margin-top:10px;padding:12px 14px;background:#F8F9FB;border-radius:10px;border:1px solid var(--gr100)">
+        <div style="font-size:11px;color:var(--gr400);margin-bottom:10px;text-align:left">⚙️ Painel do Desenvolvedor — acesso restrito</div>
+        <div style="position:relative;margin-bottom:8px">
+          <input type="email" id="dev-email" placeholder="e-mail do desenvolvedor" autocomplete="off"
+            style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid var(--gr200);border-radius:8px;font-size:12.5px;font-family:inherit;outline:none"
+            onkeydown="if(event.key==='Enter')document.getElementById('dev-senha').focus()">
+        </div>
+        <div style="position:relative;margin-bottom:10px">
+          <input type="password" id="dev-senha" placeholder="senha" autocomplete="off"
+            style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid var(--gr200);border-radius:8px;font-size:12.5px;font-family:inherit;outline:none"
+            onkeydown="if(event.key==='Enter')entrarComodev()">
+        </div>
+        <button onclick="entrarComoDev()" style="width:100%;padding:8px;background:var(--p-navy);color:#fff;border:none;border-radius:8px;font-size:12.5px;font-family:inherit;cursor:pointer;font-weight:600">
+          Entrar como Developer
+        </button>
+        <div id="dev-access-err" style="font-size:11px;color:#EF4444;margin-top:6px;display:none"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -2070,6 +2088,54 @@ async function esqueceuSenha() {
    MODO DEV — acesso de demonstração sem banco de dados
    Não cria conta, não salva nada. Serve para testar o sistema.
 ───────────────────────────────────────────────────────────── */
+
+// ── ACESSO DEVELOPER ──────────────────────────────────────────
+function toggleDevAccess() {
+  const panel = document.getElementById('dev-access-panel');
+  const btn   = document.getElementById('dev-access-toggle');
+  if (!panel) return;
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  if (open) setTimeout(() => document.getElementById('dev-email')?.focus(), 50);
+}
+
+async function entrarComoDev() {
+  const email = (document.getElementById('dev-email')?.value || '').trim();
+  const senha = document.getElementById('dev-senha')?.value || '';
+  const errEl = document.getElementById('dev-access-err');
+  if (errEl) errEl.style.display = 'none';
+
+  if (!email || !senha) {
+    if (errEl) { errEl.textContent = 'Preencha e-mail e senha.'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  const btn = document.querySelector('#dev-access-panel button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Entrando…'; }
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
+    if (error) throw error;
+
+    // Verificar se é developer
+    const { data: prof } = await db.from('profiles').select('role,ativo').eq('id', data.user.id).single();
+    if (!prof || prof.role !== 'developer') {
+      await db.auth.signOut();
+      throw new Error('Acesso negado — perfil não autorizado.');
+    }
+    if (!prof.ativo) {
+      await db.auth.signOut();
+      throw new Error('Conta inativa.');
+    }
+
+    // Login bem-sucedido — deixar o fluxo normal tratar
+    // (o onAuthStateChange vai capturar e carregar o perfil)
+  } catch(e) {
+    if (errEl) { errEl.textContent = e.message || 'Erro ao entrar.'; errEl.style.display = 'block'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Entrar como Developer'; }
+  }
+}
+
 function entrarDev() {
   user = {
     id: '00000000-0000-0000-0000-000000000000', // ⚠️ MANTER formato UUID válido — prefixo 'dev-' quebra o Postgres (tipo uuid)
