@@ -761,6 +761,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
   .lp-hero-btns{flex-direction:column !important;align-items:center;}
   .lp-hero-btns .btn-hero,.lp-hero-btns .btn-hero-sec{width:80% !important;}
 }
+
+/* ── FLUXO B ──────────────────────────────────────────────── */
+.chip-check{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1.5px solid var(--gr200);border-radius:20px;font-size:12px;cursor:pointer;transition:all .15s;user-select:none}
+.chip-check:hover{border-color:var(--p-blue);color:var(--p-blue)}
+.chip-check input[type=checkbox]{display:none}
+.chip-check:has(input:checked){background:var(--blue-light);border-color:var(--p-blue);color:var(--p-blue);font-weight:600}
+.sol-card{background:#fff;border:1.5px solid var(--gr100);border-radius:12px;padding:16px;transition:box-shadow .15s}
+.sol-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.sol-badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.sol-badge.pendente{background:#FEF9C3;color:#92400E}
+.sol-badge.visualizado{background:#DBEAFE;color:#1D4ED8}
+.sol-badge.respondido{background:#D1FAE5;color:#065F46}
+.sol-badge.revogado{background:#FEE2E2;color:#991B1B}
+.sol-badge.expirado{background:#F3F4F6;color:#6B7280}
+.sol-filtro.active{background:var(--p-blue);color:#fff;border-color:var(--p-blue)}
+.btn-urgencia{transition:all .15s}
 </style>
 </head>
 <body>
@@ -1324,29 +1340,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
       <div style="font-size:11.5px;color:var(--gr400);margin-top:8px;line-height:1.5;text-align:center">Após criar a conta, confirme seu e-mail para fazer login.</div>
     </div>
 
-    <!-- Acesso Developer (separado) -->
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gr100);text-align:center">
-      <button id="dev-access-toggle" onclick="toggleDevAccess()" style="background:none;border:none;font-size:11px;color:var(--gr300);cursor:pointer;letter-spacing:.04em;display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;transition:all .15s" onmouseover="this.style.color='var(--gr500)'" onmouseout="this.style.color='var(--gr300)'">
-        <svg width="11" height="11" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 9v-4m0 6h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        Acesso técnico
+    <!-- Botão DEV (modo desenvolvimento) -->
+    <div style="margin-top:18px;padding-top:14px;border-top:1px dashed var(--gr200);text-align:center">
+      <button onclick="entrarDev()" style="background:none;border:1px dashed var(--gr300,#ccc);border-radius:var(--rsm);padding:6px 16px;font-size:11.5px;color:var(--gr400);font-family:inherit;cursor:pointer;transition:all .15s" onmouseover="this.style.background='var(--gr50)'" onmouseout="this.style.background='none'">
+        🛠️ Modo DEV (demonstração)
       </button>
-      <div id="dev-access-panel" style="display:none;margin-top:10px;padding:12px 14px;background:#F8F9FB;border-radius:10px;border:1px solid var(--gr100)">
-        <div style="font-size:11px;color:var(--gr400);margin-bottom:10px;text-align:left">⚙️ Painel do Desenvolvedor — acesso restrito</div>
-        <div style="position:relative;margin-bottom:8px">
-          <input type="email" id="dev-email" placeholder="e-mail do desenvolvedor" autocomplete="off"
-            style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid var(--gr200);border-radius:8px;font-size:12.5px;font-family:inherit;outline:none"
-            onkeydown="if(event.key==='Enter')document.getElementById('dev-senha').focus()">
-        </div>
-        <div style="position:relative;margin-bottom:10px">
-          <input type="password" id="dev-senha" placeholder="senha" autocomplete="off"
-            style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid var(--gr200);border-radius:8px;font-size:12.5px;font-family:inherit;outline:none"
-            onkeydown="if(event.key==='Enter')entrarComodev()">
-        </div>
-        <button onclick="entrarComoDev()" style="width:100%;padding:8px;background:var(--p-navy);color:#fff;border:none;border-radius:8px;font-size:12.5px;font-family:inherit;cursor:pointer;font-weight:600">
-          Entrar como Developer
-        </button>
-        <div id="dev-access-err" style="font-size:11px;color:#EF4444;margin-top:6px;display:none"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -1385,6 +1383,244 @@ body{font-family:'DM Sans',sans-serif;background:var(--gr50);color:var(--gr800);
 </div>
 
 <div id="sidebar-overlay" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9;backdrop-filter:blur(2px)"></div>
+
+
+<!-- ══ MODAL: Nova Solicitação Externa ══ -->
+<div id="modal-nova-solicitacao" class="overlay" style="display:none" onclick="if(event.target===this)fecharModal('modal-nova-solicitacao')">
+  <div class="modal lg" style="max-width:600px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="font-size:18px;font-weight:700;margin:0">🔗 Nova Solicitação Externa</h2>
+      <button onclick="fecharModal('modal-nova-solicitacao')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gr400)">×</button>
+    </div>
+
+    <!-- Tipo -->
+    <div class="fg" style="margin-bottom:12px">
+      <label>Tipo de solicitação</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+        <button id="sol-tipo-esc" onclick="setSolTipo('escola_para_clinica')" class="btn-sm active" style="padding:10px;border-radius:8px;font-size:12.5px">🏫 Escola → Clínica</button>
+        <button id="sol-tipo-cli" onclick="setSolTipo('clinica_para_escola')" class="btn-sm" style="padding:10px;border-radius:8px;font-size:12.5px">🏥 Clínica → Escola</button>
+      </div>
+      <input type="hidden" id="sol-tipo" value="escola_para_clinica">
+    </div>
+
+    <!-- Aluno -->
+    <div class="fg" style="margin-bottom:12px">
+      <label>Aluno</label>
+      <select id="sol-aluno-id" style="width:100%">
+        <option value="">Selecionar aluno...</option>
+      </select>
+    </div>
+
+    <!-- Parceiro -->
+    <div class="frow" style="margin-bottom:12px">
+      <div class="fg"><label>Nome do parceiro / instituição</label><input type="text" id="sol-parceiro-nome" placeholder="Ex: Dra. Ana Silva / Clínica Espaço"></div>
+    </div>
+    <div class="frow" style="margin-bottom:12px">
+      <div class="fg"><label>E-mail (opcional)</label><input type="email" id="sol-parceiro-email" placeholder="parceiro@email.com"></div>
+      <div class="fg"><label>WhatsApp (opcional)</label><input type="text" id="sol-parceiro-whatsapp" placeholder="(11) 99999-9999"></div>
+    </div>
+
+    <!-- Áreas de desenvolvimento -->
+    <div class="fg" style="margin-bottom:12px">
+      <label>Áreas de desenvolvimento envolvidas</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="sol-areas-wrap">
+        <label class="chip-check"><input type="checkbox" value="comunicacao"> Comunicação</label>
+        <label class="chip-check"><input type="checkbox" value="motor"> Motor</label>
+        <label class="chip-check"><input type="checkbox" value="cognitivo"> Cognitivo</label>
+        <label class="chip-check"><input type="checkbox" value="social"> Social/Emocional</label>
+        <label class="chip-check"><input type="checkbox" value="pedagogico"> Pedagógico</label>
+        <label class="chip-check"><input type="checkbox" value="comportamental"> Comportamental</label>
+      </div>
+    </div>
+
+    <!-- Motivo -->
+    <div class="fg" style="margin-bottom:12px">
+      <label>Motivo da solicitação</label>
+      <textarea id="sol-motivo" rows="3" placeholder="Descreva o motivo e o contexto desta solicitação..." style="width:100%;box-sizing:border-box;resize:vertical"></textarea>
+    </div>
+
+    <!-- Perguntas -->
+    <div class="fg" style="margin-bottom:12px">
+      <label>Perguntas para o parceiro (até 3)</label>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+        <select class="sol-pergunta-sel" onchange="atualizarPerguntaSelecionada(0,this)">
+          <option value="">— Selecionar pergunta —</option>
+          <option>Como está a comunicação no ambiente terapêutico/escolar?</option>
+          <option>Há estratégias que funcionam bem e podem ser replicadas?</option>
+          <option>Existem gatilhos ou situações que devem ser evitados?</option>
+          <option>Qual o foco terapêutico/pedagógico atual?</option>
+          <option>Há medicação que impacta o comportamento em determinados horários?</option>
+          <option>Como o aluno responde a rotinas e mudanças?</option>
+          <option>Quais habilidades estão sendo trabalhadas atualmente?</option>
+        </select>
+        <select class="sol-pergunta-sel" onchange="atualizarPerguntaSelecionada(1,this)">
+          <option value="">— Selecionar pergunta —</option>
+          <option>Como está a comunicação no ambiente terapêutico/escolar?</option>
+          <option>Há estratégias que funcionam bem e podem ser replicadas?</option>
+          <option>Existem gatilhos ou situações que devem ser evitados?</option>
+          <option>Qual o foco terapêutico/pedagógico atual?</option>
+          <option>Há medicação que impacta o comportamento em determinados horários?</option>
+          <option>Como o aluno responde a rotinas e mudanças?</option>
+          <option>Quais habilidades estão sendo trabalhadas atualmente?</option>
+        </select>
+        <select class="sol-pergunta-sel" onchange="atualizarPerguntaSelecionada(2,this)">
+          <option value="">— Selecionar pergunta —</option>
+          <option>Como está a comunicação no ambiente terapêutico/escolar?</option>
+          <option>Há estratégias que funcionam bem e podem ser replicadas?</option>
+          <option>Existem gatilhos ou situações que devem ser evitados?</option>
+          <option>Qual o foco terapêutico/pedagógico atual?</option>
+          <option>Há medicação que impacta o comportamento em determinados horários?</option>
+          <option>Como o aluno responde a rotinas e mudanças?</option>
+          <option>Quais habilidades estão sendo trabalhadas atualmente?</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Segurança -->
+    <div class="frow" style="margin-bottom:12px">
+      <div class="fg">
+        <label>Expiração do link</label>
+        <select id="sol-expiracao">
+          <option value="7">7 dias</option>
+          <option value="15" selected>15 dias</option>
+          <option value="30">30 dias</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Senha de acesso (opcional, 4 dígitos)</label>
+        <input type="text" id="sol-senha" placeholder="1234" maxlength="4" pattern="[0-9]{4}" style="letter-spacing:6px;font-size:18px;text-align:center">
+      </div>
+    </div>
+
+    <div id="sol-err" class="err-msg" style="display:none"></div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn-sm" onclick="fecharModal('modal-nova-solicitacao')">Cancelar</button>
+      <button class="btn-p" onclick="criarSolicitacao()" id="btn-criar-sol">Gerar Link Seguro</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Link Gerado ══ -->
+<div id="modal-link-gerado" class="overlay" style="display:none" onclick="if(event.target===this)fecharModal('modal-link-gerado')">
+  <div class="modal sm" style="max-width:480px;text-align:center">
+    <div style="font-size:36px;margin-bottom:8px">🎉</div>
+    <h2 style="font-size:17px;font-weight:700;margin-bottom:4px">Link gerado com sucesso!</h2>
+    <p style="font-size:13px;color:var(--gr400);margin-bottom:16px">Compartilhe com o parceiro pelo WhatsApp ou e-mail.</p>
+
+    <div style="background:var(--gr50);border:1px solid var(--gr200);border-radius:8px;padding:10px 12px;margin-bottom:16px;word-break:break-all;font-size:12px;color:var(--gr600);text-align:left" id="link-gerado-url"></div>
+
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn-p" style="flex:1;background:#25D366" onclick="enviarWhatsApp()">📱 WhatsApp</button>
+      <button class="btn-p" style="flex:1;background:#EA4335" onclick="enviarEmail()">📧 E-mail</button>
+    </div>
+    <button class="btn-sm" style="width:100%" onclick="copiarLink()">📋 Copiar link</button>
+    <button onclick="fecharModal('modal-link-gerado')" style="margin-top:10px;background:none;border:none;font-size:12px;color:var(--gr400);cursor:pointer">Fechar</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: Ver Resposta ══ -->
+<div id="modal-ver-resposta" class="overlay" style="display:none" onclick="if(event.target===this)fecharModal('modal-ver-resposta')">
+  <div class="modal lg" style="max-width:600px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="font-size:18px;font-weight:700;margin:0">📬 Devolutiva Recebida</h2>
+      <button onclick="fecharModal('modal-ver-resposta')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gr400)">×</button>
+    </div>
+    <div id="modal-resposta-body"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn-sm" onclick="importarRespostaParaDiario()">📖 Importar pro Diário</button>
+      <button class="btn-p" onclick="exportarRespostaPDF()">⬇ Exportar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PÁGINA PÚBLICA — Resposta do Parceiro ══ -->
+<div id="page-publica-solicitacao" style="display:none;min-height:100vh;background:#F8FAFC;font-family:inherit">
+  <div style="max-width:640px;margin:0 auto;padding:32px 16px">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:32px;margin-bottom:6px">🏫↔🏥</div>
+      <h1 style="font-size:20px;font-weight:700;color:#1E293B;margin:0">Solicitação de Devolutiva</h1>
+      <p style="font-size:13px;color:#64748B;margin-top:4px">Plataforma Pluramente — Comunicação Segura</p>
+    </div>
+
+    <!-- Senha (se necessário) -->
+    <div id="pub-senha-gate" style="display:none;background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:20px;text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">🔐</div>
+      <p style="font-size:14px;color:#374151;margin-bottom:14px">Este link está protegido por senha.</p>
+      <input type="password" id="pub-senha-input" maxlength="4" placeholder="••••" style="text-align:center;letter-spacing:8px;font-size:22px;padding:10px;border:1.5px solid #E2E8F0;border-radius:8px;width:120px;outline:none">
+      <br><button class="btn-p" onclick="verificarSenhaPublica()" style="margin-top:12px">Acessar</button>
+      <div id="pub-senha-err" style="font-size:12px;color:#EF4444;margin-top:8px;display:none">Senha incorreta.</div>
+    </div>
+
+    <!-- Conteúdo -->
+    <div id="pub-conteudo" style="display:none">
+      <!-- Info aluno anonimizada -->
+      <div style="background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px">
+        <div style="font-size:11px;color:#94A3B8;font-weight:600;letter-spacing:.06em;margin-bottom:10px">ALUNO / PACIENTE</div>
+        <div style="font-size:20px;font-weight:700;color:#1E293B" id="pub-aluno-nome"></div>
+        <div style="font-size:13px;color:#64748B;margin-top:4px" id="pub-aluno-info"></div>
+        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px" id="pub-areas"></div>
+      </div>
+
+      <!-- Motivo -->
+      <div style="background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px">
+        <div style="font-size:11px;color:#94A3B8;font-weight:600;letter-spacing:.06em;margin-bottom:8px">MOTIVO DA SOLICITAÇÃO</div>
+        <p style="font-size:14px;color:#374151;margin:0;line-height:1.6" id="pub-motivo"></p>
+      </div>
+
+      <!-- Perguntas -->
+      <div id="pub-perguntas-wrap" style="background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px;display:none">
+        <div style="font-size:11px;color:#94A3B8;font-weight:600;letter-spacing:.06em;margin-bottom:10px">PERGUNTAS</div>
+        <div id="pub-perguntas-lista"></div>
+      </div>
+
+      <!-- Resposta (se já respondido) -->
+      <div id="pub-ja-respondido" style="display:none;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:14px;padding:20px 24px;margin-bottom:16px;text-align:center">
+        <div style="font-size:24px;margin-bottom:6px">✅</div>
+        <p style="font-size:14px;color:#166534;font-weight:600;margin:0">Devolutiva já enviada. Obrigado pela colaboração!</p>
+      </div>
+
+      <!-- Formulário de resposta -->
+      <div id="pub-form-resposta" style="background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px">
+        <div style="font-size:11px;color:#94A3B8;font-weight:600;letter-spacing:.06em;margin-bottom:14px">SUA DEVOLUTIVA</div>
+
+        <div style="margin-bottom:14px">
+          <label style="font-size:12.5px;font-weight:600;color:#374151;display:block;margin-bottom:6px">1. Observações clínicas / pedagógicas</label>
+          <textarea id="pub-resp-obs" rows="4" placeholder="Descreva suas observações sobre o aluno..." style="width:100%;box-sizing:border-box;padding:10px;border:1.5px solid #E2E8F0;border-radius:8px;font-family:inherit;font-size:13.5px;resize:vertical;outline:none"></textarea>
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="font-size:12.5px;font-weight:600;color:#374151;display:block;margin-bottom:6px">2. Estratégias recomendadas</label>
+          <textarea id="pub-resp-estrategias" rows="4" placeholder="Liste estratégias que podem ser aplicadas..." style="width:100%;box-sizing:border-box;padding:10px;border:1.5px solid #E2E8F0;border-radius:8px;font-family:inherit;font-size:13.5px;resize:vertical;outline:none"></textarea>
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="font-size:12.5px;font-weight:600;color:#374151;display:block;margin-bottom:6px">3. Próximos passos sugeridos</label>
+          <textarea id="pub-resp-proximos" rows="3" placeholder="Sugestões de encaminhamentos ou ações..." style="width:100%;box-sizing:border-box;padding:10px;border:1.5px solid #E2E8F0;border-radius:8px;font-family:inherit;font-size:13.5px;resize:vertical;outline:none"></textarea>
+        </div>
+
+        <!-- Urgência -->
+        <div style="margin-bottom:16px">
+          <label style="font-size:12.5px;font-weight:600;color:#374151;display:block;margin-bottom:8px">Nível de urgência</label>
+          <div style="display:flex;gap:8px">
+            <button class="btn-urgencia active" data-u="rotina" onclick="setUrgencia(this)" style="flex:1;padding:10px 6px;border-radius:8px;font-size:12px;border:2px solid #22C55E;background:#F0FDF4;color:#166534;font-weight:600;cursor:pointer">🟢 Rotina</button>
+            <button class="btn-urgencia" data-u="atencao" onclick="setUrgencia(this)" style="flex:1;padding:10px 6px;border-radius:8px;font-size:12px;border:2px solid #E2E8F0;background:#fff;color:#92400E;font-weight:600;cursor:pointer">🟡 Atenção</button>
+            <button class="btn-urgencia" data-u="urgente" onclick="setUrgencia(this)" style="flex:1;padding:10px 6px;border-radius:8px;font-size:12px;border:2px solid #E2E8F0;background:#fff;color:#991B1B;font-weight:600;cursor:pointer">🔴 Urgente</button>
+          </div>
+        </div>
+
+        <!-- LGPD -->
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#64748B;cursor:pointer;margin-bottom:14px">
+          <input type="checkbox" id="pub-lgpd-check" style="margin-top:2px;flex-shrink:0">
+          <span>Declaro que as informações fornecidas são verdadeiras e que estou ciente das responsabilidades previstas na <strong>LGPD (Lei 13.709/2018)</strong>. Os dados compartilhados serão utilizados exclusivamente para fins educacionais e terapêuticos.</span>
+        </label>
+
+        <div id="pub-resp-err" style="font-size:12px;color:#EF4444;margin-bottom:10px;display:none"></div>
+        <button class="btn-p" style="width:100%;padding:14px;font-size:15px" onclick="enviarRespostaPublica()">Enviar Devolutiva</button>
+      </div>
+
+      <p style="font-size:11px;color:#94A3B8;text-align:center">Este link é pessoal e intransferível. Os dados são protegidos conforme a LGPD.</p>
+    </div>
+  </div>
+</div>
 
 <!-- ══ MODAL: Detalhe de Adaptação ══ -->
 <div class="overlay" id="modal-adapt" onclick="fecharModal('modal-adapt',event)">
@@ -2088,54 +2324,6 @@ async function esqueceuSenha() {
    MODO DEV — acesso de demonstração sem banco de dados
    Não cria conta, não salva nada. Serve para testar o sistema.
 ───────────────────────────────────────────────────────────── */
-
-// ── ACESSO DEVELOPER ──────────────────────────────────────────
-function toggleDevAccess() {
-  const panel = document.getElementById('dev-access-panel');
-  const btn   = document.getElementById('dev-access-toggle');
-  if (!panel) return;
-  const open = panel.style.display === 'none';
-  panel.style.display = open ? 'block' : 'none';
-  if (open) setTimeout(() => document.getElementById('dev-email')?.focus(), 50);
-}
-
-async function entrarComoDev() {
-  const email = (document.getElementById('dev-email')?.value || '').trim();
-  const senha = document.getElementById('dev-senha')?.value || '';
-  const errEl = document.getElementById('dev-access-err');
-  if (errEl) errEl.style.display = 'none';
-
-  if (!email || !senha) {
-    if (errEl) { errEl.textContent = 'Preencha e-mail e senha.'; errEl.style.display = 'block'; }
-    return;
-  }
-
-  const btn = document.querySelector('#dev-access-panel button');
-  if (btn) { btn.disabled = true; btn.textContent = 'Entrando…'; }
-
-  try {
-    const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
-    if (error) throw error;
-
-    // Verificar se é developer
-    const { data: prof } = await db.from('profiles').select('role,ativo').eq('id', data.user.id).single();
-    if (!prof || prof.role !== 'developer') {
-      await db.auth.signOut();
-      throw new Error('Acesso negado — perfil não autorizado.');
-    }
-    if (!prof.ativo) {
-      await db.auth.signOut();
-      throw new Error('Conta inativa.');
-    }
-
-    // Login bem-sucedido — deixar o fluxo normal tratar
-    // (o onAuthStateChange vai capturar e carregar o perfil)
-  } catch(e) {
-    if (errEl) { errEl.textContent = e.message || 'Erro ao entrar.'; errEl.style.display = 'block'; }
-    if (btn) { btn.disabled = false; btn.textContent = 'Entrar como Developer'; }
-  }
-}
-
 function entrarDev() {
   user = {
     id: '00000000-0000-0000-0000-000000000000', // ⚠️ MANTER formato UUID válido — prefixo 'dev-' quebra o Postgres (tipo uuid)
@@ -2338,6 +2526,9 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-gestao-comunicacao" onclick="showPage('gestao-comunicacao')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 9h9M3 13h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="15" cy="13" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M13.5 13h3M15 11.5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Comunicação c/ clínicas
     </div>
+    <div class="nav-item gestao-item" id="nav-gestao-solicitacoes" onclick="showPage('gestao-solicitacoes');carregarSolicitacoes('gestao')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M14 15h2M15 14v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>🔗 Solicitações Externas
+    </div>
     <div class="nav-item gestao-item" id="nav-gestao-rel-clinica" onclick="showPage('gestao-rel-clinica')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="15.5" cy="4.5" r="2.5" fill="#059669"/></svg>Relatórios da clínica
     </div>
@@ -2379,6 +2570,9 @@ function renderNavClinica() {
     <div class="nav-section">Relatórios</div>
     <div class="nav-item clinic-item" id="nav-clinica-relatorios" onclick="showPage('clinica-relatorios')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M8 4v12M4 8h4M4 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios da Escola
+    </div>
+    <div class="nav-item clinic-item" id="nav-clinica-solicitacoes" onclick="showPage('clinica-solicitacoes');carregarSolicitacoes('clinica')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M14 15h2M15 14v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>🔗 Solicitações Externas
     </div>
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item clinic-item" id="nav-colaboracao-cli" onclick="abrirColaboracao()" style="font-weight:600">
@@ -3787,6 +3981,530 @@ function closeSidebarOnMobile() {
   }
 }
 
+
+
+// ══════════════════════════════════════════════════════════════
+// FLUXO B — Solicitações Externas
+// ══════════════════════════════════════════════════════════════
+
+let _solicitacaoAtual = null;
+let _solLinkGerado = null;
+let _solParceiro = {};
+let _solPerguntas = ['','',''];
+let _solTipoAtual = 'escola_para_clinica';
+let _solUrgencia = 'rotina';
+
+// ── Anonimizar nome ───────────────────────────────────────────
+function anonimizarNome(nomeCompleto) {
+  if (!nomeCompleto) return '—';
+  const partes = nomeCompleto.trim().split(/\s+/);
+  if (partes.length === 1) return partes[0];
+  const primeiro = partes[0];
+  const iniciais = partes.slice(1).map(p => p[0].toUpperCase() + '.').join(' ');
+  return `${primeiro} ${iniciais}`;
+}
+
+// ── Abrir modal nova solicitação ──────────────────────────────
+async function abrirModalNovaSolicitacao(role) {
+  _solTipoAtual = role === 'clinica' ? 'clinica_para_escola' : 'escola_para_clinica';
+  _solPerguntas = ['','',''];
+
+  // Popular select de alunos
+  const sel = document.getElementById('sol-aluno-id');
+  if (sel) {
+    try {
+      const { data } = await db.from('alunos').select('id,nome').order('nome');
+      sel.innerHTML = '<option value="">Selecionar aluno...</option>' +
+        (data||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+    } catch(e) {}
+  }
+
+  // Atualizar botões de tipo
+  setSolTipo(_solTipoAtual);
+
+  // Limpar campos
+  ['sol-parceiro-nome','sol-parceiro-email','sol-parceiro-whatsapp','sol-motivo','sol-senha'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.querySelectorAll('.sol-pergunta-sel').forEach(s => s.selectedIndex = 0);
+  document.querySelectorAll('#sol-areas-wrap input[type=checkbox]').forEach(c => c.checked = false);
+  document.getElementById('sol-expiracao').value = '15';
+
+  abrirModal('modal-nova-solicitacao');
+}
+
+function setSolTipo(tipo) {
+  _solTipoAtual = tipo;
+  const btnEsc = document.getElementById('sol-tipo-esc');
+  const btnCli = document.getElementById('sol-tipo-cli');
+  const inp = document.getElementById('sol-tipo');
+  if (btnEsc) btnEsc.classList.toggle('active', tipo === 'escola_para_clinica');
+  if (btnCli) btnCli.classList.toggle('active', tipo === 'clinica_para_escola');
+  if (inp) inp.value = tipo;
+}
+
+function atualizarPerguntaSelecionada(idx, sel) {
+  _solPerguntas[idx] = sel.value;
+}
+
+// ── Criar solicitação ─────────────────────────────────────────
+async function criarSolicitacao() {
+  const errEl = document.getElementById('sol-err');
+  const btnEl = document.getElementById('btn-criar-sol');
+  if (errEl) errEl.style.display = 'none';
+
+  const alunoId     = document.getElementById('sol-aluno-id')?.value;
+  const parceiroNome= document.getElementById('sol-parceiro-nome')?.value?.trim();
+  const email       = document.getElementById('sol-parceiro-email')?.value?.trim();
+  const whatsapp    = document.getElementById('sol-parceiro-whatsapp')?.value?.trim();
+  const motivo      = document.getElementById('sol-motivo')?.value?.trim();
+  const dias        = parseInt(document.getElementById('sol-expiracao')?.value || '15');
+  const senhaRaw    = document.getElementById('sol-senha')?.value?.trim();
+
+  if (!alunoId)      { mostrarErroSol('Selecione um aluno.'); return; }
+  if (!parceiroNome) { mostrarErroSol('Informe o nome do parceiro.'); return; }
+  if (!email && !whatsapp) { mostrarErroSol('Informe e-mail ou WhatsApp.'); return; }
+  if (!motivo)       { mostrarErroSol('Descreva o motivo da solicitação.'); return; }
+  if (senhaRaw && !/^\d{4}$/.test(senhaRaw)) { mostrarErroSol('Senha deve ter exatamente 4 dígitos.'); return; }
+
+  const areas = Array.from(document.querySelectorAll('#sol-areas-wrap input:checked')).map(c => c.value);
+  const perguntas = _solPerguntas.filter(p => p.trim());
+  const expiraEm = new Date(Date.now() + dias * 86400000).toISOString();
+
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Gerando...'; }
+
+  try {
+    const { data, error } = await db.from('solicitacoes_externas').insert({
+      criado_por:           user.id,
+      aluno_id:             alunoId,
+      tipo:                 _solTipoAtual,
+      parceiro_nome:        parceiroNome,
+      parceiro_email:       email || null,
+      parceiro_whatsapp:    whatsapp || null,
+      motivo,
+      perguntas:            perguntas,
+      areas_desenvolvimento:areas,
+      senha_acesso:         senhaRaw || null,
+      expira_em:            expiraEm,
+      max_acessos:          3,
+      status:               'pendente'
+    }).select().single();
+
+    if (error) throw error;
+
+    _solLinkGerado = data;
+    _solParceiro = { nome: parceiroNome, email, whatsapp };
+
+    fecharModal('modal-nova-solicitacao');
+    mostrarLinkGerado(data);
+
+    // Registrar auditoria
+    registrarAuditoria('gerou_solicitacao_externa', 'solicitacoes_externas', data.id);
+  } catch(e) {
+    mostrarErroSol(e.message || 'Erro ao gerar link.');
+  } finally {
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Gerar Link Seguro'; }
+  }
+}
+
+function mostrarErroSol(msg) {
+  const el = document.getElementById('sol-err');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+function mostrarLinkGerado(sol) {
+  const token = sol.token;
+  const baseUrl = window.location.origin + window.location.pathname;
+  const link = `${baseUrl}?s=${token}`;
+  const urlEl = document.getElementById('link-gerado-url');
+  if (urlEl) urlEl.textContent = link;
+  _solLinkGerado = { ...sol, link };
+  abrirModal('modal-link-gerado');
+}
+
+function enviarWhatsApp() {
+  if (!_solLinkGerado) return;
+  const { link, parceiro_nome, expira_em } = _solLinkGerado;
+  const dias = Math.round((new Date(expira_em) - Date.now()) / 86400000);
+  const texto = encodeURIComponent(
+    `Olá ${parceiro_nome},\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse o link seguro abaixo para visualizar a solicitação e enviar sua devolutiva:\n\n🔗 ${link}\n\n⚠️ Este link é pessoal, intransferível e expira em ${dias} dias.`
+  );
+  const num = (_solParceiro.whatsapp || '').replace(/\D/g,'');
+  window.open(`https://wa.me/${num ? '55'+num : ''}?text=${texto}`, '_blank');
+}
+
+function enviarEmail() {
+  if (!_solLinkGerado) return;
+  const { link, parceiro_nome, expira_em } = _solLinkGerado;
+  const dias = Math.round((new Date(expira_em) - Date.now()) / 86400000);
+  const assunto = encodeURIComponent('Solicitação de Devolutiva — Pluramente');
+  const corpo = encodeURIComponent(
+    `Olá ${parceiro_nome},\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse: ${link}\n\nEste link expira em ${dias} dias.\n\nPlataforma Pluramente`
+  );
+  window.open(`mailto:${_solParceiro.email || ''}?subject=${assunto}&body=${corpo}`);
+}
+
+function copiarLink() {
+  if (!_solLinkGerado?.link) return;
+  navigator.clipboard.writeText(_solLinkGerado.link).then(() => {
+    mostrarToast('Link copiado!');
+  });
+}
+
+// ── Carregar lista de solicitações ────────────────────────────
+async function carregarSolicitacoes(role) {
+  const listaId = `${role}-sol-lista`;
+  const listaEl = document.getElementById(listaId);
+  if (!listaEl) return;
+  listaEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gr300)">Carregando...</div>';
+
+  try {
+    const { data, error } = await db.from('solicitacoes_externas')
+      .select('*, alunos(nome, diagnostico, data_nascimento, serie)')
+      .eq('criado_por', user.id)
+      .order('criado_em', { ascending: false });
+
+    if (error) throw error;
+    if (!data?.length) {
+      listaEl.innerHTML = '<div class="empty"><div class="empty-icon">🔗</div><div class="empty-text">Nenhuma solicitação ainda.</div></div>';
+      return;
+    }
+
+    listaEl.innerHTML = data.map(s => renderCardSolicitacao(s)).join('');
+    listaEl._data = data;
+  } catch(e) {
+    listaEl.innerHTML = `<div class="err-msg">${e.message}</div>`;
+  }
+}
+
+function renderCardSolicitacao(s) {
+  const aluno = s.alunos || {};
+  const nomeAnon = anonimizarNome(aluno.nome);
+  const statusLabel = { pendente:'🟡 Pendente', visualizado:'🔵 Visualizado', respondido:'🟢 Respondido', revogado:'⛔ Revogado' }[s.status] || s.status;
+  const expirou = new Date(s.expira_em) < new Date();
+  const badge = expirou && s.status === 'pendente' ? '<span class="sol-badge expirado">⏰ Expirado</span>' : `<span class="sol-badge ${s.status}">${statusLabel}</span>`;
+  const tipo = s.tipo === 'escola_para_clinica' ? '🏫→🏥' : '🏥→🏫';
+  const criado = new Date(s.criado_em).toLocaleDateString('pt-BR');
+
+  return `<div class="sol-card" data-status="${s.status}" data-id="${s.id}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div>
+        <div style="font-weight:700;font-size:15px">${nomeAnon} <span style="font-size:13px;color:var(--gr400)">${tipo}</span></div>
+        <div style="font-size:12px;color:var(--gr400);margin-top:2px">Para: ${s.parceiro_nome} · ${criado}</div>
+      </div>
+      ${badge}
+    </div>
+    <p style="font-size:13px;color:var(--gr600);margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${s.motivo||''}</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn-sm" onclick="verLinkSolicitacao('${s.id}','${s.token}')">🔗 Ver link</button>
+      ${s.status==='respondido' ? `<button class="btn-sm" onclick="verRespostaSolicitacao('${s.id}')">📬 Ver resposta</button>` : ''}
+      ${s.status!=='revogado' && s.status!=='respondido' ? `<button class="btn-sm" style="color:#EF4444;border-color:#EF4444" onclick="revogarSolicitacao('${s.id}')">⛔ Revogar</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function filtrarSolicitacoes(btn, status) {
+  document.querySelectorAll('.sol-filtro').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('.sol-card');
+  cards.forEach(c => {
+    c.style.display = (status === 'todos' || c.dataset.status === status) ? '' : 'none';
+  });
+}
+
+function verLinkSolicitacao(id, token) {
+  const baseUrl = window.location.origin + window.location.pathname;
+  const link = `${baseUrl}?s=${token}`;
+  const urlEl = document.getElementById('link-gerado-url');
+  if (urlEl) urlEl.textContent = link;
+  _solLinkGerado = { token, link };
+  abrirModal('modal-link-gerado');
+}
+
+async function revogarSolicitacao(id) {
+  if (!confirm('Revogar este link? O parceiro não conseguirá mais acessá-lo.')) return;
+  try {
+    await db.from('solicitacoes_externas').update({
+      status: 'revogado',
+      revogado_em: new Date().toISOString(),
+      revogado_por: user.id
+    }).eq('id', id);
+    mostrarToast('Link revogado com sucesso.');
+    // Recarregar lista ativa
+    const role = userRole === 'clinica' ? 'clinica' : 'gestao';
+    carregarSolicitacoes(role);
+  } catch(e) {
+    mostrarToast('Erro ao revogar: ' + e.message, true);
+  }
+}
+
+async function verRespostaSolicitacao(id) {
+  try {
+    const { data } = await db.from('solicitacoes_externas')
+      .select('*, alunos(nome)')
+      .eq('id', id).single();
+
+    const nomeAnon = anonimizarNome(data.alunos?.nome);
+    const urg = { rotina:'🟢 Rotina', atencao:'🟡 Atenção', urgente:'🔴 Urgente' }[data.urgencia] || data.urgencia;
+    const dt = data.respondido_em ? new Date(data.respondido_em).toLocaleString('pt-BR') : '—';
+
+    document.getElementById('modal-resposta-body').innerHTML = `
+      <div style="background:var(--gr50);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px">
+        <strong>Aluno:</strong> ${nomeAnon} &nbsp;|&nbsp; <strong>Respondido em:</strong> ${dt} &nbsp;|&nbsp; ${urg}
+      </div>
+      ${secaoResposta('Observações clínicas / pedagógicas', data.resposta_observacoes)}
+      ${secaoResposta('Estratégias recomendadas', data.resposta_estrategias)}
+      ${secaoResposta('Próximos passos', data.resposta_proximos_passos)}
+    `;
+    _solicitacaoAtual = data;
+    abrirModal('modal-ver-resposta');
+  } catch(e) {
+    mostrarToast('Erro ao carregar resposta.', true);
+  }
+}
+
+function secaoResposta(titulo, texto) {
+  if (!texto) return '';
+  return `<div style="margin-bottom:14px">
+    <div style="font-size:11px;font-weight:600;color:var(--gr400);letter-spacing:.06em;margin-bottom:6px">${titulo.toUpperCase()}</div>
+    <p style="font-size:14px;color:var(--gr700);line-height:1.6;margin:0;white-space:pre-wrap">${texto}</p>
+  </div>`;
+}
+
+async function importarRespostaParaDiario() {
+  if (!_solicitacaoAtual) return;
+  const s = _solicitacaoAtual;
+  const texto = [
+    s.resposta_observacoes && `**Observações:** ${s.resposta_observacoes}`,
+    s.resposta_estrategias && `**Estratégias:** ${s.resposta_estrategias}`,
+    s.resposta_proximos_passos && `**Próximos passos:** ${s.resposta_proximos_passos}`
+  ].filter(Boolean).join('\n\n');
+
+  try {
+    await db.from('diario_aluno').insert({
+      aluno_id:    s.aluno_id,
+      aluno_nome:  s.alunos?.nome || '—',
+      criado_por:  user.id,
+      tipo:        'devolutiva_externa',
+      conteudo:    `Devolutiva de ${s.parceiro_nome}:\n\n${texto}`,
+      data:        new Date().toISOString().split('T')[0]
+    });
+    mostrarToast('Importado para o Diário!');
+    fecharModal('modal-ver-resposta');
+  } catch(e) {
+    mostrarToast('Erro ao importar.', true);
+  }
+}
+
+function exportarRespostaPDF() {
+  if (!_solicitacaoAtual) return;
+  const s = _solicitacaoAtual;
+  const urg = { rotina:'Rotina', atencao:'Atenção', urgente:'URGENTE' }[s.urgencia] || '';
+  const opts = {
+    titulo:   'Devolutiva — Solicitação Externa',
+    subtitulo:`Parceiro: ${s.parceiro_nome}`,
+    aluno:    { nome: anonimizarNome(s.alunos?.nome), diagnostico: '' },
+    secoes: [
+      { titulo: 'Observações Clínicas / Pedagógicas', conteudo: s.resposta_observacoes || '—' },
+      { titulo: 'Estratégias Recomendadas',           conteudo: s.resposta_estrategias || '—' },
+      { titulo: 'Próximos Passos',                    conteudo: s.resposta_proximos_passos || '—' },
+      { titulo: 'Nível de Urgência',                  conteudo: urg },
+    ],
+    rodape: `Gerado em ${new Date().toLocaleString('pt-BR')} — Pluramente`
+  };
+  gerarPDFDocumento(opts);
+}
+
+// ══════════════════════════════════════════════════════════════
+// PÁGINA PÚBLICA — Parceiro sem conta
+// ══════════════════════════════════════════════════════════════
+
+let _pubSolicitacao = null;
+let _pubUrgencia = 'rotina';
+
+async function verificarRotaPublica() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('s');
+  if (!token) return false;
+
+  // Ocultar tela de login e app, mostrar página pública
+  document.getElementById('login-screen')?.style && (document.getElementById('login-screen').style.display = 'none');
+  document.getElementById('app-screen')?.style && (document.getElementById('app-screen').style.display = 'none');
+  document.getElementById('page-publica-solicitacao').style.display = 'block';
+
+  await carregarSolicitacaoPublica(token);
+  return true;
+}
+
+async function carregarSolicitacaoPublica(token) {
+  try {
+    const { data, error } = await db.from('solicitacoes_externas')
+      .select('*, alunos(nome, data_nascimento, serie, diagnostico)')
+      .eq('token', token)
+      .single();
+
+    if (error || !data) {
+      mostrarErroPub('Link inválido ou não encontrado.');
+      return;
+    }
+    if (data.revogado_em) {
+      mostrarErroPub('Este link foi revogado pelo remetente.');
+      return;
+    }
+    if (new Date(data.expira_em) < new Date()) {
+      mostrarErroPub('Este link expirou.');
+      return;
+    }
+
+    _pubSolicitacao = data;
+
+    // Verificar senha
+    if (data.senha_acesso) {
+      document.getElementById('pub-senha-gate').style.display = 'block';
+      return;
+    }
+
+    // Registrar acesso
+    await registrarAcessoPublico(data.id, data.acessos_count);
+
+    mostrarConteudoPublico(data);
+  } catch(e) {
+    mostrarErroPub('Erro ao carregar solicitação.');
+  }
+}
+
+async function verificarSenhaPublica() {
+  const inp = document.getElementById('pub-senha-input');
+  const errEl = document.getElementById('pub-senha-err');
+  const senha = inp?.value?.trim();
+  if (senha !== _pubSolicitacao.senha_acesso) {
+    if (errEl) { errEl.style.display = 'block'; }
+    inp.value = '';
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+  document.getElementById('pub-senha-gate').style.display = 'none';
+  await registrarAcessoPublico(_pubSolicitacao.id, _pubSolicitacao.acessos_count);
+  mostrarConteudoPublico(_pubSolicitacao);
+}
+
+async function registrarAcessoPublico(id, count) {
+  if ((count || 0) >= (_pubSolicitacao.max_acessos || 3)) return;
+  const novoStatus = _pubSolicitacao.status === 'pendente' ? 'visualizado' : _pubSolicitacao.status;
+  await db.from('solicitacoes_externas').update({
+    acessos_count: (count || 0) + 1,
+    status: novoStatus
+  }).eq('id', id).then(()=>{}).catch(()=>{});
+}
+
+function mostrarConteudoPublico(data) {
+  const aluno = data.alunos || {};
+  const nomeAnon = anonimizarNome(aluno.nome);
+
+  // Calcular faixa etária
+  let faixaEtaria = '';
+  if (aluno.data_nascimento) {
+    const anos = Math.floor((Date.now() - new Date(aluno.data_nascimento)) / 31536000000);
+    faixaEtaria = `${anos}-${anos+1} anos`;
+  }
+
+  // Ciclo escolar
+  const ciclos = { '1':'Anos Iniciais','2':'Anos Iniciais','3':'Anos Iniciais','4':'Anos Iniciais','5':'Anos Iniciais','6':'Anos Finais','7':'Anos Finais','8':'Anos Finais','9':'Anos Finais','1M':'Ensino Médio','2M':'Ensino Médio','3M':'Ensino Médio' };
+  const ciclo = ciclos[aluno.serie] || aluno.serie || '';
+
+  document.getElementById('pub-aluno-nome').textContent = nomeAnon;
+  document.getElementById('pub-aluno-info').textContent = [faixaEtaria, ciclo].filter(Boolean).join(' · ');
+
+  // Áreas
+  const areasEl = document.getElementById('pub-areas');
+  const areas = Array.isArray(data.areas_desenvolvimento) ? data.areas_desenvolvimento : [];
+  const labelAreas = { comunicacao:'Comunicação', motor:'Motor', cognitivo:'Cognitivo', social:'Social/Emocional', pedagogico:'Pedagógico', comportamental:'Comportamental' };
+  areasEl.innerHTML = areas.map(a => `<span style="background:#EFF6FF;color:#1D4ED8;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600">${labelAreas[a]||a}</span>`).join('');
+
+  document.getElementById('pub-motivo').textContent = data.motivo || '';
+
+  // Perguntas
+  const pergs = Array.isArray(data.perguntas) ? data.perguntas.filter(p=>p) : [];
+  if (pergs.length) {
+    document.getElementById('pub-perguntas-wrap').style.display = 'block';
+    document.getElementById('pub-perguntas-lista').innerHTML = pergs.map((p,i) =>
+      `<div style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#374151"><strong>${i+1}.</strong> ${p}</div>`
+    ).join('');
+  }
+
+  // Se já respondido
+  if (data.status === 'respondido') {
+    document.getElementById('pub-ja-respondido').style.display = 'block';
+    document.getElementById('pub-form-resposta').style.display = 'none';
+  }
+
+  document.getElementById('pub-conteudo').style.display = 'block';
+}
+
+function setUrgencia(btn) {
+  _pubUrgencia = btn.dataset.u;
+  document.querySelectorAll('.btn-urgencia').forEach(b => {
+    const isActive = b === btn;
+    const cores = { rotina:['#22C55E','#F0FDF4','#166534'], atencao:['#EAB308','#FEFCE8','#92400E'], urgente:['#EF4444','#FEF2F2','#991B1B'] };
+    const [border, bg, color] = cores[b.dataset.u] || ['#E2E8F0','#fff','#374151'];
+    b.style.borderColor = isActive ? border : '#E2E8F0';
+    b.style.background  = isActive ? bg : '#fff';
+    b.style.color       = isActive ? color : '#374151';
+  });
+}
+
+async function enviarRespostaPublica() {
+  const errEl = document.getElementById('pub-resp-err');
+  if (errEl) errEl.style.display = 'none';
+
+  const obs      = document.getElementById('pub-resp-obs')?.value?.trim();
+  const estrat   = document.getElementById('pub-resp-estrategias')?.value?.trim();
+  const proximos = document.getElementById('pub-resp-proximos')?.value?.trim();
+  const lgpd     = document.getElementById('pub-lgpd-check')?.checked;
+
+  if (!obs && !estrat && !proximos) {
+    if (errEl) { errEl.textContent = 'Preencha ao menos um campo de resposta.'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (!lgpd) {
+    if (errEl) { errEl.textContent = 'Você precisa aceitar os termos de responsabilidade.'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  const btn = document.querySelector('#pub-form-resposta .btn-p');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+  try {
+    const { error } = await db.from('solicitacoes_externas').update({
+      resposta_observacoes:     obs || null,
+      resposta_estrategias:     estrat || null,
+      resposta_proximos_passos: proximos || null,
+      urgencia:                 _pubUrgencia,
+      status:                   'respondido',
+      respondido_em:            new Date().toISOString()
+    }).eq('id', _pubSolicitacao.id);
+
+    if (error) throw error;
+
+    document.getElementById('pub-form-resposta').style.display = 'none';
+    document.getElementById('pub-ja-respondido').style.display = 'block';
+    document.getElementById('pub-ja-respondido').innerHTML = `
+      <div style="font-size:32px;margin-bottom:8px">✅</div>
+      <p style="font-size:15px;color:#166534;font-weight:700;margin:0">Devolutiva enviada com sucesso!</p>
+      <p style="font-size:13px;color:#166534;margin-top:6px">Obrigado pela colaboração. A equipe receberá sua resposta.</p>`;
+  } catch(e) {
+    if (errEl) { errEl.textContent = 'Erro ao enviar: ' + (e.message || 'tente novamente.'); errEl.style.display = 'block'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar Devolutiva'; }
+  }
+}
+
+function mostrarErroPub(msg) {
+  document.getElementById('pub-conteudo').style.display = 'none';
+  document.getElementById('pub-senha-gate').style.display = 'none';
+  const wrap = document.querySelector('#page-publica-solicitacao > div');
+  if (wrap) wrap.innerHTML += `<div style="text-align:center;padding:40px 20px"><div style="font-size:40px;margin-bottom:12px">⚠️</div><p style="font-size:15px;color:#64748B">${msg}</p></div>`;
+}
 
 // ── CHAMADA CENTRALIZADA À API ANTHROPIC (com log de uso) ─────
 async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral' }) {
@@ -5494,6 +6212,30 @@ function renderPagesGestao() {
     </div>
   </div>
   <!-- /SOLICITAÇÕES DA FAMÍLIA -->
+
+  <!-- SOLICITAÇÕES EXTERNAS -->
+  <div id="page-gestao-solicitacoes" class="page">
+    <div class="section-header">
+      <div>
+        <h1 class="page-title">🔗 Solicitações Externas</h1>
+        <p class="page-sub" style="margin-bottom:0">Comunicação segura com parceiros externos sem conta na plataforma.</p>
+      </div>
+      <button class="btn-p" onclick="abrirModalNovaSolicitacao('gestao')">+ Nova Solicitação</button>
+    </div>
+
+    <!-- Filtros de status -->
+    <div style="display:flex;gap:8px;margin:16px 0;flex-wrap:wrap">
+      <button class="btn-sm sol-filtro active" data-status="todos" onclick="filtrarSolicitacoes(this,'todos')">Todas</button>
+      <button class="btn-sm sol-filtro" data-status="pendente" onclick="filtrarSolicitacoes(this,'pendente')">🟡 Pendente</button>
+      <button class="btn-sm sol-filtro" data-status="visualizado" onclick="filtrarSolicitacoes(this,'visualizado')">🔵 Visualizado</button>
+      <button class="btn-sm sol-filtro" data-status="respondido" onclick="filtrarSolicitacoes(this,'respondido')">🟢 Respondido</button>
+      <button class="btn-sm sol-filtro" data-status="revogado" onclick="filtrarSolicitacoes(this,'revogado')">⛔ Revogado</button>
+    </div>
+
+    <div id="gestao-sol-lista" class="cards-grid">
+      <div class="empty"><div class="empty-icon">🔗</div><div class="empty-text">Nenhuma solicitação ainda.</div></div>
+    </div>
+  </div>
   `;
 }
 
@@ -5574,7 +6316,32 @@ function renderPagesClinica() {
     <h1 class="page-title">Relatórios da Escola</h1>
     <p class="page-sub">Relatórios enviados pela escola para a equipe clínica. Você não acessa o sistema escolar — apenas os documentos compartilhados.</p>
     <div id="clinica-rel-grid"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum relatório recebido da escola ainda.</div></div></div>
-  </div>`;
+  </div>
+
+  <!-- SOLICITAÇÕES EXTERNAS -->
+  <div id="page-clinica-solicitacoes" class="page">
+    <div class="section-header">
+      <div>
+        <h1 class="page-title">🔗 Solicitações Externas</h1>
+        <p class="page-sub" style="margin-bottom:0">Comunicação segura com parceiros externos sem conta na plataforma.</p>
+      </div>
+      <button class="btn-p" onclick="abrirModalNovaSolicitacao('clinica')">+ Nova Solicitação</button>
+    </div>
+
+    <!-- Filtros de status -->
+    <div style="display:flex;gap:8px;margin:16px 0;flex-wrap:wrap">
+      <button class="btn-sm sol-filtro active" data-status="todos" onclick="filtrarSolicitacoes(this,'todos')">Todas</button>
+      <button class="btn-sm sol-filtro" data-status="pendente" onclick="filtrarSolicitacoes(this,'pendente')">🟡 Pendente</button>
+      <button class="btn-sm sol-filtro" data-status="visualizado" onclick="filtrarSolicitacoes(this,'visualizado')">🔵 Visualizado</button>
+      <button class="btn-sm sol-filtro" data-status="respondido" onclick="filtrarSolicitacoes(this,'respondido')">🟢 Respondido</button>
+      <button class="btn-sm sol-filtro" data-status="revogado" onclick="filtrarSolicitacoes(this,'revogado')">⛔ Revogado</button>
+    </div>
+
+    <div id="clinica-sol-lista" class="cards-grid">
+      <div class="empty"><div class="empty-icon">🔗</div><div class="empty-text">Nenhuma solicitação ainda.</div></div>
+    </div>
+  </div>
+  `;
   carregarAlunosClinica();
 }
 
@@ -9321,7 +10088,7 @@ function bootHealthCheck() {
   console.info('[Pluramente] ✅ Boot OK — v' + (typeof LGPD_VERSAO_TERMO !== 'undefined' ? LGPD_VERSAO_TERMO : '?'));
 }
 
-document.addEventListener('DOMContentLoaded', () => { bootHealthCheck(); verificarSessao(); verificarLGPD(); mostrarLanding(); });
+document.addEventListener('DOMContentLoaded', async () => { const isPub = await verificarRotaPublica(); if (!isPub) { bootHealthCheck(); verificarSessao(); verificarLGPD(); mostrarLanding(); } });
 
 
 function abrirPaginaQuemSomos() {
