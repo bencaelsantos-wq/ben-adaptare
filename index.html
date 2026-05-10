@@ -4344,6 +4344,48 @@ function copiarLink() {
   });
 }
 
+// ── Funções ausentes ──────────────────────────────────────────
+
+function mostrarToast(msg, isError) {
+  toast(msg, isError ? 'error' : 'success');
+}
+
+function abrirPerfilClinico(p) {
+  abrirModalCadClinica(p);
+}
+
+let _editAlunoId = null;
+
+function editarAluno(a) {
+  _editAlunoId = a.id || null;
+  abrirModalCad();
+  setTimeout(() => {
+    const map = {
+      'cad-nome': 'nome', 'cad-obs': 'observacoes', 'cad-nasc': 'nasc',
+      'cad-pai': 'pai_nome', 'cad-pai-tel': 'pai_tel', 'cad-pai-email': 'pai_email',
+      'cad-mae': 'mae_nome', 'cad-mae-tel': 'mae_tel', 'cad-mae-email': 'mae_email',
+      'cad-clinica-nome': 'clinica_nome', 'cad-clinica-tel': 'clinica_tel',
+      'cad-clinica-email': 'clinica_email', 'cad-clinica-end': 'clinica_end'
+    };
+    Object.entries(map).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = a[key] || '';
+    });
+    const selMap = { 'cad-idade': 'idade', 'cad-serie': 'serie', 'cad-metodo': 'metodo' };
+    Object.entries(selMap).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = a[key] || '';
+    });
+    (a.perfis || []).forEach(p => {
+      document.querySelectorAll('#chips-cad .chip').forEach(c => {
+        if (c.textContent.trim() === p.trim()) c.classList.add('active');
+      });
+    });
+    const titulo = document.querySelector('#modal-cad h2');
+    if (titulo) titulo.textContent = 'Editar Aluno';
+  }, 50);
+}
+
 // ── Carregar lista de solicitações ────────────────────────────
 async function carregarSolicitacoes(role) {
   const listaId = `${role}-sol-lista`;
@@ -7917,12 +7959,22 @@ async function salvarAluno() {
   if (!nome) return toast('Informe o nome.', 'error');
   if (!lgpdValidar('aluno')) return;
 
-  const { data, error } = await db.from('alunos').insert({
-    user_id: user.id, nome, idade, nasc, serie, metodo, perfis, observacoes,
-    pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
-    clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs,
-    at_id: at_id || null, at_nome: at_nome || null
-  }).select('id').single();
+  let data, error;
+  if (_editAlunoId) {
+    ({ data, error } = await db.from('alunos').update({
+      nome, idade, nasc, serie, metodo, perfis, observacoes,
+      pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
+      clinica_nome, clinica_tel, clinica_email, clinica_end
+    }).eq('id', _editAlunoId).select('id').single());
+    _editAlunoId = null;
+  } else {
+    ({ data, error } = await db.from('alunos').insert({
+      user_id: user.id, nome, idade, nasc, serie, metodo, perfis, observacoes,
+      pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
+      clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs,
+      at_id: at_id || null, at_nome: at_nome || null
+    }).select('id').single());
+  }
   if (error) return toast('Erro: '+error.message, 'error');
 
   // Upload de PDFs para Supabase Storage
