@@ -4538,7 +4538,7 @@ function exportarRespostaPDF() {
   const opts = {
     titulo:   'Devolutiva — Solicitação Externa',
     subtitulo:`Parceiro: ${s.parceiro_nome}`,
-    aluno:    { nome: anonimizarNome(s.alunos?.nome) || '—',
+    aluno:    anonimizarNome(s.alunos?.nome) || '—',
     secoes: [
       { titulo: 'Observações Clínicas / Pedagógicas', conteudo: s.resposta_observacoes || '—' },
       { titulo: 'Estratégias Recomendadas',           conteudo: s.resposta_estrategias || '—' },
