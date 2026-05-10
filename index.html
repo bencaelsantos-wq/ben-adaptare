@@ -4395,7 +4395,7 @@ async function carregarSolicitacoes(role) {
 
   try {
     const { data, error } = await db.from('solicitacoes_externas')
-      .select('*, alunos(nome, diagnostico, data_nascimento, serie)')
+      .select('*, alunos(nome, nasc, serie)')
       .eq('criado_por', user.id)
       .order('criado_em', { ascending: false });
 
