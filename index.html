@@ -4574,7 +4574,7 @@ async function verificarRotaPublica() {
 async function carregarSolicitacaoPublica(token) {
   try {
     const { data, error } = await dbAnon.from('solicitacoes_externas')
-      .select('*, alunos(nome, data_nascimento, serie, diagnostico)')
+      .select('*, alunos(nome, nasc, serie )')
       .eq('token', token)
       .single();
 
@@ -4638,8 +4638,8 @@ function mostrarConteudoPublico(data) {
 
   // Calcular faixa etária
   let faixaEtaria = '';
-  if (aluno.data_nascimento) {
-    const anos = Math.floor((Date.now() - new Date(aluno.data_nascimento)) / 31536000000);
+  if (aluno.nasc) {
+    const anos = Math.floor((Date.now() - new Date(aluno.nasc)) / 31536000000);
     faixaEtaria = `${anos}-${anos+1} anos`;
   }
 
