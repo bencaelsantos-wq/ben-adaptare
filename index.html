@@ -4242,16 +4242,28 @@ function solStep(dir) {
   if (proximo < 1 || proximo > total) return;
   _solStepAtual = proximo;
 
-  document.querySelectorAll('.step-panel').forEach((p, i) => {
-    p.style.display = (i + 1 === _solStepAtual) ? 'block' : 'none';
-  });
+  for (let i = 1; i <= 3; i++) {
+    const p = document.getElementById('sol-panel-' + i);
+    const s = document.getElementById('sol-step-ind-' + i);
+    if (p) p.classList.toggle('active', i === _solStepAtual);
+    if (s) {
+      s.classList.toggle('active', i === _solStepAtual);
+      if (i < _solStepAtual) {
+        s.classList.add('done');
+        const c = s.querySelector('.step-circle'); if (c) c.textContent = '✓';
+      } else {
+        s.classList.remove('done');
+        const c = s.querySelector('.step-circle'); if (c) c.textContent = i;
+      }
+    }
+  }
 
-  const btnBack  = document.getElementById('sol-btn-back');
-  const btnNext  = document.getElementById('sol-btn-next');
-  const btnCriar = document.getElementById('btn-criar-sol');
-  if (btnBack)  btnBack.style.display  = _solStepAtual > 1     ? 'inline-flex' : 'none';
-  if (btnNext)  btnNext.style.display  = _solStepAtual < total ? 'inline-flex' : 'none';
-  if (btnCriar) btnCriar.style.display = _solStepAtual === total ? 'inline-flex' : 'none';
+  const back = document.getElementById('sol-btn-back');
+  const nxt  = document.getElementById('sol-btn-next');
+  const cri  = document.getElementById('btn-criar-sol');
+  if (back) back.style.display = _solStepAtual > 1      ? '' : 'none';
+  if (nxt)  nxt.style.display  = _solStepAtual < total  ? '' : 'none';
+  if (cri)  cri.style.display  = _solStepAtual === total ? '' : 'none';
 
   if (_solStepAtual === 3) solPreencherResumo();
 }
@@ -4292,18 +4304,6 @@ function solPreencherResumo() {
     <div><strong>Motivo:</strong> ${motivo}</div>
     ${areas.length ? `<div><strong>Áreas:</strong> ${areas.map(a=>labelAreas[a]||a).join(', ')}</div>` : ''}
   `;
-}
-
-function abrirModalNovaSolicitacao() {
-  _solStepAtual = 1;
-  document.querySelectorAll('.step-panel').forEach((p, i) => {
-    p.style.display = i === 0 ? 'block' : 'none';
-  });
-  document.getElementById('sol-btn-back').style.display  = 'none';
-  document.getElementById('sol-btn-next').style.display  = 'inline-flex';
-  document.getElementById('btn-criar-sol').style.display = 'none';
-  document.getElementById('sol-err').style.display       = 'none';
-  abrirModal('modal-nova-solicitacao');
 }
 function mostrarLinkGerado(sol) {
   const token = sol.token;
