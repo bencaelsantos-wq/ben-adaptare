@@ -6,7 +6,9 @@
 <title>Pluramente · Plataforma de Integração Clínica-Pedagógica</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   /* ── PLURAMENTE BRAND PALETTE ── */
@@ -35,8 +37,34 @@
   --at-color:#14B8A6;--at-bg:#F0FDFA;
   --gestao-color:#2563EB;--gestao-bg:#EEF2FF;
   --gestao-clinica-color:#7C3AED;--gestao-clinica-bg:#F5F0FF;
+  --font-display:'Poppins',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --text-xs:11px;--text-sm:13px;--text-base:15px;
+  --text-md:17px;--text-lg:20px;--text-xl:24px;
+  --text-2xl:30px;--text-3xl:36px;
+  --fw-regular:400;--fw-medium:500;--fw-semi:600;--fw-bold:700;
+  --lh-tight:1.2;--lh-normal:1.5;--lh-loose:1.7;
+  --text-primary:#1F2937;--text-secondary:#4B5563;
+  --text-muted:#8A94A6;--text-inverse:#fff;--text-link:#2563EB;
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;
+  --sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;
+  --t-fast:.12s ease;--t-normal:.2s ease;--t-slow:.35s ease;
+  --focus-ring:0 0 0 3px rgba(37,99,235,.35);
 }
-
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);font-size:var(--text-base);font-weight:var(--fw-regular);line-height:var(--lh-normal);color:var(--text-primary);background:var(--p-bg);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-display);font-weight:var(--fw-bold);line-height:var(--lh-tight);color:var(--text-primary)}
+h1{font-size:var(--text-3xl)}h2{font-size:var(--text-2xl)}h3{font-size:var(--text-xl)}
+h4{font-size:var(--text-lg)}h5{font-size:var(--text-md);font-weight:var(--fw-semi)}
+p{line-height:var(--lh-loose);color:var(--text-secondary)}
+a{color:var(--text-link);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--rsm)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--gr100)}
+::-webkit-scrollbar-thumb{background:var(--gr300);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--gr400)}
 /* Cores por perfil — botões de papel */
 .role-btn.active.r-professor{background:var(--escola-bg);border-color:var(--escola-color);color:var(--escola-color);font-weight:600}
 .role-btn.active.r-gestao{background:var(--gestao-bg);border-color:var(--gestao-color);color:var(--gestao-color);font-weight:600}
