@@ -4415,7 +4415,7 @@ async function carregarSolicitacoes(role) {
 function renderCardSolicitacao(s) {
   const aluno = s.alunos || {};
   const nomeAnon = anonimizarNome(aluno.nome);
-  const statusLabel = { pendente:'🟡 Pendente', visualizado:'🔵 Visualizado', respondido:'🟢 Respondido', revogado:'⛔ Revogado' }[s.status] || s.status;
+ const statusLabel = { pendente:'🟡 Pendente', visualizado:'🔵 Visualizado', respondido:'🟢 Respondido', lido:'🟢 Respondido', revogado:'⛔ Revogado' }[s.status] || s.status;
   const expirou = new Date(s.expira_em) < new Date();
   const badge = expirou && s.status === 'pendente' ? '<span class="sol-badge expirado">⏰ Expirado</span>' : `<span class="sol-badge ${s.status}">${statusLabel}</span>`;
   const tipo = s.tipo === 'escola_para_clinica' ? '🏫→🏥' : '🏥→🏫';
@@ -4792,7 +4792,7 @@ async function atualizarBadgesSolicitacoes() {
       .select('*', { count: 'exact', head: true })
       .eq('criado_por', user?.id)
       .eq('status', 'respondido');
-    atualizarBadge('nav-gestao-solicitacoes', count || 0);
+    atualizarBadge('nav-gestao-solicitacoes', count || 0);    
     atualizarBadge('nav-clinica-solicitacoes', count || 0);
   } catch(_) {}
 }
