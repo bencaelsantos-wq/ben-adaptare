@@ -4417,7 +4417,8 @@ function renderCardSolicitacao(s) {
   const nomeAnon = anonimizarNome(aluno.nome);
  const statusLabel = { pendente:'🟡 Pendente', visualizado:'🔵 Visualizado', respondido:'🟢 Respondido', lido:'🟢 Respondido', revogado:'⛔ Revogado' }[s.status] || s.status;
   const expirou = new Date(s.expira_em) < new Date();
-  const badge = expirou && s.status === 'pendente' ? '<span class="sol-badge expirado">⏰ Expirado</span>' : `<span class="sol-badge ${s.status}">${statusLabel}</span>`;
+  const badgeStatus = s.status === 'lido' ? 'respondido' : s.status;
+const badge = expirou && s.status === 'pendente' ? '<span class="sol-badge expirado">⏰ Expirado</span>' : `<span class="sol-badge ${badgeStatus}">${statusLabel}</span>`;
   const tipo = s.tipo === 'escola_para_clinica' ? '🏫→🏥' : '🏥→🏫';
   const criado = new Date(s.criado_em).toLocaleDateString('pt-BR');
 
@@ -4492,6 +4493,13 @@ async function verRespostaSolicitacao(id) {
       ${secaoResposta('Próximos passos', data.resposta_proximos_passos)}
     `;
     _solicitacaoAtual = data;
+    if (data.status === 'respondido') {
+      db.from('solicitacoes_externas')
+        .update({ status: 'lido' })
+        .eq('id', id)
+        .then(() => atualizarBadgesSolicitacoes())
+        .catch(() => {});
+    }
     abrirModal('modal-ver-resposta');
   } catch(e) {
     mostrarToast('Erro ao carregar resposta.', true);
