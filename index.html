@@ -803,7 +803,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .sol-badge.respondido{background:#D1FAE5;color:#065F46}
 .sol-badge.revogado{background:#FEE2E2;color:#991B1B}
 .sol-badge.expirado{background:#F3F4F6;color:#6B7280}
-.sol-filtro.active{background:var(--p-blue);color:#fff;border-color:var(--p-blue)}
+.sol-filtro.active{background:var(--blue-light);color:var(--p-blue);border-color:var(--p-blue);font-weight:600}
 .btn-urgencia{transition:all .15s}
 
 /* ── AVATAR ALUNO ─────────────────────────────────────────── */
@@ -4447,7 +4447,7 @@ function renderCardSolicitacao(s) {
   const expirou = new Date(s.expira_em) < new Date();
   const badgeStatus = s.status === 'lido' ? 'respondido' : s.status;
 const badge = expirou && s.status === 'pendente' ? '<span class="sol-badge expirado">⏰ Expirado</span>' : `<span class="sol-badge ${badgeStatus}">${statusLabel}</span>`;
-  const tipo = s.tipo === 'escola_para_clinica' ? '🏫→🏥' : '🏥→🏫';
+  const tipo = s.tipo === 'escola_para_clinica' ? 'Escola → Clínica' : 'Clínica → Escola';
   const criado = new Date(s.criado_em).toLocaleDateString('pt-BR');
 
   return `<div class="sol-card" data-status="${s.status}" data-id="${s.id}">
@@ -4461,7 +4461,7 @@ const badge = expirou && s.status === 'pendente' ? '<span class="sol-badge expir
     <p style="font-size:13px;color:var(--gr600);margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${s.motivo||''}</p>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn-sm" onclick="verLinkSolicitacao('${s.id}','${s.token}')">🔗 Ver link</button>
-      ${s.status==='respondido' ? `<button class="btn-sm" onclick="verRespostaSolicitacao('${s.id}')">📬 Ver resposta</button>` : ''}
+      ${s.status==='respondido' ? `<button class="btn-sm" onclick="verRespostaSolicitacao('${s.id}')">Ver resposta</button>` : ''}
       ${s.status!=='revogado' && s.status!=='respondido' ? `<button class="btn-sm" style="color:#EF4444;border-color:#EF4444" onclick="revogarSolicitacao('${s.id}')">⛔ Revogar</button>` : ''}
     </div>
   </div>`;
