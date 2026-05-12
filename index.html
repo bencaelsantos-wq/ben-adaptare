@@ -310,7 +310,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .fcard{background:var(--white);border:1.5px solid var(--gr100);border-radius:var(--rlg);padding:20px 24px;margin-bottom:12px;box-shadow:0 1px 4px rgba(30,58,138,.04)}
 .fcard-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gr400);margin-bottom:13px}
 .flabel{display:block;font-size:13px;font-weight:500;color:var(--gr600);margin-bottom:5px}
-.finput,.fselect,.ftarea{width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13.5px;color:var(--gr800);background:var(--white);transition:border-color .18s;outline:none}
+.finput,.fselect,.ftarea{width:100%;padding:9px 12px;min-height:44px;border:1.5px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13.5px;color:var(--gr800);background:var(--white);transition:border-color .18s;outline:none}
 .finput:focus,.fselect:focus,.ftarea:focus{border-color:var(--p-blue);box-shadow:0 0 0 3px rgba(37,99,235,.10)}
 .ftarea{min-height:100px;resize:vertical;line-height:1.6}
 .ftarea.sm{min-height:70px}
@@ -354,8 +354,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .btn-gerar:hover{opacity:.88}
 .btn-gerar:active{transform:scale(.98)}
 .btn-gerar:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-sm{padding:8px 16px;background:var(--blue-light);color:var(--p-blue);border:1.5px solid rgba(37,99,235,.2);border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
-.btn-sm:hover{opacity:.88}
+.btn-sm{padding:8px 16px;min-height:44px;background:var(--blue-light);color:var(--p-blue);border:1.5px solid rgba(37,99,235,.2);border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn-sm:hover{opacity:.88;border-color:rgba(37,99,235,.4)}
 .btn-sm:disabled{opacity:.4;cursor:not-allowed}
 .btn-sm-ghost{padding:8px 14px;background:transparent;color:var(--p-blue);border:1.5px solid rgba(37,99,235,.15);border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s}
 .btn-sm-ghost:hover{background:var(--blue-light)}
