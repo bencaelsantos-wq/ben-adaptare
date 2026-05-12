@@ -5926,7 +5926,7 @@ function renderPages() {
           <option value="">Selecione um aluno</option>
         </select>
       </div>
-      <button class="btn-sm" style="background:linear-gradient(135deg,#0891B2,#0E7490)" id="btn-gerar-convergencia" disabled onclick="gerarConvergencia()">
+      <button class="btn-sm" id="btn-gerar-convergencia" disabled onclick="gerarConvergencia()">
         ⭐ Gerar plano convergente com IA
       </button>
     </div>
@@ -5939,10 +5939,10 @@ function renderPages() {
       <div id="conv-convergencias"></div>
       <div style="margin-top:14px">
         <div style="font-size:14px;font-weight:700;color:var(--gr800);margin-bottom:10px">💡 Recomendações de alinhamento</div>
-        <div id="conv-recomendacoes" class="result-text" style="background:var(--bridge-light);border-radius:var(--rsm);padding:14px;font-size:13.5px;color:var(--gr600);line-height:1.8;border:1px solid var(--bridge-mid)"></div>
+        <div id="conv-recomendacoes" class="result-text" style="background:#fff;border-radius:var(--rsm);padding:14px;font-size:13.5px;color:var(--gr600);line-height:1.8;border:1px solid var(--gr200)"></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn-sm" style="background:linear-gradient(135deg,#0891B2,#0E7490)" onclick="salvarConvergencia()">Salvar alinhamento</button>
+        <button class="btn-sm" onclick="salvarConvergencia()">Salvar alinhamento</button>
         <button class="btn-copy" onclick="copiarConvergencia()">Copiar tudo</button>
       </div>
     </div>
