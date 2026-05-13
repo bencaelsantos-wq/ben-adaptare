@@ -1768,7 +1768,40 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
-<!-- ══ MODAL: Cadastro de Aluno ══ -->
+<!-- ══ MODAL: Perfil do Aluno (Professor) ══ -->
+<div class="overlay" id="modal-perfil-aluno" onclick="fecharModal('modal-perfil-aluno',event)">
+  <div class="modal md">
+    <div class="modal-header">
+      <div class="modal-title" id="perfil-aluno-titulo">Perfil do Aluno</div>
+      <button class="modal-close" onclick="fecharModal('modal-perfil-aluno')">×</button>
+    </div>
+    <div style="margin-top:14px">
+      <!-- Avatar + dados principais -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div id="perfil-aluno-avatar" style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0"></div>
+        <div>
+          <div id="perfil-aluno-nome" style="font-size:18px;font-weight:700;color:var(--gr800)"></div>
+          <div id="perfil-aluno-meta" style="font-size:13px;color:var(--gr400);margin-top:2px"></div>
+        </div>
+      </div>
+      <!-- Diagnósticos -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">🧠 Perfis / Diagnósticos</div>
+      <div id="perfil-aluno-perfis" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+      <!-- Observações -->
+      <div id="perfil-aluno-obs-wrap" style="display:none;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📋 Observações clínicas</div>
+        <div id="perfil-aluno-obs" style="font-size:13px;color:var(--gr600);line-height:1.7;background:var(--gr50);border-radius:var(--rsm);padding:10px 12px"></div>
+      </div>
+      <!-- Adaptações -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📝 Adaptações geradas</div>
+      <div id="perfil-aluno-adaptacoes" style="font-size:13px;color:var(--gr400);margin-bottom:16px">Carregando…</div>
+      <!-- PEIs -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📋 PEIs elaborados</div>
+      <div id="perfil-aluno-peis" style="font-size:13px;color:var(--gr400)">Carregando…</div>
+    </div>
+  </div>
+</div>
+  <!-- ══ MODAL: Cadastro de Aluno ══ -->
 <div class="overlay" id="modal-cad" onclick="fecharModal('modal-cad',event)">
   <div class="modal lg">
     <div class="modal-header">
@@ -7909,7 +7942,7 @@ function renderAlunosLista() {
     const avatar = renderAvatarAluno(a.nome, a.perfis);
     const peiPct = a.pei_progresso || 0;
     const barHtml = peiPct > 0 ? `<div class="pei-bar-wrap"><div class="pei-bar-label"><span>PEI</span><span>${peiPct}%</span></div><div class="pei-bar"><div class="pei-bar-fill" style="width:${peiPct}%"></div></div></div>` : '';
-    return `<div class="item-card" style="cursor:default">
+    return `<div class="item-card" style="cursor:pointer" onclick='abrirPerfilAluno(${JSON.stringify(a).replace(/'/g,"&#39;")})'>
       <div class="ic-header">
         ${avatar}
         <div class="ic-info">
@@ -7923,7 +7956,65 @@ function renderAlunosLista() {
   }).join('');
 }
 
-function abrirModalCad() {
+async function abrirPerfilAluno(a) {
+  // Avatar
+  const cores = ['#2563EB','#7C3AED','#059669','#0891B2','#D97706'];
+  const cor = cores[(a.nome||'').charCodeAt(0) % cores.length];
+  const av = document.getElementById('perfil-aluno-avatar');
+  if (av) { av.style.background = cor; av.textContent = (a.nome||'?')[0].toUpperCase(); }
+
+  // Dados principais
+  const nome = document.getElementById('perfil-aluno-nome');
+  if (nome) nome.textContent = a.nome || '—';
+  document.getElementById('perfil-aluno-titulo').textContent = a.nome || 'Perfil do Aluno';
+
+  const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+  const metaEl = document.getElementById('perfil-aluno-meta');
+  if (metaEl) metaEl.textContent = meta || 'Sem dados de série/idade';
+
+  // Perfis
+  const perfisEl = document.getElementById('perfil-aluno-perfis');
+  if (perfisEl) {
+    const perfis = a.perfis || [];
+    perfisEl.innerHTML = perfis.length
+      ? perfis.map(p => `<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('')
+      : '<span style="color:var(--gr400);font-size:13px">Nenhum diagnóstico cadastrado</span>';
+  }
+
+  // Observações
+  const obsWrap = document.getElementById('perfil-aluno-obs-wrap');
+  const obsEl = document.getElementById('perfil-aluno-obs');
+  if (a.observacoes) {
+    obsWrap.style.display = 'block';
+    obsEl.textContent = a.observacoes;
+  } else {
+    obsWrap.style.display = 'none';
+  }
+
+  abrirModal('modal-perfil-aluno');
+
+  // Adaptações
+  const adaptEl = document.getElementById('perfil-aluno-adaptacoes');
+  const peisEl  = document.getElementById('perfil-aluno-peis');
+  try {
+    const [{ data: adapts }, { data: peis }] = await Promise.all([
+      db.from('adaptacoes').select('id,materia,created_at').eq('aluno_nome', a.nome).order('created_at',{ascending:false}).limit(5),
+      db.from('peis').select('id,status,created_at').eq('aluno_nome', a.nome).order('created_at',{ascending:false}).limit(5)
+    ]);
+
+    adaptEl.innerHTML = (adapts||[]).length
+      ? (adapts||[]).map(ad => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${ad.materia||'Sem matéria'}</span><span style="font-size:11px;color:var(--gr400)">${(ad.created_at||'').slice(0,10)}</span></div>`).join('')
+      : '<span style="color:var(--gr400)">Nenhuma adaptação ainda</span>';
+
+    peisEl.innerHTML = (peis||[]).length
+      ? (peis||[]).map(p => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>PEI</span><span style="font-size:11px;padding:2px 8px;background:${p.status==='finalizado'?'#DCFCE7':'#FEF3C7'};color:${p.status==='finalizado'?'#166534':'#92400E'};border-radius:999px">${p.status||'rascunho'}</span><span style="font-size:11px;color:var(--gr400)">${(p.created_at||'').slice(0,10)}</span></div>`).join('')
+      : '<span style="color:var(--gr400)">Nenhum PEI elaborado ainda</span>';
+  } catch(e) {
+    adaptEl.innerHTML = '<span style="color:var(--gr400)">Erro ao carregar</span>';
+    peisEl.innerHTML  = '<span style="color:var(--gr400)">Erro ao carregar</span>';
+  }
+}
+  function abrirModalCad() {
   ['cad-nome','cad-obs','cad-nasc','cad-pai','cad-pai-tel','cad-pai-email','cad-mae','cad-mae-tel','cad-mae-email',
    'cad-clinica-nome','cad-clinica-tel','cad-clinica-email','cad-clinica-end','cad-prof-inp']
     .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
