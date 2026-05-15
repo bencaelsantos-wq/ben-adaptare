@@ -5845,7 +5845,7 @@ function renderPages() {
         </select>
       </div>
       <div>
-        <label class="flabel">Filtrar por origem</label>
+        <label class="flabel" for="diario-filtro-origem">Filtrar por origem</label>
         <select id="diario-filtro-origem" class="fselect" onchange="filtrarDiario()">
           <option value="">Todos</option>
           <option value="escola">🏫 Escola</option>
@@ -5861,7 +5861,7 @@ function renderPages() {
       <div class="fcard-title">Nova entrada no diário</div>
       <div class="frow">
         <div>
-          <label class="flabel">Tipo de registro</label>
+          <label class="flabel" for="diario-tipo">Tipo de registro</label>
           <select id="diario-tipo" class="fselect">
             <option value="observacao">📝 Observação do dia</option>
             <option value="evolucao">📈 Evolução percebida</option>
@@ -5872,7 +5872,7 @@ function renderPages() {
           </select>
         </div>
         <div>
-          <label class="flabel">Área relacionada</label>
+          <label class="flabel" for="diario-area">Área relacionada</label>
           <select id="diario-area" class="fselect">
             <option value="">Geral</option>
             <option>Comunicação</option>
@@ -5886,12 +5886,12 @@ function renderPages() {
         </div>
       </div>
       <div class="fblock">
-        <label class="flabel">Registro *</label>
+        <label class="flabel" for="diario-texto">Registro *</label>
         <textarea id="diario-texto" class="ftarea sm" placeholder="Descreva a observação, evolução ou comunicado. Seja específico — o que aconteceu, quando, como, qual foi a reação do aluno…&#10;Ex: Hoje na aula de matemática o João usou a prancha de CAA pela primeira vez de forma espontânea para pedir para ir ao banheiro. Grande avanço na comunicação funcional."></textarea>
       </div>
       <div class="fblock">
-        <label class="flabel">Visível para (quem poderá ver este registro)</label>
-        <div class="chips-group" id="diario-visivel-chips" style="gap:6px">
+        <label class="flabel" id="label-diario-visivel">Visível para (quem poderá ver este registro)</label>
+        <div class="chips-group" id="diario-visivel-chips" aria-labelledby="label-diario-visivel" role="group"style="gap:6px">
           <button class="chip active" data-dest="escola">🏫 Escola</button>
           <button class="chip active" data-dest="clinica">🏥 Clínica</button>
           <button class="chip active" data-dest="at">🧑‍⚕️ AT</button>
@@ -6503,18 +6503,18 @@ function renderPagesGestao() {
         </div>
         <div class="frow" style="margin-top:10px">
           <div><label class="flabel" for="gc-email-dest">E-mail da clínica</label><input type="email" id="gc-email-dest" class="finput" placeholder="Preenchido automaticamente do cadastro"></div>
-          <div><label class="flabel">WhatsApp da clínica</label><input type="text" id="gc-whats-dest" class="finput" placeholder="Preenchido automaticamente do cadastro"></div>
+          <div><label class="flabel" for="gc-whats-dest">WhatsApp da clínica</label><input type="text" id="gc-whats-dest" class="finput" placeholder="Preenchido automaticamente do cadastro"></div>
         </div>
         <div class="fblock">
-          <label class="flabel">Mensagem adicional (opcional)</label>
-          <textarea id="gc-msg-add" class="ftarea sm" placeholder="Complemento que não consta no formulário..."></textarea>
+         <label class="flabel" for="gc-msg-add">Mensagem adicional (opcional)</label>
+        <textarea id="gc-msg-add" class="ftarea sm" placeholder="Complemento que não consta no formulário..."></textarea>
         </div>
       </div>
       <div style="background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px">
         <div style="font-size:12.5px;color:var(--gr500);line-height:1.5">O profissional receberá um <strong style="color:var(--gr800)">link seguro e fechado</strong>. Ao preencher, o relatório é enviado automaticamente para a escola — rastreabilidade LGPD garantida.</div>
         <button class="btn-sm" id="gc-btn-enviar" onclick="gcEnviarFormulario()" style="background:#059669;color:#fff;border-color:#059669;white-space:nowrap">Enviar formulário</button>
       </div>
-      <div id="gc-ok-escola" style="display:none;margin-top:10px;padding:11px 14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:var(--rsm);font-size:13px;color:#166534;font-weight:600">
+      <div id="gc-ok-escola" style="display:none;margin-top:10px;padding:11px 14px;background:#F0FDF4;border:1px solid #86FAC;border-radius:var(--rsm);font-size:13px;color:#166534;font-weight:600">
         ✓ Formulário enviado! A clínica receberá o link para preenchimento. Acompanhe em "Relatórios da clínica".
       </div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
