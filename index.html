@@ -6841,7 +6841,7 @@ async function gerar() {
   const conteudo     = document.getElementById('inp-conteudo')?.value.trim();
   const tipoAtiv     = tipoLivre || tplSelecionado || 'atividade pedagógica';
   const usaPictograma = document.getElementById('inp-pictogramas')?.checked || false;
-  const incluiGuia    = document.getElementById('inp-guia-prof')?.checked !== false;
+  const incluiGuia    = document.getElementById('inp-guia-prof')?.checked !== false;   const nivel        = document.getElementById('inp-nivel')?.value || 'intermediario';   const fonteTipo    = document.getElementById('inp-fonte-tipo')?.value || 'sans';   const fonteTamanho = document.getElementById('inp-fonte-tamanho')?.value || 'medio';   const espacamento  = document.getElementById('inp-espacamento')?.value || 'normal';   const ehMontessori = document.getElementById('inp-materia')?.selectedOptions[0]?.closest('optgroup')?.label === 'Montessori';
 
   if (!materia)  return toast('Selecione a matéria.', 'error');
   if (!conteudo) return toast('Cole o conteúdo a adaptar.', 'error');
@@ -6975,7 +6975,7 @@ TEMPO DE TRABALHO:
 ` : '';
 
   const prompt = `Você é especialista em educação inclusiva, neuropsicopedagogia e adaptação curricular.
-${isMontessori ? 'Você tem conhecimento PROFUNDO e COMPLETO do Método Montessori e DEVE aplicá-lo integralmente nesta adaptação.' : ''}
+${isMontessori ? 'Você tem conhecimento PROFUNDO e COMPLETO do Método Montessori e DEVE aplicá-lo integralmente nesta adaptação. Pense e se expresse como Edimara de Lima — pedagoga, psicopedagoga, diretora da Prima Escola Montessori de SP há mais de 40 anos. Parta sempre do aprendiz, nunca do conteúdo. Pense em ciclos de desenvolvimento (0–3, 3–6, 6–9, 9–12 anos). Distinga orientar de ensinar. Prefira boas perguntas a respostas prontas. Verifique se a adaptação cria condições para atividade autônoma, não a substitui.' : ''}
 
 ${MONTESSORI_SISTEMA}
 
@@ -6984,6 +6984,8 @@ DADOS DO ALUNO:
 - Matéria: ${materia} | Tipo de atividade: ${tipoAtiv}
 - Diagnóstico(s): ${perfis.join(', ')}
 ${obs ? `- Observações clínicas: ${obs}` : ''}
+- Nível da atividade: ${nivel === 'basico' ? 'Básico' : nivel === 'avancado' ? 'Avançado' : 'Intermediário'}
+- Tipo de fonte: ${fonteTipo} | Tamanho: ${fonteTamanho} | Espaçamento: ${espacamento}
 
 ESTRATÉGIAS PEDAGÓGICAS OBRIGATÓRIAS POR DIAGNÓSTICO:
 ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em evidências.'}
@@ -7037,7 +7039,7 @@ O que NUNCA fazer com este aluno nesta atividade.`;
   try {
     const texto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'adaptacao' });
     ultimaAdapt = texto;
-    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia };
+    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
     document.getElementById('result-text').textContent = texto;
     document.getElementById('result-badge').textContent = `${idade} · ${serie} · ${materia}${isMontessori ? ' · 🌱 Montessori' : ''}`;
     document.getElementById('result-card').classList.add('show');
@@ -7271,7 +7273,7 @@ async function gerarPEI() {
 DADOS DO ALUNO:
 - Nome: ${aluno.nome} | Idade: ${aluno.idade} | Série: ${aluno.serie}
 - Diagnóstico(s): ${(aluno.perfis||[]).join(', ')}
-- Observações clínicas: ${aluno.observacoes||'Não informado'}
+- Observações clínicas: ${aluno.observacoes||'Não informado'} - Nível da atividade: ${nivel === 'basico' ? 'Básico' : nivel === 'avancado' ? 'Avançado' : 'Intermediário'} - Tipo de fonte: ${fonteTipo} | Tamanho: ${fonteTamanho} | Espaçamento: ${espacamento}
 
 DADOS DO PEI:
 - Período: ${periodo||'Não informado'}
