@@ -1531,8 +1531,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <select id="sol-aluno-id" class="fselect"><option value="">Selecionar aluno...</option></select>
       </div>
       <div class="fblock" style="margin-bottom:12px">
-        <label class="flabel">Nome do parceiro / instituição</label>
-        <input type="text" id="sol-parceiro-nome" class="finput" placeholder="Ex: Dra. Ana Silva / Clínica Espaço">
+<label class="flabel" for="sol-parceiro-nome">Nome do parceiro / instituição</label>
+        <input type="text" id="sol-parceiro-nome"class="finput" placeholder="Ex: Dra. Ana Silva / Clínica Espaço">
       </div>
       <div class="frow">
         <div class="fblock"><label class="flabel">E-mail</label><input type="email" id="sol-parceiro-email" class="finput" placeholder="parceiro@email.com"></div>
@@ -1602,7 +1602,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       </div>
       <div class="frow" style="margin-bottom:12px">
         <div class="fblock">
-          <label class="flabel">Expiração do link</label>
+<label class="flabel" for="sol-expiracao">Expiração do link</label>
           <select id="sol-expiracao" class="fselect">
             <option value="7">7 dias</option>
             <option value="15" selected>15 dias</option>
@@ -1610,7 +1610,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           </select>
         </div>
         <div class="fblock">
-          <label class="flabel">Senha de acesso (opcional, 4 dígitos)</label>
+        <label class="flabel" for="sol-senha">Senha de acesso (opcional, 4 dígitos)</label>
           <input type="text" id="sol-senha" class="finput" placeholder="1234" maxlength="4" pattern="[0-9]{4}" style="letter-spacing:6px;font-size:18px;text-align:center">
         </div>
       </div>
@@ -1813,15 +1813,14 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <!-- ── Seção: Identificação ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:4px">👤 Identificação</div>
       <div class="frow">
-        <div style="flex:2"><label class="flabel"></label><input type="text" id="cad-nome" class="finput" placeholder="Ex: Maria Luíza Souza"></div>
-        <div><label class="flabel">Idade</label> class="finput"></div>
+        <div style="flex:2"><label class="flabel" for="cad-nome">Nome completo *</label><input type="text" id="cad-nome" class="finput" placeholder="Ex: Maria Luíza Souza"></div>
         <div><label class="flabel" for="cad-idade">Idade</label><select id="cad-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
       </div>
 
       <!-- ── Seção: Filiação ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍👩‍👧 Filiação</div>
       <div class="frow">
-        <div style="flex:2"><label class="flabel">Nome do pai / responsável</label><input type="text" id="cad-pai" class="finput" placeholder="Ex: Carlos Eduardo Souza"></div>
+        <div style="flex:2"><label class="flabel" for="cad-pai">Nome do pai / responsável</label><input type="text" id="cad-pai"" class="finput" placeholder="Ex: Carlos Eduardo Souza"></div>
         <div><label class="flabel" for="cad-pai-tel">Telefone do pai</label><input type="text" id="cad-pai-tel" class="finput" placeholder="(11) 99999-9999"></div>
         <div><label class="flabel" for="cad-pai-email">E-mail do pai</label><input type="email" id="cad-pai-email" class="finput" placeholder="carlos@email.com"></div>
       </div>
@@ -1976,12 +1975,12 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     </div>
     <div style="margin-top:16px">
       <div class="frow">
-        <div><label class="flabel"></label><input type="text" id="cp-nome" class="finput" placeholder="Ex: Ana Paula Ferreira"></div>
+        <div><label class="flabel" for="cp-nome">Nome completo *</label><input type="text" id="cp-nome" class="finput" placeholder="Ex: Ana Paula Ferreira"></div>
         <div><label class="flabel">E-mail institucional * <span style="color:#E74C3C">obrigatório</span></label><input type="email" id="cp-email" class="finput" placeholder="professor@escola.com.br" required></div>
       </div>
       <div class="frow">
         <div><label class="flabel">Telefone / WhatsApp</label><input type="text" id="cp-tel" class="finput" placeholder="(11) 99999-9999"></div>
-        <div><label class="flabel">Tipo de vínculo</label>
+<label class="flabel" for="cp-vinculo">Tipo de vínculo</label>
           <select id="cp-vinculo" class="fselect">
             <option value="">Selecione</option>
             <option>Efetivo</option>
@@ -1994,7 +1993,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       </div>
 
       <div class="fblock" style="margin-bottom:12px">
-        <label class="flabel">Matérias / Áreas de atuação</label>
+<label class="flabel" for="cp-mat-inp">Matérias / Áreas de atuação</label>
         <div class="salas-input-group">
           <input type="text" id="cp-mat-inp" class="finput" placeholder="Ex: Matemática, Ciências…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarMatProf()}">
           <button class="btn-sm" onclick="adicionarMatProf()">+ Adicionar</button>
@@ -2003,7 +2002,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       </div>
 
       <div class="fblock" style="margin-bottom:12px">
-        <label class="flabel">Turmas / Salas atendidas</label>
+<label class="flabel" for="cp-sala-inp">Turmas / Salas atendidas</label>
         <div class="salas-input-group">
           <input type="text" id="cp-sala-inp" class="finput" placeholder="Ex: 3º ano A, 4º ano B…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarSalaProf()}">
           <button class="btn-sm" onclick="adicionarSalaProf()">+ Adicionar</button>
@@ -5164,7 +5163,7 @@ function renderPages() {
         <div class="aluno-sel-info" id="aluno-sel-info"></div>
       </div>
         <div class="frow">
-          <div><label class="flabel">Nome do aluno</label><input type="text" id="inp-aluno" class="finput" placeholder="Ex: João Silva"></div>
+          <div><label class="flabel" for="inp-aluno">Nome do aluno</label><input type="text" id="inp-aluno" class="finput" placeholder="Ex: João Silva"></div>
           <div><label class="flabel" for="inp-idade">Idade</label><select id="inp-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
         </div>
     </div>
@@ -5196,7 +5195,7 @@ function renderPages() {
 
     <div class="fcard">
       <div class="fcard-title">Conteúdo a adaptar</div>
-      <div class="fblock"><label class="flabel">Cole aqui o texto, atividade ou enunciado original</label><textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea></div>
+      <div class="fblock"><label class="flabel" for="inp-conteudo">Cole aqui o texto, atividade ou enunciado original</label><textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea></div>
 
       <!-- Opções de saída -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">
@@ -5251,7 +5250,7 @@ function renderPages() {
 
     <div class="pei-step">
       <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Selecione o aluno</div><div class="pei-step-sub">O PEI será elaborado com base nos dados já cadastrados</div></div></div>
-      <div class="fblock"><label class="flabel">Aluno</label>
+      <div class="fblock"><label class="flabel" for="pei-aluno-sel">Aluno</label>
         <select id="pei-aluno-sel" class="fselect" onchange="carregarDadosPEI()"><option value="">Selecione um aluno cadastrado</option></select>
       </div>
       <div id="pei-aluno-info" style="display:none;margin-top:10px;padding:10px 12px;background:var(--blue-light);border-radius:var(--rsm);font-size:13px;color:var(--p-navy)"></div>
@@ -5839,7 +5838,7 @@ function renderPages() {
     </div>
     <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
-        <label class="flabel">Aluno</label>
+       <label class="flabel" for="diario-aluno-sel">Aluno</label>
         <select id="diario-aluno-sel" class="fselect" onchange="carregarDiario()">
           <option value="">Selecione um aluno</option>
         </select>
@@ -6118,15 +6117,15 @@ function renderPagesGestao() {
       </div>
       <div class="frow">
         <div>
-          <label class="flabel">Data da reunião</label>
+          <label class="flabel" for="pauta-data">Data da reunião</label>
           <input type="date" id="pauta-data" class="finput">
         </div>
         <div>
-          <label class="flabel">Horário</label>
+         <label class="flabel" for="pauta-hora">Horário</label>
           <input type="time" id="pauta-hora" class="finput">
         </div>
         <div>
-          <label class="flabel">Local / Formato</label>
+        <label class="flabel" for="pauta-formato">Local / Formato</label>
           <select id="pauta-formato" class="fselect">
             <option value="presencial">Presencial — escola</option>
             <option value="remoto">Remoto — videoconferência</option>
@@ -6136,7 +6135,7 @@ function renderPagesGestao() {
       </div>
       <div class="frow">
         <div>
-          <label class="flabel">Duração prevista</label>
+         <label class="flabel" for="pauta-duracao">Duração prevista</label>
           <select id="pauta-duracao" class="fselect">
             <option value="30">30 minutos</option>
             <option value="45">45 minutos</option>
@@ -6146,8 +6145,8 @@ function renderPagesGestao() {
           </select>
         </div>
         <div>
-          <label class="flabel">Período de referência dos registros</label>
-          <select id="pauta-periodo" class="fselect">
+        <label class="flabel" for="pauta-periodo">Período de referência dos registros</label>
+          <select id="pauta-periodo"class="fselect">
             <option value="7">Últimos 7 dias</option>
             <option value="14">Últimas 2 semanas</option>
             <option value="30" selected>Último mês</option>
@@ -6157,8 +6156,8 @@ function renderPagesGestao() {
         </div>
       </div>
       <div class="fblock">
-        <label class="flabel">Participantes da reunião</label>
-        <div id="pauta-participantes-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+<label class="flabel" id="label-pauta-participantes">Participantes da reunião</label>
+        <div id="pauta-participantes-chips" role="group" aria-labelledby="label-pauta-participantes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
           <span class="chip active" data-p="coordenacao">🎓 Coordenação pedagógica</span>
           <span class="chip active" data-p="prof_sala">👩‍🏫 Prof. sala de aula</span>
           <span class="chip active" data-p="prof_aee">📚 Prof. AEE</span>
@@ -6180,7 +6179,7 @@ function renderPagesGestao() {
       </div>
       <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
         <div style="flex:1;min-width:200px">
-          <label class="flabel">Adicionar aluno</label>
+<label class="flabel" for="pauta-aluno-add">Adicionar aluno</label>
           <select id="pauta-aluno-add" class="fselect"><option value="">Selecione um aluno</option></select>
         </div>
         <button class="btn-sm" onclick="adicionarAlunoPauta()">+ Adicionar</button>
@@ -6199,7 +6198,7 @@ function renderPagesGestao() {
       </div>
       <div class="frow">
         <div>
-          <label class="flabel">Tipo de reunião</label>
+         <label class="flabel" for="pauta-tipo-reuniao">Tipo de reunião</label>
           <select id="pauta-tipo-reuniao" class="fselect">
             <option value="rotina">📅 Reunião de rotina / acompanhamento</option>
             <option value="crise">🚨 Reunião de crise / urgência</option>
@@ -6211,7 +6210,7 @@ function renderPagesGestao() {
           </select>
         </div>
         <div>
-          <label class="flabel">Prioridade da pauta</label>
+         <label class="flabel" for="pauta-prioridade">Prioridade da pauta</label>
           <select id="pauta-prioridade" class="fselect">
             <option value="alertas">⚠️ Priorizar alertas e regressões</option>
             <option value="conquistas">⭐ Destacar conquistas e avanços</option>
@@ -6221,7 +6220,7 @@ function renderPagesGestao() {
         </div>
       </div>
       <div class="fblock">
-        <label class="flabel">Contexto ou pautas específicas que a equipe quer discutir</label>
+<label class="flabel" for="pauta-contexto-extra">Contexto ou pautas específicas que a equipe quer discutir</label>
         <textarea id="pauta-contexto-extra" class="ftarea sm" placeholder="Ex: A família pediu para discutir o uso do dispositivo de CAA. Há um conflito entre o aluno e um colega no recreio que precisa de atenção. A professora quer revisar a adaptação de avaliação do 3º bimestre…"></textarea>
       </div>
     </div>
@@ -6410,7 +6409,7 @@ function renderPagesGestao() {
       <div class="fcard">
         <div class="fcard-title">Selecionar estudante</div>
         <div class="fblock" style="margin-top:12px">
-          <label class="flabel">Buscar estudante *</label>
+          <label class="flabel" for="gc-busca-estudante">Buscar estudante *</label>
           <input type="text" id="gc-busca-estudante" class="finput" placeholder="Digite o nome do estudante..." oninput="gcFiltrarEstudantes()">
         </div>
         <div id="gc-estudantes-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
@@ -6451,31 +6450,31 @@ function renderPagesGestao() {
           <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Data</div><div style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px" id="gc-info-data">—</div></div>
         </div>
         <div class="fblock">
-          <label class="flabel">Motivo da comunicação *</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gc-chips-motivo">
-            <button class="chip active" onclick="gcToggleChip(this,'gc-chips-motivo')">Adaptação curricular</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-motivo')">Comportamento em sala</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-motivo')">Comunicação e fala</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-motivo')">Socialização</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-motivo')">Avaliação pedagógica</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-motivo')">Outro</button>
+         <label class="flabel" id="label-gc-motivo">Motivo da comunicação *</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gc-chips-motivo" role="group" aria-labelledby="label-gc-motivo">
+            <button class="chip active" aria-pressed="true" onclick="gcToggleChip(this,'gc-chips-motivo')">Adaptação curricular</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-motivo')">Comportamento em sala</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-motivo')">Comunicação e fala</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-motivo')">Socialização</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-motivo')">Avaliação pedagógica</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-motivo')">Outro</button>
           </div>
         </div>
         <div class="fblock" style="margin-top:12px">
-          <label class="flabel">Observações da escola *</label>
+          <label class="flabel" for="gc-obs-escola">Observações da escola *</label>
           <textarea id="gc-obs-escola" class="ftarea sm" placeholder="Descreva comportamentos observados em sala, dificuldades específicas, progressos ou preocupações que a clínica deve conhecer..."></textarea>
         </div>
         <div class="fblock">
-          <label class="flabel">Perguntas ao profissional *</label>
+          <label class="flabel" for="gc-perguntas">Perguntas ao profissional *</label>
           <textarea id="gc-perguntas" class="ftarea sm" placeholder="Ex: Quais estratégias recomendam para aplicar em sala? Há mudanças no quadro do estudante que impactam o desempenho escolar?"></textarea>
         </div>
         <div class="fblock">
-          <label class="flabel">Prazo esperado para resposta</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gc-chips-prazo">
-            <button class="chip active" onclick="gcToggleChip(this,'gc-chips-prazo')">7 dias</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-prazo')">15 dias</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-prazo')">30 dias</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-prazo')">Sem prazo</button>
+<label class="flabel" id="label-gc-prazo">Prazo esperado para resposta</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gc-chips-prazo" role="group" aria-labelledby="label-gc-prazo">
+            <button class="chip active" aria-pressed="true" onclick="gcToggleChip(this,'gc-chips-prazo')">7 dias</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-prazo')">15 dias</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-prazo')">30 dias</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-prazo')">Sem prazo</button>
           </div>
         </div>
       </div>
@@ -6494,11 +6493,11 @@ function renderPagesGestao() {
       <div class="fcard">
         <div class="fcard-title">Canal de envio</div>
         <div class="fblock" style="margin-top:10px">
-          <label class="flabel">Enviar via</label>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px" id="gc-chips-canal">
-            <button class="chip active" onclick="gcToggleChip(this,'gc-chips-canal')">E-mail</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-canal')">WhatsApp</button>
-            <button class="chip" onclick="gcToggleChip(this,'gc-chips-canal')">E-mail + WhatsApp</button>
+<label class="flabel" id="label-gc-canal">Enviar via</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px" id="gc-chips-canal" role="group" aria-labelledby="label-gc-canal">
+<button class="chip active" aria-pressed="true" onclick="gcToggleChip(this,'gc-chips-canal')">E-mail</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-canal')">WhatsApp</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gc-chips-canal')">E-mail + WhatsApp</button>
           </div>
         </div>
         <div class="frow" style="margin-top:10px">
