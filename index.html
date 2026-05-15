@@ -1976,10 +1976,10 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <div style="margin-top:16px">
       <div class="frow">
         <div><label class="flabel" for="cp-nome">Nome completo *</label><input type="text" id="cp-nome" class="finput" placeholder="Ex: Ana Paula Ferreira"></div>
-        <div><label class="flabel">E-mail institucional * <span style="color:#E74C3C">obrigatório</span></label><input type="email" id="cp-email" class="finput" placeholder="professor@escola.com.br" required></div>
+        <div><label class="flabel" for="cp-email">E-mail institucional * <span style="color:#E74C3C">obrigatório</span></label><input type="email" id="cp-email" class="finput" placeholder="professor@escola.com.br" required></div>
       </div>
       <div class="frow">
-        <div><label class="flabel">Telefone / WhatsApp</label><input type="text" id="cp-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel" for="cp-tel">Telefone / WhatsApp</label><input type="text" id="cp-tel" class="finput" placeholder="(11) 99999-9999"></div>
 <label class="flabel" for="cp-vinculo">Tipo de vínculo</label>
           <select id="cp-vinculo" class="fselect">
             <option value="">Selecione</option>
@@ -2011,7 +2011,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       </div>
 
       <div class="fblock">
-        <label class="flabel">Observações</label>
+       <label class="flabel" for="cp-obs">Observações</label>
         <textarea id="cp-obs" class="ftarea sm" placeholder="Ex: Professora de apoio inclusivo, atende AEE, responsável pela sala de recursos…"></textarea>
       </div>
 
@@ -2171,17 +2171,17 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     </div>
     <div style="margin-top:16px">
       <div class="frow">
-        <div><label class="flabel">Nome do aluno *</label><input type="text" id="cc-nome" class="finput" placeholder="Nome completo"></div>
+        <div><label class="flabel" for="cc-nome">Nome do aluno *</label><input type="text" id="cc-nome" class="finput" placeholder="Nome completo"></div>
         <div><label class="flabel" for="cc-idade">Idade</label><input type="text" id="cc-idade" class="finput" placeholder="Ex: 8 anos"></div>
       </div>
       <div class="frow">
-        <div><label class="flabel">Diagnóstico(s)</label><input type="text" id="cc-diag" class="finput" placeholder="Ex: TEA nível 2, TDAH combinado"></div>
-        <div><label class="flabel">Hipóteses clínicas</label><input type="text" id="cc-hipotese" class="finput" placeholder="Ex: TPS associado, ansiedade"></div>
+        <div><label class="flabel" for="cc-diag">Diagnóstico(s)</label><input type="text" id="cc-diag" class="finput" placeholder="Ex: TEA nível 2, TDAH combinado"></div>
+        <div><label class="flabel" for="cc-hipotese">Hipóteses clínicas</label><input type="text" id="cc-hipotese" class="finput" placeholder="Ex: TPS associado, ansiedade"></div>
       </div>
       <div class="frow">
         <div>
-          <label class="flabel">Comunicação</label>
-          <select id="cc-comunicacao" class="fselect">
+          <label class="flabel" for="cc-comunicacao">Comunicação</label>
+          <select id="cc-comunicacao"class="fselect">
             <option value="">Selecione</option>
             <option>Verbal fluente</option><option>Verbal com limitações</option>
             <option>Verbal emergente</option><option>Não-verbal — usa CAA</option>
@@ -2189,7 +2189,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           </select>
         </div>
         <div>
-          <label class="flabel">Regulação emocional</label>
+<label class="flabel" for="cc-regulacao">Regulação emocional</label>
           <select id="cc-regulacao" class="fselect">
             <option value="">Selecione</option>
             <option>Preservada</option><option>Comprometida — crises frequentes</option>
@@ -2199,7 +2199,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       </div>
       <div class="frow">
         <div>
-          <label class="flabel">Perfil sensorial</label>
+<label class="flabel" for="cc-sensorio">Perfil sensorial</label>
           <select id="cc-sensorio" class="fselect">
             <option value="">Selecione</option>
             <option>Sem particularidades</option><option>Hipersensibilidade</option>
@@ -2207,7 +2207,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           </select>
         </div>
         <div>
-          <label class="flabel">Motricidade</label>
+<label class="flabel" for="cc-motricidade">Motricidade</label>
           <select id="cc-motricidade" class="fselect">
             <option value="">Selecione</option>
             <option>Preservada</option><option>Motricidade fina comprometida</option>
@@ -2216,15 +2216,15 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         </div>
       </div>
       <div class="fblock">
-        <label class="flabel">Funções preservadas</label>
+<label class="flabel" for="cc-preservadas">Funções preservadas</label>
         <textarea id="cc-preservadas" class="ftarea sm" placeholder="Ex: Boa memória visual, linguagem receptiva preservada, interesse em rotinas…"></textarea>
       </div>
       <div class="fblock">
-        <label class="flabel">Funções comprometidas</label>
+<label class="flabel" for="cc-comprometidas">Funções comprometidas</label>
         <textarea id="cc-comprometidas" class="ftarea sm" placeholder="Ex: Linguagem expressiva, regulação emocional, tolerância à frustração…"></textarea>
       </div>
       <div class="fblock">
-        <label class="flabel">Comportamento (observações relevantes)</label>
+       <label class="flabel" for="cc-comportamento">Comportamento (observações relevantes)</label>
         <textarea id="cc-comportamento" class="ftarea sm" placeholder="Ex: Estereotipias em situações de estresse, rigidez de rotina, autolesão ocasional…"></textarea>
       </div>
 
@@ -2938,43 +2938,43 @@ function renderPagesGestaoClinica() {
         <span style="font-size:11px;padding:2px 8px;border-radius:999px;background:#EEF2FF;color:#1D4ED8;font-weight:600">Área exclusiva da clínica</span>
       </div>
       <div class="fblock">
-        <label class="flabel">Situação atual do paciente *</label>
+        <label class="flabel" for="gcr-situacao">Situação atual do paciente *</label>
         <textarea id="gcr-situacao" class="ftarea sm" placeholder="Descreva a evolução recente, objetivos terapêuticos atuais, recursos utilizados nas sessões..."></textarea>
       </div>
       <div class="fblock">
-        <label class="flabel">Resposta às perguntas da escola *</label>
+<label class="flabel" for="gcr-respostas">Resposta às perguntas da escola *</label>
         <textarea id="gcr-respostas" class="ftarea sm" placeholder="Responda diretamente às questões levantadas pela escola, em linguagem acessível ao professor..."></textarea>
       </div>
       <div class="fblock">
-        <label class="flabel">Estratégias recomendadas para o ambiente escolar</label>
+       <label class="flabel" for="gcr-estrategias">Estratégias recomendadas para o ambiente escolar</label>
         <textarea id="gcr-estrategias" class="ftarea sm" placeholder="Ex: Oferecer pausas sensoriais de 5 min a cada 30 min; reduzir estímulos visuais na carteira; utilizar instruções em passos numerados..."></textarea>
       </div>
       <div class="frow">
         <div>
-          <label class="flabel">Tipo de retorno</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gcr-chips-tipo">
-            <button class="chip active" onclick="gcToggleChip(this,'gcr-chips-tipo')">Orientação pedagógica</button>
-            <button class="chip" onclick="gcToggleChip(this,'gcr-chips-tipo')">Mudança de quadro</button>
-            <button class="chip" onclick="gcToggleChip(this,'gcr-chips-tipo')">Revisão de metas</button>
-            <button class="chip" onclick="gcToggleChip(this,'gcr-chips-tipo')">Alerta importante</button>
+        <label class="flabel" id="label-gcr-tipo">Tipo de retorno</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gcr-chips-tipo" role="group" aria-labelledby="label-gcr-tipo">
+            <button class="chip active" aria-pressed="true" onclick="gcToggleChip(this,'gcr-chips-tipo')">Orientação pedagógica</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gcr-chips-tipo')">Mudança de quadro</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gcr-chips-tipo')">Revisão de metas</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gcr-chips-tipo')">Alerta importante</button>
           </div>
         </div>
         <div>
-          <label class="flabel">Próxima revisão recomendada</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gcr-chips-revisao">
-            <button class="chip active" onclick="gcToggleChip(this,'gcr-chips-revisao')">30 dias</button>
-            <button class="chip" onclick="gcToggleChip(this,'gcr-chips-revisao')">60 dias</button>
-            <button class="chip" onclick="gcToggleChip(this,'gcr-chips-revisao')">90 dias</button>
-            <button class="chip" onclick="gcToggleChip(this,'gcr-chips-revisao')">Sob demanda</button>
+<label class="flabel" id="label-gcr-revisao">Próxima revisão recomendada</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gcr-chips-revisao" role="group" aria-labelledby="label-gcr-revisao">
+            <button class="chip active" aria-pressed="true" onclick="gcToggleChip(this,'gcr-chips-revisao')">30 dias</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gcr-chips-revisao')">60 dias</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gcr-chips-revisao')">90 dias</button>
+            <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gcr-chips-revisao')">Sob demanda</button>
           </div>
         </div>
       </div>
       <div class="fblock" style="margin-top:10px">
-        <label class="flabel">Canal de retorno para a escola</label>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gcr-chips-canal">
-          <button class="chip active" onclick="gcToggleChip(this,'gcr-chips-canal')">E-mail</button>
-          <button class="chip" onclick="gcToggleChip(this,'gcr-chips-canal')">WhatsApp</button>
-          <button class="chip" onclick="gcToggleChip(this,'gcr-chips-canal')">E-mail + WhatsApp</button>
+        <label class="flabel" id="label-gcr-canal">Canal de retorno para a escola</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="gcr-chips-canal" role="group" aria-labelledby="label-gcr-canal">
+          <button class="chip active" aria-pressed="true" onclick="gcToggleChip(this,'gcr-chips-canal')">E-mail</button>
+          <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gcr-chips-canal')">WhatsApp</button>
+          <button class="chip" aria-pressed="false" onclick="gcToggleChip(this,'gcr-chips-canal')">E-mail + WhatsApp</button>
         </div>
       </div>
     </div>
@@ -5154,7 +5154,7 @@ function renderPages() {
     <div class="fcard">
       <div class="fcard-title">Dados do aluno</div>
       <div id="painel-cadastrado" class="show">
-        <div class="fblock"><label class="flabel">Buscar aluno</label>
+        <div class="fblock"><label class="flabel" for="aluno-search">Buscar aluno</label>
           <div class="aluno-selector">
             <input class="aluno-search" id="aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSel()">
             <div id="aluno-lista-sel"></div>
@@ -5171,7 +5171,7 @@ function renderPages() {
     <div class="fcard">
       <div class="fcard-title">Matéria e tipo de atividade</div>
       <div class="frow">
-        <div><label class="flabel">Matéria / Área</label>
+        <div><label class="flabel" for="inp-materia">Matéria / Área</label>
           <select id="inp-materia" class="fselect" onchange="atualizarTemplates()">
             <option value="">Selecione</option>
             <optgroup label="Montessori">
@@ -5190,7 +5190,7 @@ function renderPages() {
           <div class="templates-grid" id="templates-grid"><span style="font-size:12px;color:var(--gr400)">Selecione uma matéria</span></div>
         </div>
       </div>
-      <div class="fblock"><label class="flabel">Ou descreva livremente o tipo de atividade</label><input type="text" id="inp-tipo-livre" class="finput" placeholder="Ex: Avaliação oral com apoio visual, atividade em dupla com mediação…"></div>
+      <div class="fblock"><label class="flabel" for="inp-tipo-livre">Ou descreva livremente o tipo de atividade</label><input type="text" id="inp-tipo-livre" class="finput" placeholder="Ex: Avaliação oral com apoio visual, atividade em dupla com mediação…"></div>
     </div>
 
     <div class="fcard">
@@ -5970,7 +5970,7 @@ function renderPages() {
     </div>
     <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
-        <label class="flabel">Aluno</label>
+        <label class="flabel" for="conv-aluno-sel">Aluno</label>
         <select id="conv-aluno-sel" class="fselect" onchange="carregarObjetivosConvergentes()">
           <option value="">Selecione um aluno</option>
         </select>
@@ -10706,12 +10706,12 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
     <div style="margin-top:16px">
       <div class="frow">
         <div><label class="flabel" for="cpc-nome">Nome completo *</label><input type="text" id="cpc-nome" class="finput" placeholder="Ex: Dra. Camila Rocha"></div>
-        <div><label class="flabel">E-mail * <span style="color:#E74C3C">obrigatório</span></label><input type="email" id="cpc-email" class="finput" placeholder="profissional@clinica.com.br"></div>
+        <div><label class="flabel" for="cpc-email">E-mail * <span style="color:#E74C3C">obrigatório</span></label><input type="email" id="cpc-email" class="finput" placeholder="profissional@clinica.com.br"></div>
       </div>
       <div class="frow">
-        <div><label class="flabel">Telefone / WhatsApp</label><input type="text" id="cpc-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel" for="cpc-tel">Telefone / WhatsApp</label><input type="text" id="cpc-tel" class="finput" placeholder="(11) 99999-9999"></div>
         <div>
-          <label class="flabel">Especialidade * <span style="color:#E74C3C">define o menu de acesso</span></label>
+          <label class="flabel" for="cpc-especialidade">Especialidade * <span style="color:#E74C3C">define o menu de acesso</span></label>
           <select id="cpc-especialidade" class="fselect">
             <option value="">Selecione a especialidade</option>
             <option value="fono">Fonoaudiologia</option>
@@ -10727,8 +10727,8 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
         </div>
       </div>
       <div class="frow">
-        <div><label class="flabel">Registro profissional (CRP, CRFa…)</label><input type="text" id="cpc-registro" class="finput" placeholder="Ex: CRFa 12345/SP"></div>
-        <div><label class="flabel">Tipo de vínculo</label>
+        <div><label class="flabel" for="cpc-registro">Registro profissional (CRP, CRFa…)</label><input type="text" id="cpc-registro" class="finput" placeholder="Ex: CRFa 12345/SP"></div>
+        <div><label class="flabel" for="cpc-vinculo">Tipo de vínculo</label>
           <select id="cpc-vinculo" class="fselect">
             <option value="">Selecione</option>
             <option>CLT</option><option>PJ</option><option>Autônomo</option><option>Estágio</option>
@@ -10736,7 +10736,7 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
         </div>
       </div>
       <div class="fblock">
-        <label class="flabel">Observações</label>
+       <label class="flabel" for="cpc-obs">Observações</label>
         <textarea id="cpc-obs" class="ftarea sm" placeholder="Especialidades adicionais, horários, notas…"></textarea>
       </div>
 
