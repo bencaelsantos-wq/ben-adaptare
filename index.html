@@ -1813,29 +1813,29 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <!-- ── Seção: Identificação ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:4px">👤 Identificação</div>
       <div class="frow">
-        <div style="flex:2"><label class="flabel">Nome completo *</label><input type="text" id="cad-nome" class="finput" placeholder="Ex: Maria Luíza Souza"></div>
-        <div><label class="flabel">Data de nascimento</label><input type="date" id="cad-nasc" class="finput"></div>
-        <div><label class="flabel">Idade</label><select id="cad-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
+        <div style="flex:2"><label class="flabel"></label><input type="text" id="cad-nome" class="finput" placeholder="Ex: Maria Luíza Souza"></div>
+        <div><label class="flabel">Idade</label> class="finput"></div>
+        <div><label class="flabel" for="cad-idade">Idade</label><select id="cad-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
       </div>
 
       <!-- ── Seção: Filiação ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍👩‍👧 Filiação</div>
       <div class="frow">
         <div style="flex:2"><label class="flabel">Nome do pai / responsável</label><input type="text" id="cad-pai" class="finput" placeholder="Ex: Carlos Eduardo Souza"></div>
-        <div><label class="flabel">Telefone do pai</label><input type="text" id="cad-pai-tel" class="finput" placeholder="(11) 99999-9999"></div>
-        <div><label class="flabel">E-mail do pai</label><input type="email" id="cad-pai-email" class="finput" placeholder="carlos@email.com"></div>
+        <div><label class="flabel" for="cad-pai-tel">Telefone do pai</label><input type="text" id="cad-pai-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel" for="cad-pai-email">E-mail do pai</label><input type="email" id="cad-pai-email" class="finput" placeholder="carlos@email.com"></div>
       </div>
       <div class="frow">
-        <div style="flex:2"><label class="flabel">Nome da mãe / responsável</label><input type="text" id="cad-mae" class="finput" placeholder="Ex: Fernanda Lima Souza"></div>
-        <div><label class="flabel">Telefone da mãe</label><input type="text" id="cad-mae-tel" class="finput" placeholder="(11) 99999-9999"></div>
-        <div><label class="flabel">E-mail da mãe</label><input type="email" id="cad-mae-email" class="finput" placeholder="fernanda@email.com"></div>
+        <div style="flex:2"><label class="flabel" for="cad-mae">Nome da mãe / responsável</label><input type="text" id="cad-mae" class="finput" placeholder="Ex: Fernanda Lima Souza"></div>
+        <div><label class="flabel" for="cad-mae-tel">Telefone da mãe</label><input type="text" id="cad-mae-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel" for="cad-mae-email">E-mail da mãe</label><input type="email" id="cad-mae-email" class="finput" placeholder="fernanda@email.com"></div>
       </div>
 
       <!-- ── Seção: Escolaridade ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">🏫 Escolaridade</div>
       <div class="frow">
         <div style="flex:2">
-          <label class="flabel">Abordagem / Método pedagógico</label>
+        <label class="flabel" for="cad-metodo">Abordagem / Método pedagógico</label>
           <select id="cad-metodo" class="fselect">
             <option value="">Selecione</option>
             <option>Tradicional</option>
@@ -1851,7 +1851,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           </select>
         </div>
         <div style="flex:2">
-          <label class="flabel">Série / Ano</label>
+          <label class="flabel" for="cad-serie">Série / Ano</label>
           <select id="cad-serie" class="fselect">
             <option value="">Selecione</option>
             <optgroup label="Ed. Infantil"><option>Maternal</option><option>Jardim I</option><option>Jardim II</option><option>Pré-escola</option></optgroup>
@@ -1866,20 +1866,20 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <!-- ── Seção: Perfis / Diagnósticos ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">🧠 Perfis / Diagnósticos</div>
       <div class="fblock"><div class="chips-group" id="chips-cad" style="max-height:130px;overflow-y:auto"></div></div>
-      <div class="fblock" style="margin-top:10px"><label class="flabel">Observações clínicas</label><textarea id="cad-obs" class="ftarea sm" placeholder="Laudo, pontos fortes, desafios, recursos utilizados, estratégias de manejo…"></textarea></div>
+      <div class="fblock" style="margin-top:10px"><label class="flabel" for="cad-obs">Observações clínicas</label><textarea id="cad-obs" class="ftarea sm" placeholder="Laudo, pontos fortes, desafios, recursos utilizados, estratégias de manejo…"></textarea></div>
 
       <!-- ── Seção: Dados da Clínica ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">🏥 Dados da Clínica / Equipe terapêutica</div>
       <div class="frow">
-        <div style="flex:2"><label class="flabel">Nome da clínica</label><input type="text" id="cad-clinica-nome" class="finput" placeholder="Ex: Clínica Integrar"></div>
-        <div><label class="flabel">Telefone da clínica</label><input type="text" id="cad-clinica-tel" class="finput" placeholder="(11) 3333-4444"></div>
+        <div style="flex:2"><label class="flabel" for="cad-clinica-nome">Nome da clínica</label><input type="text" id="cad-clinica-nome" class="finput" placeholder="Ex: Clínica Integrar"></div>
+        <div><label class="flabel" for="cad-clinica-tel">Telefone da clínica</label><input type="text" id="cad-clinica-tel" class="finput" placeholder="(11) 3333-4444"></div>
       </div>
       <div class="frow">
-        <div style="flex:2"><label class="flabel">E-mail da clínica</label><input type="email" id="cad-clinica-email" class="finput" placeholder="contato@clinica.com.br"></div>
-        <div style="flex:2"><label class="flabel">Endereço da clínica</label><input type="text" id="cad-clinica-end" class="finput" placeholder="Rua, número, bairro, cidade"></div>
+        <div style="flex:2"><label class="flabel" for="cad-clinica-email">E-mail da clínica</label><input type="email" id="cad-clinica-email" class="finput" placeholder="contato@clinica.com.br"></div>
+        <div style="flex:2"><label class="flabel" for="cad-clinica-end">Endereço da clínica</label><input type="text" id="cad-clinica-end" class="finput" placeholder="Rua, número, bairro, cidade"></div>
       </div>
       <div class="fblock">
-        <label class="flabel">Profissionais da clínica</label>
+        <label class="flabel" for="cad-prof-inp">Profissionais da clínica</label>
         <div class="salas-input-group">
           <input type="text" id="cad-prof-inp" class="finput" placeholder="Ex: Dra. Ana — Fonoaudióloga, Dr. Paulo — Psicólogo…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarProfClinicaAluno()}">
           <button class="btn-sm" onclick="adicionarProfClinicaAluno()">+ Adicionar</button>
@@ -1890,13 +1890,13 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <!-- AT responsável -->
       <div class="frow" style="margin-top:4px">
         <div style="flex:2">
-          <label class="flabel">Acompanhante Terapêutico (AT) responsável</label>
+          <label class="flabel" for="cad-at-id">Acompanhante Terapêutico (AT) responsável</label>
           <select id="cad-at-id" class="fselect">
             <option value="">Sem AT vinculado</option>
           </select>
         </div>
         <div style="flex:2">
-          <label class="flabel">Nome do AT (se não cadastrado)</label>
+          <label class="flabel" for="cad-at-nome">Nome do AT (se não cadastrado)</label>
           <input type="text" id="cad-at-nome" class="finput" placeholder="Nome do AT externo">
         </div>
       </div>
@@ -1904,7 +1904,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <!-- ── Seção: Documentos ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">📎 Documentos (laudos, relatórios)</div>
       <div class="fblock">
-        <label class="flabel">Anexar arquivos PDF <span style="color:var(--gr400);font-weight:400">(somente PDF · máx. 5 MB por arquivo)</span></label>
+        <label class="flabel" for="cad-docs-input">Anexar arquivos PDF <span style="color:var(--gr400);font-weight:400">(somente PDF · máx. 5 MB por arquivo)</span></label>
         <div id="cad-docs-drop" onclick="document.getElementById('cad-docs-input').click()" style="border:2px dashed var(--gr300);border-radius:10px;padding:18px;text-align:center;cursor:pointer;color:var(--gr400);font-size:13px;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--p-blue)'" onmouseleave="this.style.borderColor='var(--gr300)'" ondragover="event.preventDefault();this.style.borderColor='var(--p-blue)'" ondragleave="this.style.borderColor='var(--gr300)'" ondrop="handleDocsDrop(event)">
           📄 Clique ou arraste arquivos PDF aqui
         </div>
@@ -1976,7 +1976,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     </div>
     <div style="margin-top:16px">
       <div class="frow">
-        <div><label class="flabel">Nome completo *</label><input type="text" id="cp-nome" class="finput" placeholder="Ex: Ana Paula Ferreira"></div>
+        <div><label class="flabel"></label><input type="text" id="cp-nome" class="finput" placeholder="Ex: Ana Paula Ferreira"></div>
         <div><label class="flabel">E-mail institucional * <span style="color:#E74C3C">obrigatório</span></label><input type="email" id="cp-email" class="finput" placeholder="professor@escola.com.br" required></div>
       </div>
       <div class="frow">
@@ -2173,7 +2173,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <div style="margin-top:16px">
       <div class="frow">
         <div><label class="flabel">Nome do aluno *</label><input type="text" id="cc-nome" class="finput" placeholder="Nome completo"></div>
-        <div><label class="flabel">Idade</label><input type="text" id="cc-idade" class="finput" placeholder="Ex: 8 anos"></div>
+        <div><label class="flabel" for="cc-idade">Idade</label><input type="text" id="cc-idade" class="finput" placeholder="Ex: 8 anos"></div>
       </div>
       <div class="frow">
         <div><label class="flabel">Diagnóstico(s)</label><input type="text" id="cc-diag" class="finput" placeholder="Ex: TEA nível 2, TDAH combinado"></div>
@@ -5165,7 +5165,7 @@ function renderPages() {
       </div>
         <div class="frow">
           <div><label class="flabel">Nome do aluno</label><input type="text" id="inp-aluno" class="finput" placeholder="Ex: João Silva"></div>
-          <div><label class="flabel">Idade</label><select id="inp-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
+          <div><label class="flabel" for="inp-idade">Idade</label><select id="inp-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
         </div>
     </div>
 
@@ -5260,29 +5260,29 @@ function renderPages() {
     <div class="pei-step">
       <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Período e responsáveis</div></div></div>
       <div class="frow">
-        <div><label class="flabel">Período de vigência</label><input type="text" id="pei-periodo" class="finput" placeholder="Ex: 1º semestre de 2025"></div>
-        <div><label class="flabel">Professor responsável</label>
+        <div><label class="flabel" for="pei-periodo">Período de vigência</label><input type="text" id="pei-periodo" class="finput" placeholder="Ex: 1º semestre de 2025"></div>
+       <label class="flabel" for="pei-professor">Professor responsável</label>
           <select id="pei-professor" class="fselect" onchange="peiProfSelecionado(this)">
             <option value="">Selecione o professor responsável</option>
           </select>
         </div>
       </div>
       <div class="frow">
-        <div><label class="flabel">Coordenador(a) Pedagógico(a)</label><input type="text" id="pei-coordenador" class="finput" placeholder="Nome do coordenador pedagógico"></div>
-        <div><label class="flabel">Acompanhante Terapêutico (AT)</label><input type="text" id="pei-at" class="finput" placeholder="Nome do AT responsável"></div>
+        <div><label class="flabel" for="pei-coordenador">Coordenador(a) Pedagógico(a)</label><input type="text" id="pei-coordenador" class="finput" placeholder="Nome do coordenador pedagógico"></div>
+        <div><label class="flabel" for="pei-at">Acompanhante Terapêutico (AT)</label><input type="text" id="pei-at" class="finput" placeholder="Nome do AT responsável"></div>
       </div>
       <div class="frow">
-        <div><label class="flabel">Área de atuação / Disciplina</label><input type="text" id="pei-disciplina" class="finput" placeholder="Ex: Professora de sala / AEE"></div>
+        <div><label class="flabel" for="pei-disciplina">Área de atuação / Disciplina</label><input type="text" id="pei-disciplina" class="finput" placeholder="Ex: Professora de sala / AEE"></div>
         <div>
-          <label class="flabel">Profissionais de apoio</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="pei-apoio-chips">
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Fonoaudióloga</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Terapeuta Ocupacional</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Psicóloga</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Fisioterapeuta</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Neuropediatra</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">AT</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-apoio-chips')">Prof. AEE</button>
+         <label class="flabel" id="label-pei-apoio">Profissionais de apoio</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="pei-apoio-chips" role="group" aria-labelledby="label-pei-apoio">
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-apoio-chips')">Fonoaudióloga</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-apoio-chips')">Terapeuta Ocupacional</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-apoio-chips')">Psicóloga</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-apoio-chips')">Fisioterapeuta</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-apoio-chips')">Neuropediatra</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-apoio-chips')">AT</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-apoio-chips')">Prof. AEE</button>
           </div>
           <input type="hidden" id="pei-apoio">
         </div>
@@ -5291,72 +5291,72 @@ function renderPages() {
 
     <div class="pei-step">
       <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Contexto atual do aluno</div><div class="pei-step-sub">Descreva o momento atual de desenvolvimento</div></div></div>
-      <div class="fblock"><label class="flabel">Nível atual de aprendizagem e desenvolvimento</label><textarea id="pei-nivel" class="ftarea sm" placeholder="Ex: Aluno em processo de alfabetização, reconhece letras do próprio nome, apresenta dificuldade em sequências longas de instrução…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="pei-nivel">Nível atual de aprendizagem e desenvolvimento</label><textarea id="pei-nivel" class="ftarea sm" placeholder="Ex: Aluno em processo de alfabetização, reconhece letras do próprio nome, apresenta dificuldade em sequências longas de instrução…"></textarea></div>
       <div class="frow">
-        <div><label class="flabel">Pontos fortes e interesses</label><textarea id="pei-fortes" class="ftarea sm" placeholder="Ex: Boa memória visual, interesse por ciências e dinossauros, habilidades musicais…"></textarea></div>
-        <div><label class="flabel">Principais barreiras à aprendizagem</label><textarea id="pei-barreiras" class="ftarea sm" placeholder="Ex: Dificuldade de regulação emocional, hipersensibilidade sonora, dificuldade de permanecer em atividade por mais de 10 min…"></textarea></div>
+        <div><label class="flabel" for="pei-fortes">Pontos fortes e interesses</label><textarea id="pei-fortes" class="ftarea sm" placeholder="Ex: Boa memória visual, interesse por ciências e dinossauros, habilidades musicais…"></textarea></div>
+        <div><label class="flabel" for="pei-barreiras">Principais barreiras à aprendizagem</label><textarea id="pei-barreiras" class="ftarea sm" placeholder="Ex: Dificuldade de regulação emocional, hipersensibilidade sonora, dificuldade de permanecer em atividade por mais de 10 min…"></textarea></div>
       </div>
     </div>
 
     <div class="pei-step">
       <div class="pei-step-header"><div class="pei-step-num">4</div><div><div class="pei-step-title">Metas e objetivos individualizados</div></div></div>
-      <div class="fblock"><label class="flabel">Metas acadêmicas (o que o aluno deve alcançar neste período)</label><textarea id="pei-metas-ac" class="ftarea sm" placeholder="Ex: Reconhecer e escrever as letras do alfabeto; resolver adições simples com apoio de material concreto…"></textarea></div>
-      <div class="fblock"><label class="flabel">Metas de desenvolvimento (comunicação, autonomia, social, emocional)</label><textarea id="pei-metas-dev" class="ftarea sm" placeholder="Ex: Ampliar vocabulário funcional usando CAA; aumentar tempo de permanência em atividade para 15 min; iniciar interações com colegas com mediação…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="pei-metas-ac">Metas acadêmicas (o que o aluno deve alcançar neste período)</label><textarea id="pei-metas-ac" class="ftarea sm" placeholder="Ex: Reconhecer e escrever as letras do alfabeto; resolver adições simples com apoio de material concreto…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="pei-metas-dev">Metas de desenvolvimento (comunicação, autonomia, social, emocional)</label><textarea id="pei-metas-dev" class="ftarea sm" placeholder="Ex: Ampliar vocabulário funcional usando CAA; aumentar tempo de permanência em atividade para 15 min; iniciar interações com colegas com mediação…"></textarea></div>
     </div>
 
     <div class="pei-step">
       <div class="pei-step-header"><div class="pei-step-num">5</div><div><div class="pei-step-title">Estratégias, recursos e avaliação</div></div></div>
       <div class="fblock">
-        <label class="flabel">Estratégias pedagógicas que serão utilizadas</label>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-estrat-chips">
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Rotina visual</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Instruções em passos</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Tempo extra</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Atividades segmentadas</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Antecipação de mudanças</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Reforço positivo</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Modelagem</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Aprendizagem cooperativa</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Material concreto</button>
-          <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-estrat-chips')">Pausas programadas</button>
+        <label class="flabel" id="label-pei-estrat">Estratégias pedagógicas que serão utilizadas</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-estrat-chips" role="group" aria-labelledby="label-pei-estrat">
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Rotina visual</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Instruções em passos</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Tempo extra</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Atividades segmentadas</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Antecipação de mudanças</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Reforço positivo</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Modelagem</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Aprendizagem cooperativa</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Material concreto</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-estrat-chips')">Pausas programadas</button>
         </div>
-        <textarea id="pei-estrategias" class="ftarea sm" placeholder="Outras estratégias não listadas acima…"></textarea>
+        <label class="flabel" for="pei-estrategias">Outras estratégias</label>         <textarea id="pei-estrategias" class="ftarea sm" placeholder="Outras estratégias não listadas acima…"></textarea>
       </div>
       <div class="frow">
         <div>
-          <label class="flabel">Recursos e tecnologias assistivas</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-recursos-chips">
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Prancha CAA</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Material dourado</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Audiolivro</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Fone de abafamento</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Mesa adaptada</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Tablet/dispositivo</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Letras de lixa</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-recursos-chips')">Timer visual</button>
+          <label class="flabel" id="label-pei-recursos">Recursos e tecnologias assistivas</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-recursos-chips" role="group" aria-labelledby="label-pei-recursos">
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-recursos-chips')">Prancha CAA</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-recursos-chips')">Material dourado</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-recursos-chips')">Audiolivro</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-recursos-chips')">Fone de abafamento</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-recursos-chips')">Mesa adaptada</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-recursos-chips')">Tablet/dispositivo</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-recursos-chips')">Letras de lixa</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-recursos-chips')">Timer visual</button>
           </div>
-          <textarea id="pei-recursos" class="ftarea sm" placeholder="Outros recursos não listados acima…"></textarea>
+          <label class="flabel" for="pei-recursos">Outros recursos</label>           <textarea id="pei-recursos" class="ftarea sm" placeholder="Outros recursos não listados acima…"></textarea>
         </div>
         <div>
-          <label class="flabel">Formas de avaliação adaptada</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-aval-chips">
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Avaliação oral</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Portfólio</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Tempo estendido</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Sem penalização ortografia</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Prova em partes</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Leitura do enunciado</button>
-            <button type="button" class="chip" onclick="toggleChipPEI(this,'pei-aval-chips')">Apoio de imagens</button>
+         <label class="flabel" id="label-pei-aval">Formas de avaliação adaptada</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pei-aval-chips" role="group" aria-labelledby="label-pei-aval">
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-aval-chips')">Avaliação oral</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-aval-chips')">Portfólio</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-aval-chips')">Tempo estendido</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-aval-chips')">Sem penalização ortografia</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-aval-chips')">Prova em partes</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-aval-chips')">Leitura do enunciado</button>
+            <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pei-aval-chips')">Apoio de imagens</button>
           </div>
-          <textarea id="pei-avaliacao" class="ftarea sm" placeholder="Outras formas não listadas acima…"></textarea>
+          <label class="flabel" for="pei-avaliacao">Outras formas de avaliação</label>           <textarea id="pei-avaliacao" class="ftarea sm" placeholder="Outras formas não listadas acima…"></textarea>
         </div>
       </div>
-      <div class="fblock"><label class="flabel">Envolvimento da família</label><textarea id="pei-familia" class="ftarea sm" placeholder="Ex: Família orientada a reforçar rotina em casa, reuniões bimestrais de acompanhamento, compartilhamento de estratégias…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="pei-familia">Envolvimento da família</label><textarea id="pei-familia" class="ftarea sm" placeholder="Ex: Família orientada a reforçar rotina em casa, reuniões bimestrais de acompanhamento, compartilhamento de estratégias…"></textarea></div>
     </div>
 
     <div class="pei-step">
       <div class="pei-step-header"><div class="pei-step-num">6</div><div><div class="pei-step-title">Observações adicionais</div></div></div>
-      <div class="fblock"><label class="flabel">Outras informações relevantes (saúde, medicação, rotina, etc.)</label><textarea id="pei-obs-add" class="ftarea sm" placeholder="Ex: Faz uso de medicação às 12h; alergias alimentares; intolerância a mudanças de rotina sem aviso prévio…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="pei-obs-add">Outras informações relevantes (saúde, medicação, rotina, etc.)</label><textarea id="pei-obs-add" class="ftarea sm" placeholder="Ex: Faz uso de medicação às 12h; alergias alimentares; intolerância a mudanças de rotina sem aviso prévio…"></textarea></div>
     </div>
 
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
@@ -6502,7 +6502,7 @@ function renderPagesGestao() {
           </div>
         </div>
         <div class="frow" style="margin-top:10px">
-          <div><label class="flabel">E-mail da clínica</label><input type="email" id="gc-email-dest" class="finput" placeholder="Preenchido automaticamente do cadastro"></div>
+          <div><label class="flabel" for="gc-email-dest">E-mail da clínica</label><input type="email" id="gc-email-dest" class="finput" placeholder="Preenchido automaticamente do cadastro"></div>
           <div><label class="flabel">WhatsApp da clínica</label><input type="text" id="gc-whats-dest" class="finput" placeholder="Preenchido automaticamente do cadastro"></div>
         </div>
         <div class="fblock">
@@ -10706,7 +10706,7 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
     </div>
     <div style="margin-top:16px">
       <div class="frow">
-        <div><label class="flabel">Nome completo *</label><input type="text" id="cpc-nome" class="finput" placeholder="Ex: Dra. Camila Rocha"></div>
+        <div><label class="flabel" for="cpc-nome">Nome completo *</label><input type="text" id="cpc-nome" class="finput" placeholder="Ex: Dra. Camila Rocha"></div>
         <div><label class="flabel">E-mail * <span style="color:#E74C3C">obrigatório</span></label><input type="email" id="cpc-email" class="finput" placeholder="profissional@clinica.com.br"></div>
       </div>
       <div class="frow">
