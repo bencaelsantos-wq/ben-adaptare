@@ -1430,8 +1430,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <p class="qs-reveal qs-reveal-delay-1">Conheça a plataforma que coloca a criança no centro de tudo.</p>
     <div class="qs-btn-group qs-reveal qs-reveal-delay-2">
       <!-- Ajuste os onclick/href conforme sua navegação interna -->
-      <button class="qs-btn qs-btn--primary" onclick="irParaLogin()">Conhecer a plataforma</button>
-      <button class="qs-btn qs-btn--outline" onclick="voltarParaLanding()">Fale com a gente</button>
+      <button class="qs-btn qs-btn--primary"onclick="irParaLoginDeQuemSomos()">Conhecer a plataforma</button>
+      <button class="qs-btn qs-btn--outline" onclick="window.open('https://wa.me/5511995665193','_blank')">Fale com a gente</button>
     </div>
   </div>
 
@@ -10442,7 +10442,7 @@ function abrirDivModulo(i) {
 // Inicialização
 
 // ── LANDING PAGE ──────────────────────────────────────────────
-function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; } function mostrarLanding() {
+function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   irParaLogin(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   irParaLogin(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; } function mostrarLanding() {
   document.getElementById('landing-page').style.display = 'block';
   document.getElementById('login-screen').style.display = 'none';
 }
