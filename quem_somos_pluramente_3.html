@@ -1,0 +1,460 @@
+<!-- ============================================================
+     QUEM SOMOS — Pluramente
+     Substituir bloco existente com id="quem-somos"
+     Design System: Poppins (títulos) + Inter (corpo)
+     Paleta: #1E3A8A · #2563EB · #7C3AED · #14B8A6 · #22C55E · #F5F7FA
+     ============================================================ -->
+
+<section id="quem-somos" style="scroll-margin-top: 72px;">
+
+  <!-- CSS isolado para esta seção -->
+  <style>
+    /* ── RESET LOCAL ── */
+    #quem-somos * { box-sizing: border-box; }
+
+    /* ── HERO ── */
+    #quem-somos .qs-hero {
+      background: #fff;
+      padding: 80px 60px 96px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    #quem-somos .qs-hero::before {
+      content: '';
+      position: absolute;
+      right: -60px; top: -60px;
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(37,99,235,0.08);
+      pointer-events: none;
+    }
+    #quem-somos .qs-hero::after {
+      content: '';
+      position: absolute;
+      right: 40px; top: 40px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(37,99,235,0.05);
+      pointer-events: none;
+    }
+    #quem-somos .qs-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #EFF4FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 100px;
+      padding: 6px 16px;
+      color: #1E3A8A;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    #quem-somos .qs-eyebrow-dot {
+      width: 6px; height: 6px;
+      background: #14B8A6;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    #quem-somos .qs-hero h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      color: #1E3A8A;
+      line-height: 1.22;
+      max-width: 580px;
+      margin-bottom: 20px;
+    }
+    #quem-somos .qs-hero h1 em {
+      font-style: normal;
+      color: #14B8A6;
+    }
+    #quem-somos .qs-hero p {
+      font-family: 'Inter', sans-serif;
+      color: #4B5563;
+      font-size: 17px;
+      max-width: 520px;
+      line-height: 1.75;
+    }
+    #quem-somos .qs-thread {
+      margin-top: 52px;
+      opacity: 0.4;
+    }
+
+    /* ── SEÇÕES GENÉRICAS ── */
+    #quem-somos .qs-section {
+      padding: 72px 60px;
+      background: #F5F7FA;
+    }
+    #quem-somos .qs-section--white {
+      background: #fff;
+    }
+    #quem-somos .qs-section--dark {
+      background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+    }
+    #quem-somos .qs-section .qs-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    #quem-somos .qs-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #14B8A6;
+      margin-bottom: 12px;
+    }
+    #quem-somos .qs-section--dark .qs-label {
+      color: #5eead4;
+    }
+    #quem-somos .qs-section h2 {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 700;
+      color: #1E3A8A;
+      line-height: 1.28;
+      margin-bottom: 16px;
+      max-width: 520px;
+    }
+    #quem-somos .qs-section--dark h2 {
+      color: #fff;
+    }
+    #quem-somos .qs-section p {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #374151;
+      max-width: 580px;
+      line-height: 1.8;
+    }
+    #quem-somos .qs-section p + p {
+      margin-top: 14px;
+    }
+    #quem-somos .qs-section--dark p {
+      color: rgba(255,255,255,0.78);
+    }
+
+    /* ── CARDS MANIFESTO ── */
+    #quem-somos .qs-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 40px;
+    }
+    @media (max-width: 640px) {
+      #quem-somos .qs-cards { grid-template-columns: 1fr; }
+    }
+    #quem-somos .qs-card {
+      background: #EFF4FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 18px;
+      padding: 28px 24px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    #quem-somos .qs-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(37,99,235,0.12);
+    }
+    #quem-somos .qs-card-num {
+      font-family: 'Poppins', sans-serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: #BFDBFE;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+    #quem-somos .qs-card h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #1E3A8A;
+      margin-bottom: 8px;
+    }
+    #quem-somos .qs-card p {
+      font-size: 14px;
+      color: #4B5563;
+      line-height: 1.65;
+      max-width: none;
+    }
+
+    /* ── FRASE ÂNCORA ── */
+    #quem-somos .qs-anchor {
+      padding: 56px 60px;
+      text-align: center;
+      background: #fff;
+      border-top: 1px solid #E5E7EB;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    #quem-somos .qs-anchor blockquote {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(18px, 2.5vw, 24px);
+      font-weight: 600;
+      color: #1E3A8A;
+      line-height: 1.4;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    #quem-somos .qs-anchor cite {
+      display: block;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-style: normal;
+      color: #9CA3AF;
+      margin-top: 14px;
+    }
+
+    /* ── FEATURES GRID ── */
+    #quem-somos .qs-features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 36px;
+    }
+    @media (max-width: 640px) {
+      #quem-somos .qs-features { grid-template-columns: 1fr; }
+    }
+    #quem-somos .qs-feat {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: background 0.2s ease;
+    }
+    #quem-somos .qs-feat:hover {
+      background: rgba(255,255,255,0.14);
+    }
+    #quem-somos .qs-feat-dot {
+      width: 8px; height: 8px;
+      min-width: 8px;
+      background: #14B8A6;
+      border-radius: 50%;
+      margin-top: 8px;
+    }
+    #quem-somos .qs-feat span {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: rgba(255,255,255,0.88);
+      line-height: 1.55;
+    }
+
+    /* ── TAGLINE STRIP ── */
+    #quem-somos .qs-tagline-strip {
+      background: #1E3A8A;
+      padding: 16px 60px;
+      text-align: center;
+    }
+    #quem-somos .qs-tagline-strip p {
+      font-family: 'Poppins', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      max-width: none;
+    }
+    #quem-somos .qs-tagline-strip strong {
+      color: #14B8A6;
+    }
+
+    /* ── CTA ── */
+    #quem-somos .qs-cta {
+      padding: 80px 60px;
+      text-align: center;
+      background: #F5F7FA;
+    }
+    #quem-somos .qs-cta h2 {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 700;
+      color: #1E3A8A;
+      margin: 0 auto 12px;
+      max-width: none;
+    }
+    #quem-somos .qs-cta p {
+      color: #6B7280;
+      font-size: 16px;
+      max-width: 420px;
+      margin: 0 auto 40px;
+    }
+    #quem-somos .qs-btn-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    #quem-somos .qs-btn {
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 14px 30px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      min-height: 44px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    #quem-somos .qs-btn:hover { transform: translateY(-2px); }
+    #quem-somos .qs-btn:active { transform: scale(0.97); }
+    #quem-somos .qs-btn--primary {
+      background: linear-gradient(90deg, #2563EB, #7C3AED);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+    }
+    #quem-somos .qs-btn--primary:hover {
+      box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+    }
+    #quem-somos .qs-btn--outline {
+      background: transparent;
+      border: 1.5px solid #2563EB;
+      color: #2563EB;
+    }
+
+    /* ── SCROLL REVEAL ── */
+    #quem-somos .qs-reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    #quem-somos .qs-reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #quem-somos .qs-reveal-delay-1 { transition-delay: 0.1s; }
+    #quem-somos .qs-reveal-delay-2 { transition-delay: 0.2s; }
+    #quem-somos .qs-reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      #quem-somos .qs-hero,
+      #quem-somos .qs-section,
+      #quem-somos .qs-anchor,
+      #quem-somos .qs-tagline-strip,
+      #quem-somos .qs-cta { padding-left: 24px; padding-right: 24px; }
+    }
+  </style>
+
+  <!-- ── HERO ── -->
+  <div class="qs-hero">
+    <div class="qs-eyebrow">
+      <span class="qs-eyebrow-dot"></span>
+      Quem Somos
+    </div>
+    <h1>Toda criança merece um olhar que não se <em>perde no caminho.</em></h1>
+    <p>A Pluramente nasceu para unir o que nunca deveria estar separado: o olhar clínico e o olhar pedagógico, lado a lado, em torno de cada criança.</p>
+    <!-- Fio-vivo visual -->
+    <svg class="qs-thread" width="360" height="26" viewBox="0 0 360 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M0 13 Q45 4 90 13 Q135 22 180 13 Q225 4 270 13 Q315 22 360 13" stroke="#BFDBFE" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="13" r="4" fill="#14B8A6"/>
+      <circle cx="90" cy="13" r="3" fill="#BFDBFE"/>
+      <circle cx="180" cy="13" r="3" fill="#BFDBFE"/>
+      <circle cx="270" cy="13" r="3" fill="#BFDBFE"/>
+      <circle cx="360" cy="13" r="4.5" fill="#22C55E"/>
+    </svg>
+  </div>
+
+  <!-- ── POR QUE EXISTIMOS ── -->
+  <div class="qs-section qs-section--white">
+    <div class="qs-inner">
+      <p class="qs-label qs-reveal">Por que existimos</p>
+      <h2 class="qs-reveal qs-reveal-delay-1">O problema que vimos de perto</h2>
+      <p class="qs-reveal qs-reveal-delay-2">Cada profissional tem seu sistema. Cada escola tem seu papel. Cada clínica tem seu prontuário. E no meio disso tudo — a criança espera.</p>
+      <p class="qs-reveal qs-reveal-delay-2">A Pluramente existe para que essa espera acabe. Para que o professor saiba o que o terapeuta descobriu. Para que o AT registre e o coordenador acompanhe. Para que nenhuma informação se perca entre um e-mail e uma reunião que nunca aconteceu.</p>
+    </div>
+  </div>
+
+  <!-- ── O QUE ACREDITAMOS ── -->
+  <div class="qs-section">
+    <div class="qs-inner">
+      <p class="qs-label qs-reveal">O que acreditamos</p>
+      <h2 class="qs-reveal qs-reveal-delay-1">Quatro convicções que guiam tudo o que fazemos</h2>
+      <div class="qs-cards">
+        <div class="qs-card qs-reveal qs-reveal-delay-1">
+          <div class="qs-card-num">01</div>
+          <h3>Cada criança é singular.</h3>
+          <p>Nenhuma adaptação funciona no genérico. A jornada começa no indivíduo — e nunca perde isso de vista.</p>
+        </div>
+        <div class="qs-card qs-reveal qs-reveal-delay-2">
+          <div class="qs-card-num">02</div>
+          <h3>Acompanhar é diferente de monitorar.</h3>
+          <p>Presença não é vigilância. É continuidade com cuidado. Um fio que nunca quebra.</p>
+        </div>
+        <div class="qs-card qs-reveal qs-reveal-delay-1">
+          <div class="qs-card-num">03</div>
+          <h3>Clínica e pedagogia falam a mesma língua.</h3>
+          <p>Quando se encontram em torno da mesma criança, ela avança mais — e com mais propósito.</p>
+        </div>
+        <div class="qs-card qs-reveal qs-reveal-delay-2">
+          <div class="qs-card-num">04</div>
+          <h3>Liberdade precisa de estrutura.</h3>
+          <p>Autonomia se constrói com suporte. Não apesar dele — mas porque dele.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FRASE ÂNCORA ── -->
+  <div class="qs-anchor qs-reveal">
+    <blockquote>"A adaptação começa no olhar."</blockquote>
+    <cite>— Pluramente</cite>
+  </div>
+
+  <!-- ── O QUE FAZEMOS ── -->
+  <div class="qs-section qs-section--dark">
+    <div class="qs-inner">
+      <p class="qs-label qs-reveal">O que fazemos</p>
+      <h2 class="qs-reveal qs-reveal-delay-1">Um fio único em torno de cada jornada</h2>
+      <p class="qs-reveal qs-reveal-delay-2">Reunimos numa só plataforma tudo que permite que professores, ATs, clínicos e coordenadores trabalhem a partir de um olhar compartilhado — não como ferramentas isoladas, mas como um conjunto vivo em torno de cada criança.</p>
+      <div class="qs-features">
+        <div class="qs-feat qs-reveal qs-reveal-delay-1"><span class="qs-feat-dot"></span><span>Adaptações pedagógicas com IA contextualizada</span></div>
+        <div class="qs-feat qs-reveal qs-reveal-delay-1"><span class="qs-feat-dot"></span><span>Plano Educacional Individualizado (PEI)</span></div>
+        <div class="qs-feat qs-reveal qs-reveal-delay-2"><span class="qs-feat-dot"></span><span>Diário do Aluno com histórico contínuo</span></div>
+        <div class="qs-feat qs-reveal qs-reveal-delay-2"><span class="qs-feat-dot"></span><span>Módulo Clínico integrado ao pedagógico</span></div>
+        <div class="qs-feat qs-reveal qs-reveal-delay-3"><span class="qs-feat-dot"></span><span>Roteiro do AT com acompanhamento vivo</span></div>
+        <div class="qs-feat qs-reveal qs-reveal-delay-3"><span class="qs-feat-dot"></span><span>Objetivos Convergentes entre equipes</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAGLINE STRIP ── -->
+  <div class="qs-tagline-strip">
+    <p>Apoio que acompanha. &nbsp;<strong>Liberdade que transforma.</strong></p>
+  </div>
+
+  <!-- ── CTA ── -->
+  <div class="qs-cta">
+    <h2 class="qs-reveal">Pronto para acompanhar de verdade?</h2>
+    <p class="qs-reveal qs-reveal-delay-1">Conheça a plataforma que coloca a criança no centro de tudo.</p>
+    <div class="qs-btn-group qs-reveal qs-reveal-delay-2">
+      <!-- Ajuste os onclick/href conforme sua navegação interna -->
+      <button class="qs-btn qs-btn--primary" onclick="navegarPara('plataforma')">Conhecer a plataforma</button>
+      <button class="qs-btn qs-btn--outline" onclick="navegarPara('contato')">Fale com a gente</button>
+    </div>
+  </div>
+
+  <!-- ── SCROLL REVEAL SCRIPT ── -->
+  <script>
+    (function () {
+      const els = document.querySelectorAll('#quem-somos .qs-reveal');
+      if (!els.length) return;
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      els.forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+
+</section>
+<!-- ============ FIM QUEM SOMOS ============ -->
