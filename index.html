@@ -7751,15 +7751,17 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     .trim();
 
   const maxW = W - ml - mr;
-  const altLinha = 5.2;
+  const altLinha = altLinhaCustom;
   const rodapeH = 20;
 
+  const fontSizeMap = { pequeno: 8, medio: 9.5, grande: 12, extragrande: 15 };
+  const lineHeightMap = { compacto: 4.5, normal: 5.2, amplo: 7 };
+  const fontSize = fontSizeMap[opts.fonteTamanho] || 9.5;
+  const altLinhaCustom = lineHeightMap[opts.espacamento] || 5.2;
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
+  doc.setFontSize(fontSize);
   doc.setTextColor(25, 25, 25);
-
   const linhas = doc.splitTextToSize(folhaLimpa, maxW);
-
   for (let i = 0; i < linhas.length; i++) {
     if (y + altLinha > H - rodapeH) {
       adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
