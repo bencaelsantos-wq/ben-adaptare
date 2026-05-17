@@ -10442,7 +10442,7 @@ function abrirDivModulo(i) {
 // Inicialização
 
 // ── LANDING PAGE ──────────────────────────────────────────────
-function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   irParaLogin(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   irParaLogin(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; } function mostrarLanding() {
+function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; } function mostrarLanding() {
   document.getElementById('landing-page').style.display = 'block';
   document.getElementById('login-screen').style.display = 'none';
 }
@@ -11357,5 +11357,134 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
   </div>
 </nav>
 
-</body>
-</html>
+function irParaLoginDeQuemSomos() {
+  mostrarDemo();
+}
+
+// ================== DEMO PAGE ==================
+var _demoT = [];
+function _ds(id,p,v){var e=document.getElementById(id);if(e)e.style[p]=v;}
+function _dc(id,v){var e=document.getElementById(id);if(e)e.style.color=v;}
+function _dT(fn,ms){var t=setTimeout(fn,ms);_demoT.push(t);return t;}
+
+function mostrarDemo() {
+  document.getElementById('landing-page').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('quem-somos-page').style.display = 'none';
+  var dp = document.getElementById('demo-page');
+  if(dp){ dp.style.display='flex'; dp.scrollTop=0; }
+  window.scrollTo(0,0);
+  iniciarDemo();
+}
+function voltarDeDemo() {
+  _pararDemo();
+  _ds('demo-page','display','none');
+  document.getElementById('quem-somos-page').style.display = 'block';
+  window.scrollTo(0,0);
+}
+function irParaLoginDeDemo() {
+  _pararDemo();
+  _ds('demo-page','display','none');
+  irParaLogin();
+}
+function reiniciarDemo() {
+  _pararDemo();
+  _resetDemoState();
+  _dT(function(){ iniciarDemo(); }, 300);
+}
+function _pararDemo() {
+  _demoT.forEach(function(t){ clearTimeout(t); });
+  _demoT = [];
+}
+function _resetDemoState() {
+  _ds('demo-panel-left','opacity','0');
+  _ds('demo-panel-left','transform','translateY(24px)');
+  _ds('demo-panel-right','opacity','0');
+  _ds('demo-panel-right','transform','translateY(24px)');
+  _ds('demo-student-badge','opacity','0');
+  _ds('demo-ai-orb','opacity','0');
+  _ds('demo-ai-orb','animation','none');
+  _ds('demo-proc-steps','opacity','0');
+  _ds('demo-arrow','opacity','0');
+  _ds('demo-footer','opacity','0');
+  _ds('demo-footer','transform','translateY(16px)');
+  _ds('demo-done-badge','opacity','0');
+  _ds('demo-done-badge','transform','translateY(8px)');
+  _ds('demo-complexity-after','opacity','0');
+  _ds('demo-generating-badge','display','none');
+  ['1','2','3'].forEach(function(n){
+    _dc('dstep-'+n,'#64748b');
+    _ds('ddot-'+n,'background','#334155');
+    _ds('ddot-'+n,'boxShadow','none');
+    _dc('dproc-'+n,'#334155');
+  });
+  var out = document.getElementById('demo-output-text');
+  if(out) out.innerHTML = '';
+}
+function _dActivateStep(n) {
+  _dc('dstep-'+n,'#60a5fa');
+  _ds('ddot-'+n,'background','#60a5fa');
+  _ds('ddot-'+n,'boxShadow','0 0 8px rgba(96,165,250,0.8)');
+}
+function _dCompleteStep(n) {
+  _dc('dstep-'+n,'#22c55e');
+  _ds('ddot-'+n,'background','#22c55e');
+  _ds('ddot-'+n,'boxShadow','0 0 8px rgba(34,197,94,0.6)');
+}
+function iniciarDemo() {
+  var texto = '📖 Vamos aprender sobre o ciclo da água!\n\nO que você vai fazer:\n① Ler o texto sobre a água\n② Responder 3 perguntas\n\n⬇️ Como funciona o ciclo da água:\n\n1. 🌊 A água do rio fica quente com o sol\n2. ☁️ A água vira vapor e sobe para o céu\n3. 🌧️ O vapor forma nuvens e vira chuva\n4. 💧 A chuva cai e volta para os rios\n\n❓ Escreva no caderno:\n— Qual é o 1º passo do ciclo?\n— O que faz a água virar nuvem?\n— Onde a chuva vai depois de cair?';
+
+  _dT(function(){
+    _dActivateStep('1');
+    _ds('demo-panel-left','opacity','1');
+    _ds('demo-panel-left','transform','translateY(0)');
+  }, 500);
+  _dT(function(){ _ds('demo-student-badge','opacity','1'); }, 1300);
+  _dT(function(){ _dCompleteStep('1'); }, 2200);
+  _dT(function(){
+    _dActivateStep('2');
+    var orb = document.getElementById('demo-ai-orb');
+    if(orb){ orb.style.opacity='1'; orb.style.animation='orbSpin 2.5s linear infinite'; }
+    _ds('demo-proc-steps','opacity','1');
+    _ds('demo-generating-badge','display','block');
+  }, 2800);
+  _dT(function(){ _dc('dproc-1','#60a5fa'); }, 3400);
+  _dT(function(){ _dc('dproc-1','#22c55e'); _dc('dproc-2','#60a5fa'); }, 4700);
+  _dT(function(){ _dc('dproc-2','#22c55e'); _dc('dproc-3','#60a5fa'); }, 5900);
+  _dT(function(){
+    _dCompleteStep('2');
+    _dActivateStep('3');
+    _ds('demo-arrow','opacity','1');
+    _ds('demo-panel-right','opacity','1');
+    _ds('demo-panel-right','transform','translateY(0)');
+    _dTypeText('demo-output-text', texto, 0, function(){
+      _ds('demo-generating-badge','display','none');
+      var orb = document.getElementById('demo-ai-orb');
+      if(orb) orb.style.animation = 'none';
+      _ds('demo-done-badge','opacity','1');
+      _ds('demo-done-badge','transform','translateY(0)');
+      _ds('demo-complexity-after','opacity','1');
+      _dCompleteStep('3');
+      _dT(function(){
+        _ds('demo-footer','opacity','1');
+        _ds('demo-footer','transform','translateY(0)');
+      }, 700);
+    });
+  }, 7000);
+}
+function _dTypeText(elId, text, idx, cb) {
+  var el = document.getElementById(elId);
+  if(!el) return;
+  var cur = '<span style="display:inline-block;width:2px;height:13px;background:#22c55e;margin-left:1px;vertical-align:middle;animation:blink 0.8s step-end infinite;"></span>';
+  if(idx <= text.length){
+    el.innerHTML = text.substring(0,idx).replace(/\n/g,'<br>') + cur;
+    var ch = text[idx] || '';
+    var delay = ch === '\n' ? 90 : (ch === ' ' ? 16 : 34);
+    var t = setTimeout(function(){ _dTypeText(elId,text,idx+1,cb); }, delay);
+    _demoT.push(t);
+  } else {
+    el.innerHTML = text.replace(/\n/g,'<br>');
+    if(cb) cb();
+  }
+}
+// ================== FIM DEMO PAGE ==================
