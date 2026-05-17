@@ -11490,3 +11490,83 @@ function _dTypeText(elId, text, idx, cb) {
 }
 // ================== FIM DEMO PAGE ==================
 </script>
+<style>
+@keyframes orbSpin{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+<div id="demo-page" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;flex-direction:column;background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0c1a4b 100%);font-family:'Inter',sans-serif;color:#f0f4f8;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Pluramente</span>
+      <span style="font-size:11px;color:#475569;background:rgba(255,255,255,0.06);padding:3px 10px;border-radius:20px;">✦ demonstração ao vivo</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="reiniciarDemo()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;">↺ Reiniciar</button>
+      <button onclick="voltarDeDemo()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#e2e8f0;padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;">← Voltar</button>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:center;align-items:center;padding:12px 28px;background:rgba(0,0,0,0.12);flex-shrink:0;gap:0;">
+    <div id="dstep-1" style="display:flex;align-items:center;gap:7px;font-size:12px;color:#64748b;transition:color 0.5s;"><div id="ddot-1" style="width:8px;height:8px;border-radius:50%;background:#334155;transition:all 0.5s;flex-shrink:0;"></div><span>Atividade original</span></div>
+    <div style="width:30px;height:1px;background:#1e293b;margin:0 10px;flex-shrink:0;"></div>
+    <div id="dstep-2" style="display:flex;align-items:center;gap:7px;font-size:12px;color:#64748b;transition:color 0.5s;"><div id="ddot-2" style="width:8px;height:8px;border-radius:50%;background:#334155;transition:all 0.5s;flex-shrink:0;"></div><span>Processando com IA</span></div>
+    <div style="width:30px;height:1px;background:#1e293b;margin:0 10px;flex-shrink:0;"></div>
+    <div id="dstep-3" style="display:flex;align-items:center;gap:7px;font-size:12px;color:#64748b;transition:color 0.5s;"><div id="ddot-3" style="width:8px;height:8px;border-radius:50%;background:#334155;transition:all 0.5s;flex-shrink:0;"></div><span>Adaptação gerada</span></div>
+  </div>
+  <div style="flex:1;display:flex;gap:16px;padding:20px 28px;max-width:1160px;margin:0 auto;width:100%;box-sizing:border-box;flex-wrap:wrap;">
+    <div id="demo-panel-left" style="flex:1;min-width:280px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:22px;opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;box-sizing:border-box;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">📝</div>
+        <div><div style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;">Atividade Original</div><div style="font-size:11px;color:#475569;">enviada pelo professor</div></div>
+      </div>
+      <div id="demo-student-badge" style="display:flex;align-items:center;gap:10px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.22);border-radius:10px;padding:10px 14px;margin-bottom:16px;opacity:0;transition:opacity 0.6s ease;">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👦</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#e2e8f0;">Lucas · 8 anos · 3º ano A</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">
+            <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(124,58,237,0.18);color:#a78bfa;border:1px solid rgba(124,58,237,0.28);">TEA nível 1</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(20,184,166,0.13);color:#2dd4bf;border:1px solid rgba(20,184,166,0.28);">🎯 visual</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.22);">sequência lógica</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:13px;line-height:1.85;color:#94a3b8;background:rgba(0,0,0,0.2);border-radius:10px;padding:16px;border-left:3px solid #2563eb;">Leia atentamente o texto a seguir sobre o ciclo da água na natureza. Após a leitura, responda às questões em seu caderno utilizando frases completas e linguagem formal. Identifique as etapas do ciclo hidrológico e explique como cada uma delas ocorre, mencionando os fatores climáticos envolvidos no processo de evaporação, condensação e precipitação.</div>
+      <div style="margin-top:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:10px;color:#64748b;background:rgba(0,0,0,0.2);padding:4px 10px;border-radius:6px;">Complexidade: <strong style="color:#fb923c;">Alta</strong></span>
+        <span style="font-size:10px;color:#64748b;background:rgba(0,0,0,0.2);padding:4px 10px;border-radius:6px;">Vocabulário: <strong style="color:#fb923c;">Técnico</strong></span>
+      </div>
+    </div>
+    <div style="width:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex-shrink:0;padding:8px 0;">
+      <div id="demo-ai-orb" style="width:58px;height:58px;border-radius:50%;background:conic-gradient(from 0deg,#2563eb,#7c3aed,#14b8a6,#2563eb);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s;">
+        <div style="width:48px;height:48px;border-radius:50%;background:#0f172a;display:flex;align-items:center;justify-content:center;font-size:18px;">✦</div>
+      </div>
+      <div id="demo-proc-steps" style="display:flex;flex-direction:column;gap:9px;width:90px;opacity:0;transition:opacity 0.5s;">
+        <div id="dproc-1" style="font-size:10px;color:#334155;text-align:center;transition:color 0.3s;line-height:1.4;">Lendo perfil...</div>
+        <div id="dproc-2" style="font-size:10px;color:#334155;text-align:center;transition:color 0.3s;line-height:1.4;">Estratégias...</div>
+        <div id="dproc-3" style="font-size:10px;color:#334155;text-align:center;transition:color 0.3s;line-height:1.4;">Gerando...</div>
+      </div>
+      <div id="demo-arrow" style="font-size:20px;opacity:0;transition:opacity 0.8s;color:#22c55e;">→</div>
+    </div>
+    <div id="demo-panel-right" style="flex:1;min-width:280px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:22px;opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;box-sizing:border-box;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(34,197,94,0.14);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">✦</div>
+        <div style="flex:1;"><div style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;">Adaptação com IA</div><div style="font-size:11px;color:#475569;">gerada pela Pluramente</div></div>
+        <div id="demo-generating-badge" style="display:none;font-size:10px;color:#60a5fa;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.22);padding:3px 10px;border-radius:20px;white-space:nowrap;">⟳ gerando…</div>
+      </div>
+      <div id="demo-output-text" style="font-size:13px;line-height:1.95;color:#e2e8f0;background:rgba(0,0,0,0.2);border-radius:10px;padding:16px;border-left:3px solid #22c55e;min-height:190px;white-space:pre-line;word-break:break-word;"></div>
+      <div id="demo-done-badge" style="display:flex;align-items:center;gap:8px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.22);border-radius:8px;padding:8px 14px;margin-top:12px;opacity:0;transform:translateY(8px);transition:opacity 0.5s,transform 0.5s;font-size:12px;color:#86efac;"><span>✅</span> <strong>Adaptação concluída</strong> — adequada para TEA nível 1, estilo visual-sequencial</div>
+      <div id="demo-complexity-after" style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.6s;">
+        <span style="font-size:10px;color:#64748b;background:rgba(0,0,0,0.2);padding:4px 10px;border-radius:6px;">Complexidade: <strong style="color:#22c55e;">Acessível</strong></span>
+        <span style="font-size:10px;color:#64748b;background:rgba(0,0,0,0.2);padding:4px 10px;border-radius:6px;">Vocabulário: <strong style="color:#22c55e;">Adaptado</strong></span>
+      </div>
+    </div>
+  </div>
+  <div id="demo-footer" style="background:rgba(37,99,235,0.07);border-top:1px solid rgba(37,99,235,0.14);padding:20px 28px;display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;opacity:0;transform:translateY(16px);transition:opacity 0.6s,transform 0.6s;flex-shrink:0;">
+    <div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;color:#e2e8f0;text-align:center;">Isso é o que a <span style="background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Pluramente</span> faz por cada estudante. <span style="color:#86efac;">Todo dia.</span></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button onclick="irParaLoginDeDemo()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:12px 26px;border-radius:10px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Começar agora →</button>
+      <button onclick="window.open('https://wa.me/5511995665193','_blank')" style="background:transparent;color:#e2e8f0;border:1px solid rgba(255,255,255,0.18);padding:12px 20px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;">💬 Falar com a equipe</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
