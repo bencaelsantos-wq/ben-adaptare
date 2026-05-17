@@ -11706,6 +11706,131 @@ function iniciarCena2(){
 @keyframes c3CheckDraw{0%{stroke-dashoffset:100}100%{stroke-dashoffset:0}}
 </style>
 <script>
+// ================== DEMO CENA 2 ==================
+var _c2Timers = [];
+function _c2Delay(fn,ms){var t=setTimeout(fn,ms);_c2Timers.push(t);return t;}
+function _c2s(id,p,v){var e=document.getElementById(id);if(e)e.style[p]=v;}
+function _c2c(id,v){var e=document.getElementById(id);if(e)e.style.color=v;}
+function mostrarCena2(){
+  if(typeof _pararDemo==='function')_pararDemo();
+  if(typeof _pararCena3==='function')_pararCena3();
+  _c2s('demo-page','display','none');
+  _c2s('demo-cena3','display','none');
+  var dp=document.getElementById('demo-cena2');
+  if(dp){dp.style.display='flex';dp.scrollTop=0;}
+  window.scrollTo(0,0);
+  iniciarCena2();
+}
+function voltarParaCena1(){
+  _pararCena2();
+  if(typeof _pararCena3==='function')_pararCena3();
+  _c2s('demo-cena2','display','none');
+  _c2s('demo-cena3','display','none');
+  var dp=document.getElementById('demo-page');
+  if(dp)dp.style.display='flex';
+  reiniciarDemo();
+}
+function irParaLoginDeCena2(){
+  _pararCena2();
+  _c2s('demo-cena2','display','none');
+  irParaLogin();
+}
+function reiniciarCena2(){
+  _pararCena2();
+  _resetCena2();
+  _c2Delay(function(){iniciarCena2();},300);
+}
+function _pararCena2(){
+  _c2Timers.forEach(function(t){clearTimeout(t);});
+  _c2Timers=[];
+}
+function _resetCena2(){
+  _c2s('c2-panel-left','opacity','0');
+  _c2s('c2-panel-left','transform','translateY(24px)');
+  _c2s('c2-panel-right','opacity','0');
+  _c2s('c2-panel-right','transform','translateY(24px)');
+  _c2s('c2-conn','opacity','0');
+  _c2s('c2-conn','transform','scale(0.5)');
+  _c2s('c2-footer','opacity','0');
+  _c2s('c2-footer','transform','translateY(16px)');
+  _c2s('c2-status-badge','display','none');
+  _c2s('c2-response-badge','opacity','0');
+  _c2s('c2-response-badge','transform','translateY(8px)');
+  ['1','2','3'].forEach(function(n){
+    _c2c('c2step-'+n,'#64748b');
+    _c2s('c2dot-'+n,'background','#334155');
+    _c2s('c2dot-'+n,'boxShadow','none');
+  });
+  var o=document.getElementById('c2-obs-text');if(o)o.innerHTML='';
+  var r=document.getElementById('c2-resp-text');if(r)r.innerHTML='';
+  var n=document.getElementById('c2-notif-text');
+  if(n){n.textContent='';n.style.color='#a78bfa';}
+}
+function _c2ActivateStep(n){
+  _c2c('c2step-'+n,'#60a5fa');
+  _c2s('c2dot-'+n,'background','#60a5fa');
+  _c2s('c2dot-'+n,'boxShadow','0 0 8px rgba(96,165,250,0.8)');
+}
+function _c2CompleteStep(n){
+  _c2c('c2step-'+n,'#22c55e');
+  _c2s('c2dot-'+n,'background','#22c55e');
+  _c2s('c2dot-'+n,'boxShadow','0 0 8px rgba(34,197,94,0.6)');
+}
+function _c2Type(elId,text,idx,cb){
+  var el=document.getElementById(elId);if(!el)return;
+  var cur='<span style="display:inline-block;width:2px;height:13px;background:#14b8a6;margin-left:1px;vertical-align:middle;animation:blink 0.8s step-end infinite;"></span>';
+  if(idx<=text.length){
+    el.innerHTML=text.substring(0,idx).replace(/\n/g,'<br>')+cur;
+    var ch=text[idx]||'';
+    var delay=ch==='\n'?90:(ch===' '?16:34);
+    var t=setTimeout(function(){_c2Type(elId,text,idx+1,cb);},delay);
+    _c2Timers.push(t);
+  } else {
+    el.innerHTML=text.replace(/\n/g,'<br>');
+    if(cb)cb();
+  }
+}
+function iniciarCena2(){
+  var obs='👁️ Lucas apresentou dificuldade de foco nas atividades de escrita hoje.\n\nFicou agitado após o intervalo e não concluiu a tarefa de cópia.\n\nA atividade com suporte visual funcionou bem na parte da manhã.';
+  var resp='✅ Obrigada, Profa. Ana!\n\nNa quinta trabalharemos regulação sensorial.\n\nSugestões para esta semana:\n• Pausas de 5 min a cada 20 min\n• Almofada de pressão na cadeira\n• Reduzir estímulos visuais ao redor\n\nPróxima sessão: 22/05 às 14h.';
+  _c2Delay(function(){
+    _c2ActivateStep('1');
+    _c2s('c2-panel-left','opacity','1');
+    _c2s('c2-panel-left','transform','translateY(0)');
+  },500);
+  _c2Delay(function(){
+    _c2Type('c2-obs-text',obs,0,function(){
+      _c2CompleteStep('1');
+      _c2ActivateStep('2');
+      _c2s('c2-conn','opacity','1');
+      _c2s('c2-conn','transform','scale(1)');
+      var n=document.getElementById('c2-notif-text');
+      if(n)n.textContent='⟳ Notificando terapeuta...';
+      _c2s('c2-status-badge','display','block');
+      _c2Delay(function(){
+        var n2=document.getElementById('c2-notif-text');
+        if(n2){n2.textContent='✓ Terapeuta notificada';n2.style.color='#4ade80';}
+        _c2CompleteStep('2');
+        _c2ActivateStep('3');
+        _c2s('c2-panel-right','opacity','1');
+        _c2s('c2-panel-right','transform','translateY(0)');
+        _c2Delay(function(){
+          _c2Type('c2-resp-text',resp,0,function(){
+            _c2CompleteStep('3');
+            _c2s('c2-response-badge','opacity','1');
+            _c2s('c2-response-badge','transform','translateY(0)');
+            _c2Delay(function(){
+              _c2s('c2-footer','opacity','1');
+              _c2s('c2-footer','transform','translateY(0)');
+            },700);
+          });
+        },500);
+      },1500);
+    });
+  },1300);
+}
+// ================== FIM DEMO CENA 2 ==================
+
 // ================== DEMO CENA 3 ==================
 var _c3Timers=[];
 function _c3Delay(fn,ms){var t=setTimeout(fn,ms);_c3Timers.push(t);return t;}
