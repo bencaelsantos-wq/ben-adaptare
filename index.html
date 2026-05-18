@@ -905,10 +905,87 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     /* ── HERO ── */
     #quem-somos .qs-hero {
       background: #fff;
-      padding: 80px 60px 96px;
+      padding: 72px 60px 0;
       position: relative;
       overflow: hidden;
       border-bottom: 1px solid #E5E7EB;
+    }
+    #quem-somos .qs-hero-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    #quem-somos .qs-hero-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #quem-somos .qs-hero h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 700;
+      color: #1E3A8A;
+      line-height: 1.22;
+      max-width: 620px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #quem-somos .qs-hero p {
+      font-family: 'Inter', sans-serif;
+      color: #4B5563;
+      font-size: 17px;
+      max-width: 540px;
+      line-height: 1.75;
+      text-align: center;
+    }
+    #quem-somos .qs-hero-cta {
+      margin-top: 32px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    #quem-somos .qs-hero-cta a {
+      display: inline-block;
+      padding: 13px 28px;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    #quem-somos .qs-hero-cta .btn-primary {
+      background: linear-gradient(135deg, #2563EB, #7C3AED);
+      color: white;
+      border: none;
+    }
+    #quem-somos .qs-hero-cta .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+    }
+    #quem-somos .qs-hero-cta .btn-secondary {
+      background: transparent;
+      color: #1E3A8A;
+      border: 1.5px solid #BFDBFE;
+    }
+    #quem-somos .qs-hero-cta .btn-secondary:hover {
+      background: #EFF4FF;
+    }
+    #quem-somos .qs-hero-ilustracao {
+      width: 100%;
+      margin-top: 48px;
+      display: block;
+    }
+    #quem-somos .qs-hero-ilustracao img {
+      width: 100%;
+      max-width: 100%;
+      display: block;
+      object-fit: contain;
     }
     #quem-somos .qs-hero::before {
       content: '';
@@ -1261,19 +1338,28 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   <div class="qs-hero">
     <div class="qs-hero-inner">
 
-      <!-- COLUNA TEXTO -->
+      <!-- TEXTO CENTRALIZADO -->
       <div class="qs-hero-text">
         <div class="qs-eyebrow">
           <span class="qs-eyebrow-dot"></span>
           Quem Somos
         </div>
-        <img src="logo-hero.webp" alt="Pluramente — Integração Pedagógica e Clínica na Prática" style="max-width:340px;width:100%;margin-bottom:24px;display:block;">
+        <img src="logo-hero.webp" alt="Pluramente" style="max-width:320px;width:100%;margin:0 auto 28px;display:block;">
         <h1>Toda criança merece um olhar que não se <em>perde no caminho.</em></h1>
         <p>A Pluramente nasceu para unir o que nunca deveria estar separado: o olhar clínico e o olhar pedagógico, lado a lado, em torno de cada criança.</p>
+        <div class="qs-hero-cta">
+          <a onclick="mostrarDemo()" class="btn-primary">Conhecer a plataforma →</a>
+          <a onclick="window.open('https://wa.me/5511995665193','_blank')" class="btn-secondary">💬 Falar com a equipe</a>
+        </div>
       </div>
 
-      <!-- COLUNA ILUSTRAÇÃO -->
-      <div class="qs-hero-logo">
+      <!-- ILUSTRAÇÃO LARGURA TOTAL -->
+      <div class="qs-hero-ilustracao">
+        <img src="ilustracao-criancas.webp" alt="Crianças diversas conectadas pelo fio da Pluramente">
+      </div>
+
+      <!-- LOGO SVG ANTIGA (oculta) -->
+      <div class="qs-hero-logo" style="display:none;">
         <!--
           Logo Pluramente — recriado em SVG fiel à Identidade 3 · A Criança em Movimento
           Elementos: wordmark PLURAMENTE + subtítulo clínica/pedagógica + criança em movimento + fio-vivo
