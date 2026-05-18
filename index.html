@@ -978,14 +978,19 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     }
     #quem-somos .qs-hero-ilustracao {
       width: 100%;
-      margin-top: 48px;
+      margin-top: 24px;
+      margin-bottom: -8px;
       display: block;
+      overflow: hidden;
     }
     #quem-somos .qs-hero-ilustracao img {
       width: 100%;
       max-width: 100%;
       display: block;
-      object-fit: contain;
+      object-fit: cover;
+      object-position: center top;
+      transform: scale(1.08);
+      transform-origin: center top;
     }
     #quem-somos .qs-hero::before {
       content: '';
