@@ -132,7 +132,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 
 /* LOGIN */
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:#F0F4FF}
-.login-card{background:var(--white);border-radius:24px;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(30,58,138,.25)}
+.login-card{background:var(--white);border-radius:24px;padding:56px 44px;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(30,58,138,.25)}
 .login-logo-img{text-align:center;margin-bottom:6px}
 .login-sub{font-size:12px;color:var(--gr400);margin-bottom:6px;letter-spacing:.02em}
 .login-tagline{font-size:12.5px;margin-bottom:20px;line-height:1.5}
@@ -159,9 +159,9 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .role-drop-wrap{position:relative;flex:1}
 .role-drop-wrap .role-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:9px 11px}
 .role-drop-wrap .role-btn .drop-arrow{font-size:9px;opacity:.5;transition:transform .18s;flex-shrink:0}
-.role-drop-wrap:hover .role-btn .drop-arrow{transform:rotate(180deg)}
+.role-drop-wrap.open .role-btn .drop-arrow{transform:rotate(180deg)}
 .role-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--gr200);border-radius:var(--rmd);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;overflow-y:auto;max-height:220px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .18s,transform .18s}
-.role-drop-wrap:hover .role-dropdown{opacity:1;pointer-events:auto;transform:translateY(0)}
+.role-drop-wrap.open .role-dropdown{opacity:1;pointer-events:auto;transform:translateY(0)}
 .drop-item{display:block;width:100%;padding:9px 13px;background:none;border:none;font-family:inherit;font-size:12.5px;color:var(--gr700,#374151);text-align:left;cursor:pointer;transition:background .12s;white-space:nowrap}
 .drop-item:hover{background:var(--gr50)}
 .drop-item.drop-active{font-weight:600}
@@ -1924,7 +1924,11 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
   <!-- /COLABORAÇÃO -->
 
+<<<<<<< HEAD
+  <div style="width:100%;background:#F5F7FA;padding:8px 0 0;margin:-20px 0 -40px;text-align:center;">
+=======
   <div style="width:100%;background:#F5F7FA;padding:0;margin:-20px 0 -80px;text-align:center;">
+>>>>>>> a0c2bdbafc635a41fced0cad8f351b7aacea13f8
   <img src="ilustracao-criancas.webp" alt="Crianças diversas conectadas pelo Pluramente" style="max-width:960px;width:95%;display:inline-block;object-fit:contain;mix-blend-mode:multiply;">
 </div>
 <div class="lp-cta-band">
@@ -2050,7 +2054,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 
       <!-- EDUCACIONAL dropdown -->
       <div class="role-drop-wrap">
-        <button class="role-btn r-gestao" id="role-btn-gestao" onclick="setRole('gestao')">
+        <button class="role-btn r-gestao" id="role-btn-gestao" onclick="toggleDrop(this)">
           <span id="lbl-gestao">Educacional</span>
           <span class="drop-arrow">▼</span>
         </button>
@@ -2060,13 +2064,13 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           <div class="drop-divider"></div>
           <button class="drop-item r-professor" onclick="selectDrop('gestao','Professor','professor')">Professor</button>
           <div class="drop-divider"></div>
-          <button class="drop-item r-at" onclick="selectDrop('gestao','AT','at')">🧑‍⚕️ Acomp. Terapêutico (AT)</button>
+          <button class="drop-item r-at" onclick="selectDrop('gestao','AT','at')"> A.T </button>
         </div>
       </div>
 
       <!-- CLÍNICA dropdown -->
       <div class="role-drop-wrap">
-        <button class="role-btn r-clinica" id="role-btn-clinica" onclick="setRole('clinica')">
+        <button class="role-btn r-clinica" id="role-btn-clinica" onclick="toggleDrop(this)">
           <span id="lbl-clinica">Clínica</span>
           <span class="drop-arrow">▼</span>
         </button>
@@ -3092,9 +3096,21 @@ function selectDrop(dropGroup, label, role, subRole) {
 }
 
 function setRole(r) {
-  // Chamado ao clicar direto no botão (sem sub-item): usa valor atual
   userRole = r;
 }
+
+function toggleDrop(el) {
+  const wrap = el.closest('.role-drop-wrap');
+  const isOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.role-drop-wrap').forEach(w => w.classList.remove('open'));
+  if (!isOpen) wrap.classList.add('open');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.role-drop-wrap')) {
+    document.querySelectorAll('.role-drop-wrap').forEach(w => w.classList.remove('open'));
+  }
+});
 
 function setSubRole(btn, role) {
   userSubRole = role;
