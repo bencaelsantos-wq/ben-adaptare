@@ -11237,14 +11237,7 @@ document.addEventListener('DOMContentLoaded', async () => { const isPub = await 
 
 
 function abrirPaginaQuemSomos() {
-  // Abre a página interna dedicada em nova aba
-  var url = window.location.href.replace(/\/[^/]*$/, '/quem-somos.html');
-  // Fallback: abre o overlay se a página não existir (graceful degradation)
-  var win = window.open('quem-somos.html', '_blank');
-  if (!win || win.closed || typeof win.closed === 'undefined') {
-    // popups bloqueados — usa overlay
-    abrirQuemSomos();
-  }
+  mostrarQuemSomos();
 }
 
 function abrirQuemSomos() {
