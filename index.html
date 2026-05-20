@@ -3140,6 +3140,14 @@ async function entrar() {
     return showErr(error.message);
   }
   user = data.user;
+  // Verificar se é DEV
+  if (email.toLowerCase() === DEV_EMAIL) { mostrarDevPanel(); return; }
+  // Verificar status da assinatura
+  const statusEscola = await verificarStatusEscola(email.toLowerCase());
+  if (!statusEscola.permitido) {
+    await db.auth.signOut();
+    return showErr(statusEscola.motivo || 'Acesso não autorizado.');
+  }
   // Ler perfil do banco — define role e subrole reais
   await lerPerfilDobanco();
   iniciarApp();
@@ -10564,6 +10572,227 @@ function abrirDivModulo(i) {
 // Inicialização
 
 // ── LANDING PAGE ──────────────────────────────────────────────
+// ===== PAINEL DEV =====
+const DEV_EMAIL = 'dev@pluramente.com.br';
+
+function mostrarDevPanel() {
+  document.getElementById('landing-page').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dev-panel-screen').style.display = 'block';
+  carregarEscolasDev();
+}
+
+function sairDev() {
+  supabase.auth.signOut();
+  document.getElementById('dev-panel-screen').style.display = 'none';
+  document.getElementById('landing-page').style.display = 'block';
+}
+
+async function carregarEscolasDev() {
+  const { data: escolas } = await supabase.from('school_plans').select('*').order('created_at', { ascending: false });
+  if (!escolas) return;
+  const total = escolas.length;
+  const ativas = escolas.filter(e => e.ativo && (!e.data_vencimento || new Date(e.data_vencimento) > new Date())).length;
+  const bloqueadas = escolas.filter(e => !e.ativo).length;
+  const receita = escolas.filter(e => e.ativo).reduce((s, e) => s + (parseFloat(e.preco_mensal) || 0), 0);
+  document.getElementById('dev-stats').innerHTML = `
+    ${statCard('Total', total, '#1E3A8A')}
+    ${statCard('Ativas', ativas, '#16A34A')}
+    ${statCard('Bloqueadas', bloqueadas, '#DC2626')}
+    ${statCard('Receita/mês', 'R$ ' + receita.toFixed(0), '#7C3AED')}
+  `;
+  let rows = escolas.map(e => {
+    const venc = e.data_vencimento ? new Date(e.data_vencimento) : null;
+    const hoje = new Date();
+    const diasRestantes = venc ? Math.ceil((venc - hoje) / 86400000) : null;
+    const vencStr = venc ? venc.toLocaleDateString('pt-BR') : '—';
+    const vencColor = !venc ? '#6B7280' : diasRestantes < 0 ? '#DC2626' : diasRestantes <= 7 ? '#D97706' : '#16A34A';
+    const statusBadge = !e.ativo ? '<span style="background:#FEE2E2;color:#991B1B;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;">Bloqueada</span>' :
+      diasRestantes !== null && diasRestantes <= 7 ? '<span style="background:#FEF3C7;color:#92400E;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;">Vencendo</span>' :
+      '<span style="background:#DCFCE7;color:#166534;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;">Ativa</span>';
+    const btnAcao = e.ativo
+      ? `<button onclick="bloquearEscola('${e.id}')" style="background:#FEE2E2;color:#991B1B;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Bloquear</button>`
+      : `<button onclick="ativarEscola('${e.id}', 30)" style="background:#DCFCE7;color:#166534;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Ativar 30d</button>`;
+    return `<tr style="border-top:1px solid #F3F4F6;">
+      <td style="padding:12px 14px;font-size:13px;"><strong style="color:#1E3A8A;">${e.school_name}</strong><br><span style="color:#9CA3AF;font-size:11px;">${e.school_email}</span></td>
+      <td style="padding:12px 14px;font-size:13px;"><strong>R$ ${parseFloat(e.preco_mensal||0).toFixed(0)}</strong><br><span style="color:#9CA3AF;font-size:11px;">até ${e.max_alunos} alunos</span></td>
+      <td style="padding:12px 14px;font-size:13px;color:${vencColor};">${vencStr}</td>
+      <td style="padding:12px 14px;">${statusBadge}</td>
+      <td style="padding:12px 14px;">${btnAcao}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('dev-table-wrap').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead style="background:#F9FAFB;"><tr>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Escola</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Plano</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Vencimento</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Status</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Ação</th>
+    </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function statCard(label, val, cor) {
+  return `<div style="background:#fff;border-radius:10px;border:1px solid #E5E7EB;padding:16px 20px;">
+    <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">${label}</div>
+    <div style="font-size:24px;font-weight:700;color:${cor};">${val}</div>
+  </div>`;
+}
+
+async function ativarEscola(id, dias) {
+  const venc = new Date(); venc.setDate(venc.getDate() + dias);
+  await supabase.from('school_plans').update({ ativo: true, data_vencimento: venc.toISOString() }).eq('id', id);
+  carregarEscolasdev();
+}
+
+async function bloquearEscola(id) {
+  await supabase.from('school_plans').update({ ativo: false }).eq('id', id);
+  carregarEscolasdev();
+}
+
+function abrirFormNovaEscola() {
+  document.getElementById('dev-form-escola').style.display = 'block';
+}
+
+function atualizarPrecoPlano() {}
+
+async function salvarNovaEscola() {
+  const nome = document.getElementById('dev-nome').value.trim();
+  const email = document.getElementById('dev-email').value.trim();
+  const planoVal = document.getElementById('dev-plano').value.split('|');
+  const dias = parseInt(document.getElementById('dev-dias').value) || 30;
+  const obs = document.getElementById('dev-obs').value.trim();
+  if (!nome || !email) return alert('Preencha nome e e-mail!');
+  const venc = new Date(); venc.setDate(venc.getDate() + dias);
+  const { error } = await supabase.from('school_plans').upsert({
+    school_name: nome, school_email: email.toLowerCase(),
+    max_alunos: parseInt(planoVal[0]), preco_mensal: parseFloat(planoVal[1]),
+    plano_nome: planoVal[2], ativo: true, data_vencimento: venc.toISOString(), observacoes: obs
+  }, { onConflict: 'school_email' });
+  if (error) return alert('Erro: ' + error.message);
+  document.getElementById('dev-form-escola').style.display = 'none';
+  carregarEscolasdev();
+}
+
+async function verificarStatusEscola(email) {
+  if (email.toLowerCase() === DEV_EMAIL) return { permitido: true, isDev: true };
+  const { data } = await supabase.from('school_plans').select('*').eq('school_email', email.toLowerCase()).single();
+  if (!data) return { permitido: true }; // escola ainda não cadastrada → permite
+  if (!data.ativo) return { permitido: false, motivo: 'Acesso bloqueado. Entre em contato: (11) 99566-5193' };
+  if (data.data_vencimento && new Date(data.data_vencimento) < new Date()) return { permitido: false, motivo: 'Assinatura vencida. Renove: (11) 99566-5193' };
+  return { permitido: true };
+}
+// ===== FIM PAINEL DEV =====
+
+// ===== PAINEL DEV =====
+const DEV_EMAIL = 'dev@pluramente.com.br';
+
+function mostrarDevPanel() {
+  document.getElementById('landing-page').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dev-panel-screen').style.display = 'block';
+  carregarEscolasDev();
+}
+
+function sairDev() {
+  db.auth.signOut();
+  document.getElementById('dev-panel-screen').style.display = 'none';
+  document.getElementById('landing-page').style.display = 'block';
+}
+
+async function carregarEscolasDev() {
+  const { data: escolas } = await db.from('school_plans').select('*').order('created_at', { ascending: false });
+  if (!escolas) return;
+  const total = escolas.length;
+  const ativas = escolas.filter(e => e.ativo && (!e.data_vencimento || new Date(e.data_vencimento) > new Date())).length;
+  const bloqueadas = escolas.filter(e => !e.ativo).length;
+  const receita = escolas.filter(e => e.ativo).reduce((s, e) => s + (parseFloat(e.preco_mensal) || 0), 0);
+  document.getElementById('dev-stats').innerHTML = `
+    ${statCard('Total', total, '#1E3A8A')}
+    ${statCard('Ativas', ativas, '#16A34A')}
+    ${statCard('Bloqueadas', bloqueadas, '#DC2626')}
+    ${statCard('Receita/mês', 'R$ ' + receita.toFixed(0), '#7C3AED')}
+  `;
+  const rows = escolas.map(e => {
+    const venc = e.data_vencimento ? new Date(e.data_vencimento) : null;
+    const hoje = new Date();
+    const dias = venc ? Math.ceil((venc - hoje) / 86400000) : null;
+    const vencStr = venc ? venc.toLocaleDateString('pt-BR') : '—';
+    const vencColor = !venc ? '#6B7280' : dias < 0 ? '#DC2626' : dias <= 7 ? '#D97706' : '#16A34A';
+    const badge = !e.ativo
+      ? '<span style="background:#FEE2E2;color:#991B1B;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;">Bloqueada</span>'
+      : dias !== null && dias <= 7
+        ? '<span style="background:#FEF3C7;color:#92400E;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;">Vencendo</span>'
+        : '<span style="background:#DCFCE7;color:#166534;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;">Ativa</span>';
+    const btn = e.ativo
+      ? `<button onclick="bloquearEscola('${e.id}')" style="background:#FEE2E2;color:#991B1B;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Bloquear</button>`
+      : `<button onclick="ativarEscola('${e.id}',30)" style="background:#DCFCE7;color:#166534;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Ativar 30d</button>`;
+    return `<tr style="border-top:1px solid #F3F4F6;">
+      <td style="padding:12px 14px;font-size:13px;"><strong style="color:#1E3A8A;">${e.school_name}</strong><br><span style="color:#9CA3AF;font-size:11px;">${e.school_email}</span></td>
+      <td style="padding:12px 14px;font-size:13px;"><strong>R$ ${parseFloat(e.preco_mensal||0).toFixed(0)}</strong><br><span style="color:#9CA3AF;font-size:11px;">até ${e.max_alunos} alunos</span></td>
+      <td style="padding:12px 14px;font-size:13px;color:${vencColor};">${vencStr}</td>
+      <td style="padding:12px 14px;">${badge}</td>
+      <td style="padding:12px 14px;">${btn}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('dev-table-wrap').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead style="background:#F9FAFB;"><tr>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Escola</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Plano</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Vencimento</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Status</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;">Ação</th>
+    </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function statCard(label, val, cor) {
+  return `<div style="background:#fff;border-radius:10px;border:1px solid #E5E7EB;padding:16px 20px;">
+    <div style="font-size:12px;color:#6B7280;margin-bottom:6px;">${label}</div>
+    <div style="font-size:24px;font-weight:700;color:${cor};">${val}</div>
+  </div>`;
+}
+
+async function ativarEscola(id, dias) {
+  const venc = new Date(); venc.setDate(venc.getDate() + dias);
+  await db.from('school_plans').update({ ativo: true, data_vencimento: venc.toISOString() }).eq('id', id);
+  carregarEscolasDev();
+}
+
+async function bloquearEscola(id) {
+  await db.from('school_plans').update({ ativo: false }).eq('id', id);
+  carregarEscolasDev();
+}
+
+function abrirFormNovaEscola() {
+  document.getElementById('dev-form-escola').style.display = 'block';
+}
+
+async function salvarNovaEscola() {
+  const nome = document.getElementById('dev-nome').value.trim();
+  const email = document.getElementById('dev-email').value.trim();
+  const planoVal = document.getElementById('dev-plano').value.split('|');
+  const dias = parseInt(document.getElementById('dev-dias').value) || 30;
+  const obs = document.getElementById('dev-obs').value.trim();
+  if (!nome || !email) return alert('Preencha nome e e-mail!');
+  const venc = new Date(); venc.setDate(venc.getDate() + dias);
+  const { error } = await db.from('school_plans').upsert({
+    school_name: nome, school_email: email.toLowerCase(),
+    max_alunos: parseInt(planoVal[0]), preco_mensal: parseFloat(planoVal[1]),
+    plano_nome: planoVal[2], ativo: true, data_vencimento: venc.toISOString(), observacoes: obs
+  }, { onConflict: 'school_email' });
+  if (error) return alert('Erro: ' + error.message);
+  document.getElementById('dev-form-escola').style.display = 'none';
+  carregarEscolasDev();
+}
+
+async function verificarStatusEscola(email) {
+  const { data } = await db.from('school_plans').select('*').eq('school_email', email).single();
+  if (!data) return { permitido: true };
+  if (!data.ativo) return { permitido: false, motivo: 'Acesso bloqueado. Entre em contato: (11) 99566-5193' };
+  if (data.data_vencimento && new Date(data.data_vencimento) < new Date()) return { permitido: false, motivo: 'Assinatura vencida. Renove: (11) 99566-5193' };
+  return { permitido: true };
+}
+// ===== FIM PAINEL DEV =====
+
 function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; } function mostrarLanding() {
   document.getElementById('landing-page').style.display = 'block';
   document.getElementById('login-screen').style.display = 'none';
@@ -12028,6 +12257,41 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
     </div>
   </div>
 </div>
+<!-- PAINEL DEV -->
+<div id="dev-panel-screen" style="display:none;min-height:100vh;background:#F5F7FA;padding:32px 40px;font-family:'Inter',sans-serif;">
+  <div style="max-width:960px;margin:0 auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="background:#1E3A8A;color:#fff;font-size:10px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.08em;">🔒 PAINEL DEV</span>
+        <span style="font-size:20px;font-weight:700;color:#1E3A8A;">Pluramente — Gestão de Escolas</span>
+      </div>
+      <button onclick="sairDev()" style="padding:8px 18px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:#6B7280;">Sair</button>
+    </div>
+    <div id="dev-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;"></div>
+    <div style="background:#fff;border-radius:12px;border:1px solid #E5E7EB;overflow:hidden;">
+      <div style="padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:14px;font-weight:600;color:#1E3A8A;">Escolas cadastradas</span>
+        <button onclick="abrirFormNovaEscola()" style="background:#2563EB;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">+ Nova escola</button>
+      </div>
+      <div id="dev-table-wrap" style="overflow-x:auto;"></div>
+    </div>
+    <div id="dev-form-escola" style="display:none;margin-top:20px;background:#fff;border-radius:12px;border:1px solid #E5E7EB;padding:24px;">
+      <h3 style="font-size:15px;font-weight:600;color:#1E3A8A;margin-bottom:16px;">Nova escola</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Nome da escola</label><input id="dev-nome" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;" placeholder="E.M. Montessori"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">E-mail de acesso</label><input id="dev-email" type="email" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;" placeholder="coord@escola.com"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Plano</label><select id="dev-plano" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;"><option value="20|197|Starter">Starter — até 20 alunos — R$ 197/mês</option><option value="50|297|Basic">Basic — até 50 alunos — R$ 297/mês</option><option value="100|447|Pro">Pro — até 100 alunos — R$ 447/mês</option><option value="999|0|Enterprise">Enterprise — acima de 100 — sob consulta</option></select></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Validade (dias a partir de hoje)</label><input id="dev-dias" type="number" value="30" min="1" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Observações</label><input id="dev-obs" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;" placeholder="Opcional"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button onclick="salvarNovaEscola()" style="background:#2563EB;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">Salvar e ativar</button>
+        <button onclick="document.getElementById('dev-form-escola').style.display='none'" style="background:#F3F4F6;color:#6B7280;border:none;padding:9px 16px;border-radius:8px;font-size:13px;cursor:pointer;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- FIM PAINEL DEV -->
 </body>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       </html>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       >
