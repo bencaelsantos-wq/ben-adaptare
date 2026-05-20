@@ -10583,13 +10583,14 @@ function mostrarDevPanel() {
 }
 
 function sairDev() {
-  supabase.auth.signOut();
-  document.getElementById('dev-panel-screen').style.display = 'none';
-  document.getElementById('landing-page').style.display = 'block';
+  db.auth.signOut().then(() => {
+    document.getElementById('dev-panel-screen').style.display = 'none';
+    document.getElementById('landing-page').style.display = 'block';
+  });
 }
 
 async function carregarEscolasDev() {
-  const { data: escolas } = await supabase.from('school_plans').select('*').order('created_at', { ascending: false });
+  const { data: escolas } = await db.from('school_plans').select('*').order('created_at', { ascending: false });
   if (!escolas) return;
   const total = escolas.length;
   const ativas = escolas.filter(e => e.ativo && (!e.data_vencimento || new Date(e.data_vencimento) > new Date())).length;
@@ -10640,13 +10641,13 @@ function statCard(label, val, cor) {
 
 async function ativarEscola(id, dias) {
   const venc = new Date(); venc.setDate(venc.getDate() + dias);
-  await supabase.from('school_plans').update({ ativo: true, data_vencimento: venc.toISOString() }).eq('id', id);
-  carregarEscolasdev();
+  await db.from('school_plans').update({ ativo: true, data_vencimento: venc.toISOString() }).eq('id', id);
+  carregarEscolasDev();
 }
 
 async function bloquearEscola(id) {
-  await supabase.from('school_plans').update({ ativo: false }).eq('id', id);
-  carregarEscolasdev();
+  await db.from('school_plans').update({ ativo: false }).eq('id', id);
+  carregarEscolasDev();
 }
 
 function abrirFormNovaEscola() {
@@ -10663,20 +10664,19 @@ async function salvarNovaEscola() {
   const obs = document.getElementById('dev-obs').value.trim();
   if (!nome || !email) return alert('Preencha nome e e-mail!');
   const venc = new Date(); venc.setDate(venc.getDate() + dias);
-  const { error } = await supabase.from('school_plans').upsert({
+  const { error } = await db.from('school_plans').upsert({
     school_name: nome, school_email: email.toLowerCase(),
     max_alunos: parseInt(planoVal[0]), preco_mensal: parseFloat(planoVal[1]),
     plano_nome: planoVal[2], ativo: true, data_vencimento: venc.toISOString(), observacoes: obs
   }, { onConflict: 'school_email' });
   if (error) return alert('Erro: ' + error.message);
   document.getElementById('dev-form-escola').style.display = 'none';
-  carregarEscolasdev();
+  carregarEscolasDev();
 }
 
 async function verificarStatusEscola(email) {
-  if (email.toLowerCase() === DEV_EMAIL) return { permitido: true, isDev: true };
-  const { data } = await supabase.from('school_plans').select('*').eq('school_email', email.toLowerCase()).single();
-  if (!data) return { permitido: true }; // escola ainda não cadastrada → permite
+  const { data } = await db.from('school_plans').select('*').eq('school_email', email.toLowerCase()).single();
+  if (!data) return { permitido: true };
   if (!data.ativo) return { permitido: false, motivo: 'Acesso bloqueado. Entre em contato: (11) 99566-5193' };
   if (data.data_vencimento && new Date(data.data_vencimento) < new Date()) return { permitido: false, motivo: 'Assinatura vencida. Renove: (11) 99566-5193' };
   return { permitido: true };
