@@ -2968,7 +2968,7 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const CLAUDE_PROXY = 'https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/claude-proxy';
 
 const db = supabase.createClient(SB_URL, SB_KEY);
-const dbAnon = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+const dbAnon = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-pluramente-anon' } });
 
 // ── DADOS GLOBAIS ────────────────────────────────────────────
 const PERFIS = ['TEA — Transtorno do Espectro Autista','TDAH — Déficit de Atenção/Hiperatividade','Dislexia','Discalculia','Disgrafia','Disortografia','D.I. — Deficiência Intelectual','D.F. — Deficiência Física','D.V. — Deficiência Visual','D.A. — Deficiência Auditiva','NCC — Neurodivergência / Cognição Complexa','Apraxia de Fala','Síndrome de Down','Síndrome de Williams','Altas Habilidades / Superdotação','TGD — Transtorno Global do Desenvolvimento','TOD — Transtorno Opositivo Desafiador','Transtorno de Ansiedade','Transtorno de Processamento Sensorial','Deficiência Múltipla'];
