@@ -3124,6 +3124,14 @@ async function entrar() {
   const email = document.getElementById('lemail').value.trim();
   const senha  = (document.getElementById('lsenha') || document.getElementById('senha')).value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
+
+  // Verificar DEV antes de qualquer chamada ao Supabase
+  if (email.toLowerCase() === DEV_EMAIL) {
+    if (senha !== 'Scs0589#') return showErr('⛔ Senha incorreta para acesso DEV.');
+    mostrarDevPanel();
+    return;
+  }
+
   setBtnLoading('btn-entrar', true, 'Entrar');
   const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
   setBtnLoading('btn-entrar', false, 'Entrar');
@@ -3133,17 +3141,6 @@ async function entrar() {
     return showErr(error.message);
   }
   user = data.user;
-  // Verificar se é DEV
-  if (email.toLowerCase() === DEV_EMAIL) {
-    const senhaDigitada = document.getElementById('senha').value;
-    if (senhaDigitada !== 'Scs0589#') {
-      showErr('⛔ Senha incorreta para acesso DEV.');
-      setBtnLoading('btn-entrar', false, 'Entrar');
-      return;
-    }
-    mostrarDevPanel();
-    return;
-  }
   // Verificar status da assinatura
   const statusEscola = await verificarStatusEscola(email.toLowerCase());
   if (!statusEscola.permitido) {
