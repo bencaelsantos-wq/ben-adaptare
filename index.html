@@ -10675,7 +10675,7 @@ async function salvarNovaEscola() {
 }
 
 async function verificarStatusEscola(email) {
-  const { data } = await db.from('school_plans').select('*').eq('school_email', email.toLowerCase()).single();
+  const { data } = await db.from('school_plans').select('*').eq('school_email', email.toLowerCase()).maybeSingle();
   if (!data) return { permitido: true };
   if (!data.ativo) return { permitido: false, motivo: 'Acesso bloqueado. Entre em contato: (11) 99566-5193' };
   if (data.data_vencimento && new Date(data.data_vencimento) < new Date()) return { permitido: false, motivo: 'Assinatura vencida. Renove: (11) 99566-5193' };
