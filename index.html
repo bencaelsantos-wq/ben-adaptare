@@ -10698,6 +10698,266 @@ async function salvarNovaEscola() {
   carregarEscolasDev();
 }
 
+// ── GERENCIADOR GERAL ─────────────────────────────────────────
+function devAba(aba) {
+  const isGer = aba === 'gerenciador';
+  document.getElementById('dev-painel-escolas').style.display    = isGer ? 'none' : 'block';
+  document.getElementById('dev-painel-gerenciador').style.display = isGer ? 'block' : 'none';
+  document.getElementById('dev-tab-escolas').style.background     = isGer ? 'transparent' : '#fff';
+  document.getElementById('dev-tab-escolas').style.color          = isGer ? '#6B7280' : '#1E3A8A';
+  document.getElementById('dev-tab-escolas').style.boxShadow      = isGer ? 'none' : '0 1px 3px rgba(0,0,0,.1)';
+  document.getElementById('dev-tab-gerenciador').style.background = isGer ? '#fff' : 'transparent';
+  document.getElementById('dev-tab-gerenciador').style.color      = isGer ? '#1E3A8A' : '#6B7280';
+  document.getElementById('dev-tab-gerenciador').style.boxShadow  = isGer ? '0 1px 3px rgba(0,0,0,.1)' : 'none';
+  if (isGer) carregarGerenciador();
+}
+
+function gerLimiteProfs(maxAlunos) {
+  if (maxAlunos >= 999) return 999;
+  return Math.max(3, Math.floor(maxAlunos / 4));
+}
+
+function gerHealthScore(escola, metricas) {
+  const { ultimoAcesso, totalDocs, acessos30d } = metricas;
+  if (!escola.ativo) return { cor: '#DC2626', bg: '#FEE2E2', label: '🔴 Bloqueada' };
+  const diasSemAcesso = ultimoAcesso ? Math.floor((Date.now() - new Date(ultimoAcesso)) / 86400000) : 999;
+  if (diasSemAcesso > 30 || (totalDocs === 0 && acessos30d === 0))
+    return { cor: '#D97706', bg: '#FEF3C7', label: '🟡 Inativo' };
+  if (diasSemAcesso <= 7 && totalDocs > 0)
+    return { cor: '#16A34A', bg: '#DCFCE7', label: '🟢 Saudável' };
+  return { cor: '#2563EB', bg: '#DBEAFE', label: '🔵 Regular' };
+}
+
+async function carregarGerenciador() {
+  const wrap = document.getElementById('ger-table-wrap');
+  const kpisEl = document.getElementById('ger-kpis');
+  const alertasEl = document.getElementById('ger-alertas');
+  if (wrap) wrap.innerHTML = '<div style="padding:32px;text-align:center;color:#9CA3AF;font-size:13px;">⏳ Carregando dados de todas as escolas...</div>';
+
+  const { data: escolas } = await db.from('school_plans').select('*').order('created_at', { ascending: false });
+  if (!escolas || !escolas.length) {
+    wrap.innerHTML = '<div style="padding:32px;text-align:center;color:#9CA3AF">Nenhuma escola cadastrada.</div>';
+    return;
+  }
+
+  const hoje = new Date();
+  let mrr = 0, totalDocs = 0, totalTokens = 0, totalCusto = 0;
+  const alertas = [];
+  const linhas = [];
+
+  for (const e of escolas) {
+    // Buscar perfil da gestão
+    const { data: perfil } = await db.from('profiles').select('id').eq('email', e.school_email.toLowerCase()).maybeSingle();
+    const gid = perfil?.id;
+
+    // Queries paralelas
+    const [rAlunos, rProfs, rAdapt, rPeis, rPaees, rIA, rAcesso, rAcesso30] = await Promise.all([
+      gid ? db.from('alunos').select('*', { count:'exact', head:true }).eq('user_id', gid) : { count: 0 },
+      gid ? db.from('professores').select('*', { count:'exact', head:true }).eq('user_id', gid) : { count: 0 },
+      gid ? db.from('adaptacoes').select('*', { count:'exact', head:true }).eq('user_id', gid) : { count: 0 },
+      gid ? db.from('peis').select('*', { count:'exact', head:true }).eq('user_id', gid) : { count: 0 },
+      gid ? db.from('paees').select('*', { count:'exact', head:true }).eq('user_id', gid) : { count: 0 },
+      db.from('usage_logs').select('tokens_input,tokens_output,custo_usd').eq('user_email', e.school_email.toLowerCase()),
+      db.from('logs_acesso').select('created_at').eq('user_email', e.school_email.toLowerCase()).order('created_at', { ascending: false }).limit(1),
+      db.from('logs_acesso').select('*', { count:'exact', head:true }).eq('user_email', e.school_email.toLowerCase())
+        .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()),
+    ]);
+
+    const nAlunos  = rAlunos.count  || 0;
+    const nProfs   = rProfs.count   || 0;
+    const nAdapt   = rAdapt.count   || 0;
+    const nPeis    = rPeis.count    || 0;
+    const nPaees   = rPaees.count   || 0;
+    const iaLogs   = rIA.data || [];
+    const tokTotal = iaLogs.reduce((s, l) => s + (l.tokens_input || 0) + (l.tokens_output || 0), 0);
+    const custoUSD = iaLogs.reduce((s, l) => s + (l.custo_usd || 0), 0);
+    const ultimoAcesso = rAcesso.data?.[0]?.created_at || null;
+    const acessos30d   = rAcesso30.count || 0;
+    const docsTotal    = nAdapt + nPeis + nPaees;
+    const limProfs     = gerLimiteProfs(e.max_alunos || 20);
+
+    const venc = e.data_vencimento ? new Date(e.data_vencimento) : null;
+    const diasVenc = venc ? Math.ceil((venc - hoje) / 86400000) : null;
+    const hs = gerHealthScore(e, { ultimoAcesso, totalDocs: docsTotal, acessos30d });
+
+    // Acumular globais
+    if (e.ativo) mrr += parseFloat(e.preco_mensal || 0);
+    totalDocs   += docsTotal;
+    totalTokens += tokTotal;
+    totalCusto  += custoUSD;
+
+    // Alertas
+    if (e.ativo && diasVenc !== null && diasVenc <= 7 && diasVenc >= 0)
+      alertas.push(`⚠️ <strong>${e.school_name}</strong> vence em <strong>${diasVenc} dia(s)</strong>`);
+    if (nAlunos >= (e.max_alunos || 20))
+      alertas.push(`🚨 <strong>${e.school_name}</strong> atingiu o limite de alunos do plano`);
+    if (e.ativo && acessos30d === 0)
+      alertas.push(`😴 <strong>${e.school_name}</strong> sem acesso há mais de 30 dias`);
+
+    const ultimoStr = ultimoAcesso
+      ? new Date(ultimoAcesso).toLocaleDateString('pt-BR')
+      : '<span style="color:#9CA3AF">Nunca</span>';
+    const vencStr = venc
+      ? `<span style="color:${diasVenc < 0 ? '#DC2626' : diasVenc <= 7 ? '#D97706' : '#16A34A'}">${venc.toLocaleDateString('pt-BR')}</span>`
+      : '—';
+    const profBar = nProfs >= limProfs
+      ? `<span style="color:#DC2626;font-weight:700">${nProfs}/${limProfs}</span>`
+      : `${nProfs}/${limProfs}`;
+
+    linhas.push(`<tr style="border-top:1px solid #F3F4F6;cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''" onclick="verDetalhesEscola('${e.school_email}')">
+      <td style="padding:11px 14px;font-size:13px;"><strong style="color:#1E3A8A">${e.school_name}</strong><br><span style="color:#9CA3AF;font-size:11px">${e.school_email}</span></td>
+      <td style="padding:11px 14px;font-size:12px;">${e.plano_nome || '—'}<br><span style="color:#6B7280">R$ ${parseFloat(e.preco_mensal||0).toFixed(0)}/mês</span></td>
+      <td style="padding:11px 14px;font-size:12px;text-align:center;">${profBar}</td>
+      <td style="padding:11px 14px;font-size:13px;text-align:center;">${nAlunos}/${e.max_alunos || 20}</td>
+      <td style="padding:11px 14px;font-size:13px;text-align:center;">${nAdapt}</td>
+      <td style="padding:11px 14px;font-size:13px;text-align:center;">${nPeis}</td>
+      <td style="padding:11px 14px;font-size:13px;text-align:center;">${nPaees}</td>
+      <td style="padding:11px 14px;font-size:12px;text-align:center;">${(tokTotal/1000).toFixed(1)}k<br><span style="color:#16A34A;font-size:11px">$${custoUSD.toFixed(3)}</span></td>
+      <td style="padding:11px 14px;font-size:12px;">${ultimoStr}</td>
+      <td style="padding:11px 14px;">${vencStr}</td>
+      <td style="padding:11px 14px;"><span style="background:${hs.bg};color:${hs.cor};padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap;">${hs.label}</span></td>
+    </tr>`);
+  }
+
+  // Renderizar alertas
+  if (alertasEl) {
+    alertasEl.innerHTML = alertas.length
+      ? `<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:10px;padding:12px 16px;">
+          <div style="font-size:12px;font-weight:700;color:#92400E;margin-bottom:6px;">⚠️ ${alertas.length} alerta(s) requer(em) atenção</div>
+          ${alertas.map(a => `<div style="font-size:12px;color:#78350F;padding:3px 0;border-bottom:1px solid #FDE68A;">${a}</div>`).join('')}
+        </div>` : '';
+  }
+
+  // KPIs globais
+  const ativas = escolas.filter(e => e.ativo).length;
+  const vencendo7d = escolas.filter(e => {
+    if (!e.data_vencimento) return false;
+    const d = Math.ceil((new Date(e.data_vencimento) - hoje) / 86400000);
+    return e.ativo && d >= 0 && d <= 7;
+  }).length;
+
+  if (kpisEl) kpisEl.innerHTML = [
+    { label:'MRR', val:`R$ ${mrr.toFixed(0)}`, cor:'#7C3AED' },
+    { label:'Escolas ativas', val:`${ativas} / ${escolas.length}`, cor:'#16A34A' },
+    { label:'Documentos gerados', val:totalDocs.toLocaleString('pt-BR'), cor:'#2563EB' },
+    { label:'Tokens IA consumidos', val:(totalTokens/1000).toFixed(1)+'k', cor:'#D97706' },
+    { label:'Custo IA (USD)', val:'$'+totalCusto.toFixed(2), cor:'#DC2626' },
+  ].map(k => `<div style="background:#fff;border-radius:10px;border:1px solid #E5E7EB;padding:14px 18px;">
+    <div style="font-size:11px;color:#6B7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;">${k.label}</div>
+    <div style="font-size:22px;font-weight:700;color:${k.cor};">${k.val}</div>
+  </div>`).join('');
+
+  // Tabela
+  if (wrap) wrap.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead style="background:#F9FAFB;"><tr>
+      ${['Escola','Plano','Profs','Alunos','Adapt.','PEIs','PAEEs','Tokens/Custo','Último acesso','Vencimento','Saúde']
+        .map(h => `<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;">${h}</th>`)
+        .join('')}
+    </tr></thead>
+    <tbody>${linhas.join('')}</tbody>
+  </table>`;
+}
+
+async function verDetalhesEscola(email) {
+  const modal = document.getElementById('ger-modal');
+  const conteudo = document.getElementById('ger-modal-conteudo');
+  if (!modal || !conteudo) return;
+  modal.style.display = 'block';
+  conteudo.innerHTML = '<div style="text-align:center;padding:32px;color:#9CA3AF">⏳ Carregando...</div>';
+
+  const { data: e } = await db.from('school_plans').select('*').eq('school_email', email.toLowerCase()).maybeSingle();
+  if (!e) { conteudo.innerHTML = '<p>Escola não encontrada.</p>'; return; }
+
+  const { data: perfil } = await db.from('profiles').select('id,nome,ativo,created_at').eq('email', email.toLowerCase()).maybeSingle();
+  const gid = perfil?.id;
+
+  const [rAlunos, rProfs, rAdapt, rPeis, rPaees, rIA, rAcessos] = await Promise.all([
+    gid ? db.from('alunos').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
+    gid ? db.from('professores').select('nome,email,vinculo').eq('user_id',gid) : {data:[]},
+    gid ? db.from('adaptacoes').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
+    gid ? db.from('peis').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
+    gid ? db.from('paees').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
+    db.from('usage_logs').select('tokens_input,tokens_output,custo_usd,metodo,criado_em').eq('user_email',email.toLowerCase()).order('criado_em',{ascending:false}).limit(100),
+    db.from('logs_acesso').select('created_at,role').eq('user_email',email.toLowerCase()).order('created_at',{ascending:false}).limit(10),
+  ]);
+
+  const iaLogs = rIA.data || [];
+  const tokTotal = iaLogs.reduce((s,l) => s+(l.tokens_input||0)+(l.tokens_output||0),0);
+  const custoUSD = iaLogs.reduce((s,l) => s+(l.custo_usd||0),0);
+  const porModulo = {};
+  iaLogs.forEach(l => {
+    const m = l.metodo || 'geral';
+    if (!porModulo[m]) porModulo[m] = { n:0, custo:0 };
+    porModulo[m].n++; porModulo[m].custo += l.custo_usd||0;
+  });
+  const profs = rProfs.data || [];
+  const acessos = rAcessos.data || [];
+  const limProfs = gerLimiteProfs(e.max_alunos||20);
+
+  const row = (label, val) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F3F4F6;font-size:13px;"><span style="color:#6B7280">${label}</span><span style="font-weight:600;color:#1E293B">${val}</span></div>`;
+
+  conteudo.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div style="font-size:28px;">🏫</div>
+      <div><h2 style="font-size:18px;font-weight:700;color:#1E3A8A;margin:0">${e.school_name}</h2>
+      <p style="font-size:12px;color:#9CA3AF;margin:2px 0 0">${e.school_email} · Plano ${e.plano_nome||'—'}</p></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;margin-bottom:8px;">Dados jurídicos</p>
+        ${row('Razão Social', e.razao_social||'—')}
+        ${row('CNPJ', e.cnpj||'—')}
+        ${row('Endereço', e.endereco ? `${e.endereco}, ${e.cidade||''} - ${e.estado||''}` : '—')}
+        ${row('CEP', e.cep||'—')}
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;margin-bottom:8px;">Financeiro</p>
+        ${row('Plano', e.plano_nome||'—')}
+        ${row('Valor', `R$ ${parseFloat(e.preco_mensal||0).toFixed(0)}/mês`)}
+        ${row('Vencimento', e.data_vencimento ? new Date(e.data_vencimento).toLocaleDateString('pt-BR') : '—')}
+        ${row('Forma pgto.', e.forma_pagamento||'—')}
+        ${row('Contato fin.', e.contato_financeiro_nome ? `${e.contato_financeiro_nome} · ${e.contato_financeiro_fone||''}` : '—')}
+        ${row('E-mail fin.', e.contato_financeiro_email||'—')}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;">
+      ${[
+        ['Alunos', `${rAlunos.count||0}/${e.max_alunos||20}`, '#2563EB'],
+        ['Professores', `${profs.length}/${limProfs}`, '#7C3AED'],
+        ['Adaptações', rAdapt.count||0, '#14B8A6'],
+        ['PEIs', rPeis.count||0, '#22C55E'],
+        ['PAEEs', rPaees.count||0, '#D97706'],
+      ].map(([l,v,c]) => `<div style="background:#F9FAFB;border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:${c}">${v}</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:2px">${l}</div>
+      </div>`).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;margin-bottom:8px;">IA — Consumo por módulo</p>
+        ${row('Total tokens', (tokTotal/1000).toFixed(1)+'k')}
+        ${row('Custo estimado', '$'+custoUSD.toFixed(4))}
+        ${Object.entries(porModulo).sort((a,b)=>b[1].n-a[1].n).map(([m,v]) =>
+          row(m, `${v.n}× · $${v.custo.toFixed(4)}`)
+        ).join('')}
+        ${!iaLogs.length ? '<div style="color:#9CA3AF;font-size:12px;padding:8px 0">Nenhum uso de IA registrado</div>' : ''}
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;margin-bottom:8px;">Últimos acessos</p>
+        ${acessos.length ? acessos.map(a => row(
+          new Date(a.created_at).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}),
+          a.role||'—'
+        )).join('') : '<div style="color:#9CA3AF;font-size:12px;padding:8px 0">Nenhum acesso registrado</div>'}
+
+        <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;margin:14px 0 8px;">Professores vinculados</p>
+        ${profs.length ? profs.map(p => row(p.nome||p.email, p.vinculo||'—')).join('') : '<div style="color:#9CA3AF;font-size:12px;padding:8px 0">Nenhum professor cadastrado</div>'}
+      </div>
+    </div>`;
+}
+
 async function verificarStatusEscola(email) {
   const { data } = await db.from('school_plans').select('*').eq('school_email', email.toLowerCase()).maybeSingle();
   if (!data) return { permitido: true };
@@ -12182,6 +12442,14 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
       <button onclick="sairDev()" style="padding:8px 18px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:#6B7280;">Sair</button>
     </div>
     <div id="dev-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;"></div>
+    <!-- ABAS -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:#E5E7EB;border-radius:10px;padding:4px;width:fit-content;">
+      <button id="dev-tab-escolas" onclick="devAba('escolas')" style="padding:7px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#1E3A8A;box-shadow:0 1px 3px rgba(0,0,0,.1);">🏫 Escolas</button>
+      <button id="dev-tab-gerenciador" onclick="devAba('gerenciador')" style="padding:7px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#6B7280;">📊 Gerenciador</button>
+    </div>
+
+    <!-- PAINEL ESCOLAS -->
+    <div id="dev-painel-escolas">
     <div style="background:#fff;border-radius:12px;border:1px solid #E5E7EB;overflow:hidden;">
       <div style="padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
         <span style="font-size:14px;font-weight:600;color:#1E3A8A;">Escolas cadastradas</span>
@@ -12234,7 +12502,38 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
         <button onclick="salvarNovaEscola()" style="background:#2563EB;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">Salvar e ativar</button>
         <button onclick="document.getElementById('dev-form-escola').style.display='none'" style="background:#F3F4F6;color:#6B7280;border:none;padding:9px 16px;border-radius:8px;font-size:13px;cursor:pointer;">Cancelar</button>
       </div>
-    </div>
+    </div><!-- /dev-painel-escolas -->
+
+    <!-- PAINEL GERENCIADOR -->
+    <div id="dev-painel-gerenciador" style="display:none;">
+
+      <!-- ALERTAS -->
+      <div id="ger-alertas" style="margin-bottom:16px;"></div>
+
+      <!-- KPIs FINANCEIROS -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;" id="ger-kpis"></div>
+
+      <!-- TABELA POR ESCOLA -->
+      <div style="background:#fff;border-radius:12px;border:1px solid #E5E7EB;overflow:hidden;margin-bottom:20px;">
+        <div style="padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:14px;font-weight:600;color:#1E3A8A;">📊 Desempenho por escola</span>
+          <button onclick="carregarGerenciador()" style="background:#F3F4F6;color:#374151;border:none;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">↺ Atualizar</button>
+        </div>
+        <div id="ger-table-wrap" style="overflow-x:auto;">
+          <div style="padding:32px;text-align:center;color:#9CA3AF;font-size:13px;">Carregando dados...</div>
+        </div>
+      </div>
+
+      <!-- MODAL DETALHES -->
+      <div id="ger-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;overflow-y:auto;">
+        <div style="background:#fff;border-radius:16px;max-width:720px;margin:40px auto;padding:32px;position:relative;">
+          <button onclick="document.getElementById('ger-modal').style.display='none'" style="position:absolute;top:16px;right:16px;background:#F3F4F6;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;">✕ Fechar</button>
+          <div id="ger-modal-conteudo"></div>
+        </div>
+      </div>
+
+    </div><!-- /dev-painel-gerenciador -->
+
   </div>
 </div>
 <!-- FIM PAINEL DEV -->
