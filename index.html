@@ -3122,7 +3122,7 @@ function setBtnLoading(id, loading, txt) {
 async function entrar() {
   clearMsgs();
   const email = document.getElementById('lemail').value.trim();
-  const senha  = document.getElementById('lsenha').value;
+  const senha  = (document.getElementById('lsenha') || document.getElementById('senha')).value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
   setBtnLoading('btn-entrar', true, 'Entrar');
   const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
