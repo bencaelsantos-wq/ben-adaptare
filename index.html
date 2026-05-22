@@ -3238,11 +3238,27 @@ async function lerPerfilDobanco() {
       throw new Error('Conta inativa');
     }
 
-    userRole    = data.role    || 'professor';
-    userSubRole = data.subrole || null;
+const roleEscolhido = userRole;
+    const roleReal      = data.role || 'professor';
 
+    const labelAmigavel = {
+      'professor':       'Professor',
+      'gestao':          'Gestão Educacional',
+      'clinica':         'Clínica',
+      'at':              'Auxiliar Terapêutico',
+      'gestao-clinica':  'Gestão Clínica'
+    };
+
+    if (roleEscolhido !== roleReal) {
+      await db.auth.signOut();
+      user = null;
+      showErr('⛔ Perfil incorreto. Este e-mail pertence a "' + (labelAmigavel[roleReal] || roleReal) + '". Selecione o perfil correto e tente novamente.');
+      throw new Error('Role incorreto');
+    }
+    userRole    = roleReal;
+    userSubRole = data.subrole || null;
   } catch(e) {
-    if (e.message === 'Conta inativa') throw e;
+    if (e.message === 'Conta inativa' || e.message === 'Role incorreto') throw e;
     console.warn('lerPerfilDobanco:', e.message);
   }
 }
