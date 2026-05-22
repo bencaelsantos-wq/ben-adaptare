@@ -10666,17 +10666,32 @@ function abrirFormNovaEscola() {
 function atualizarPrecoPlano() {}
 
 async function salvarNovaEscola() {
-  const nome = document.getElementById('dev-nome').value.trim();
-  const email = document.getElementById('dev-email').value.trim();
+  const nome     = document.getElementById('dev-nome').value.trim();
+  const email    = document.getElementById('dev-email').value.trim();
   const planoVal = document.getElementById('dev-plano').value.split('|');
-  const dias = parseInt(document.getElementById('dev-dias').value) || 30;
-  const obs = document.getElementById('dev-obs').value.trim();
+  const dias     = parseInt(document.getElementById('dev-dias').value) || 30;
+  const obs      = document.getElementById('dev-obs').value.trim();
   if (!nome || !email) return alert('Preencha nome e e-mail!');
   const venc = new Date(); venc.setDate(venc.getDate() + dias);
   const { error } = await db.from('school_plans').upsert({
-    school_name: nome, school_email: email.toLowerCase(),
-    max_alunos: parseInt(planoVal[0]), preco_mensal: parseFloat(planoVal[1]),
-    plano_nome: planoVal[2], ativo: true, data_vencimento: venc.toISOString(), observacoes: obs
+    school_name:   nome,
+    school_email:  email.toLowerCase(),
+    max_alunos:    parseInt(planoVal[0]),
+    preco_mensal:  parseFloat(planoVal[1]),
+    plano_nome:    planoVal[2],
+    ativo:         true,
+    data_vencimento: venc.toISOString(),
+    observacoes:   obs,
+    cnpj:          document.getElementById('dev-cnpj').value.trim(),
+    razao_social:  document.getElementById('dev-razao').value.trim(),
+    endereco:      document.getElementById('dev-endereco').value.trim(),
+    cidade:        document.getElementById('dev-cidade').value.trim(),
+    estado:        document.getElementById('dev-estado').value.trim().toUpperCase(),
+    cep:           document.getElementById('dev-cep').value.trim(),
+    forma_pagamento:          document.getElementById('dev-pagamento').value,
+    contato_financeiro_nome:  document.getElementById('dev-fin-nome').value.trim(),
+    contato_financeiro_email: document.getElementById('dev-fin-email').value.trim(),
+    contato_financeiro_fone:  document.getElementById('dev-fin-fone').value.trim(),
   }, { onConflict: 'school_email' });
   if (error) return alert('Erro: ' + error.message);
   document.getElementById('dev-form-escola').style.display = 'none';
@@ -12175,15 +12190,47 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
       <div id="dev-table-wrap" style="overflow-x:auto;"></div>
     </div>
     <div id="dev-form-escola" style="display:none;margin-top:20px;background:#fff;border-radius:12px;border:1px solid #E5E7EB;padding:24px;">
-      <h3 style="font-size:15px;font-weight:600;color:#1E3A8A;margin-bottom:16px;">Nova escola</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Nome da escola</label><input id="dev-nome" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;" placeholder="E.M. Montessori"></div>
-        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">E-mail de acesso</label><input id="dev-email" type="email" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;" placeholder="coord@escola.com"></div>
-        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Plano</label><select id="dev-plano" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;"><option value="20|197|Starter">Starter — até 20 alunos — R$ 197/mês</option><option value="50|297|Basic">Basic — até 50 alunos — R$ 297/mês</option><option value="100|447|Pro">Pro — até 100 alunos — R$ 447/mês</option><option value="999|0|Enterprise">Enterprise — acima de 100 — sob consulta</option></select></div>
-        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Validade (dias a partir de hoje)</label><input id="dev-dias" type="number" value="30" min="1" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;"></div>
-        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Observações</label><input id="dev-obs" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;" placeholder="Opcional"></div>
+      <h3 style="font-size:15px;font-weight:600;color:#1E3A8A;margin-bottom:4px;">Nova escola</h3>
+      <p style="font-size:12px;color:#9CA3AF;margin-bottom:16px;">Preencha todos os dados cadastrais da escola.</p>
+
+      <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Dados do plano</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Nome da escola *</label><input id="dev-nome" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="E.M. Montessori"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">E-mail de acesso *</label><input id="dev-email" type="email" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="coord@escola.com"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Plano</label><select id="dev-plano" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;"><option value="20|197|Starter">Starter — até 20 alunos — R$ 197/mês</option><option value="50|297|Basic">Basic — até 50 alunos — R$ 297/mês</option><option value="100|447|Pro">Pro — até 100 alunos — R$ 447/mês</option><option value="999|0|Enterprise">Enterprise — acima de 100 — sob consulta</option></select></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Validade (dias a partir de hoje)</label><input id="dev-dias" type="number" value="30" min="1" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
       </div>
-      <div style="display:flex;gap:10px;margin-top:16px;">
+
+      <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Dados jurídicos</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">CNPJ</label><input id="dev-cnpj" type="text" maxlength="18" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="00.000.000/0001-00"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Razão Social</label><input id="dev-razao" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="Escola Exemplo Ltda."></div>
+      </div>
+
+      <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Endereço</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="grid-column:span 2"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Endereço completo</label><input id="dev-endereco" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="Rua, número, bairro"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Cidade</label><input id="dev-cidade" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="São Paulo"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Estado</label><input id="dev-estado" type="text" maxlength="2" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;text-transform:uppercase;" placeholder="SP"></div>
+          <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">CEP</label><input id="dev-cep" type="text" maxlength="9" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="00000-000"></div>
+        </div>
+      </div>
+
+      <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Financeiro</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Forma de pagamento</label><select id="dev-pagamento" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;"><option value="">Selecione</option><option value="pix">PIX</option><option value="boleto">Boleto</option><option value="cartao">Cartão de crédito</option><option value="transferencia">Transferência bancária</option></select></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Nome do contato financeiro</label><input id="dev-fin-nome" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="Maria Silva"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">E-mail financeiro</label><input id="dev-fin-email" type="email" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="financeiro@escola.com"></div>
+        <div><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Telefone financeiro</label><input id="dev-fin-fone" type="text" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="(11) 99999-9999"></div>
+      </div>
+
+      <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Observações</p>
+      <div style="margin-bottom:16px;">
+        <textarea id="dev-obs" rows="2" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;resize:vertical;" placeholder="Informações adicionais..."></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;">
         <button onclick="salvarNovaEscola()" style="background:#2563EB;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">Salvar e ativar</button>
         <button onclick="document.getElementById('dev-form-escola').style.display='none'" style="background:#F3F4F6;color:#6B7280;border:none;padding:9px 16px;border-radius:8px;font-size:13px;cursor:pointer;">Cancelar</button>
       </div>
