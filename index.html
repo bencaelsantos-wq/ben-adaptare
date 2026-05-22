@@ -10634,7 +10634,7 @@ async function carregarEscolasDev() {
       <td style="padding:12px 14px;font-size:13px;"><strong>R$ ${parseFloat(e.preco_mensal||0).toFixed(0)}</strong><br><span style="color:#9CA3AF;font-size:11px;">até ${e.max_alunos} alunos</span></td>
       <td style="padding:12px 14px;font-size:13px;color:${vencColor};">${vencStr}</td>
       <td style="padding:12px 14px;">${statusBadge}</td>
-      <td style="padding:12px 14px;">${btnAcao}</td>
+      <td style="padding:12px 14px;display:flex;gap:6px;">${btnAcao}<button onclick="editarEscola('${e.id}')" style="background:#EFF6FF;color:#2563EB;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">✏️ Editar</button></td>
     </tr>`;
   }).join('');
   document.getElementById('dev-table-wrap').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -10666,7 +10666,51 @@ async function bloquearEscola(id) {
 }
 
 function abrirFormNovaEscola() {
+  window._editEscolaId = null;
+  ['dev-nome','dev-email','dev-cnpj','dev-razao','dev-endereco','dev-cidade','dev-estado','dev-cep','dev-fin-nome','dev-fin-email','dev-fin-fone','dev-obs'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('dev-dias').value = 30;
+  document.getElementById('dev-email').readOnly = false;
+  document.getElementById('dev-form-escola').querySelector('h3').textContent = 'Nova escola';
   document.getElementById('dev-form-escola').style.display = 'block';
+}
+
+async function editarEscola(id) {
+  const { data: e } = await db.from('school_plans').select('*').eq('id', id).maybeSingle();
+  if (!e) return alert('Escola não encontrada.');
+  window._editEscolaId = id;
+  const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
+  set('dev-nome',      e.school_name);
+  set('dev-email',     e.school_email);
+  set('dev-cnpj',      e.cnpj);
+  set('dev-razao',     e.razao_social);
+  set('dev-endereco',  e.endereco);
+  set('dev-cidade',    e.cidade);
+  set('dev-estado',    e.estado);
+  set('dev-cep',       e.cep);
+  set('dev-fin-nome',  e.contato_financeiro_nome);
+  set('dev-fin-email', e.contato_financeiro_email);
+  set('dev-fin-fone',  e.contato_financeiro_fone);
+  set('dev-obs',       e.observacoes);
+  // Plano
+  const planoMap = { 'Starter':'20|197|Starter', 'Basic':'50|297|Basic', 'Pro':'100|447|Pro', 'Enterprise':'999|0|Enterprise' };
+  const planoEl = document.getElementById('dev-plano');
+  if (planoEl && e.plano_nome) planoEl.value = planoMap[e.plano_nome] || planoEl.options[0].value;
+  // Pagamento
+  const pagEl = document.getElementById('dev-pagamento');
+  if (pagEl && e.forma_pagamento) pagEl.value = e.forma_pagamento;
+  // Validade
+  const diasEl = document.getElementById('dev-dias');
+  if (diasEl && e.data_vencimento) {
+    const dias = Math.ceil((new Date(e.data_vencimento) - new Date()) / 86400000);
+    diasEl.value = Math.max(1, dias);
+  }
+  // E-mail não editável (é a chave)
+  document.getElementById('dev-email').readOnly = true;
+  document.getElementById('dev-form-escola').querySelector('h3').textContent = 'Editar escola';
+  document.getElementById('dev-form-escola').style.display = 'block';
+  document.getElementById('dev-form-escola').scrollIntoView({ behavior: 'smooth' });
 }
 
 function atualizarPrecoPlano() {}
@@ -10679,7 +10723,7 @@ async function salvarNovaEscola() {
   const obs      = document.getElementById('dev-obs').value.trim();
   if (!nome || !email) return alert('Preencha nome e e-mail!');
   const venc = new Date(); venc.setDate(venc.getDate() + dias);
-  const { error } = await db.from('school_plans').upsert({
+  const payload = {
     school_name:   nome,
     school_email:  email.toLowerCase(),
     max_alunos:    parseInt(planoVal[0]),
@@ -10698,8 +10742,15 @@ async function salvarNovaEscola() {
     contato_financeiro_nome:  document.getElementById('dev-fin-nome').value.trim(),
     contato_financeiro_email: document.getElementById('dev-fin-email').value.trim(),
     contato_financeiro_fone:  document.getElementById('dev-fin-fone').value.trim(),
-  }, { onConflict: 'school_email' });
+  };
+  let error;
+  if (window._editEscolaId) {
+    ({ error } = await db.from('school_plans').update(payload).eq('id', window._editEscolaId));
+  } else {
+    ({ error } = await db.from('school_plans').upsert(payload, { onConflict: 'school_email' }));
+  }
   if (error) return alert('Erro: ' + error.message);
+  window._editEscolaId = null;
   document.getElementById('dev-form-escola').style.display = 'none';
   carregarEscolasDev();
 }
