@@ -3151,7 +3151,7 @@ async function entrar() {
     return showErr(statusEscola.motivo || 'Acesso não autorizado.');
   }
   // Ler perfil do banco — define role e subrole reais
-  await lerPerfilDobanco();
+  try { await lerPerfilDobanco(); } catch(e) { return; }
   iniciarApp();
 }
 
