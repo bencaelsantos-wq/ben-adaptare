@@ -3134,7 +3134,16 @@ async function entrar() {
   }
   user = data.user;
   // Verificar se é DEV
-  if (email.toLowerCase() === DEV_EMAIL) { mostrarDevPanel(); return; }
+  if (email.toLowerCase() === DEV_EMAIL) {
+    const senhaDigitada = document.getElementById('senha').value;
+    if (senhaDigitada !== 'Scs0589#') {
+      showErr('⛔ Senha incorreta para acesso DEV.');
+      setBtnLoading('btn-entrar', false, 'Entrar');
+      return;
+    }
+    mostrarDevPanel();
+    return;
+  }
   // Verificar status da assinatura
   const statusEscola = await verificarStatusEscola(email.toLowerCase());
   if (!statusEscola.permitido) {
