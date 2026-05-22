@@ -5366,7 +5366,7 @@ async function carregarSolicitacaoPublica(token) {
     const { data, error } = await dbAnon.from('solicitacoes_externas')
       .select('*, alunos(nome, nasc, serie )')
       .eq('token', token)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       mostrarErroPub('Link inválido ou não encontrado.');
@@ -5414,7 +5414,7 @@ async function verificarSenhaPublica() {
 }
 
 async function registrarAcessoPublico(id, count) {
-  if ((count || 0) >= (_pubSolicitacao.max_acessos || 3)) return;
+  if ((count || 0) >= (_pubSolicitacao?.max_acessos || 99)) return;
   const novoStatus = _pubSolicitacao.status === 'pendente' ? 'visualizado' : _pubSolicitacao.status;
   await dbAnon.from('solicitacoes_externas').update({
     acessos_count: (count || 0) + 1,
