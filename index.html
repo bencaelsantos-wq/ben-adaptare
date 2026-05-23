@@ -8986,9 +8986,19 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     .replace(/═+/g, '')
     .trim();
 
-  const maxW = W - ml - mr;
-  const altLinha = altLinhaCustom;
+  const fontSizeMap = { pequeno: 8, medio: 9.5, grande: 12, extragrande: 15 };
+  const lineHeightMap = { compacto: 4.5, normal: 5.2, amplo: 7 };
+  const fontSize = fontSizeMap[opts.fonteTamanho] || 9.5;
+  const altLinhaCustom = lineHeightMap[opts.espacamento] || 5.2;
+
+Replace: const maxW = W - ml - mr;
   const rodapeH = 20;
+
+  const fontSizeMap = { pequeno: 8, medio: 9.5, grande: 12, extragrande: 15 };
+  const lineHeightMap = { compacto: 4.5, normal: 5.2, amplo: 7 };
+  const fontSize = fontSizeMap[opts.fonteTamanho] || 9.5;
+  const altLinhaCustom = lineHeightMap[opts.espacamento] || 5.2;
+  const altLinha = altLinhaCustom;
 
   const fontSizeMap = { pequeno: 8, medio: 9.5, grande: 12, extragrande: 15 };
   const lineHeightMap = { compacto: 4.5, normal: 5.2, amplo: 7 };
@@ -12218,7 +12228,7 @@ function bootHealthCheck() {
   console.info('[Pluramente] ✅ Boot OK — v' + (typeof LGPD_VERSAO_TERMO !== 'undefined' ? LGPD_VERSAO_TERMO : '?'));
 }
 
-document.addEventListener('DOMContentLoaded', async () => { const isPub = await verificarRotaPublica(); if (!isPub) { bootHealthCheck(); verificarSessao(); verificarLGPD(); mostrarLanding(); } });
+document.addEventListener('DOMContentLoaded', async () => { const isPub = await verificarRotaPublica(); if (!isPub) { bootHealthCheck(); verificarLGPD(); const { data } = await db.auth.getSession(); if (data?.session?.user) { user = data.session.user; await lerPerfilDobanco(); iniciarApp(); } else { mostrarLanding(); } } });
 
 
 function abrirPaginaQuemSomos() {
