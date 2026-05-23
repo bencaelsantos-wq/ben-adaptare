@@ -8017,7 +8017,7 @@ Critérios de avaliação adaptados ao perfil. O que registrar no diário do alu
 O que NUNCA fazer com este aluno nesta atividade.`;
 
   try {
-    const texto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'adaptacao' });
+    const texto = await chamarClaude({ prompt, maxTokens: 1500, modulo: 'adaptacao' });
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
     document.getElementById('result-text').textContent = texto;
