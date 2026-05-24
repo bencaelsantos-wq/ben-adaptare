@@ -8253,8 +8253,7 @@ async function gerarPEI() {
 DADOS DO ALUNO:
 - Nome: ${aluno.nome} | Idade: ${aluno.idade} | Série: ${aluno.serie}
 - Diagnóstico(s): ${(aluno.perfis||[]).join(', ')}
-- Observações clínicas: ${aluno.observacoes||'Não informado'} - Nível da atividade: ${nivel === 'basico' ? 'Básico' : nivel === 'avancado' ? 'Avançado' : 'Intermediário'} - Tipo de fonte: ${fonteTipo} | Tamanho: ${fonteTamanho} | Espaçamento: ${espacamento}
-
+- Observações clínicas: ${aluno.observacoes||'Não informado'}
 DADOS DO PEI:
 - Período: ${periodo||'Não informado'}
 - Professor responsável: \${prof}
@@ -8413,12 +8412,7 @@ ARTICULAÇÃO:
 
 Gere o Plano de AEE em formato formal com seções claramente identificadas, linguagem técnica adequada, fundamentado na Resolução CNE/CEB 4/2009 e Decreto 7.611/2011.`;
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}] })
-    });
-    const data = await response.json();
-    const texto = data.content?.find(b=>b.type==='text')?.text||'';
+     const texto = await chamarClaude({ prompt, maxTokens: 1000, modulo: 'aee' });
     aeeGerado = texto;
     if (box) box.style.display='none';
     if (card) card.style.display='block';
@@ -8428,7 +8422,7 @@ Gere o Plano de AEE em formato formal com seções claramente identificadas, lin
     if (rb) rb.textContent = aluno?.nome||'';
   } catch(e) {
     if (box) box.style.display='none';
-    toast('Erro ao gerar Plano de AEE: '+e.message,'error');
+    toast('Erro ao gerar Plano de AEE: '+(e.message||'Tente novamente.'),'error');
   } finally {
     if (btn) { btn.disabled=false; btn.style.opacity='1'; }
   }
@@ -8796,7 +8790,8 @@ function gerarPDFDocumento(opts) {
     doc.setTextColor(30, 30, 30);
 
     const maxW = W - ml - mr;
-    const linhas = doc.splitTextToSize(opts.conteudo, maxW);
+   const linhas = doc.splitTextToSize(sanitizarTexto(opts.conteudo), maxW);
+
     const altLinha = 5;
     const rodapeH = 35; // espaço reservado para assinaturas
 
@@ -8997,7 +8992,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(fontSize);
   doc.setTextColor(25, 25, 25);
-  const linhas = doc.splitTextToSize(folhaLimpa, maxW);
+   const linhas = doc.splitTextToSize(sanitizarTexto(folhaLimpa), maxW);
   for (let i = 0; i < linhas.length; i++) {
     if (y + altLinha > H - rodapeH) {
       adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
@@ -9079,8 +9074,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     doc.setFontSize(9.5);
     doc.setTextColor(25, 25, 25);
 
-    const linhasGuia = doc.splitTextToSize(guiaLimpo, maxW);
-    for (let i = 0; i < linhasGuia.length; i++) {
+    const linhasGuia = doc.splitTextToSize(sanitizarTexto(guiaLimpo), maxW);    for (let i = 0; i < linhasGuia.length; i++) {
       if (y + altLinha > H - rodapeH) {
         adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
         doc.addPage();
@@ -9121,6 +9115,40 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
 }
 
 var _iconePluramento = "data:image/png;base64,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";
+
+function sanitizarTexto(txt) {
+  if (!txt) return '';
+  return txt
+    .replace(/→|➜|➡/g, '->')
+    .replace(/←|⬅/g, '<-')
+    .replace(/↔/g, '<->')
+    .replace(/↑/g, '^')
+    .replace(/↓/g, 'v')
+    .replace(/✅|✓|☑/g, '[OK]')
+    .replace(/❌|✗/g, '[X]')
+    .replace(/⚠️|⚠/g, '[!]')
+    .replace(/📋|📄|📝/g, '')
+    .replace(/🧠|👩‍🏫|🏥|🎯|🔬|📓/g, '')
+    .replace(/[^\x00-\x7F]/g, function(c) {
+      const mapa = {
+        'á':'a','à':'a','â':'a','ã':'a','ä':'a',
+        'é':'e','è':'e','ê':'e','ë':'e',
+        'í':'i','ì':'i','î':'i','ï':'i',
+        'ó':'o','ò':'o','ô':'o','õ':'o','ö':'o',
+        'ú':'u','ù':'u','û':'u','ü':'u',
+        'ç':'c','ñ':'n',
+        'Á':'A','À':'A','Â':'A','Ã':'A','Ä':'A',
+        'É':'E','È':'E','Ê':'E','Ë':'E',
+        'Í':'I','Ì':'I','Î':'I','Ï':'I',
+        'Ó':'O','Ò':'O','Ô':'O','Õ':'O','Ö':'O',
+        'Ú':'U','Ù':'U','Û':'U','Ü':'U',
+        'Ç':'C','Ñ':'N',
+        '\u2019':"'",'`':"'",'\u201C':'"','\u201D':'"',
+        '\u2013':'-','\u2014':'-','\u2026':'...'
+      };
+      return mapa[c] || '';
+    });
+}
 
 function adicionarRodapePagina(doc, W, H, ml, mr, numPag) {
   doc.setDrawColor(220, 220, 220);
@@ -9373,9 +9401,13 @@ async function salvarAluno() {
   toast('Aluno cadastrado!', 'success');
   fecharModal('modal-cad');
   lgpdResetarModal('aluno','btn-salvar-aluno');
-  window._cadDocs = [];
+   window._cadDocs = [];
   window._cadProfs = [];
-  carregarAlunos();
+  carregarAlunos().then(() => {
+    popularPeiSel();
+    popularAEESel();
+    popularPDISel();
+  });
 }
 
 // ── GESTÃO ───────────────────────────────────────────────────
