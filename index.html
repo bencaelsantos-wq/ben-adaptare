@@ -7843,6 +7843,22 @@ async function gerar() {
      'Movimento e Coordenação'].includes(materia) ||
     tipoAtiv.toLowerCase().includes('montessori');
 
+  const metodoDetectado = isMontessori ? 'montessori'
+    : (materia.toLowerCase().includes('waldorf') || tipoAtiv.toLowerCase().includes('waldorf')) ? 'waldorf'
+    : (materia.toLowerCase().includes('reggio') || tipoAtiv.toLowerCase().includes('reggio')) ? 'reggio'
+    : (materia.toLowerCase().includes('construtiv') || tipoAtiv.toLowerCase().includes('construtiv')) ? 'construtivismo'
+    : (materia.toLowerCase().includes('tradicional') || tipoAtiv.toLowerCase().includes('tradicional')) ? 'tradicional'
+    : 'inclusivo';
+
+  const INSTRUCAO_METODO = {
+    montessori: `METODO: Montessori. Parta do concreto. Use materiais manipulaveis com controle de erro. Nunca da a resposta — provoque a descoberta. Respeite o ciclo de desenvolvimento. Lição em 3 períodos quando possível.`,
+    waldorf: `METODO: Waldorf. Priorize narrativa, ritmo e imagem. A atividade deve ter inicio-meio-fim como uma historia. Use desenho, cor e movimento como forma de aprendizagem. Evite abstração precoce.`,
+    reggio: `METODO: Reggio Emilia. A criança é protagonista. Use projetos, perguntas abertas e documentação do processo. Ambiente como terceiro educador. Favoreça a expressão em múltiplas linguagens.`,
+    construtivismo: `METODO: Construtivismo. Parta do conhecimento prévio do aluno. Use situações-problema reais. Promova a construção ativa do conhecimento. Evite transmissão passiva.`,
+    tradicional: `METODO: Ensino tradicional estruturado. Atividade com instrução direta, exemplos antes dos exercícios, gabarito possível. Linguagem clara e objetiva.`,
+    inclusivo: `METODO: Educação inclusiva baseada em evidências (DUA — Desenho Universal para Aprendizagem). Múltiplas formas de representação, engajamento e expressão. Barreiras removidas para o diagnóstico informado.`
+  }[metodoDetectado];
+
   const MONTESSORI_SISTEMA = isMontessori ? `
 ══════════════════════════════════════════════════════════════
 MÉTODO MONTESSORI — CONHECIMENTO COMPLETO E OBRIGATÓRIO
@@ -7973,48 +7989,59 @@ ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em 
 CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
-Gere o documento em DUAS PARTES separadas por uma linha de asteriscos (***GUIA_PROFESSOR***):
+Gere APENAS a folha do aluno, pronta para imprimir e entregar. Nao use emojis — o PDF nao suporta.
 
-═══════════════════════════════════════════
-PARTE 1 — FOLHA DO ALUNO
-═══════════════════════════════════════════
+${INSTRUCAO_METODO}
 
-Crie uma atividade PRONTA PARA IMPRIMIR E ENTREGAR AO ALUNO. 
-Linguagem simples, direta, adaptada ao perfil do aluno.
-${usaPictograma ? 'USE PICTOGRAMAS (emojis representativos) em cada instrução e item. Ex: 👀 OLHE, ✋ PEGUE, ✔️ CONFIRA. Organize em passos visuais claros.' : 'Linguagem textual clara e objetiva, sem pictogramas.'}
-${isMontessori ? 'Atividade 100% baseada no Método Montessori com materiais concretos e controle de erro.' : ''}
+FORMATO OBRIGATORIO — siga exatamente:
 
-Estrutura da folha do aluno:
-- Nome do aluno: _______________ | Data: ___/___/___
-- Título da atividade (simples e motivador)
-- Instruções claras (máx. 3-4 passos)
-- A atividade adaptada em si (espaços para resposta quando necessário)
-- Espaço de avaliação: ( ) Consegui sozinho ( ) Com ajuda ( ) Precisei de mais apoio
+Nome: _______________ | Data: ___/___/___
+
+[TITULO — curto, sem emoji, motivador para ${idade} anos]
+
+---
+
+[BLOCO 1 — instrucao curta + exercicio com espaco de resposta]
+[linhas de resposta: _________________________________]
+[espaco de desenho: [ESPACO PARA DESENHO] — NUNCA escreva dentro]
+
+---
+
+[BLOCO 2 — proximo exercicio]
+
+---
+
+[BLOCO 3 — se houver, senao omitir]
+
+---
+
+Como foi esta atividade?
+( ) Consegui sozinho  ( ) Precisei de ajuda  ( ) Quero tentar de novo
+
+REGRAS INVIOLAVEIS:
+- Maximo 250 palavras no total
+- NUNCA use emojis
+- NUNCA escreva dentro de [ESPACO PARA DESENHO]
+- NUNCA invente conteudo — adapte so o que existe no original
+- Se o original pede para circular palavras, ESCREVA as palavras na folha
+- Se o original pede para completar frase, ESCREVA o inicio da frase
+- Separacao visual obrigatoria entre blocos com ---
+- Linguagem direta para ${idade} anos, serie ${serie}
 
 ***GUIA_PROFESSOR***
 
-═══════════════════════════════════════════
-PARTE 2 — GUIA DO PROFESSOR (uso exclusivo)
-═══════════════════════════════════════════
+Guia do professor — curto, escaneavel, sem texto corrido.
 
-**ANÁLISE DO PERFIL**
-Como o diagnóstico (${perfis.join(', ')}) impacta esta atividade e quais barreiras foram removidas.${isMontessori ? ' Período sensível identificado.' : ''}
-
-**OBJETIVO PEDAGÓGICO**
-O que o aluno deve desenvolver com esta atividade.
-
-**MATERIAIS NECESSÁRIOS**
-${isMontessori ? 'Materiais Montessori específicos + adaptações.' : 'Lista de recursos concretos, visuais e assistivos necessários.'}
-
-**COMO APLICAR**
-Passo a passo de mediação: como apresentar, quando intervir, quando observar.
-Tempo estimado: ___ minutos.
-
-**COMO AVALIAR**
-Critérios de avaliação adaptados ao perfil. O que registrar no diário do aluno.
-
-**⚠️ ATENÇÃO**
-O que NUNCA fazer com este aluno nesta atividade.`;
+PERFIL: [1 linha — diagnostico + barreira principal removida]
+OBJETIVO: [1 linha — o que o aluno desenvolve]
+MATERIAIS: [max 3 itens]
+TEMPO: [X minutos]
+APLICACAO:
+1. [passo curto]
+2. [passo curto]
+3. [passo curto]
+AVALIACAO: [2 criterios observaveis]
+NAO FAZER: [1-2 proibicoes criticas]`;
 
   try {
     const texto = await chamarClaude({ prompt, maxTokens: 1500, modulo: 'adaptacao' });
