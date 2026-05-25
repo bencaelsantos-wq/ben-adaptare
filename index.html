@@ -9036,7 +9036,26 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     const isH = /^#{1,3}\s/.test(linhaT) || (/^\*\*[^*]/.test(linhaT) && linhaT.endsWith('**'));
     const isSep = /^-{3,}$/.test(linhaT) || linhaT === '';
     if (isSep) { y += isSep ? 2 : 0; continue; }
-    const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
+const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\s*$/, '');
+    if (!limpa) { y += altLinha; continue; }
+    if (/\[ESPACO PARA DESENHO\]|\[ESPA.O PARA DESENHO\]/i.test(limpa)) {
+      const altDesenho = 45;
+      if (y + altDesenho > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 10;
+      }
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(ml, y, W - ml - mr, altDesenho, 2, 2, 'S');
+      doc.setFontSize(7);
+      doc.setTextColor(200, 200, 200);
+      doc.text('Desenhe aqui', W / 2, y + altDesenho / 2, { align: 'center' });
+      doc.setTextColor(25, 25, 25);
+      doc.setFontSize(fontSize);
+      y += altDesenho + 4;
+      continue;
+    }
     if (isH) {
       y += 2;
       doc.setFont('helvetica', 'bold');
@@ -9054,7 +9073,6 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   }
 
   adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
-
   // ── GUIA DO PROFESSOR (nova página) ──────────────────────
   if (guia && opts.guiaProf !== null) {
     doc.addPage();
