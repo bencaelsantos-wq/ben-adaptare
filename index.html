@@ -9129,7 +9129,7 @@ function sanitizarTexto(txt) {
                                     .replace(/⚠️|⚠/g, '[!]')
                                         .replace(/📋|📄|📝/g, '')
                                             .replace(/🧠|👩‍🏫|🏥|🎯|🔬|📓/g, '')
-                                                .replace(/[^\x00-\x7F]/g, function(c) {
+                                                .replace(/[^\x00-\xFF]/g, function(c) {
                                                       const mapa = {
                                                               'á':'a','à':'a','â':'a','ã':'a','ä':'a',
                                                                       'é':'e','è':'e','ê':'e','ë':'e',
