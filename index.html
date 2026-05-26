@@ -3339,7 +3339,7 @@ function iniciarApp() {
 
   const colorMap = {
     professor:       { label:'👩‍🏫 Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
-    gestao:          { label:'🏫 Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarPlanosAEE(); carregarPDIs(); showPage('gestao-painel'); } },
+    gestao:          { label:'🏫 Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); } },
     clinica:         { label:'🏥 Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); } },
     'gestao-clinica':{ label:'🏥👔 Gestão Clínica', cls:'at',        sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
     at:              { label:'🧑‍⚕️ AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); } },
@@ -7151,15 +7151,15 @@ function renderPagesGestao() {
       <div class="fblock">
 <label class="flabel" id="label-pauta-participantes">Participantes da reunião</label>
         <div id="pauta-participantes-chips" role="group" aria-labelledby="label-pauta-participantes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
-          <span class="chip active" data-p="coordenacao">🎓 Coordenação pedagógica</span>
-          <span class="chip active" data-p="prof_sala">👩‍🏫 Prof. sala de aula</span>
-          <span class="chip active" data-p="prof_aee">📚 Prof. AEE</span>
-          <span class="chip" data-p="fono">🗣️ Fonoaudióloga</span>
-          <span class="chip" data-p="to">🖐️ Terapeuta Ocupacional</span>
-          <span class="chip" data-p="psico">🧠 Psicóloga</span>
-          <span class="chip" data-p="at">🧑‍⚕️ Acompanhante Terapêutico</span>
-          <span class="chip" data-p="familia">👨‍👩‍👧 Família / responsável</span>
-          <span class="chip" data-p="medico">👨‍⚕️ Neuropediatra</span>
+          <span class="chip active" data-p="coordenacao"> Coordenação pedagógica</span>
+          <span class="chip active" data-p="prof_sala"> Prof. sala de aula</span>
+          <span class="chip active" data-p="prof_aee"> Prof. AEE</span>
+          <span class="chip" data-p="fono"> Fonoaudióloga</span>
+          <span class="chip" data-p="to"> Terapeuta Ocupacional</span>
+          <span class="chip" data-p="psico"> Psicóloga</span>
+          <span class="chip" data-p="at"> Acompanhante Terapêutico</span>
+          <span class="chip" data-p="familia"> Família / responsável</span>
+          <span class="chip" data-p="medico"> Neuropediatra</span>
         </div>
       </div>
     </div>
@@ -7193,13 +7193,13 @@ function renderPagesGestao() {
         <div>
          <label class="flabel" for="pauta-tipo-reuniao">Tipo de reunião</label>
           <select id="pauta-tipo-reuniao" class="fselect">
-            <option value="rotina">📅 Reunião de rotina / acompanhamento</option>
-            <option value="crise">🚨 Reunião de crise / urgência</option>
-            <option value="inicio">🌱 Início de semestre / planejamento</option>
-            <option value="revisao_paee">📋 Revisão de PAEE</option>
-            <option value="revisao_pei">📄 Revisão de PEI</option>
-            <option value="transicao">🚀 Transição de ano / turma</option>
-            <option value="familia">👨‍👩‍👧 Reunião com família</option>
+            <option value="rotina"> Reunião de rotina / acompanhamento</option>
+            <option value="crise"> Reunião de crise / urgência</option>
+            <option value="inicio"> Início de semestre / planejamento</option>
+            <option value="revisao_paee"> Revisão de PAEE</option>
+            <option value="revisao_pei"> Revisão de PEI</option>
+            <option value="transicao"> Transição de ano / turma</option>
+            <option value="familia"> Reunião com família</option>
           </select>
         </div>
         <div>
@@ -7250,7 +7250,7 @@ function renderPagesGestao() {
     <!-- Resultado -->
     <div id="pauta-result-card" class="result-card" style="display:none;margin-top:16px">
       <div class="result-header">
-        <div class="result-title">🤝 Pauta gerada</div>
+        <div class="result-title"> Pauta gerada</div>
         <div class="result-badge" id="pauta-result-badge"></div>
       </div>
       <div id="pauta-result-rendered" style="font-size:13.5px;line-height:1.85;color:var(--gr700)"></div>
@@ -7265,7 +7265,7 @@ function renderPagesGestao() {
 
   <!-- ══ COLABORAÇÃO MULTIPROFISSIONAL ══ -->
   <div id="page-colaboracao" class="page">
-    <h1 class="page-title">🤝 Colaboração Multiprofissional</h1>
+    <h1 class="page-title"> Colaboração Multiprofissional</h1>
     <p class="page-sub">O hub onde escola e clínica atuam juntas — encaminhamentos, pautas e ações coordenadas em torno de cada criança.</p>
 
     <!-- Banner conceitual -->
@@ -9273,7 +9273,7 @@ function sanitizarTexto(txt) {
                         .replace(/↓/g, 'v')
                             .replace(/✅|✓|☑/g, '[OK]')
                                 .replace(/❌|✗/g, '[X]')
-                                    .replace(/⚠️|⚠/g, '[!]')
+                                    .replace(/⚠️|⚠/g, '[ATENCAO]')
                                         .replace(/📋|📄|📝/g, '')
                                             .replace(/🧠|👩‍🏫|🏥|🎯|🔬|📓/g, '')
                                                 .replace(/[^\x00-\xFF]/g, function(c) {
@@ -9938,10 +9938,10 @@ async function carregarDadosGestao() {
 function cardPEI(p) {
   const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
   return `<div class="item-card" onclick='abrirModalPEI(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
-    <div class="ic-nome">${p.aluno_nome||'(sem nome)'}</div>
-    <div class="ic-meta">${p.periodo||''}</div>
-    <div class="ic-tags"><span class="ic-tag ${p.status}">${p.status==='finalizado'?'✅ Finalizado':'📝 Rascunho'}</span></div>
-    <div class="ic-prev">${(p.texto||'').slice(0,100)}…</div>
+<div class="ic-nome">${r.aluno_nome||r.aluno||'(sem nome)'}</div>
+    <div class="ic-meta">${meta}</div>
+    <div class="ic-tags">${tags}</div>
+    <div class="ic-prev">${(r.adaptacao||r.texto||'').slice(0,100)}…</div>
     <div class="ic-date">${dt}</div>
   </div>`;
 }
