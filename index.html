@@ -5956,9 +5956,20 @@ function renderPages() {
       <div class="fblock"><label class="flabel" for="inp-tipo-livre">Ou descreva livremente o tipo de atividade</label><input type="text" id="inp-tipo-livre" class="finput" placeholder="Ex: Avaliação oral com apoio visual, atividade em dupla com mediação…"></div>
     </div>
 
-    <div class="fcard">
+   <div class="fcard">
       <div class="fcard-title">Conteúdo a adaptar</div>
-      <div class="fblock"><label class="flabel" for="inp-conteudo">Cole aqui o texto, atividade ou enunciado original</label><textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea></div>
+      <div class="fblock">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label class="flabel" for="inp-conteudo" style="margin:0">Cole aqui o texto, atividade ou enunciado original</label>
+          <button type="button" id="btn-upload-arquivo" onclick="uploadArquivoAdaptacao()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#EEF2FF;color:#2563EB;border:1.5px solid rgba(37,99,235,.2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 7l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Importar PDF ou Word
+          </button>
+          <input type="file" id="inp-arquivo-adaptacao" accept=".pdf,.doc,.docx" style="display:none" onchange="processarArquivoAdaptacao(this)">
+        </div>
+        <div id="upload-status" style="display:none;font-size:12px;color:#2563EB;margin-bottom:6px;padding:6px 10px;background:#EEF2FF;border-radius:6px"></div>
+        <textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea>
+      </div>
 
       <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>             <option value="georgia">Georgia</option>             <option value="trebuchet">Trebuchet MS</option>             <option value="palatino">Palatino</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>       </div>       <!-- Opções de saída -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">
@@ -7804,6 +7815,94 @@ function selTpl(el, t) {
   document.querySelectorAll('.tpl-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   tplSelecionado = t;
+}
+
+// ── UPLOAD DE ARQUIVO PARA ADAPTAÇÃO ─────────────────────────
+const PLANOS_COM_UPLOAD = ['profissional','escola','admin'];
+
+function uploadArquivoAdaptacao() {
+  const plano = window._userPlano || 'basico';
+  if (!PLANOS_COM_UPLOAD.includes(plano)) {
+    toast('Funcionalidade disponível nos planos Profissional e Escola. Em breve!', 'error');
+    return;
+  }
+  document.getElementById('inp-arquivo-adaptacao').click();
+}
+
+async function processarArquivoAdaptacao(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('upload-status');
+  const campo = document.getElementById('inp-conteudo');
+  status.style.display = 'block';
+  status.textContent = 'Lendo arquivo…';
+  try {
+    let texto = '';
+    if (file.name.endsWith('.pdf')) {
+      texto = await extrairTextoPDF(file);
+    } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+      texto = await extrairTextoDOCX(file);
+    } else {
+      status.textContent = 'Formato não suportado. Use PDF ou DOCX.';
+      return;
+    }
+    if (!texto.trim()) {
+      status.textContent = 'Não foi possível extrair texto. O arquivo pode ser uma imagem. Cole o conteúdo manualmente.';
+      return;
+    }
+    campo.value = texto.trim();
+    status.style.background = '#F0FDF4';
+    status.style.color = '#166534';
+    status.textContent = 'Arquivo importado com sucesso. Revise o texto abaixo e clique em Gerar.';
+  } catch(e) {
+    status.style.background = '#FEF2F2';
+    status.style.color = '#991B1B';
+    status.textContent = 'Erro ao ler o arquivo: ' + (e.message || 'tente outro formato.');
+    console.error(e);
+  }
+  input.value = '';
+}
+
+async function extrairTextoPDF(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const typedArray = new Uint8Array(e.target.result);
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        if (!pdfjsLib) {
+          reject(new Error('Biblioteca PDF não carregada. Tente novamente.'));
+          return;
+        }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+        let textoTotal = '';
+        for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const textoPage = content.items.map(item => item.str).join(' ');
+          textoTotal += textoPage + '\n';
+        }
+        resolve(textoTotal);
+      } catch(err) { reject(err); }
+    };
+    reader.onerror = () => reject(new Error('Erro ao ler o arquivo.'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function extrairTextoDOCX(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const result = await mammoth.extractRawText({ arrayBuffer: e.target.result });
+        resolve(result.value);
+      } catch(err) { reject(err); }
+    };
+    reader.onerror = () => reject(new Error('Erro ao ler o arquivo.'));
+    reader.readAsArrayBuffer(file);
+  });
 }
 
 // ── GERAR ADAPTAÇÃO ──────────────────────────────────────────
