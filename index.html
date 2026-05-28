@@ -8595,7 +8595,8 @@ async function salvarPlanoAEE() {
 }
 
 async function carregarPlanosAEE() {
-  const { data } = await db.from('planos_aee').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+  const query = db.from('planos_aee').select('*').order('created_at',{ascending:false});
+  const { data } = await (userRole === 'gestao' ? query : query.eq('user_id', user.id));
   aeeList = data||[];
   renderPlanoAEELista();
   popularAEESel();
@@ -8721,7 +8722,8 @@ async function salvarPDI() {
 }
 
 async function carregarPDIs() {
-  const { data } = await db.from('pdis').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+  const query = db.from('pdis').select('*').order('created_at',{ascending:false});
+  const { data } = await (userRole === 'gestao' ? query : query.eq('user_id', user.id));
   pdiList = data||[];
   renderPDILista();
   popularPDISel();
@@ -9926,9 +9928,8 @@ function baixarPautaGerada() {
 async function carregarHistoricoPautas() {
   const el = document.getElementById('pauta-historico');
   if (!el) return;
-  const { data } = await db.from('pautas_reuniao').select('*')
-    .order('data_reuniao', { ascending: false }).limit(12);
-  if (!data?.length) {
+   const qPauta = db.from('pautas_reuniao').select('*').order('data_reuniao', { ascending: false }).limit(12);
+  const { data } = await (userRole === 'gestao' ? qPauta : qPauta.eq('usuario_id', user.id));  if (!data?.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">Nenhuma pauta salva ainda.</div></div>';
     return;
   }
