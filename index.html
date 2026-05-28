@@ -9988,6 +9988,23 @@ async function excluirPauta(id) {
   toast('Pauta excluída.', 'success');
 }
 
+async function verPDISalvo(id) {
+  const { data } = await db.from('pdis').select('*').eq('id', id).single();
+  if (!data) return;
+  document.getElementById('mpei-titulo').textContent = `PDI — ${data.aluno_nome || ''}`;
+  document.getElementById('mpei-meta').textContent = `Multiprofissional · ${data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : ''}`;
+  document.getElementById('mpei-body').style.whiteSpace = 'pre-wrap';
+  document.getElementById('mpei-body').textContent = data.texto || '';
+  abrirModal('modal-pei');
+}
+
+async function excluirPDI(id) {
+  if (!confirm('Excluir este PDI?')) return;
+  await db.from('pdis').delete().eq('id', id);
+  carregarPDIs();
+  toast('PDI excluído.', 'success');
+}
+
 async function carregarDadosGestao() {
   atualizarBadgesSolicitacoes();
   const [{ data: alunos }, { data: adapts }, { data: peis }] = await Promise.all([
