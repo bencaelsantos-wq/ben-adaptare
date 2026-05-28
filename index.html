@@ -3286,7 +3286,7 @@ const roleEscolhido = userRole;
       'gestao-clinica':  'Gestão Clínica'
     };
 
-    if (roleEscolhido !== roleReal) {
+      if (roleEscolhido && roleEscolhido !== roleReal) {
       await db.auth.signOut();
       user = null;
       showErr('⛔ Perfil incorreto. Este e-mail pertence a "' + (labelAmigavel[roleReal] || roleReal) + '". Selecione o perfil correto e tente novamente.');
