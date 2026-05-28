@@ -8739,14 +8739,31 @@ function renderPDILista() {
   if (!pdiList.length) { el.innerHTML=`<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PDI salvo ainda.</div></div>`; return; }
   el.innerHTML = pdiList.map(p => {
     const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
-    return `<div class="item-card">
+    return `<div class="item-card" style="cursor:pointer" onclick="verPDISalvo('${p.id}')">
       <div class="ic-nome">${p.aluno_nome||'(sem nome)'}</div>
       <div class="ic-meta">Multiprofissional</div>
       <div class="ic-tags"><span class="ic-tag">${p.status==='finalizado'?'✅ Finalizado':'📝 Rascunho'}</span></div>
       <div class="ic-prev">${(p.texto||p.objetivos_pedagogicos||'').slice(0,100)}…</div>
       <div class="ic-date">${dt}</div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn-sm" style="font-size:11.5px;padding:4px 12px" onclick="event.stopPropagation();verPDISalvo('${p.id}')">Ver PDI</button>
+        <button class="btn-danger" onclick="event.stopPropagation();excluirPDI('${p.id}')">Excluir</button>
+      </div>
     </div>`;
   }).join('');
+}
+
+function baixarPDIPDF() {
+  if (!pdiGerado) return toast('Gere o PDI primeiro.', 'error');
+  const aluno = alunosCad.find(x => x.id === document.getElementById('pdi-aluno-sel')?.value);
+  gerarPDFDocumento({
+    tipo: 'PDI',
+    titulo: 'Plano de Desenvolvimento Individual',
+    subtitulo: 'Documento multiprofissional — Lei nº 13.146/2015, Decreto nº 12.686/2025',
+    aluno: aluno?.nome || 'Aluno',
+    conteudo: pdiGerado,
+    nomeArquivo: 'PDI_' + (aluno?.nome || 'aluno').replace(/\s+/g, '_') + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')
+  });
 }
 
 function downloadPEIdireto() {
