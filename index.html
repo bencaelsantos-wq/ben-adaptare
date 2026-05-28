@@ -7218,9 +7218,21 @@ function renderPagesGestao() {
       </div>
     </div>
 
+       <!-- Encaminhamentos antecipados -->
+    <div class="pei-step">
+      <div class="pei-step-header">
+        <div class="pei-step-num">4</div>
+        <div><div class="pei-step-title">Encaminhamentos</div><div class="pei-step-sub">Opcional — preencha antes, durante ou após a reunião</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <textarea id="pauta-enc-1" class="ftarea sm" style="resize:none;height:52px" placeholder="Encaminhamento 1…"></textarea>
+        <textarea id="pauta-enc-2" class="ftarea sm" style="resize:none;height:52px" placeholder="Encaminhamento 2…"></textarea>
+        <textarea id="pauta-enc-3" class="ftarea sm" style="resize:none;height:52px" placeholder="Encaminhamento 3…"></textarea>
+      </div>
+    </div>
+
     <!-- Botão gerar -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
-      <button class="btn-gerar" id="btn-gerar-pauta" onclick="gerarPautaMultidisciplinar()"
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">      <button class="btn-gerar" id="btn-gerar-pauta" onclick="gerarPautaMultidisciplinar()"
         style="background:linear-gradient(135deg,#6366F1,#4338CA);font-size:14px;padding:12px 24px">
         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="flex-shrink:0">
           <path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z"
