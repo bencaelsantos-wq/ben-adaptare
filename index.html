@@ -9822,9 +9822,10 @@ pautaGeradaTxt = await chamarClaude({ prompt, maxTokens: 2000, modulo: 'pauta_re
       });
       html += `</div>`;
     }
-    html += `<div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gr400);margin-bottom:8px">Encaminhamentos — preenchido na reunião</div><div style="display:flex;flex-direction:column;gap:4px">`;
+    html += `<div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gr400);margin-bottom:8px">Encaminhamentos — preenchido na reunião</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">`;
     [1,2,3].forEach(n => {
-      html += `<div style="border-bottom:1px solid var(--b);padding:8px 0;font-size:14px;color:var(--gr400);min-height:36px">Encaminhamento ${n}…</div>`;    });
+      html += `<textarea style="width:100%;border:1px solid var(--b);border-radius:6px;background:transparent;padding:8px;font-size:14px;color:var(--gr700);outline:none;font-family:inherit;resize:none;height:52px;box-sizing:border-box" placeholder="Encaminhamento ${n}…"></textarea>`;
+    });
     html += `</div>`;
 
     // — Texto limpo para PDF e cópia —
