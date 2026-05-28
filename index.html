@@ -9591,13 +9591,17 @@ function adicionarAlunoPauta() {
   if (pautaAlunosSelecionados.find(a => a.id === id)) {
     toast('Aluno já adicionado.', 'error'); return;
   }
-  const aluno = alunosCad.find(a => a.id === id);
-  if (!aluno) return;
+  let aluno = alunosCad.find(a => String(a.id) === String(id));
+  if (!aluno) {
+    const opt = sel.options[sel.selectedIndex];
+    const txt = opt?.textContent || '';
+    const parts = txt.split('—');
+    aluno = { id, nome: parts[0].trim(), serie: (parts[1] || '').trim() };
+  }
   pautaAlunosSelecionados.push({ id: aluno.id, nome: aluno.nome, serie: aluno.serie || '' });
   sel.value = '';
   renderAlunosSelecionadosPauta();
 }
-
 function adicionarTodosAlunosPauta() {
   pautaAlunosSelecionados = alunosCad.map(a => ({ id: a.id, nome: a.nome, serie: a.serie || '' }));
   renderAlunosSelecionadosPauta();
@@ -9849,7 +9853,7 @@ pautaGeradaTxt = await chamarClaude({ prompt, maxTokens: 2000, modulo: 'pauta_re
     textoLimpo += '\nENCURSOS (preencher na reuniao):\n___\n___\n___';
     pautaGeradaTxt = textoLimpo;
 
-    const html = html;
+    
 
     document.getElementById('pauta-result-rendered').innerHTML = html;
     const nomes = pautaAlunosSelecionados.map(a => a.nome).join(', ');
