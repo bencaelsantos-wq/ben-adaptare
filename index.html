@@ -9824,8 +9824,7 @@ pautaGeradaTxt = await chamarClaude({ prompt, maxTokens: 2000, modulo: 'pauta_re
     }
     html += `<div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gr400);margin-bottom:8px">Encaminhamentos — preenchido na reunião</div><div style="display:flex;flex-direction:column;gap:4px">`;
     [1,2,3].forEach(n => {
-      html += `<input style="border:none;border-bottom:1px solid var(--b);background:transparent;width:100%;padding:8px 0;font-size:14px;color:var(--gr700);outline:none;font-family:inherit" placeholder="Encaminhamento ${n}…" />`;
-    });
+      html += `<div style="border-bottom:1px solid var(--b);padding:8px 0;font-size:14px;color:var(--gr400);min-height:36px">Encaminhamento ${n}…</div>`;    });
     html += `</div>`;
 
     // — Texto limpo para PDF e cópia —
@@ -9850,7 +9849,7 @@ pautaGeradaTxt = await chamarClaude({ prompt, maxTokens: 2000, modulo: 'pauta_re
         textoLimpo += `${i+1}. ${titulo}${tempo ? ' — ' + tempo : ''}${origem ? '\n   Origem: ' + origem : ''}\n`;
       });
     }
-    textoLimpo += '\nENCURSOS (preencher na reuniao):\n___\n___\n___';
+   textoLimpo += '\nENCURSOS (preencher na reuniao):\n\n___________________________\n\n___________________________\n\n___________________________';
     pautaGeradaTxt = textoLimpo;
 
     
