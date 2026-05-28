@@ -8676,12 +8676,8 @@ METAS E FAMÍLIA:
 
 Gere o PDI em formato formal e multiprofissional, com seções claramente identificadas, linguagem técnica adequada, fundamentado na LBI (art. 28) e Decreto nº 12.686/2025.`;
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}] })
-    });
-    const data = await response.json();
-    const texto = data.content?.find(b=>b.type==='text')?.text||'';
+    const texto = await chamarClaude({ prompt, maxTokens: 1500, modulo: 'pdi' });
+    if (!texto) throw new Error('A IA não retornou conteúdo.');
     pdiGerado = texto;
     if (box) box.style.display='none';
     if (card) card.style.display='block';
