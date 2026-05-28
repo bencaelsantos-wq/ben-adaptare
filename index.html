@@ -10009,15 +10009,15 @@ async function carregarDadosGestao() {
 
 function cardPEI(p) {
   const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
+  const status = p.status === 'ativo' ? 'Ativo' : p.status === 'revisado' ? 'Revisado' : 'Rascunho';
   return `<div class="item-card" onclick='abrirModalPEI(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
-<div class="ic-nome">${r.aluno_nome||r.aluno||'(sem nome)'}</div>
-    <div class="ic-meta">${meta}</div>
-    <div class="ic-tags">${tags}</div>
-    <div class="ic-prev">${(r.adaptacao||r.texto||'').slice(0,100)}…</div>
+    <div class="ic-nome">${p.aluno_nome||p.aluno||'(sem nome)'}</div>
+    <div class="ic-meta">${p.periodo||''} ${p.professor?'· '+p.professor:''}</div>
+    <div class="ic-tags"><span class="ic-tag">${status}</span></div>
+    <div class="ic-prev">${(p.texto||p.objetivos||'').slice(0,100)}…</div>
     <div class="ic-date">${dt}</div>
   </div>`;
 }
-
 function filtrarGPEIs() {
   const q  = (document.getElementById('gpei-q')?.value||'').toLowerCase();
   const fs = document.getElementById('gpei-fstatus')?.value||'';
