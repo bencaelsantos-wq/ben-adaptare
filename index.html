@@ -9734,67 +9734,122 @@ DEVOLUTIVAS CLÍNICAS: ${a.devolutivas}
 
   const prompt = `Você é especialista em coordenação de equipes multidisciplinares de educação especial inclusiva.
 
-Com base nos registros abaixo, elabore uma PAUTA DE REUNIÃO MULTIDISCIPLINAR completa, objetiva e prática.
+Com base nos registros abaixo, gere a pauta no formato EXATO especificado. Sem tabelas, sem markdown, sem emojis.
 
-CONFIGURAÇÕES DA REUNIÃO:
+CONFIGURACOES:
 - Data: ${dataReuniao} às ${horaReuniao || 'a definir'}
-- Formato: ${fmtReuniao} | Duração prevista: ${duracao} minutos
+- Formato: ${fmtReuniao} | Duracao: ${duracao} minutos
 - Tipo: ${fmtTipo}
 - Participantes: ${participantes}
-- Prioridade da pauta: ${fmtPrioridade}
-- Período de referência: últimos ${diasRef} dias
-${contextoExtra ? `- Contexto adicional da equipe: ${contextoExtra}` : ''}
+- Prioridade: ${fmtPrioridade}
+- Periodo: ultimos ${diasRef} dias
+${contextoExtra ? `- Contexto da equipe: ${contextoExtra}` : ''}
 
-REGISTROS DO SISTEMA:
+REGISTROS:
 ${blocoAlunos}
 
-Estruture a pauta assim:
+FORMATO DE SAIDA OBRIGATORIO — siga exatamente, sem desvios:
 
-1. ABERTURA (5 min)
-Acolhimento, objetivos da reunião e confirmação dos participantes.
+===CONTEXTO===
+[2 a 3 frases resumindo o momento atual do(s) aluno(s) e o que motivou esta reuniao. Linguagem direta, sem jargao clinico.]
 
-2. INFORMES GERAIS (5 min)
-Comunicados importantes, alterações de rotina, novos encaminhamentos externos.
+===ATENCAO===
+[ALTA] [ponto urgente em 1 frase direta]
+[MEDIA] [ponto de acompanhamento em 1 frase]
+[BAIXA] [informativo em 1 frase]
+[minimo 1 linha, maximo 4 linhas]
 
-3. DISCUSSÃO POR ALUNO — para cada aluno, crie uma subseção com:
-   a) Síntese rápida do período (2-3 linhas)
-   b) Conquistas e avanços a celebrar
-   c) Pontos de atenção e alertas
-   d) Convergências escola↔clínica identificadas
-   e) Encaminhamentos e responsáveis (quem faz o quê até quando)
+===PAUTA===
+[1] [Titulo claro do topico] | Origem: [de onde veio — ex: 4 registros no diario, PEI vence em junho] | [X]min
+[2] [Titulo claro do topico] | Origem: [de onde veio] | [X]min
+[de 3 a 5 topicos. O ultimo e sempre: Encaminhamentos | | [X]min]
 
-4. REVISÃO DE DOCUMENTOS (se aplicável)
-Indicar quais PAEEs ou PEIs precisam de revisão ou atualização.
+===FIM===
 
-5. PRÓXIMOS PASSOS E ENCAMINHAMENTOS GERAIS
-Tabela com: Ação | Responsável | Prazo
-
-6. ENCERRAMENTO
-Próxima reunião sugerida, palavra final.
-
-Regras importantes:
-- Seja objetivo e prático — a pauta deve ser seguida em ${duracao} minutos
-- Use linguagem profissional mas acessível para todos os participantes
-- Destaque claramente o que é urgente vs. o que é acompanhamento de rotina
-- Para cada encaminhamento, indique o profissional responsável específico baseado nos participantes listados
-- Inicie cada tópico com o tempo estimado entre parênteses`;
+Regras:
+- Os minutos somam exatamente ${duracao}
+- Nao prescreva quem deve falar — os topicos sao perguntas abertas para o grupo
+- Topicos surgem dos registros reais, nao de suposicoes
+- Nenhum asterisco, hifens de lista ou barra vertical fora das separacoes de topico`;
 
   try {
-    pautaGeradaTxt = await chamarClaude({ prompt, maxTokens: 3500, modulo: 'pauta_reuniao' });
+pautaGeradaTxt = await chamarClaude({ prompt, maxTokens: 2000, modulo: 'pauta_reuniao' });
+
     if (!pautaGeradaTxt) throw new Error('A IA não retornou conteúdo. Tente novamente.');
 
     // Renderizar com formatação
-    const html = pautaGeradaTxt
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/^(#{1,3} .+)$/gm, m => {
-        const txt = m.replace(/^#+\s*/, '');
-        return `<div style="font-size:15px;font-weight:700;color:#3730A3;margin:18px 0 6px;padding-bottom:4px;border-bottom:1.5px solid #E0E7FF">${txt}</div>`;
-      })
-      .replace(/^(\d+\. .+)$/gm, m => `<div style="font-weight:600;color:var(--gr800);margin-top:14px">${m}</div>`)
-      .replace(/^([a-z]\) .+)$/gm, m => `<div style="margin-left:16px;margin-top:6px;color:var(--gr700)">${m}</div>`)
-      .replace(/^- (.+)$/gm, m => `<div style="margin-left:20px;margin-top:3px;color:var(--gr600)">• ${m.slice(2)}</div>`)
-      .replace(/\n/g, '<br>');
+    const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const sections = {};
+    const sRe = /===(\w+)===([\s\S]*?)(?=\n===|$)/g;
+    let sm;
+    while ((sm = sRe.exec(pautaGeradaTxt)) !== null) {
+      if (sm[1] !== 'FIM') sections[sm[1]] = sm[2].trim();
+    }
+    const contextoTxt  = sections['CONTEXTO'] || '';
+    const atencaoLines = (sections['ATENCAO'] || '').split('\n').filter(l => l.trim());
+    const pautaLines   = (sections['PAUTA']   || '').split('\n').filter(l => l.trim());
+
+    // — HTML para renderizar na tela —
+    let html = '';
+    if (contextoTxt) {
+      html += `<div style="font-size:13.5px;color:var(--gr600);line-height:1.75;padding-bottom:14px;border-bottom:1px solid var(--b);margin-bottom:16px">${esc(contextoTxt)}</div>`;
+    }
+    if (atencaoLines.length) {
+      html += `<div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gr400);margin-bottom:8px">Pontos de atenção</div><div style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px">`;
+      atencaoLines.forEach(line => {
+        const isAlta  = line.startsWith('[ALTA]');
+        const isMedia = line.startsWith('[MEDIA]');
+        const dot = isAlta ? '#E24B4A' : isMedia ? '#EF9F27' : 'var(--gr300)';
+        const txt = line.replace(/^\[(?:ALTA|MEDIA|BAIXA)\]\s*/,'');
+        html += `<div style="display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--gr700)"><span style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0;margin-top:6px"></span><span>${esc(txt)}</span></div>`;
+      });
+      html += `</div>`;
+    }
+    if (pautaLines.length) {
+      html += `<div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gr400);margin-bottom:8px">Pauta</div><div style="border:1px solid var(--b);border-radius:8px;overflow:hidden;margin-bottom:20px">`;
+      pautaLines.forEach((line, i) => {
+        const raw    = line.replace(/^\[\d+\]\s*/,'');
+        const parts  = raw.split('|');
+        const titulo = (parts[0]||'').trim();
+        const origem = (parts[1]||'').replace(/^Origem:\s*/i,'').trim();
+        const tempo  = (parts[2]||'').trim();
+        const sep    = i < pautaLines.length - 1 ? 'border-bottom:1px solid var(--b);' : '';
+        html += `<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 14px;${sep}"><span style="font-size:13px;font-weight:500;color:var(--gr400);min-width:20px;padding-top:1px">${i+1}</span><div style="flex:1"><div style="font-size:14px;font-weight:500;color:var(--gr800)">${esc(titulo)}</div>${origem?`<div style="font-size:12px;color:var(--gr400);margin-top:2px">${esc(origem)}</div>`:''}</div><span style="font-size:12px;color:var(--gr400);white-space:nowrap;padding-top:2px">${esc(tempo)}</span></div>`;
+      });
+      html += `</div>`;
+    }
+    html += `<div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gr400);margin-bottom:8px">Encaminhamentos — preenchido na reunião</div><div style="display:flex;flex-direction:column;gap:4px">`;
+    [1,2,3].forEach(n => {
+      html += `<input style="border:none;border-bottom:1px solid var(--b);background:transparent;width:100%;padding:8px 0;font-size:14px;color:var(--gr700);outline:none;font-family:inherit" placeholder="Encaminhamento ${n}…" />`;
+    });
+    html += `</div>`;
+
+    // — Texto limpo para PDF e cópia —
+    let textoLimpo = '';
+    if (contextoTxt) textoLimpo += contextoTxt + '\n\n';
+    if (atencaoLines.length) {
+      textoLimpo += 'PONTOS DE ATENCAO:\n';
+      atencaoLines.forEach(l => {
+        const pre = l.startsWith('[ALTA]') ? 'ATENCAO: ' : l.startsWith('[MEDIA]') ? 'Observar: ' : '';
+        textoLimpo += pre + l.replace(/^\[(?:ALTA|MEDIA|BAIXA)\]\s*/,'') + '\n';
+      });
+      textoLimpo += '\n';
+    }
+    if (pautaLines.length) {
+      textoLimpo += 'PAUTA:\n';
+      pautaLines.forEach((line, i) => {
+        const raw    = line.replace(/^\[\d+\]\s*/,'');
+        const parts  = raw.split('|');
+        const titulo = (parts[0]||'').trim();
+        const origem = (parts[1]||'').replace(/^Origem:\s*/i,'').trim();
+        const tempo  = (parts[2]||'').trim();
+        textoLimpo += `${i+1}. ${titulo}${tempo ? ' — ' + tempo : ''}${origem ? '\n   Origem: ' + origem : ''}\n`;
+      });
+    }
+    textoLimpo += '\nENCURSOS (preencher na reuniao):\n___\n___\n___';
+    pautaGeradaTxt = textoLimpo;
+
+    const html = html;
 
     document.getElementById('pauta-result-rendered').innerHTML = html;
     const nomes = pautaAlunosSelecionados.map(a => a.nome).join(', ');
