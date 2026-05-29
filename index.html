@@ -3434,10 +3434,11 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-gestao-peis" onclick="showPage('gestao-peis')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Todos os PEIs
     </div>
-    <div class="nav-item gestao-item" id="nav-gestao-aee" onclick="showPage('plano-aee')">
+     <div class="nav-item gestao-item" id="nav-gestao-lista-aee" onclick="showPage('gestao-lista-aee')">
+
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="14" cy="6" r="2.5" fill="#7C3AED" stroke="none"/><path d="M14 5v2M13 6h2" stroke="white" stroke-width="1.1" stroke-linecap="round"/></svg>Planos de AEE
     </div>
-    <div class="nav-item gestao-item" id="nav-gestao-pdi" onclick="showPage('pdi')">
+      <div class="nav-item gestao-item" id="nav-gestao-lista-pdi" onclick="showPage('gestao-lista-pdi')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDIs
     </div>
     <div class="nav-item gestao-item" id="nav-gestao-adapt"
@@ -5878,7 +5879,8 @@ function showPage(id) {
   if (id === 'ponte-diario') { popularDropdownDiario(); }
   if (id === 'plano-aee') carregarPlanosAEE();
   if (id === 'pdi') carregarPDIs();
-}
+  if (id === 'gestao-lista-aee') carregarListaAEEGestao();
+  if (id === 'gestao-lista-pdi') carregarListaPDIGestao();}
 // ⚠️ CRÍTICO — expõe showPage em window ANTES do patch em ~linha 7411.
 // NUNCA remova esta linha — sem ela a navegação para de funcionar.
 window.showPage = showPage;
@@ -6381,9 +6383,22 @@ function renderPages() {
   </div>
 
 
+    <!-- GESTÃO: LISTA DE AEE -->
+  <div id="page-gestao-lista-aee" class="page">
+    <h1 class="page-title">Planos de AEE</h1>
+    <p class="page-sub">Todos os Planos de Atendimento Educacional Especializado elaborados pelos professores.</p>
+    <div class="cards-grid" id="gestao-aee-lista"></div>
+  </div>
+
+  <!-- GESTÃO: LISTA DE PDI -->
+  <div id="page-gestao-lista-pdi" class="page">
+    <h1 class="page-title">PDIs</h1>
+    <p class="page-sub">Todos os Planos de Desenvolvimento Individual elaborados pela equipe.</p>
+    <div class="cards-grid" id="gestao-pdi-lista"></div>
+  </div>
+
   <!-- ALUNOS -->
-  <div id="page-alunos" class="page">
-    <div class="section-header">
+  <div id="page-alunos" class="page">    <div class="section-header">
       <div><h1 class="page-title">Alunos</h1><p class="page-sub" style="margin-bottom:0">${userRole==='gestao'?'Cadastre e gerencie os alunos da escola.':'Selecione um aluno para usar nas adaptações e no PEI.'}</p></div>
       ${userRole==='gestao'?'<button class="btn-sm" onclick="abrirModalCad()">+ Cadastrar aluno</button>':''}
     </div>
@@ -9981,6 +9996,53 @@ async function verPautaSalva(id) {
   document.getElementById('mpei-body').style.whiteSpace = 'pre-wrap';
   document.getElementById('mpei-body').textContent = pautaVerAtual;
   abrirModal('modal-pei');
+}
+
+async function carregarListaAEEGestao() {
+  const el = document.getElementById('gestao-aee-lista');
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Carregando…</div></div>';
+  const { data, error } = await db.from('planos_aee').select('*').order('created_at', { ascending: false });
+  if (error || !data?.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum Plano de AEE encontrado.</div></div>';
+    return;
+  }
+  el.innerHTML = data.map(p => {
+    const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
+    const status = p.status === 'ativo' ? '✅ Ativo' : p.status === 'revisado' ? '🔄 Revisado' : '📝 Rascunho';
+    return `<div class="item-card">
+      <div class="ic-nome">${p.aluno_nome || '(sem nome)'}</div>
+      <div class="ic-meta">${p.frequencia_semanal || ''} ${p.duracao_sessao ? '· ' + p.duracao_sessao : ''}</div>
+      <div class="ic-tags"><span class="ic-tag">${status}</span></div>
+      <div class="ic-prev">${(p.texto || p.objetivos || '').slice(0, 100)}…</div>
+      <div class="ic-date">${dt}</div>
+    </div>`;
+  }).join('');
+}
+
+async function carregarListaPDIGestao() {
+  const el = document.getElementById('gestao-pdi-lista');
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Carregando…</div></div>';
+  const { data, error } = await db.from('pdis').select('*').order('created_at', { ascending: false });
+  if (error || !data?.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PDI encontrado.</div></div>';
+    return;
+  }
+  el.innerHTML = data.map(p => {
+    const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
+    const status = p.status === 'finalizado' ? '✅ Finalizado' : '📝 Rascunho';
+    return `<div class="item-card" style="cursor:pointer" onclick="verPDISalvo('${p.id}')">
+      <div class="ic-nome">${p.aluno_nome || '(sem nome)'}</div>
+      <div class="ic-meta">Multiprofissional</div>
+      <div class="ic-tags"><span class="ic-tag">${status}</span></div>
+      <div class="ic-prev">${(p.texto || p.objetivos_pedagogicos || '').slice(0, 100)}…</div>
+      <div class="ic-date">${dt}</div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn-sm" style="font-size:11.5px;padding:4px 12px" onclick="event.stopPropagation();verPDISalvo('${p.id}')">Ver PDI</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function excluirPauta(id) {
