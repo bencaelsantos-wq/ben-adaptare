@@ -5876,6 +5876,8 @@ function showPage(id) {
   if (id === 'gestao-rel-clinica') { gcFiltrarRelatorios(); }
   if (id === 'gc-demandas') { gcdFiltrar(); }
   if (id === 'ponte-diario') { popularDropdownDiario(); }
+  if (id === 'plano-aee') carregarPlanosAEE();
+  if (id === 'pdi') carregarPDIs();
 }
 // ⚠️ CRÍTICO — expõe showPage em window ANTES do patch em ~linha 7411.
 // NUNCA remova esta linha — sem ela a navegação para de funcionar.
