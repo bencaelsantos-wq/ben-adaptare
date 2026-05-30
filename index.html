@@ -7019,6 +7019,20 @@ function renderPages() {
 // ── PÁGINAS GESTÃO ───────────────────────────────────────────
 function renderPagesGestao() {
   document.getElementById('main-content').innerHTML = `
+  <!-- GESTÃO: LISTA DE AEE -->
+  <div id="page-gestao-lista-aee" class="page">
+    <h1 class="page-title">Planos de AEE</h1>
+    <p class="page-sub">Todos os Planos de Atendimento Educacional Especializado elaborados pelos professores.</p>
+    <div class="cards-grid" id="gestao-aee-lista"></div>
+  </div>
+
+  <!-- GESTÃO: LISTA DE PDI -->
+  <div id="page-gestao-lista-pdi" class="page">
+    <h1 class="page-title">PDIs</h1>
+    <p class="page-sub">Todos os Planos de Desenvolvimento Individual elaborados pela equipe.</p>
+    <div class="cards-grid" id="gestao-pdi-lista"></div>
+  </div>
+
   <!-- PAINEL GESTÃO -->
   <div id="page-gestao-painel" class="page active">
     <h1 class="page-title">Painel de Gestão</h1>
