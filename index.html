@@ -4168,8 +4168,8 @@ function colaboracaoHTML() {
         <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#EEF2FF;color:#1E3A8A;border:1px solid #C7D2FE" onclick="showPage('gestao-pauta')">📋 Gerar pauta de reunião com IA</button>
         <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE" onclick="showPage('ponte-objetivos')">🎯 Ver objetivos convergentes</button>
         <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FFF7ED;color:#92400E;border:1px solid #FDE68A" onclick="showPage('ponte-tradutor')">🔤 Tradutor escola ↔ clínica</button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4" onclick="userRole==='gestao'?showPage('gestao-peis'):showPage('pei')">📄 Elaborar PEI multidisciplinar</button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA" onclick="userRole==='gestao'?showPage('gestao-alunos'):showPage('guia')">🧠 Consultar guia de perfis</button>      </div>
+        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4" onclick="userRole==='gestao'?showPage('gestao-peis'):showPage('pei')">📄 Ver todos os PEIs</button>
+        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA" onclick="showPage('guia')">🧠 Consultar guia de perfis</button>      </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
@@ -5879,7 +5879,11 @@ function showPage(id) {
   if (id === 'plano-aee') carregarPlanosAEE();
   if (id === 'pdi') carregarPDIs();
   if (id === 'gestao-lista-aee') carregarListaAEEGestao();
-  if (id === 'gestao-lista-pdi') carregarListaPDIGestao();}
+  if (id === 'gestao-lista-pdi') carregarListaPDIGestao();
+  if (id === 'ponte-diario' && userRole === 'gestao') carregarDiarioGestao();
+  if (id === 'guia') renderGuia();
+  if (id === 'ponte-objetivos' && userRole === 'gestao') carregarObjetivosGestao();
+  if (id === 'ponte-tradutor') inicializarTradutorGestao();}
 // ⚠️ CRÍTICO — expõe showPage em window ANTES do patch em ~linha 7411.
 // NUNCA remova esta linha — sem ela a navegação para de funcionar.
 window.showPage = showPage;
@@ -7019,6 +7023,37 @@ function renderPages() {
 // ── PÁGINAS GESTÃO ───────────────────────────────────────────
 function renderPagesGestao() {
   document.getElementById('main-content').innerHTML = `
+   <!-- GESTÃO: DIÁRIO DO ALUNO (somente leitura) -->
+  <div id="page-ponte-diario" class="page">
+    <h1 class="page-title">Diário do Aluno</h1>
+    <p class="page-sub">Acompanhe os registros feitos pelos professores. Somente leitura — adicione sugestões abaixo.</p>
+    <div class="toolbar">
+      <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="gestao-diario-q" placeholder="Buscar por aluno…" oninput="filtrarDiarioGestao()"></div>
+    </div>
+    <div class="cards-grid" id="gestao-diario-lista"></div>
+  </div>
+
+  <!-- GESTÃO: TRADUTOR -->
+  <div id="page-ponte-tradutor" class="page">
+    <h1 class="page-title">Tradutor Escola ↔ Clínica</h1>
+    <p class="page-sub">Compreenda os termos clínicos usados nos relatórios e devolutivas.</p>
+    <div id="tradutor-gestao-container"></div>
+  </div>
+
+  <!-- GESTÃO: OBJETIVOS CONVERGENTES -->
+  <div id="page-ponte-objetivos" class="page">
+    <h1 class="page-title">Objetivos Convergentes</h1>
+    <p class="page-sub">Alinhamento entre metas pedagógicas e terapêuticas por aluno.</p>
+    <div class="cards-grid" id="gestao-objetivos-lista"></div>
+  </div>
+
+  <!-- GESTÃO: GUIA DE PERFIS -->
+  <div id="page-guia" class="page">
+    <h1 class="page-title">Guia de Perfis</h1>
+    <p class="page-sub">Referência rápida sobre diagnósticos, características e estratégias de suporte.</p>
+    <div id="guia-gestao-container"></div>
+  </div>
+
   <!-- GESTÃO: LISTA DE AEE -->
   <div id="page-gestao-lista-aee" class="page">
     <h1 class="page-title">Planos de AEE</h1>
@@ -10009,6 +10044,63 @@ async function verPautaSalva(id) {
   document.getElementById('mpei-body').style.whiteSpace = 'pre-wrap';
   document.getElementById('mpei-body').textContent = pautaVerAtual;
   abrirModal('modal-pei');
+}
+
+async function carregarDiarioGestao() {
+  const el = document.getElementById('gestao-diario-lista');
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Carregando…</div></div>';
+  const { data } = await db.from('diario_aluno').select('*').order('created_at', { ascending: false }).limit(50);
+  if (!data?.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Nenhum registro no diário ainda.</div></div>'; return; }
+  el.innerHTML = data.map(d => {
+    const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
+    const tipo = d.tipo === 'conquista' ? '✅' : d.tipo === 'alerta' ? '⚠️' : '📝';
+    return `<div class="item-card">
+      <div class="ic-nome">${d.aluno_nome || '(sem nome)'}</div>
+      <div class="ic-meta">${tipo} ${d.tipo || ''} ${d.area ? '· ' + d.area : ''}</div>
+      <div class="ic-prev">${(d.texto || '').slice(0, 120)}…</div>
+      <div class="ic-date">${dt}</div>
+    </div>`;
+  }).join('');
+}
+
+function filtrarDiarioGestao() {
+  const q = (document.getElementById('gestao-diario-q')?.value || '').toLowerCase();
+  document.querySelectorAll('#gestao-diario-lista .item-card').forEach(card => {
+    card.style.display = card.querySelector('.ic-nome')?.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+async function carregarObjetivosGestao() {
+  const el = document.getElementById('gestao-objetivos-lista');
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Carregando…</div></div>';
+  const { data } = await db.from('objetivos_terapeuticos').select('*').order('created_at', { ascending: false }).limit(30);
+  if (!data?.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Nenhum objetivo registrado ainda.</div></div>'; return; }
+  el.innerHTML = data.map(o => {
+    const dt = o.created_at ? new Date(o.created_at).toLocaleDateString('pt-BR') : '';
+    return `<div class="item-card">
+      <div class="ic-nome">${o.aluno_nome || '(sem nome)'}</div>
+      <div class="ic-meta">${o.area || ''} ${o.especialidade ? '· ' + o.especialidade : ''}</div>
+      <div class="ic-prev">${(o.objetivo || o.descricao || '').slice(0, 120)}…</div>
+      <div class="ic-date">${dt}</div>
+    </div>`;
+  }).join('');
+}
+
+function inicializarTradutorGestao() {
+  const el = document.getElementById('tradutor-gestao-container');
+  if (!el || el.innerHTML.trim()) return;
+  el.innerHTML = `<div style="max-width:600px"><p style="font-size:13px;color:var(--gr600);margin-bottom:16px">Digite um termo clínico para ver a explicação em linguagem pedagógica.</p><div style="display:flex;gap:8px;margin-bottom:16px"><input id="tradutor-gestao-input" class="finput" placeholder="Ex: disfunção executiva, hipotonia, pragmática…" style="flex:1"><button class="btn-sm" onclick="traduzirTermoGestao()">Traduzir</button></div><div id="tradutor-gestao-result" style="font-size:14px;color:var(--gr700);line-height:1.7"></div></div>`;
+}
+
+async function traduzirTermoGestao() {
+  const termo = document.getElementById('tradutor-gestao-input')?.value?.trim();
+  if (!termo) return;
+  const el = document.getElementById('tradutor-gestao-result');
+  if (el) el.textContent = 'Consultando…';
+  const texto = await chamarClaude({ prompt: `Explique o termo clínico "${termo}" em linguagem simples para um gestor escolar, sem jargão. Máximo 3 parágrafos curtos.`, maxTokens: 400, modulo: 'tradutor' });
+  if (el) el.textContent = texto || 'Não foi possível traduzir.';
 }
 
 async function carregarListaAEEGestao() {
