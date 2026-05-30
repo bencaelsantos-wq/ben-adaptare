@@ -5870,7 +5870,7 @@ function showPage(id) {
   if (id === 'at-relatorios') carregarRelatoriosAT();
   if (id === 'gc-perfis') carregarPerfisGestaoClinica();
   if (id === 'gc-profissionais') carregarProfissionaisClinica();
-  if (id === 'guia') renderGuia();
+  if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'diversidade') renderDiversidade();
   if (id === 'gestao-comunicacao') { gcGoStep(1); }
   if (id === 'gestao-rel-clinica') { gcFiltrarRelatorios(); }
@@ -5881,7 +5881,7 @@ function showPage(id) {
   if (id === 'gestao-lista-aee') carregarListaAEEGestao();
   if (id === 'gestao-lista-pdi') carregarListaPDIGestao();
   if (id === 'ponte-diario' && userRole === 'gestao') carregarDiarioGestao();
-  if (id === 'guia') renderGuia();
+  if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'ponte-objetivos' && userRole === 'gestao') carregarObjetivosGestao();
   if (id === 'ponte-tradutor') inicializarTradutorGestao();}
 // ⚠️ CRÍTICO — expõe showPage em window ANTES do patch em ~linha 7411.
@@ -7048,10 +7048,15 @@ function renderPagesGestao() {
   </div>
 
   <!-- GESTÃO: GUIA DE PERFIS -->
-  <div id="page-guia" class="page">
+  <div id="page-guia-gestao" class="page">
     <h1 class="page-title">Guia de Perfis</h1>
     <p class="page-sub">Referência rápida sobre diagnósticos, características e estratégias de suporte.</p>
-    <div id="guia-container"></div>
+    <div class="guia-search-wrap">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input class="guia-search" id="guia-search-gestao" placeholder="Buscar deficiência, transtorno ou sigla…" oninput="filtrarGuiaGestao()">
+    </div>
+    <div class="guia-cats" id="guia-cats-gestao"></div>
+    <div class="guia-grid" id="guia-grid-gestao"></div>
   </div>
 
   <!-- GESTÃO: LISTA DE AEE -->
@@ -11267,6 +11272,41 @@ function setGuiaCat(cat) {
   renderGuiaGrid();
 }
 function filtrarGuia() { renderGuiaGrid(); }
+let guiaFiltroCatGestao = '';
+function renderGuiaGestao() {
+  const cats = [...new Set(GUIA_PERFIS.map(p=>p.cat))];
+  document.getElementById('guia-cats-gestao').innerHTML =
+    `<button class="guia-cat-btn active" onclick="setGuiaCatGestao('')">Todos</button>` +
+    cats.map(c=>`<button class="guia-cat-btn" onclick="setGuiaCatGestao('${c}')">${c}</button>`).join('');
+  renderGuiaGridGestao();
+}
+function setGuiaCatGestao(cat) {
+  guiaFiltroCatGestao = cat;
+  document.querySelectorAll('#guia-cats-gestao .guia-cat-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent === (cat||'Todos'));
+  });
+  renderGuiaGridGestao();
+}
+function filtrarGuiaGestao() { renderGuiaGridGestao(); }
+function renderGuiaGridGestao() {
+  const q = (document.getElementById('guia-search-gestao')?.value||'').toLowerCase();
+  const lista = GUIA_PERFIS.filter(p=>
+    (!guiaFiltroCatGestao || p.cat===guiaFiltroCatGestao) &&
+    (!q || p.nome.toLowerCase().includes(q) || (p.sigla||'').toLowerCase().includes(q) || p.resumo.toLowerCase().includes(q))
+  );
+  const grid = document.getElementById('guia-grid-gestao');
+  if (!grid) return;
+  grid.innerHTML = lista.length ? lista.map(p=>`
+    <div class="guia-card" onclick='abrirGuiaPerfil(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+      <div class="guia-card-top">
+        <div class="guia-card-emoji">${p.emoji}</div>
+        <div><div class="guia-card-nome">${p.nome}</div><div class="guia-card-sigla">${p.sigla||p.cat}</div></div>
+      </div>
+      <div class="guia-card-resumo">${p.resumo}</div>
+      <span class="guia-tag ${p.tag}">${p.cat}</span>
+    </div>`).join('')
+    : `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum perfil encontrado para essa busca.</div></div>`;
+}
 function renderGuiaGrid() {
   const q = (document.getElementById('guia-search')?.value||'').toLowerCase();
   const lista = GUIA_PERFIS.filter(p=>
