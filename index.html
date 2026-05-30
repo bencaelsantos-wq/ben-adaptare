@@ -3051,7 +3051,7 @@ const TEMPLATES = {
 const TEMPLATES_DEFAULT = ['Atividade de fixação','Avaliação adaptada','Atividade lúdica','Projeto prático','Ficha de registro'];
 
 // ── ESTADO ───────────────────────────────────────────────────
-let user = null, userRole = 'professor';
+let user = null, userRole = null;
 let alunosCad = [], adaptacoesList = [], peiList = [], todosPEI = [], todasAdaptacoes = [];
 let alunoSelId = null, tplSelecionado = '';
 let ultimaAdapt = '', dadosUltima = {};
@@ -3304,8 +3304,7 @@ const roleEscolhido = userRole;
 async function logout() {
   if (!window._devMode) await db.auth.signOut();
   window._devMode = false;
-  user = null; userRole = 'professor';
-  document.getElementById('app-screen').style.display = 'none';
+ user = null; userRole = null;  document.getElementById('app-screen').style.display = 'none';
   mostrarLanding();
   setRole('professor'); setTab('login');
   document.getElementById('lemail').value = '';
