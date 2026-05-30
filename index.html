@@ -4164,13 +4164,12 @@ function colaboracaoHTML() {
     <div class="fcard" style="margin-bottom:16px">
       <div class="fcard-title">⚡ Ações rápidas</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px">
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDF4;color:#065F46;border:1px solid #BBF7D0" onclick="showPage('ponte-diario')">📓 Registrar no Diário do Aluno</button>
+               <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDF4;color:#065F46;border:1px solid #BBF7D0" onclick="showPage('ponte-diario')">📓 Registrar no Diário do Aluno</button>
         <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#EEF2FF;color:#1E3A8A;border:1px solid #C7D2FE" onclick="showPage('gestao-pauta')">📋 Gerar pauta de reunião com IA</button>
         <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE" onclick="showPage('ponte-objetivos')">🎯 Ver objetivos convergentes</button>
         <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FFF7ED;color:#92400E;border:1px solid #FDE68A" onclick="showPage('ponte-tradutor')">🔤 Tradutor escola ↔ clínica</button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4" onclick="showPage('pei')">📄 Elaborar PEI multidisciplinar</button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA" onclick="showPage('guia')">🧠 Consultar guia de perfis</button>
-      </div>
+        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4" onclick="userRole==='gestao'?showPage('gestao-peis'):showPage('pei')">📄 Elaborar PEI multidisciplinar</button>
+        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA" onclick="userRole==='gestao'?showPage('gestao-alunos'):showPage('guia')">🧠 Consultar guia de perfis</button>      </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
@@ -5857,7 +5856,8 @@ function showPage(id) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const p = document.getElementById(`page-${id}`);
   const n = document.getElementById(`nav-${id}`);
-  if (p) p.classList.add('active');
+  if (!p) { toast('Esta seção não está disponível para este perfil.', 'error'); return; }
+  p.classList.add('active');
   if (n) n.classList.add('active');
   if (id === 'historico') filtrarHistorico();
   if (id === 'gestao-alunos') carregarAlunosGestao();
