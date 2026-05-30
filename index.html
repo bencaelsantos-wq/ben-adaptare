@@ -2657,21 +2657,14 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
-<!-- ══ MODAL: Detalhe de PEI ══ -->
-<div class="overlay" id="modal-pei" onclick="fecharModal('modal-pei',event)">
-  <div class="modal lg">
-    <div class="modal-header">
-      <div class="modal-title" id="mpei-titulo">PEI</div>
-      <button class="modal-close" onclick="fecharModal('modal-pei')">×</button>
-    </div>
-    <div class="modal-meta" id="mpei-meta"></div>
-    <div class="modal-body" id="mpei-body" style="font-size:13px"></div>
-    <div class="modal-actions">
-      <button class="btn-copy" onclick="copiarModalPEI()">Copiar PEI completo</button>
-      <button class="btn-sm" onclick="downloadPEI()">⬇️ Baixar PDF</button>
-    </div>
-  </div>
-</div>
+function abrirDiarioGestao(id, nome, texto, dt, tipo, area) {
+  document.getElementById('mpei-titulo').textContent = `📓 Diário — ${nome}`;
+  document.getElementById('mpei-meta').textContent = `${tipo || ''} ${area ? '· ' + area : ''} · ${dt}`;
+  document.getElementById('mpei-body').style.whiteSpace = 'pre-wrap';
+  document.getElementById('mpei-body').textContent = texto.replace(/\\n/g, '\n');
+  abrirModal('modal-pei');
+}
+function filtrarDiarioGestao() {
 
 <!-- ══ MODAL: Cadastro de Professor ══ -->
 <div class="overlay" id="modal-cad-prof" onclick="fecharModal('modal-cad-prof',event)">
@@ -3460,6 +3453,9 @@ function renderNavGestao() {
     <div class="nav-section">Reuniões</div>
     <div class="nav-item gestao-item" id="nav-colaboracao-gestao" onclick="abrirColaboracao()" style="font-weight:600">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional
+    </div>
+    <div class="nav-item gestao-item" id="nav-guia-gestao" onclick="showPage('guia-gestao')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 7v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Guia de Perfis
     </div>
     <div class="nav-item gestao-item" id="nav-gestao-pauta" onclick="showPage('gestao-pauta')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
@@ -5871,6 +5867,7 @@ function showPage(id) {
   if (id === 'gc-perfis') carregarPerfisGestaoClinica();
   if (id === 'gc-profissionais') carregarProfissionaisClinica();
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
+  if (id === 'guia-gestao') renderGuiaGestao();
   if (id === 'diversidade') renderDiversidade();
   if (id === 'gestao-comunicacao') { gcGoStep(1); }
   if (id === 'gestao-rel-clinica') { gcFiltrarRelatorios(); }
@@ -10060,7 +10057,8 @@ async function carregarDiarioGestao() {
   el.innerHTML = data.map(d => {
     const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
     const tipo = d.tipo === 'conquista' ? '✅' : d.tipo === 'alerta' ? '⚠️' : '📝';
-    return `<div class="item-card">
+    const textoSeguro = (d.texto || '').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+    return `<div class="item-card" style="cursor:pointer" onclick="abrirDiarioGestao('${d.id}','${d.aluno_nome||''}','${textoSeguro}','${dt}','${d.tipo||''}','${d.area||''}')">
       <div class="ic-nome">${d.aluno_nome || '(sem nome)'}</div>
       <div class="ic-meta">${tipo} ${d.tipo || ''} ${d.area ? '· ' + d.area : ''}</div>
       <div class="ic-prev">${(d.texto || '').slice(0, 120)}…</div>
