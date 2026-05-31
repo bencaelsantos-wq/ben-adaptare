@@ -10067,6 +10067,13 @@ async function carregarDiarioGestao() {
   }).join('');
 }
 
+window.abrirDiarioGestao = function(id, nome, texto, dt, tipo, area) {
+  document.getElementById('mpei-titulo').textContent = '📓 Diário — ' + nome;
+  document.getElementById('mpei-meta').textContent = (tipo || '') + (area ? ' · ' + area : '') + ' · ' + dt;
+  document.getElementById('mpei-body').style.whiteSpace = 'pre-wrap';
+  document.getElementById('mpei-body').textContent = texto.replace(/\\n/g, '\n');
+  abrirModal('modal-pei');
+};
 function filtrarDiarioGestao() {
   const q = (document.getElementById('gestao-diario-q')?.value || '').toLowerCase();
   document.querySelectorAll('#gestao-diario-lista .item-card').forEach(card => {
