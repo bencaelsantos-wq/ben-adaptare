@@ -2657,13 +2657,6 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
-window.abrirDiarioGestao = function(id, nome, texto, dt, tipo, area) {
-  document.getElementById('mpei-titulo').textContent = `📓 Diário — ${nome}`;
-  document.getElementById('mpei-meta').textContent = `${tipo || ''} ${area ? '· ' + area : ''} · ${dt}`;
-  document.getElementById('mpei-body').style.whiteSpace = 'pre-wrap';
-  document.getElementById('mpei-body').textContent = texto.replace(/\\n/g, '\n');
-  abrirModal('modal-pei');
-};
 function filtrarDiarioGestao() {
 
 <!-- ══ MODAL: Cadastro de Professor ══ -->
