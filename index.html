@@ -2618,6 +2618,16 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <div id="cad-docs-list" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
       </div>
 
+      <!-- ── Seção: Professores vinculados ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👩‍🏫 Professores com acesso a este aluno</div>
+      <div class="fblock">
+        <div class="salas-input-group">
+          <select id="cad-professores-sel" class="fselect" style="flex:1"><option value="">Selecione um professor</option></select>
+          <button class="btn-sm" onclick="adicionarProfessorCad()">+ Adicionar</button>
+        </div>
+        <div class="mat-tag-list" id="cad-professores-tags"></div>
+      </div>
+
       <!-- LGPD — Cadastro de Aluno (inalterado) -->
       <div class="lgpd-bloco" id="lgpd-bloco-aluno">
         <div class="lgpd-bloco-titulo">⚖️ Proteção de dados — LGPD (Lei nº 13.709/2018)</div>
@@ -2919,6 +2929,16 @@ function filtrarDiarioGestao() {
       <div class="fblock">
        <label class="flabel" for="cc-comportamento">Comportamento (observações relevantes)</label>
         <textarea id="cc-comportamento" class="ftarea sm" placeholder="Ex: Estereotipias em situações de estresse, rigidez de rotina, autolesão ocasional…"></textarea>
+      </div>
+
+      <!-- ── Seção: Profissionais vinculados ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍⚕️ Profissionais com acesso a este perfil</div>
+      <div class="fblock">
+        <div class="salas-input-group">
+          <select id="cad-profissionais-sel" class="fselect" style="flex:1"><option value="">Selecione um profissional</option></select>
+          <button class="btn-sm" onclick="adicionarProfissionalCad()">+ Adicionar</button>
+        </div>
+        <div class="mat-tag-list" id="cad-profissionais-tags"></div>
       </div>
 
       <!-- LGPD — Cadastro de Perfil Clínico -->
@@ -9529,8 +9549,42 @@ async function abrirPerfilAluno(a) {
   const docsList = document.getElementById('cad-docs-list');
   if (docsList) docsList.innerHTML = '';
   window._cadDocs = [];
+  window._cadProfessoresIds = [];
+  const selProf = document.getElementById('cad-professores-sel');
+  const tagProf = document.getElementById('cad-professores-tags');
+  if (selProf) selProf.value = '';
+  if (tagProf) tagProf.innerHTML = '';
+  await popularDropdownProfessoresCad();
   lgpdResetarModal('aluno','btn-salvar-aluno');
   abrirModal('modal-cad');
+}
+
+async function popularDropdownProfessoresCad() {
+  const sel = document.getElementById('cad-professores-sel');
+  if (!sel) return;
+  const { data } = await db.from('professores').select('id, nome').order('nome');
+  sel.innerHTML = '<option value="">Selecione um professor</option>' +
+    (data||[]).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+}
+function adicionarProfessorCad() {
+  const sel = document.getElementById('cad-professores-sel');
+  const id = sel?.value;
+  const nome = sel?.selectedOptions[0]?.text;
+  if (!id || (window._cadProfessoresIds||[]).includes(id)) return;
+  if (!window._cadProfessoresIds) window._cadProfessoresIds = [];
+  window._cadProfessoresIds.push(id);
+  renderProfessoresTagsCad();
+  sel.value = '';
+}
+function renderProfessoresTagsCad() {
+  const el = document.getElementById('cad-professores-tags');
+  if (!el) return;
+  const { data: profs } = { data: [] };
+  el.innerHTML = (window._cadProfessoresIds||[]).map((id,i) => {
+    const sel = document.getElementById('cad-professores-sel');
+    const nome = [...(sel?.options||[])].find(o=>o.value===id)?.text || id;
+    return `<span class="mat-tag">${nome}<button onclick="window._cadProfessoresIds.splice(${i},1);renderProfessoresTagsCad()" style="background:none;border:none;cursor:pointer;margin-left:4px">×</button></span>`;
+  }).join('');
 }
 
 // Gestão de profissionais da clínica no modal de aluno
@@ -9618,7 +9672,8 @@ async function salvarAluno() {
       user_id: user.id, nome, idade, nasc, serie, metodo, perfis, observacoes,
       pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
       clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs,
-      at_id: at_id || null, at_nome: at_nome || null
+      at_id: at_id || null, at_nome: at_nome || null,
+      professores_ids: window._cadProfessoresIds?.length ? [...window._cadProfessoresIds] : []
     }).select('id').single());
   }
   if (error) return toast('Erro: '+error.message, 'error');
@@ -10819,8 +10874,40 @@ function abrirModalCadClinica(p) {
     document.getElementById('cc-comprometidas').value= p.comprometidas || '';
     document.getElementById('cc-comportamento').value= p.comportamento || '';
   }
+  window._cadProfissionaisIds = [];
+  const selProf = document.getElementById('cad-profissionais-sel');
+  const tagProf = document.getElementById('cad-profissionais-tags');
+  if (selProf) selProf.value = '';
+  if (tagProf) tagProf.innerHTML = '';
+  await popularDropdownProfissionaisCad();
   lgpdResetarModal('clinica','btn-salvar-clinica');
   abrirModal('modal-cad-clinica');
+}
+
+async function popularDropdownProfissionaisCad() {
+  const sel = document.getElementById('cad-profissionais-sel');
+  if (!sel) return;
+  const { data } = await db.from('profissionais_clinica').select('id, nome').order('nome');
+  sel.innerHTML = '<option value="">Selecione um profissional</option>' +
+    (data||[]).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+}
+function adicionarProfissionalCad() {
+  const sel = document.getElementById('cad-profissionais-sel');
+  const id = sel?.value;
+  if (!id || (window._cadProfissionaisIds||[]).includes(id)) return;
+  if (!window._cadProfissionaisIds) window._cadProfissionaisIds = [];
+  window._cadProfissionaisIds.push(id);
+  renderProfissionaisTagsCad();
+  sel.value = '';
+}
+function renderProfissionaisTagsCad() {
+  const el = document.getElementById('cad-profissionais-tags');
+  if (!el) return;
+  el.innerHTML = (window._cadProfissionaisIds||[]).map((id,i) => {
+    const sel = document.getElementById('cad-profissionais-sel');
+    const nome = [...(sel?.options||[])].find(o=>o.value===id)?.text || id;
+    return `<span class="mat-tag">${nome}<button onclick="window._cadProfissionaisIds.splice(${i},1);renderProfissionaisTagsCad()" style="background:none;border:none;cursor:pointer;margin-left:4px">×</button></span>`;
+  }).join('');
 }
 
 async function salvarPerfilClinico() {
@@ -10844,6 +10931,7 @@ async function salvarPerfilClinico() {
   if (perfilClinicaSel) {
     ({ error } = await db.from('perfis_clinicos').update(payload).eq('id', perfilClinicaSel.id));
   } else {
+    payload.profissionais_ids = window._cadProfissionaisIds?.length ? [...window._cadProfissionaisIds] : [];
     ({ error } = await db.from('perfis_clinicos').insert(payload));
   }
   if (error) return toast('Erro: ' + error.message, 'error');
