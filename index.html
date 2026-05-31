@@ -9536,7 +9536,7 @@ async function abrirPerfilAluno(a) {
     peisEl.innerHTML  = '<span style="color:var(--gr400)">Erro ao carregar</span>';
   }
 }
-  function abrirModalCad() {
+  async function abrirModalCad() {
   ['cad-nome','cad-obs','cad-nasc','cad-pai','cad-pai-tel','cad-pai-email','cad-mae','cad-mae-tel','cad-mae-email',
    'cad-clinica-nome','cad-clinica-tel','cad-clinica-email','cad-clinica-end','cad-prof-inp']
     .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
@@ -10854,7 +10854,7 @@ function renderPerfisClinicaGrid() {
     </div>`).join('');
 }
 
-function abrirModalCadClinica(p) {
+async function abrirModalCadClinica(p) {
   perfilClinicaSel = p || null;
   document.getElementById('mcc-titulo').textContent = p ? 'Editar Perfil Clínico' : 'Novo Perfil Clínico';
   ['cc-nome','cc-idade','cc-diag','cc-hipotese','cc-preservadas','cc-comprometidas','cc-comportamento'].forEach(id => {
