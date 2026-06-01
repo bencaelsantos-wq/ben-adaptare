@@ -10220,14 +10220,39 @@ async function carregarListaAEEGestao() {
   el.innerHTML = data.map(p => {
     const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
     const status = p.status === 'ativo' ? '✅ Ativo' : p.status === 'revisado' ? '🔄 Revisado' : '📝 Rascunho';
-    return `<div class="item-card">
+    return `<div class="item-card" style="cursor:pointer" onclick="verAEEGestao('${p.id}')">
       <div class="ic-nome">${p.aluno_nome || '(sem nome)'}</div>
       <div class="ic-meta">${p.frequencia_semanal || ''} ${p.duracao_sessao ? '· ' + p.duracao_sessao : ''}</div>
       <div class="ic-tags"><span class="ic-tag">${status}</span></div>
       <div class="ic-prev">${(p.texto || p.objetivos || '').slice(0, 100)}…</div>
       <div class="ic-date">${dt}</div>
+      <div style="margin-top:10px"><button class="btn-sm" style="font-size:11.5px;padding:4px 12px" onclick="event.stopPropagation();verAEEGestao('${p.id}')">Ver Plano</button></div>
     </div>`;
   }).join('');
+}
+
+async function verAEEGestao(id) {
+  const { data } = await db.from('planos_aee').select('*').eq('id', id).single();
+  if (!data) return;
+  document.getElementById('mpei-titulo').textContent = `Plano de AEE — ${data.aluno_nome || ''}`;
+  document.getElementById('mpei-meta').textContent = `${data.frequencia_semanal||''} ${data.duracao_sessao ? '· ' + data.duracao_sessao : ''} · ${data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : ''}`;
+  document.getElementById('mpei-body').style.whiteSpace = 'pre-wrap';
+  document.getElementById('mpei-body').textContent = data.texto || data.objetivos || '';
+  const comentarioBox = document.getElementById('mpei-comentario-gestao');
+  const comentarioSec = document.getElementById('mpei-comentario-sec');
+  if (comentarioBox && comentarioSec) {
+    if (userRole === 'gestao') {
+      comentarioSec.style.display = 'block';
+      comentarioBox.value = data.comentario_gestao || '';
+      comentarioBox.dataset.tabela = 'planos_aee';
+      comentarioBox.dataset.id = data.id;
+      const contador = document.getElementById('mpei-comentario-count');
+      if (contador) contador.textContent = (data.comentario_gestao||'').length + '/300';
+    } else {
+      comentarioSec.style.display = 'none';
+    }
+  }
+  abrirModal('modal-pei');
 }
 
 async function carregarListaPDIGestao() {
@@ -10265,11 +10290,38 @@ async function excluirPauta(id) {
 async function verPDISalvo(id) {
   const { data } = await db.from('pdis').select('*').eq('id', id).single();
   if (!data) return;
+  modalPEIid = null;
   document.getElementById('mpei-titulo').textContent = `PDI — ${data.aluno_nome || ''}`;
   document.getElementById('mpei-meta').textContent = `Multiprofissional · ${data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : ''}`;
   document.getElementById('mpei-body').style.whiteSpace = 'pre-wrap';
   document.getElementById('mpei-body').textContent = data.texto || '';
+  const comentarioBox = document.getElementById('mpei-comentario-gestao');
+  const comentarioSec = document.getElementById('mpei-comentario-sec');
+  if (comentarioBox && comentarioSec) {
+    if (userRole === 'gestao') {
+      comentarioSec.style.display = 'block';
+      comentarioBox.value = data.comentario_gestao || '';
+      comentarioBox.dataset.tabela = 'pdis';
+      comentarioBox.dataset.id = data.id;
+      const contador = document.getElementById('mpei-comentario-count');
+      if (contador) contador.textContent = (data.comentario_gestao||'').length + '/300';
+    } else {
+      comentarioSec.style.display = 'none';
+    }
+  }
   abrirModal('modal-pei');
+}
+async function salvarComentarioPDI() {
+  const box = document.getElementById('mpei-comentario-gestao');
+  const id = box?.dataset?.id;
+  const tabela = box?.dataset?.tabela || 'pdis';
+  if (!id) return;
+  const { error } = await db.from(tabela).update({
+    comentario_gestao: box.value.trim(),
+    comentario_gestao_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) return toast('Erro ao salvar comentário: ' + error.message, 'error');
+  toast('Comentário salvo!', 'success');
 }
 
 async function excluirPDI(id) {
@@ -10379,7 +10431,37 @@ function filtrarGAdapt() {
 }
 
 // ── MODAIS ───────────────────────────────────────────────────
-function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+function garantirModalPEI() {
+  if (document.getElementById('modal-pei')) return;
+  const m = document.createElement('div');
+  m.className = 'overlay';
+  m.id = 'modal-pei';
+  m.onclick = function(e) { if (e.target === m) m.classList.remove('open'); };
+  m.innerHTML = `<div class="modal lg">
+    <div class="modal-header">
+      <div><div class="modal-title" id="mpei-titulo"></div><div class="modal-meta" id="mpei-meta"></div></div>
+      <button class="modal-close" onclick="fecharModal('modal-pei')">×</button>
+    </div>
+    <div class="modal-body" id="mpei-body" style="font-size:13px;white-space:pre-wrap;max-height:55vh;overflow-y:auto"></div>
+    <div id="mpei-comentario-sec" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--b)">
+      <label class="flabel" style="margin-bottom:6px;display:block">💬 Comentário da gestão <span style="font-weight:400;color:var(--gr400)">(máx. 300 caracteres)</span></label>
+      <textarea id="mpei-comentario-gestao" class="ftarea sm" maxlength="300" style="resize:none;height:80px" placeholder="Adicione uma observação sobre este documento…" oninput="document.getElementById('mpei-comentario-count').textContent=this.value.length+'/300'"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span id="mpei-comentario-count" style="font-size:11.5px;color:var(--gr400)">0/300</span>
+        <button class="btn-sm" onclick="salvarComentarioGestao()">💾 Salvar comentário</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-copy" onclick="copiarModalPEI()">Copiar texto completo</button>
+      <button class="btn-sm" onclick="downloadPEI()">⬇️ Baixar PDF</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+function abrirModal(id) {
+  if (id === 'modal-pei') garantirModalPEI();
+  document.getElementById(id).classList.add('open');
+}
 function fecharModal(id, e) {
   if (!e || e.target === document.getElementById(id)) document.getElementById(id).classList.remove('open');
 }
@@ -10397,12 +10479,39 @@ function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(
 
 function abrirModalPEI(reg) {
   modalPEItxt = reg.texto || '';
+  modalPEIid  = reg.id || null;
   document.getElementById('mpei-titulo').textContent = 'PEI — ' + (reg.aluno_nome||'');
   document.getElementById('mpei-meta').textContent = [reg.periodo, reg.professor].filter(Boolean).join(' · ');
   document.getElementById('mpei-body').textContent = reg.texto || '';
+  const comentarioBox = document.getElementById('mpei-comentario-gestao');
+  const comentarioSec = document.getElementById('mpei-comentario-sec');
+  if (comentarioBox && comentarioSec) {
+    if (userRole === 'gestao') {
+      comentarioSec.style.display = 'block';
+      comentarioBox.value = reg.comentario_gestao || '';
+      const contador = document.getElementById('mpei-comentario-count');
+      if (contador) contador.textContent = (reg.comentario_gestao||'').length + '/300';
+    } else {
+      comentarioSec.style.display = 'none';
+    }
+  }
   abrirModal('modal-pei');
   registrarAuditoria('visualizou_pei', 'pei', reg.id || null);
 }
+async function salvarComentarioGestao() {
+  const box = document.getElementById('mpei-comentario-gestao');
+  if (!box) return;
+  const tabela = box.dataset.tabela || 'peis';
+  const id = box.dataset.id || modalPEIid;
+  if (!id) return toast('ID não encontrado.', 'error');
+  const { error } = await db.from(tabela).update({
+    comentario_gestao: box.value.trim(),
+    comentario_gestao_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) return toast('Erro ao salvar comentário: ' + error.message, 'error');
+  toast('Comentário salvo!', 'success');
+}
+async function salvarComentarioPEI() { salvarComentarioGestao(); }
 function copiarModalPEI() { navigator.clipboard.writeText(modalPEItxt).then(()=>toast('Copiado!','success')); }
 function downloadPEI() {
   if (!modalPEItxt) return toast('PEI não encontrado.', 'error');
