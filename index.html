@@ -2683,7 +2683,7 @@ function filtrarDiarioGestao() {
       </div>
       <div class="frow">
         <div><label class="flabel" for="cp-tel">Telefone / WhatsApp</label><input type="text" id="cp-tel" class="finput" placeholder="(11) 99999-9999"></div>
-<label class="flabel" for="cp-vinculo">Tipo de vínculo</label>
+        <div><label class="flabel" for="cp-vinculo">Tipo de vínculo</label>
           <select id="cp-vinculo" class="fselect">
             <option value="">Selecione</option>
             <option>Efetivo</option>
@@ -2696,18 +2696,35 @@ function filtrarDiarioGestao() {
       </div>
 
       <div class="fblock" style="margin-bottom:12px">
-<label class="flabel" for="cp-mat-inp">Matérias / Áreas de atuação</label>
+        <label class="flabel" for="cp-mat-inp">Matérias / Áreas de atuação</label>
         <div class="salas-input-group">
-          <input type="text" id="cp-mat-inp" class="finput" placeholder="Ex: Matemática, Ciências…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarMatProf()}">
+          <select id="cp-mat-inp" class="fselect" style="flex:1">
+            <option value="">Selecione uma matéria</option>
+            <option>Português</option><option>Matemática</option><option>Ciências</option>
+            <option>História</option><option>Geografia</option><option>Artes</option>
+            <option>Educação Física</option><option>Inglês</option><option>Espanhol</option>
+            <option>Filosofia</option><option>Sociologia</option><option>Física</option>
+            <option>Química</option><option>Biologia</option><option>Informática</option>
+            <option>Música</option><option>AEE / Sala de Recursos</option>
+            <option>Apoio Inclusivo</option><option>Educação Infantil</option>
+            <option>Polivalente (Ed. Fundamental I)</option>
+          </select>
           <button class="btn-sm" onclick="adicionarMatProf()">+ Adicionar</button>
         </div>
         <div class="mat-tag-list" id="cp-mat-tags"></div>
       </div>
 
       <div class="fblock" style="margin-bottom:12px">
-<label class="flabel" for="cp-sala-inp">Turmas / Salas atendidas</label>
+        <label class="flabel" for="cp-sala-inp">Turmas / Salas atendidas</label>
         <div class="salas-input-group">
-          <input type="text" id="cp-sala-inp" class="finput" placeholder="Ex: 3º ano A, 4º ano B…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarSalaProf()}">
+          <select id="cp-sala-inp" class="fselect" style="flex:1">
+            <option value="">Selecione uma turma</option>
+            <optgroup label="Ed. Infantil"><option>Maternal A</option><option>Maternal B</option><option>Jardim I A</option><option>Jardim I B</option><option>Jardim II A</option><option>Jardim II B</option><option>Pré-escola A</option><option>Pré-escola B</option></optgroup>
+            <optgroup label="Fund. I"><option>1º ano A</option><option>1º ano B</option><option>2º ano A</option><option>2º ano B</option><option>3º ano A</option><option>3º ano B</option><option>4º ano A</option><option>4º ano B</option><option>5º ano A</option><option>5º ano B</option></optgroup>
+            <optgroup label="Fund. II"><option>6º ano A</option><option>6º ano B</option><option>7º ano A</option><option>7º ano B</option><option>8º ano A</option><option>8º ano B</option><option>9º ano A</option><option>9º ano B</option></optgroup>
+            <optgroup label="Ens. Médio"><option>1º ano EM A</option><option>1º ano EM B</option><option>2º ano EM A</option><option>2º ano EM B</option><option>3º ano EM A</option><option>3º ano EM B</option></optgroup>
+            <optgroup label="Outros"><option>AEE / Sala de Recursos</option><option>Todas as turmas</option></optgroup>
+          </select>
           <button class="btn-sm" onclick="adicionarSalaProf()">+ Adicionar</button>
         </div>
         <div class="sala-tag-list" id="cp-sala-tags"></div>
