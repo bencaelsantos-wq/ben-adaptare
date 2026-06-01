@@ -2715,16 +2715,9 @@ function filtrarDiarioGestao() {
       </div>
 
       <div class="fblock" style="margin-bottom:12px">
-        <label class="flabel" for="cp-sala-inp">Turmas / Salas atendidas</label>
+<label class="flabel" for="cp-sala-inp">Turmas / Salas atendidas</label>
         <div class="salas-input-group">
-          <select id="cp-sala-inp" class="fselect" style="flex:1">
-            <option value="">Selecione uma turma</option>
-            <optgroup label="Ed. Infantil"><option>Maternal A</option><option>Maternal B</option><option>Jardim I A</option><option>Jardim I B</option><option>Jardim II A</option><option>Jardim II B</option><option>Pré-escola A</option><option>Pré-escola B</option></optgroup>
-            <optgroup label="Fund. I"><option>1º ano A</option><option>1º ano B</option><option>2º ano A</option><option>2º ano B</option><option>3º ano A</option><option>3º ano B</option><option>4º ano A</option><option>4º ano B</option><option>5º ano A</option><option>5º ano B</option></optgroup>
-            <optgroup label="Fund. II"><option>6º ano A</option><option>6º ano B</option><option>7º ano A</option><option>7º ano B</option><option>8º ano A</option><option>8º ano B</option><option>9º ano A</option><option>9º ano B</option></optgroup>
-            <optgroup label="Ens. Médio"><option>1º ano EM A</option><option>1º ano EM B</option><option>2º ano EM A</option><option>2º ano EM B</option><option>3º ano EM A</option><option>3º ano EM B</option></optgroup>
-            <optgroup label="Outros"><option>AEE / Sala de Recursos</option><option>Todas as turmas</option></optgroup>
-          </select>
+          <input type="text" id="cp-sala-inp" class="finput" placeholder="Ex: 3º ano A, 4º ano B…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarSalaProf()}">
           <button class="btn-sm" onclick="adicionarSalaProf()">+ Adicionar</button>
         </div>
         <div class="sala-tag-list" id="cp-sala-tags"></div>
