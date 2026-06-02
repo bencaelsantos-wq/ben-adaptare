@@ -10478,6 +10478,7 @@ function abrirModalAdapt(reg) {
 function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(()=>toast('Copiado!','success')); }
 
 function abrirModalPEI(reg) {
+  garantirModalPEI();
   modalPEItxt = reg.texto || '';
   modalPEIid  = reg.id || null;
   document.getElementById('mpei-titulo').textContent = 'PEI — ' + (reg.aluno_nome||'');
