@@ -3447,40 +3447,36 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-gestao-alunos" onclick="showPage('gestao-alunos')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M11 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Alunos
     </div>
-    <div class="nav-item gestao-item" id="nav-gestao-peis" onclick="showPage('gestao-peis')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Todos os PEIs
-    </div>
-     <div class="nav-item gestao-item" id="nav-gestao-aee" onclick="showPage('gestao-lista-aee')">
-
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="14" cy="6" r="2.5" fill="#7C3AED" stroke="none"/><path d="M14 5v2M13 6h2" stroke="white" stroke-width="1.1" stroke-linecap="round"/></svg>Planos de AEE
-    </div>
-      <div class="nav-item gestao-item" id="nav-gestao-pdi" onclick="showPage('gestao-lista-pdi')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDIs
-    </div>
-    <div class="nav-item gestao-item" id="nav-gestao-adapt"
- onclick="showPage('gestao-adapt')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações
-    </div>
     <div class="nav-item gestao-item" id="nav-gestao-professores" onclick="showPage('gestao-professores')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17c0-3 2.686-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 4l1.5 1.5L18 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Professores
     </div>
+    <div class="nav-section">Documentos</div>
+    <div class="nav-item gestao-item" id="nav-gestao-peis" onclick="showPage('gestao-peis')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PEIs
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-aee" onclick="showPage('gestao-lista-aee')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="14" cy="6" r="2.5" fill="#7C3AED" stroke="none"/><path d="M14 5v2M13 6h2" stroke="white" stroke-width="1.1" stroke-linecap="round"/></svg>Planos de AEE
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-pdi" onclick="showPage('gestao-lista-pdi')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDIs
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-adapt" onclick="showPage('gestao-adapt')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações
+    </div>
     <div class="nav-section">Escola ↔ Clínica</div>
+    <div class="nav-item gestao-item" id="nav-colaboracao-gestao" onclick="abrirColaboracao()" style="font-weight:600">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional
+    </div>
     <div class="nav-item gestao-item" id="nav-gestao-comunicacao" onclick="showPage('gestao-comunicacao')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 9h9M3 13h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="15" cy="13" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M13.5 13h3M15 11.5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Comunicação c/ clínicas
     </div>
     <div class="nav-item gestao-item" id="nav-gestao-solicitacoes" onclick="showPage('gestao-solicitacoes');carregarSolicitacoes('gestao')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M14 15h2M15 14v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>🔗 Solicitações Externas
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M14 15h2M15 14v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Solicitações Externas
     </div>
     <div class="nav-item gestao-item" id="nav-gestao-rel-clinica" onclick="showPage('gestao-rel-clinica')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="15.5" cy="4.5" r="2.5" fill="#059669"/></svg>Relatórios da clínica
     </div>
     <div class="nav-section">Reuniões</div>
-    <div class="nav-item gestao-item" id="nav-colaboracao-gestao" onclick="abrirColaboracao()" style="font-weight:600">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional
-    </div>
-    <div class="nav-item gestao-item" id="nav-guia-gestao" onclick="showPage('guia-gestao')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 7v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Guia de Perfis
-    </div>
     <div class="nav-item gestao-item" id="nav-gestao-pauta" onclick="showPage('gestao-pauta')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
         <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
@@ -3488,6 +3484,10 @@ function renderNavGestao() {
         <circle cx="15.5" cy="4.5" r="3" fill="#6366F1" stroke="none"/>
         <path d="M14.5 4.5h2M15.5 3.5v2" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
       </svg>Pauta Multidisciplinar
+    </div>
+    <div class="nav-section">Referência</div>
+    <div class="nav-item gestao-item" id="nav-guia-gestao" onclick="showPage('guia-gestao')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 7v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Guia de Perfis
     </div>`;
   renderPagesGestao();
   setTimeout(function() { carregarLogoEscola(); }, 500);
