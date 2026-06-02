@@ -4181,14 +4181,23 @@ function colaboracaoHTML() {
       </div>
     </div>
 
-    <div class="fcard" style="margin-bottom:16px">
-      <div class="fcard-title">⚡ Ações rápidas</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px">
-               <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDF4;color:#065F46;border:1px solid #BBF7D0" onclick="showPage('ponte-diario')">📓 Registrar no Diário do Aluno</button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#EEF2FF;color:#1E3A8A;border:1px solid #C7D2FE" onclick="showPage('gestao-pauta')">📋 Gerar pauta de reunião com IA</button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE" onclick="showPage('ponte-objetivos')">🎯 Ver objetivos convergentes</button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FFF7ED;color:#92400E;border:1px solid #FDE68A" onclick="showPage('ponte-tradutor')">🔤 Tradutor escola ↔ clínica</button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4" onclick="userRole==='gestao'?showPage('gestao-peis'):showPage('pei')">📄 Ver todos os PEIs</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="fcard">
+        <div class="fcard-title">🛠️ Instrumentos de colaboração</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('ponte-diario')">
+            <div style="font-size:18px;flex-shrink:0">📓</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Diário do Aluno</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Professor registra observações → clínica lê com contexto pedagógico</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('gestao-pauta')">
+            <div style="font-size:18px;flex-shrink:0">📋</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Pauta Multidisciplinar</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">IA sintetiza registros e gera pauta estruturada para a reunião de equipe</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('ponte-objetivos')">
+            <div style="font-size:18px;flex-shrink:0">🎯</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Objetivos Convergentes</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Alinha metas pedagógicas e terapêuticas em torno do mesmo aluno</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10color:#0F766E;border:1px solid #99F6E4" onclick="userRole==='gestao'?showPage('gestao-peis'):showPage('pei')">📄 Ver todos os PEIs</button>
         <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA" onclick="showPage('guia')">🧠 Consultar guia de perfis</button>      </div>
     </div>
 
@@ -7409,31 +7418,6 @@ function renderPagesGestao() {
       </div>
     </div>
 
-    <!-- Ações rápidas cruzadas -->
-    <div class="fcard" style="margin-bottom:16px">
-      <div class="fcard-title">⚡ Ações rápidas</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px">
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDF4;color:#065F46;border:1px solid #BBF7D0" onclick="showPage('ponte-diario')">
-          📓 Registrar no Diário do Aluno
-        </button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#EEF2FF;color:#1E3A8A;border:1px solid #C7D2FE" onclick="showPage('gestao-pauta')">
-          📋 Gerar pauta de reunião com IA
-        </button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE" onclick="showPage('ponte-objetivos')">
-          🎯 Ver objetivos convergentes
-        </button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FFF7ED;color:#92400E;border:1px solid #FDE68A" onclick="showPage('ponte-tradutor')">
-          🔤 Tradutor escola ↔ clínica
-        </button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4" onclick="showPage('gestao-peis')">
-          📄 Ver todos os PEIs
-        </button>
-        <button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:10px 14px;font-size:13px;text-align:left;height:auto;white-space:normal;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA" onclick="showPage('guia')">
-          🧠 Consultar guia de perfis
-        </button>
-      </div>
-    </div>
-
     <!-- Grid: instrumentos + histórico -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
@@ -7453,7 +7437,20 @@ function renderPagesGestao() {
             <div style="font-size:18px;flex-shrink:0">🎯</div>
             <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Objetivos Convergentes</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Alinha metas pedagógicas e terapêuticas em torno do mesmo aluno</div></div>
           </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('ponte-tradutor')">
+            <div style="font-size:18px;flex-shrink:0">🔤</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Tradutor Escola ↔ Clínica</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Traduz termos clínicos para linguagem pedagógica e vice-versa</div></div>
+          </div>
           <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('clinica-plano')">
+            <div style="font-size:18px;flex-shrink:0">🔬</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Plano de Intervenção Integrado</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Clínica gera estratégias para escola, AT e sessões clínicas simultaneamente</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="userRole==='gestao'?showPage('guia-gestao'):showPage('guia')">
+            <div style="font-size:18px;flex-shrink:0">🧠</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Guia de Perfis</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Referência rápida sobre diagnósticos, características e estratégias de suporte</div></div>
+          </div>
+        </div>
+      </div>splay:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('clinica-plano')">
             <div style="font-size:18px;flex-shrink:0">🔬</div>
             <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Plano de Intervenção Integrado</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Clínica gera estratégias para escola, AT e sessões clínicas simultaneamente</div></div>
           </div>
