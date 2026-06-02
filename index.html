@@ -5657,9 +5657,11 @@ function atualizarBadge(navId, count) {
 async function atualizarBadgesDiario() {
   try {
     const hoje = new Date().toISOString().split('T')[0];
+    const amanha = new Date(Date.now() + 86400000).toISOString().split('T')[0];
     const { count } = await db.from('diario_aluno')
       .select('*', { count: 'exact', head: true })
-      .eq('data', hoje);
+      .gte('created_at', hoje)
+      .lt('created_at', amanha);
     atualizarBadge('nav-ponte-diario', count || 0);
   } catch(_) {}
 }
@@ -5726,14 +5728,7 @@ async function registrarAuditoria(acao, recurso, recursoId) {
       // Campos extras embutidos no user_agent como JSON se a tabela não tiver colunas extras
       // Para registrar ação e recurso, usamos o campo user_agent como carrier temporário
     });
-    // Também tentar inserir na tabela auditoria se existir
-    await db.from('auditoria').insert({
-      usuario_id: user.id,
-      acao:       acao,
-      recurso:    recurso,
-      recurso_id: recursoId || null,
-      criado_em:  new Date().toISOString()
-    }).then(()=>{}).catch(()=>{}); // silencioso se tabela não existir
+
   } catch(e) { /* silencioso — nunca quebra o fluxo */ }
 }
 
@@ -10632,6 +10627,7 @@ async function responderSolFamilia(btn) {
 
 // ── LOGO DA ESCOLA ────────────────────────────────────────────
 async function carregarLogoEscola() {
+  if (userRole === 'professor') return;
   try {
     const { data } = await db.from('profiles')
       .select('subrole')
