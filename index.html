@@ -10123,6 +10123,7 @@ async function carregarHistoricoPautas() {
 
 let pautaVerAtual = '';
 async function verPautaSalva(id) {
+  garantirModalPEI();
   const { data } = await db.from('pautas_reuniao').select('*').eq('id', id).single();
   if (!data) return;
   pautaVerAtual = data.conteudo || '';
@@ -10232,6 +10233,7 @@ async function carregarListaAEEGestao() {
 }
 
 async function verAEEGestao(id) {
+  garantirModalPEI();
   const { data } = await db.from('planos_aee').select('*').eq('id', id).single();
   if (!data) return;
   document.getElementById('mpei-titulo').textContent = `Plano de AEE — ${data.aluno_nome || ''}`;
@@ -10288,6 +10290,7 @@ async function excluirPauta(id) {
 }
 
 async function verPDISalvo(id) {
+  garantirModalPEI();
   const { data } = await db.from('pdis').select('*').eq('id', id).single();
   if (!data) return;
   modalPEIid = null;
