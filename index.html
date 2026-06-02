@@ -7128,37 +7128,87 @@ function renderPagesGestao() {
 
   <!-- PAINEL GESTÃO -->
   <div id="page-gestao-painel" class="page active">
-    <h1 class="page-title">Painel de Gestão</h1>
-    <p class="page-sub">Visão geral de toda a plataforma — adaptações, PEIs e perfil dos alunos.</p>
 
-    <!-- Card de identidade visual da escola -->
-    <div class="fcard" style="margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-      <div id="logo-preview" style="width:120px;height:60px;border:1.5px dashed var(--gr200);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-shrink:0">
-        <span id="logo-placeholder" style="font-size:11px;color:var(--gr400);text-align:center">Sem logo<br>cadastrado</span>
-        <img id="logo-img" src="" style="display:none;max-width:116px;max-height:56px;object-fit:contain;border-radius:4px">
+    <!-- Header: título + data + logo -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title" style="margin-bottom:4px">Painel de Gestão</h1>
+        <p class="page-sub" style="margin-bottom:0;text-transform:capitalize" id="gestao-painel-data">—</p>
       </div>
-      <div style="flex:1;min-width:200px">
-        <div class="fcard-title" style="margin-bottom:4px">🏫 Identidade visual da escola</div>
-        <p style="font-size:12px;color:var(--gr500);margin:0 0 10px">O logo aparecerá no cabeçalho de todos os PDFs gerados (PEIs, adaptações, relatórios).</p>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <label class="btn-sm" style="cursor:pointer;margin:0">
-            📤 Enviar logo
-            <input type="file" id="logo-upload" accept="image/png,image/jpeg,image/svg+xml" style="display:none" onchange="uploadLogoEscola(this)">
-          </label>
-          <span id="logo-status" style="font-size:12px;color:var(--gr400)">PNG, JPG ou SVG · máx. 2MB</span>
-          <button id="btn-remover-logo" class="btn-sm-ghost" style="font-size:12px;display:none" onclick="removerLogoEscola()">🗑️ Remover</button>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div id="logo-preview" style="width:96px;height:44px;border:1.5px dashed var(--gr200);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-shrink:0;position:relative;cursor:pointer" title="Clique para enviar logo da escola">
+          <span id="logo-placeholder" style="font-size:10px;color:var(--gr400);text-align:center;line-height:1.3">Logo<br>escola</span>
+          <img id="logo-img" src="" style="display:none;max-width:92px;max-height:40px;object-fit:contain;border-radius:4px">
+          <label style="position:absolute;inset:0;cursor:pointer;border-radius:var(--rsm)"><input type="file" id="logo-upload" accept="image/png,image/jpeg,image/svg+xml" style="display:none" onchange="uploadLogoEscola(this)"></label>
+        </div>
+        <button id="btn-remover-logo" class="btn-sm-ghost" style="font-size:11px;display:none" onclick="removerLogoEscola()">🗑️ Remover logo</button>
+      </div>
+    </div>
+    <span id="logo-status" style="display:none">PNG, JPG ou SVG · máx. 2MB</span>
+
+    <!-- Stats clicáveis -->
+    <div class="stats-grid" id="stats-grid" style="margin-bottom:16px">
+      <div class="stat-card" style="cursor:pointer" onclick="showPage('gestao-alunos')">
+        <div class="stat-num" id="stat-alunos">—</div>
+        <div class="stat-label">Alunos</div>
+        <div id="stat-alunos-sub" style="font-size:11px;color:var(--gr400);margin-top:3px;min-height:14px"></div>
+      </div>
+      <div class="stat-card" style="cursor:pointer" onclick="showPage('gestao-peis')">
+        <div class="stat-num" id="stat-peis">—</div>
+        <div class="stat-label">PEIs</div>
+        <div id="stat-peis-sub" style="font-size:11px;color:var(--gr400);margin-top:3px;min-height:14px"></div>
+      </div>
+      <div class="stat-card" style="cursor:pointer" onclick="showPage('gestao-adapt')">
+        <div class="stat-num" id="stat-adapt">—</div>
+        <div class="stat-label">Adaptações</div>
+        <div id="stat-adapt-sub" style="font-size:11px;color:var(--gr400);margin-top:3px;min-height:14px"></div>
+      </div>
+      <div class="stat-card" style="cursor:pointer" onclick="showPage('gestao-professores')">
+        <div class="stat-num" id="stat-prof">—</div>
+        <div class="stat-label">Professores</div>
+        <div id="stat-prof-sub" style="font-size:11px;color:var(--gr400);margin-top:3px;min-height:14px"></div>
+      </div>
+    </div>
+
+    <!-- Alertas + Cobertura por turma -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="fcard">
+        <div class="fcard-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#DC2626">⚠️ Atenção necessária</span>
+          <span id="gestao-alertas-badge" style="background:#FEE2E2;color:#DC2626;font-size:11px;padding:2px 9px;border-radius:999px;font-weight:700;display:none"></span>
+        </div>
+        <div id="gestao-alertas" style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;color:var(--gr400)">Carregando...</div>
+        </div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-title">📊 Cobertura por turma</div>
+        <div id="gestao-cobertura" style="margin-top:10px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:12px;color:var(--gr400)">Carregando...</div>
         </div>
       </div>
     </div>
 
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat-card"><div class="stat-num" id="stat-alunos">—</div><div class="stat-label">Alunos cadastrados</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-adapt">—</div><div class="stat-label">Adaptações geradas</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-peis">—</div><div class="stat-label">PEIs elaborados</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-prof">—</div><div class="stat-label">Professores ativos</div></div>
+    <!-- Atividade recente + Ações rápidas -->
+    <div style="display:grid;grid-template-columns:1fr 196px;gap:16px">
+      <div class="fcard">
+        <div class="fcard-title">🕐 Atividade recente</div>
+        <div id="gestao-atividade" style="margin-top:8px">
+          <div style="font-size:12px;color:var(--gr400)">Carregando...</div>
+        </div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-title">⚡ Ações rápidas</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+          <button class="btn-sm" style="justify-content:flex-start;gap:7px;width:100%" onclick="abrirModalCad()">👤 Novo aluno</button>
+          <button class="btn-sm" style="justify-content:flex-start;gap:7px;width:100%;background:var(--bg2);color:var(--gr700);border:1px solid var(--b)" onclick="showPage('gestao-pauta')">📋 Nova pauta</button>
+          <button class="btn-sm" style="justify-content:flex-start;gap:7px;width:100%;background:var(--bg2);color:var(--gr700);border:1px solid var(--b)" onclick="showPage('gestao-peis')">📄 Ver PEIs</button>
+          <button class="btn-sm" style="justify-content:flex-start;gap:7px;width:100%;background:var(--bg2);color:var(--gr700);border:1px solid var(--b)" onclick="showPage('gestao-comunicacao')">📧 Comunicar clínica</button>
+          <button class="btn-sm" style="justify-content:flex-start;gap:7px;width:100%;background:var(--bg2);color:var(--gr700);border:1px solid var(--b)" onclick="showPage('gestao-solicitacoes');carregarSolicitacoes('gestao')">📥 Solicitações</button>
+        </div>
+      </div>
     </div>
-    <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">PEIs recentes</h3>
-    <div class="cards-grid" id="g-peis-recentes"></div>
+
   </div>
 
   <!-- GESTÃO: ALUNOS -->
@@ -10338,30 +10388,157 @@ window.abrirDiarioGestao = function(id, nome, texto, dt, tipo, area) {
 };
 async function carregarDadosGestao() {
   atualizarBadgesSolicitacoes();
-  const [{ data: alunos }, { data: adapts }, { data: peis }] = await Promise.all([
-    db.from('alunos').select('id, user_id'),
-    db.from('adaptacoes').select('*').order('created_at',{ascending:false}),
-    db.from('peis').select('*').order('created_at',{ascending:false})
+
+  const hoje = new Date();
+  const data15d = new Date(hoje - 15 * 86400000).toISOString();
+  const data30d = new Date(hoje - 30 * 86400000).toISOString();
+
+  const elData = document.getElementById('gestao-painel-data');
+  if (elData) elData.textContent = hoje.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  const [
+    { data: alunos },
+    { data: adapts },
+    { data: peis },
+    { data: pdis },
+    { data: diarios15d },
+    { data: profsProfiles }
+  ] = await Promise.all([
+    db.from('alunos').select('id, nome, serie, user_id'),
+    db.from('adaptacoes').select('*').order('created_at', { ascending: false }),
+    db.from('peis').select('*').order('created_at', { ascending: false }),
+    db.from('pdis').select('id, aluno_id, created_at').order('created_at', { ascending: false }),
+    db.from('diario_aluno').select('aluno_id, aluno_nome, created_at, tipo').gte('created_at', data15d).order('created_at', { ascending: false }),
+    db.from('profiles').select('id').eq('role', 'professor')
   ]);
 
   todasAdaptacoes = adapts || [];
-  todosPEI = peis || [];
+  todosPEI        = peis   || [];
 
-  const profs = new Set([...(alunos||[]).map(a=>a.user_id), ...(adapts||[]).map(a=>a.user_id)]);
-  const sAlunos = document.getElementById('stat-alunos');
-  const sAdapt  = document.getElementById('stat-adapt');
-  const sPEIs   = document.getElementById('stat-peis');
-  const sProf   = document.getElementById('stat-prof');
-  if (sAlunos) sAlunos.textContent = (alunos||[]).length;
-  if (sAdapt)  sAdapt.textContent  = (adapts||[]).length;
-  if (sPEIs)   sPEIs.textContent   = (peis||[]).length;
-  if (sProf)   sProf.textContent   = profs.size;
+  const listaAlunos  = alunos        || [];
+  const listaPEIs    = peis          || [];
+  const listaPDIs    = pdis          || [];
+  const listaDiarios = diarios15d    || [];
+  const listaProfs   = profsProfiles || [];
 
-  const recent = document.getElementById('g-peis-recentes');
-  if (recent) {
-    const slice = todosPEI.slice(0,6);
-    recent.innerHTML = slice.length ? slice.map(p => cardPEI(p)).join('') :
-      `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum PEI elaborado ainda.</div></div>`;
+  const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+
+  // ── Stats ──
+  const profAtivos = new Set([...listaAlunos.map(a => a.user_id), ...todasAdaptacoes.map(a => a.user_id)].filter(Boolean));
+  const qtdProfs   = listaProfs.length || profAtivos.size;
+  const peisFinalizados  = listaPEIs.filter(p => p.status !== 'rascunho').length;
+  const alunosSemPEICount = listaAlunos.filter(a => !listaPEIs.find(p => p.aluno_id === a.id)).length;
+  const adaptRecentes    = todasAdaptacoes.filter(a => new Date(a.created_at) > new Date(data30d)).length;
+
+  setEl('stat-alunos', listaAlunos.length);
+  setEl('stat-peis',   listaPEIs.length);
+  setEl('stat-adapt',  todasAdaptacoes.length);
+  setEl('stat-prof',   qtdProfs);
+
+  setEl('stat-alunos-sub', alunosSemPEICount > 0 ? `⚠️ ${alunosSemPEICount} sem PEI` : listaAlunos.length > 0 ? '✓ Todos com PEI' : '');
+  setEl('stat-peis-sub',   listaPEIs.length ? `${peisFinalizados} finalizados` : '');
+  setEl('stat-adapt-sub',  adaptRecentes > 0 ? `+${adaptRecentes} últimos 30 dias` : '');
+  setEl('stat-prof-sub',   '');
+
+  // ── Alertas ──
+  const alunosComDiario15d = new Set(listaDiarios.map(d => d.aluno_id));
+  const alertas = [];
+
+  const semPEI = listaAlunos.filter(a => !listaPEIs.find(p => p.aluno_id === a.id));
+  if (semPEI.length)
+    alertas.push({ bg:'#FEF2F2', cor:'#DC2626', icon:'📋',
+      texto: `${semPEI.length} aluno${semPEI.length > 1 ? 's' : ''} sem PEI elaborado`,
+      onclick: "showPage('gestao-peis')", label: 'Ver PEIs →' });
+
+  const peisRasc30d = listaPEIs.filter(p => p.status === 'rascunho' && new Date(p.created_at) < new Date(data30d));
+  if (peisRasc30d.length)
+    alertas.push({ bg:'#FFFBEB', cor:'#B45309', icon:'⏳',
+      texto: `${peisRasc30d.length} PEI${peisRasc30d.length > 1 ? 's' : ''} em rascunho há 30+ dias`,
+      onclick: "showPage('gestao-peis')", label: 'Revisar →' });
+
+  const semDiario15d = listaAlunos.filter(a => !alunosComDiario15d.has(a.id));
+  if (semDiario15d.length)
+    alertas.push({ bg:'#F5F3FF', cor:'#6D28D9', icon:'📓',
+      texto: `${semDiario15d.length} aluno${semDiario15d.length > 1 ? 's' : ''} sem Diário nos últimos 15 dias`,
+      onclick: "showPage('ponte-diario')", label: 'Ver Diário →' });
+
+  const semPDI = listaAlunos.filter(a => !listaPDIs.find(p => p.aluno_id === a.id));
+  if (semPDI.length)
+    alertas.push({ bg:'#EFF6FF', cor:'#1D4ED8', icon:'🧩',
+      texto: `${semPDI.length} aluno${semPDI.length > 1 ? 's' : ''} sem PDI`,
+      onclick: "showPage('gestao-lista-pdi')", label: 'Ver PDIs →' });
+
+  const alertasEl = document.getElementById('gestao-alertas');
+  const badgeEl   = document.getElementById('gestao-alertas-badge');
+  if (alertasEl) {
+    if (!alertas.length) {
+      alertasEl.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#F0FDF4;border-radius:8px;color:#166534;font-size:12.5px;font-weight:500">✅ Nenhuma pendência encontrada</div>`;
+      if (badgeEl) { badgeEl.textContent = ''; badgeEl.style.display = 'none'; }
+    } else {
+      alertasEl.innerHTML = alertas.map(al =>
+        `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:${al.bg};border-radius:8px;cursor:pointer" onclick="${al.onclick}">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:14px">${al.icon}</span>
+            <span style="font-size:12px;color:${al.cor};font-weight:500">${al.texto}</span>
+          </div>
+          <span style="font-size:11px;color:${al.cor};font-weight:700;white-space:nowrap">${al.label}</span>
+        </div>`).join('');
+      if (badgeEl) { badgeEl.textContent = alertas.length; badgeEl.style.display = 'inline'; }
+    }
+  }
+
+  // ── Cobertura por turma ──
+  const turmas = {};
+  listaAlunos.forEach(a => {
+    const t = a.serie || 'Sem turma';
+    if (!turmas[t]) turmas[t] = { total: 0, comPEI: 0, comDiario: 0 };
+    turmas[t].total++;
+    if (listaPEIs.find(p => p.aluno_id === a.id)) turmas[t].comPEI++;
+    if (alunosComDiario15d.has(a.id)) turmas[t].comDiario++;
+  });
+
+  const cobEl = document.getElementById('gestao-cobertura');
+  if (cobEl) {
+    const entries = Object.entries(turmas).sort((a, b) => a[0].localeCompare(b[0]));
+    cobEl.innerHTML = entries.length ? entries.map(([turma, d]) => {
+      const pct = d.total ? Math.round(d.comPEI / d.total * 100) : 0;
+      const cor = pct >= 80 ? '#16A34A' : pct >= 50 ? '#D97706' : '#DC2626';
+      return `<div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:600;color:var(--gr700)">${turma}</span>
+          <span style="font-size:11px;color:${cor};font-weight:600">${d.comPEI}/${d.total} PEI · ${d.comDiario} diários ativos</span>
+        </div>
+        <div style="height:5px;background:var(--bg2);border-radius:999px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${cor};border-radius:999px;transition:width .6s ease"></div>
+        </div>
+      </div>`;
+    }).join('') :
+      `<div style="font-size:12px;color:var(--gr400)">Nenhum aluno cadastrado ainda.</div>`;
+  }
+
+  // ── Atividade recente ──
+  const atividades = [
+    ...listaPEIs.slice(0, 8).map(p => ({ icon:'📋', cor:'#2563EB', label:`PEI — ${p.aluno_nome || '—'}`, sub: p.professor || '', data: p.created_at })),
+    ...todasAdaptacoes.slice(0, 8).map(a => ({ icon:'🔧', cor:'#7C3AED', label:`Adaptação — ${a.materia || a.aluno || '—'}`, sub: a.aluno || '', data: a.created_at })),
+    ...listaDiarios.slice(0, 8).map(d => ({ icon:'📓', cor:'#0D9488', label:`Diário — ${d.aluno_nome || '—'}`, sub: d.tipo || '', data: d.created_at }))
+  ].filter(a => a.data).sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, 8);
+
+  const atEl = document.getElementById('gestao-atividade');
+  if (atEl) {
+    atEl.innerHTML = atividades.length ? atividades.map(a => {
+      const dt   = new Date(a.data);
+      const diff = Math.floor((hoje - dt) / 86400000);
+      const dtStr = diff === 0 ? 'Hoje' : diff === 1 ? 'Ontem' : `Há ${diff} dias`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bg2)">
+        <div style="width:28px;height:28px;border-radius:7px;background:${a.cor}18;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${a.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12.5px;font-weight:500;color:var(--gr800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.label}</div>
+          ${a.sub ? `<div style="font-size:11px;color:var(--gr400)">${a.sub}</div>` : ''}
+        </div>
+        <div style="font-size:11px;color:var(--gr400);white-space:nowrap">${dtStr}</div>
+      </div>`;
+    }).join('') :
+      `<div style="font-size:12px;color:var(--gr400)">Nenhuma atividade registrada ainda.</div>`;
   }
 
   popularFiltrosGAdapt();
