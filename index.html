@@ -803,6 +803,9 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   .lp-perfis{grid-template-columns:1fr !important;}
   .lp-cta-band{padding:36px 20px !important;}
   .lp-nav{padding:10px 16px !important;}
+  /* Planos — 1 coluna em mobile */
+  #lp-planos [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important;}
+  .lp-plano-destaque{transform:none !important;}
 }
 
 @media (max-width:480px){
@@ -1973,25 +1976,9 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   <h2>Simples, justo, sem surpresas</h2>
   <p>Comece gratuitamente e escale conforme a escola cresce. Sem fidelidade, cancele quando quiser.</p>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:36px;align-items:start">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:36px;align-items:start;max-width:760px;margin-left:auto;margin-right:auto">
 
-    <!-- Gratuito -->
-    <div style="background:#fff;border:2px solid #E5E7EB;border-radius:20px;padding:28px 24px">
-      <div style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Gratuito</div>
-      <div style="font-size:38px;font-weight:800;color:#1F2937;line-height:1;margin-bottom:4px">R$0</div>
-      <div style="font-size:12px;color:#9CA3AF;margin-bottom:22px">Para sempre</div>
-      <hr style="border:none;border-top:1px solid #F3F4F6;margin-bottom:18px">
-      <ul style="list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px;font-size:13px;color:#374151">
-        <li>✓ &nbsp;1 professor</li>
-        <li>✓ &nbsp;Até 5 alunos</li>
-        <li>✓ &nbsp;Adaptações ilimitadas</li>
-        <li>✓ &nbsp;3 PEIs por mês</li>
-        <li style="color:#D1D5DB">✗ &nbsp;Integração escola↔clínica</li>
-        <li style="color:#D1D5DB">✗ &nbsp;Dashboard de gestão</li>
-        <li style="color:#D1D5DB">✗ &nbsp;Suporte prioritário</li>
-      </ul>
-      <button onclick="irParaLogin()" style="width:100%;padding:12px;background:#F9FAFB;color:#374151;border:1.5px solid #E5E7EB;border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='#F9FAFB'">Começar grátis</button>
-    </div>
+
 
     <!-- Escola (destaque) -->
     <div style="background:linear-gradient(160deg,#1E3A8A,#2563EB);border:2px solid #2563EB;border-radius:20px;padding:28px 24px;position:relative;box-shadow:0 16px 48px rgba(37,99,235,.35);transform:translateY(-8px)">
@@ -2808,8 +2795,6 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     </div>
   </div>
 </div>
-
-function filtrarDiarioGestao() {
 
 <!-- ══ MODAL: Cadastro de Professor ══ -->
 <div class="overlay" id="modal-cad-prof" onclick="fecharModal('modal-cad-prof',event)">
