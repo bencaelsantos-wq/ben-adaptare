@@ -1663,8 +1663,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <div style="display:flex;align-items:center;gap:16px;margin-left:auto">
       <button onclick="document.getElementById('lp-planos').scrollIntoView({behavior:'smooth'})" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 4px">Planos</button>
       <button onclick="document.getElementById('lp-como').scrollIntoView({behavior:'smooth'})" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 4px">Como funciona</button>
-      <button class="btn-lp-ghost" style="padding:9px 20px;font-size:13.5px" onclick="abrirModalDemo('escola')">Solicitar demo</button>
-      <button class="lp-nav-cta" onclick="irParaLogin()">Acessar →</button>
+      <button class="btn-ghost" style="border-radius:999px;font-size:13px;padding:8px 18px" onclick="abrirModalDemo('escola')">Solicitar demo</button>
+      <button class="btn-primary" style="border-radius:999px;font-size:13px;padding:8px 20px" onclick="irParaLogin()">Acessar →</button>
     </div>
   </nav>
 
@@ -2120,8 +2120,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   <h2>Pronto para transformar a inclusão na sua escola?</h2>
   <p>Acesse agora e veja como o Pluramente simplifica a integração clínica e pedagógica.</p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
-    <button class="btn-lp-primary" onclick="abrirModalDemo('escola')">Solicitar demonstração gratuita</button>
-    <button class="btn-lp-ghost" onclick="irParaLogin()">Já tenho conta →</button>
+    <button class="btn-primary" style="border-radius:999px;font-size:15px;padding:14px 32px" onclick="abrirModalDemo('escola')">Solicitar demonstração gratuita</button>
+    <button class="btn-ghost" style="border-radius:999px;font-size:15px;padding:14px 32px" onclick="irParaLogin()">Já tenho conta →</button>
   </div>
 </div>
 
@@ -2182,10 +2182,10 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       </select>
     </div>
     <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn-gerar" style="flex:1;justify-content:center;font-size:14px" id="btn-enviar-demo" onclick="enviarSolicitacaoDemo()">
+      <button class="btn-primary" style="flex:1;justify-content:center;font-size:14px" id="btn-enviar-demo" onclick="enviarSolicitacaoDemo()">
         Solicitar demonstração
       </button>
-      <button class="btn-copy" onclick="fecharModal('overlay-demo')">Cancelar</button>
+      <button class="btn-ghost" onclick="fecharModal('overlay-demo')">Cancelar</button>
     </div>
     <div id="demo-resultado" style="display:none;margin-top:12px;padding:12px 14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:8px;font-size:13px;color:#166534;line-height:1.6">
       ✅ <strong>Solicitação enviada!</strong> Entraremos em contato em até 24h. Se preferir resposta imediata, clique no botão abaixo para falar pelo WhatsApp.
