@@ -10636,14 +10636,89 @@ window.abrirDiarioGestao = function(id, nome, texto, dt, tipo, area) {
     modal.id = 'modal-diario-gestao';
     modal.className = 'overlay';
     modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('open'); };
-    modal.innerHTML = `<div class="modal lg"><div class="modal-header"><div class="modal-title" id="mdg-titulo"></div><button class="modal-close" onclick="document.getElementById('modal-diario-gestao').classList.remove('open')">×</button></div><div class="modal-meta" id="mdg-meta"></div><div class="modal-body" id="mdg-body" style="font-size:13px;white-space:pre-wrap"></div></div>`;
+    modal.innerHTML = `<div class="modal lg">
+      <div class="modal-header">
+        <div class="modal-title" id="mdg-titulo"></div>
+        <button class="modal-close" onclick="document.getElementById('modal-diario-gestao').classList.remove('open')">×</button>
+      </div>
+      <div class="modal-meta" id="mdg-meta"></div>
+      <div class="modal-body" id="mdg-body" style="font-size:13px;white-space:pre-wrap;margin-bottom:20px"></div>
+      <hr style="border:none;border-top:1px solid #F1F5F9;margin-bottom:16px">
+      <div style="margin-bottom:6px;font-size:12px;font-weight:600;color:#374151">💬 Comentário da gestão</div>
+      <textarea id="mdg-comentario" maxlength="300" placeholder="Adicione uma observação ou orientação (máx. 300 caracteres)…" style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:13px;resize:none;height:80px;outline:none;box-sizing:border-box" oninput="document.getElementById('mdg-contador').textContent=this.value.length+'/300'" onfocus="this.style.borderColor='#1E3A8A'" onblur="this.style.borderColor='#E5E7EB'"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span id="mdg-contador" style="font-size:11px;color:#9CA3AF">0/300</span>
+        <button class="btn-primary" style="font-size:13px;padding:8px 18px" onclick="salvarComentarioGestao()">Salvar comentário</button>
+      </div>
+      <button onclick="verRelatorioCompleto()" style="width:100%;margin-top:14px;padding:10px;background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;color:#1E3A8A;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='#F8FAFC'">📋 Ver relatório completo do aluno</button>
+    </div>`;
     document.body.appendChild(modal);
   }
   document.getElementById('mdg-titulo').textContent = '📓 Diário — ' + nome;
   document.getElementById('mdg-meta').textContent = (tipo || '') + (area ? ' · ' + area : '') + ' · ' + dt;
   document.getElementById('mdg-body').textContent = texto.replace(/\\n/g, '\n');
+  document.getElementById('mdg-comentario').value = '';
+  document.getElementById('mdg-contador').textContent = '0/300';
+  modal._alunoNome = nome;
+  modal._registroId = id;
   modal.classList.add('open');
 };
+async function salvarComentarioGestao() {
+  const texto = document.getElementById('mdg-comentario').value.trim();
+  if (!texto) { toast('Digite um comentário antes de salvar', 'error'); return; }
+  const modal = document.getElementById('modal-diario-gestao');
+  const { error } = await db.from('diario_aluno').insert({
+    aluno_nome: modal._alunoNome || '',
+    tipo: 'sugestao',
+    area: 'Gestão',
+    texto: '[Gestão] ' + texto,
+    visibilidade: 'todos',
+    origem: 'gestao'
+  });
+  if (error) { toast('Erro ao salvar comentário', 'error'); return; }
+  toast('Comentário salvo no diário do aluno ✓', 'success');
+  document.getElementById('mdg-comentario').value = '';
+  document.getElementById('mdg-contador').textContent = '0/300';
+}
+
+async function verRelatorioCompleto() {
+  const modal = document.getElementById('modal-diario-gestao');
+  const nome = modal._alunoNome || '';
+  if (!nome) return;
+  const { data } = await db.from('diario_aluno').select('*').eq('aluno_nome', nome).order('created_at', { ascending: false });
+  let rel = document.getElementById('modal-relatorio-gestao');
+  if (!rel) {
+    rel = document.createElement('div');
+    rel.id = 'modal-relatorio-gestao';
+    rel.className = 'overlay';
+    rel.onclick = e => { if (e.target === rel) rel.classList.remove('open'); };
+    rel.innerHTML = `<div class="modal lg" style="max-height:85vh;overflow-y:auto">
+      <div class="modal-header">
+        <div class="modal-title" id="mrel-titulo"></div>
+        <button class="modal-close" onclick="document.getElementById('modal-relatorio-gestao').classList.remove('open')">×</button>
+      </div>
+      <div id="mrel-lista" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
+    </div>`;
+    document.body.appendChild(rel);
+  }
+  document.getElementById('mrel-titulo').textContent = '📋 Relatório completo — ' + nome;
+  const tipoIcon = { conquista:'✅', alerta:'⚠️', evolucao:'📈', estrategia:'💡', comunicado:'📢', sugestao:'💬', observacao:'📝' };
+  document.getElementById('mrel-lista').innerHTML = !data?.length
+    ? '<div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Nenhum registro encontrado.</div></div>'
+    : data.map(d => {
+        const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
+        const icon = tipoIcon[d.tipo] || '📝';
+        return `<div style="padding:12px 14px;background:#F8FAFC;border-radius:10px;border:1px solid #F1F5F9">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:600;color:#1E3A8A">${icon} ${d.tipo||''} ${d.area ? '· '+d.area : ''}</span>
+            <span style="font-size:11px;color:#9CA3AF">${dt}</span>
+          </div>
+          <div style="font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.6">${d.texto||''}</div>
+        </div>`;
+      }).join('');
+  rel.classList.add('open');
+}
+
 async function carregarDadosGestao() {
   atualizarBadgesSolicitacoes();
 
