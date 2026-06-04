@@ -2087,7 +2087,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <select class="fselect" id="demo-plano">
         <option value="escola">Escola — R$297/mês</option>
         <option value="rede">Rede de Escolas — R$797/mês</option>
-        <option value="gratuito">Quero conhecer o plano gratuito</option>
+
       </select>
     </div>
     <div style="display:flex;gap:10px;margin-top:16px">
@@ -12631,15 +12631,8 @@ async function enviarSolicitacaoDemo() {
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
 
   try {
-    await db.from('solicitacoes_externas').insert({
-      parceiro_nome:  nome,
-      escola_nome:    escola,
-      contato_email:  email,
-      contato_tel:    tel,
-      tipo:           'demo_' + plano,
-      mensagem:       `Plano: ${plano} | Alunos: ${alunos} | Escola: ${escola}`,
-      status:         'pendente',
-      created_at:     new Date().toISOString()
+    await db.from('leads_demo').insert({
+      nome, email, telefone: tel, escola, qtd_alunos: alunos, plano
     });
   } catch(_) {}
 
