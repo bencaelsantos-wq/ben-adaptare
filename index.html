@@ -10423,16 +10423,22 @@ async function carregarDiarioGestao() {
   const el = document.getElementById('gestao-diario-lista');
   if (!el) return;
   el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Carregando…</div></div>';
-  const { data } = await db.from('diario_aluno').select('*').order('created_at', { ascending: false }).limit(50);
+  const { data } = await db.from('diario_aluno').select('*').order('created_at', { ascending: false }).limit(100);
   if (!data?.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Nenhum registro no diário ainda.</div></div>'; return; }
+  const tipoIcon = { conquista:'✅', alerta:'⚠️', evolucao:'📈', estrategia:'💡', comunicado:'📢', sugestao:'💬', observacao:'📝' };
+  const destinoLabel = { escola:'🏫 Escola', clinica:'🏥 Clínica', at:'🧑‍⚕️ AT', familia:'👨‍👩‍👧 Família', todos:'👥 Equipe' };
   el.innerHTML = data.map(d => {
     const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
-    const tipo = d.tipo === 'conquista' ? '✅' : d.tipo === 'alerta' ? '⚠️' : '📝';
+    const icon = tipoIcon[d.tipo] || '📝';
     const textoSeguro = (d.texto || '').replace(/'/g, "\\'").replace(/\n/g, '\\n');
-    return `<div class="item-card" style="cursor:pointer" onclick="abrirDiarioGestao('${d.id}','${d.aluno_nome||''}','${textoSeguro}','${dt}','${d.tipo||''}','${d.area||''}')">
-      <div class="ic-nome">${d.aluno_nome || '(sem nome)'}</div>
-      <div class="ic-meta">${tipo} ${d.tipo || ''} ${d.area ? '· ' + d.area : ''}</div>
-      <div class="ic-prev">${(d.texto || '').slice(0, 120)}…</div>
+    const destBadges = (d.destinos||[]).map(dest => `<span style="font-size:10px;padding:1px 7px;background:#F1F5F9;border-radius:20px;color:#6B7280">${destinoLabel[dest]||dest}</span>`).join(' ');
+    return `<div class="item-card" style="cursor:pointer" onclick="abrirDiarioGestao('${d.id}','${(d.aluno_nome||'').replace(/'/g,"\\'")}','${textoSeguro}','${dt}','${d.tipo||''}','${d.area||''}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div class="ic-nome">${d.aluno_nome || '(sem nome)'}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0">${destBadges}</div>
+      </div>
+      <div class="ic-meta">${icon} ${d.tipo||''} ${d.area ? '· '+d.area : ''} ${d.autor_nome ? '· '+d.autor_nome : ''}</div>
+      <div class="ic-prev">${(d.texto||'').slice(0,120)}…</div>
       <div class="ic-date">${dt}</div>
     </div>`;
   }).join('');
@@ -10445,12 +10451,33 @@ window.abrirDiarioGestao = function(id, nome, texto, dt, tipo, area) {
     modal.id = 'modal-diario-gestao';
     modal.className = 'overlay';
     modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('open'); };
-    modal.innerHTML = `<div class="modal lg"><div class="modal-header"><div class="modal-title" id="mdg-titulo"></div><button class="modal-close" onclick="document.getElementById('modal-diario-gestao').classList.remove('open')">×</button></div><div class="modal-meta" id="mdg-meta"></div><div class="modal-body" id="mdg-body" style="font-size:13px;white-space:pre-wrap"></div></div>`;
+    modal.innerHTML = `<div class="modal lg">
+      <div class="modal-header">
+        <div class="modal-title" id="mdg-titulo"></div>
+        <button class="modal-close" onclick="document.getElementById('modal-diario-gestao').classList.remove('open')">×</button>
+      </div>
+      <div class="modal-meta" id="mdg-meta"></div>
+      <div class="modal-body" id="mdg-body" style="font-size:13px;white-space:pre-wrap;margin-bottom:20px"></div>
+      <hr style="border:none;border-top:1px solid #F1F5F9;margin-bottom:16px">
+      <div style="margin-bottom:6px;font-size:12px;font-weight:600;color:#374151">💬 Comentário da gestão</div>
+      <textarea id="mdg-comentario" maxlength="300" placeholder="Adicione uma observação ou orientação (máx. 300 caracteres)…" style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:13px;resize:none;height:80px;outline:none;box-sizing:border-box" oninput="document.getElementById('mdg-contador').textContent=this.value.length+'/300'" onfocus="this.style.borderColor='#1E3A8A'" onblur="this.style.borderColor='#E5E7EB'"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span id="mdg-contador" style="font-size:11px;color:#9CA3AF">0/300</span>
+        <button class="btn-primary" style="font-size:13px;padding:8px 18px" onclick="salvarComentarioGestao()">Salvar comentário</button>
+      </div>
+      <button onclick="verRelatorioCompleto()" style="width:100%;margin-top:14px;padding:10px;background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;color:#1E3A8A;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='#F8FAFC'">📋 Ver relatório completo do aluno</button>
+    </div>`;
     document.body.appendChild(modal);
   }
   document.getElementById('mdg-titulo').textContent = '📓 Diário — ' + nome;
   document.getElementById('mdg-meta').textContent = (tipo || '') + (area ? ' · ' + area : '') + ' · ' + dt;
   document.getElementById('mdg-body').textContent = texto.replace(/\\n/g, '\n');
+  const cmt = document.getElementById('mdg-comentario');
+  const cnt = document.getElementById('mdg-contador');
+  if (cmt) cmt.value = '';
+  if (cnt) cnt.textContent = '0/300';
+  modal._alunoNome = nome;
+  modal._registroId = id;
   modal.classList.add('open');
 };
 function filtrarDiarioGestao() {
