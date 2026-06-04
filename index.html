@@ -7302,6 +7302,32 @@ function renderPagesGestao() {
     <p class="page-sub">Acompanhe os registros feitos pelos professores. Somente leitura — adicione sugestões abaixo.</p>
     <div class="toolbar">
       <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="gestao-diario-q" placeholder="Buscar por aluno…" oninput="filtrarDiarioGestao()"></div>
+      <select id="gestao-diario-tipo" class="fselect" style="width:auto;min-width:140px" onchange="filtrarDiarioGestao()">
+        <option value="">Todos os tipos</option>
+        <option value="observacao">📝 Observação</option>
+        <option value="conquista">✅ Conquista</option>
+        <option value="alerta">⚠️ Alerta</option>
+        <option value="evolucao">📈 Evolução</option>
+        <option value="estrategia">💡 Estratégia</option>
+        <option value="comunicado">📢 Comunicado</option>
+      </select>
+      <select id="gestao-diario-area" class="fselect" style="width:auto;min-width:150px" onchange="filtrarDiarioGestao()">
+        <option value="">Todas as áreas</option>
+        <option value="Comunicação">Comunicação</option>
+        <option value="Acadêmica">Acadêmica</option>
+        <option value="Comportamento">Comportamento</option>
+        <option value="Autonomia">Autonomia</option>
+        <option value="Socialização">Socialização</option>
+        <option value="Motricidade">Motricidade</option>
+        <option value="Emocional">Emocional</option>
+      </select>
+      <select id="gestao-diario-periodo" class="fselect" style="width:auto;min-width:140px" onchange="filtrarDiarioGestao()">
+        <option value="">Qualquer período</option>
+        <option value="7">Últimos 7 dias</option>
+        <option value="15">Últimos 15 dias</option>
+        <option value="30">Últimos 30 dias</option>
+        <option value="90">Últimos 3 meses</option>
+      </select>
     </div>
     <div class="cards-grid" id="gestao-diario-lista"></div>
   </div>
@@ -10429,8 +10455,20 @@ window.abrirDiarioGestao = function(id, nome, texto, dt, tipo, area) {
 };
 function filtrarDiarioGestao() {
   const q = (document.getElementById('gestao-diario-q')?.value || '').toLowerCase();
+  const tipo = document.getElementById('gestao-diario-tipo')?.value || '';
+  const area = document.getElementById('gestao-diario-area')?.value || '';
+  const periodo = parseInt(document.getElementById('gestao-diario-periodo')?.value || '0');
+  const corte = periodo ? new Date(Date.now() - periodo * 864e5) : null;
   document.querySelectorAll('#gestao-diario-lista .item-card').forEach(card => {
-    card.style.display = card.querySelector('.ic-nome')?.textContent.toLowerCase().includes(q) ? '' : 'none';
+    const nomeOk = !q || (card.querySelector('.ic-nome')?.textContent.toLowerCase().includes(q));
+    const metaText = (card.querySelector('.ic-meta')?.textContent || '').toLowerCase();
+    const tipoOk = !tipo || metaText.includes(tipo);
+    const areaOk = !area || metaText.includes(area.toLowerCase());
+    const dateText = card.querySelector('.ic-date')?.textContent || '';
+    const [d, m, a] = dateText.split('/');
+    const dataCard = d && m && a ? new Date(`${a}-${m}-${d}`) : null;
+    const periodoOk = !corte || (dataCard && dataCard >= corte);
+    card.style.display = (nomeOk && tipoOk && areaOk && periodoOk) ? '' : 'none';
   });
 }
 
