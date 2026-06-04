@@ -126,9 +126,100 @@ a:hover{text-decoration:underline}
 .pdf-item .pdf-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pdf-item button{background:transparent;border:none;color:#E74C3C;cursor:pointer;font-size:15px;padding:0}
 
-/* btn-danger */
-.btn-danger{padding:6px 13px;background:#FEE2E2;border:1px solid #FECACA;color:#B91C1C;border-radius:var(--rsm);font-family:inherit;font-size:12px;cursor:pointer;transition:background .15s}
-.btn-danger:hover{background:#FECACA}
+/* ── SISTEMA DE BOTÕES PLURAMENTE ───────────────────────────────
+   .btn-primary   → ação principal (salvar, gerar, confirmar)
+   .btn-ghost     → ação secundária (cancelar, voltar, editar)
+   .btn-danger    → ações destrutivas (excluir, revogar)
+   .btn-sm        → versão compacta (toolbars, cards)
+   .btn-sm-ghost  → versão compacta secundária
+   .btn-icon      → só ícone, quadrado
+   ──────────────────────────────────────────────────────────── */
+
+.btn-primary{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 22px;
+  background:linear-gradient(135deg,#1E3A8A,#2563EB);
+  color:#fff;border:none;border-radius:10px;
+  font-family:inherit;font-size:14px;font-weight:700;
+  cursor:pointer;white-space:nowrap;
+  transition:transform .18s,box-shadow .18s,opacity .15s;
+  box-shadow:0 2px 8px rgba(30,58,138,.2);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,58,138,.32)}
+.btn-primary:active{transform:scale(.97);box-shadow:none}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 22px;
+  background:transparent;color:#1E3A8A;
+  border:1.5px solid #1E3A8A;border-radius:10px;
+  font-family:inherit;font-size:14px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  transition:background .15s,transform .18s,box-shadow .18s;
+}
+.btn-ghost:hover{background:#EFF6FF;transform:translateY(-1px);box-shadow:0 3px 10px rgba(30,58,138,.1)}
+.btn-ghost:active{transform:scale(.97)}
+.btn-ghost:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+.btn-danger{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;
+  background:transparent;color:#DC2626;
+  border:1.5px solid #FECACA;border-radius:10px;
+  font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  transition:background .15s,border-color .15s,transform .15s;
+}
+.btn-danger:hover{background:#FEF2F2;border-color:#FCA5A5;transform:translateY(-1px)}
+.btn-danger:active{transform:scale(.97)}
+
+.btn-sm{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;min-height:36px;
+  background:#EFF6FF;color:#1E3A8A;
+  border:1.5px solid rgba(37,99,235,.2);border-radius:8px;
+  font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  transition:all .15s;
+}
+.btn-sm:hover{background:#DBEAFE;border-color:rgba(37,99,235,.4);transform:translateY(-1px)}
+.btn-sm:active{transform:scale(.97)}
+.btn-sm:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.btn-sm-ghost{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;min-height:36px;
+  background:transparent;color:#1E3A8A;
+  border:1.5px solid rgba(37,99,235,.2);border-radius:8px;
+  font-family:inherit;font-size:13px;font-weight:500;
+  cursor:pointer;white-space:nowrap;
+  transition:all .15s;
+}
+.btn-sm-ghost:hover{background:#EFF6FF;border-color:rgba(37,99,235,.35)}
+.btn-sm-ghost:active{transform:scale(.97)}
+
+.btn-copy{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;
+  background:transparent;color:#6B7280;
+  border:1.5px solid #E5E7EB;border-radius:8px;
+  font-family:inherit;font-size:13px;
+  cursor:pointer;white-space:nowrap;
+  transition:all .15s;
+}
+.btn-copy:hover{border-color:#93C5FD;color:#1E3A8A;background:#EFF6FF}
+.btn-copy:active{transform:scale(.97)}
+
+.btn-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;padding:0;
+  background:transparent;color:#6B7280;
+  border:1.5px solid #E5E7EB;border-radius:8px;
+  font-family:inherit;font-size:16px;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.btn-icon:hover{background:#F3F4F6;color:#1E3A8A;border-color:#93C5FD}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);min-height:100vh}
 
@@ -352,10 +443,10 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .tpl-btn.active{background:var(--p-blue);border-color:var(--p-blue);color:#fff}
 
 /* BOTÕES */
-.btn-gerar{display:flex;align-items:center;gap:8px;padding:12px 26px;background:linear-gradient(135deg,var(--p-navy),var(--p-blue));color:#fff;border:none;border-radius:var(--rsm);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .18s,transform .15s,box-shadow .18s;margin-top:4px}
-.btn-gerar:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,58,138,.25)}
+.btn-gerar{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:transform .18s,box-shadow .18s,opacity .15s;box-shadow:0 2px 8px rgba(30,58,138,.2);margin-top:4px;white-space:nowrap}
+.btn-gerar:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,58,138,.32)}
 .btn-gerar:active{transform:scale(.97);box-shadow:none}
-.btn-gerar:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-gerar:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 .btn-sm{padding:8px 16px;min-height:44px;background:var(--blue-light);color:var(--p-blue);border:1.5px solid rgba(37,99,235,.2);border-radius:var(--rsm);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
 .btn-sm:hover{opacity:.92;border-color:rgba(37,99,235,.4);transform:translateY(-1px);box-shadow:0 2px 8px rgba(37,99,235,.15)} .btn-sm:active{transform:scale(.97)}
 .btn-sm:disabled{opacity:.4;cursor:not-allowed}
