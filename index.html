@@ -10130,6 +10130,98 @@ function renderDocsListAluno() {
     </div>`).join('');
 }
 
+async function ativarConviteFamilia(token) {
+  // Busca convite válido
+  const { data: convite, error } = await db.from('convites_familia')
+    .select('*').eq('token', token).eq('usado', false).gt('expira_em', new Date().toISOString())
+    .maybeSingle();
+
+  if (error || !convite) {
+    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui;background:#F8FAFC">
+      <div style="text-align:center;max-width:400px;padding:40px 24px">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <h2 style="color:#1E3A8A;margin-bottom:8px">Link inválido ou expirado</h2>
+        <p style="color:#6B7280;font-size:14px">Este convite não é mais válido. Solicite um novo convite à escola.</p>
+      </div>
+    </div>`;
+    return;
+  }
+
+  // Mostrar tela de criação de senha
+  document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui;background:#F8FAFC;padding:24px">
+    <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:400px;width:100%;box-shadow:0 4px 24px rgba(30,58,138,.1)">
+      <img src="logo-hero.png" style="height:36px;display:block;margin:0 auto 20px">
+      <h2 style="text-align:center;color:#1E3A8A;font-size:20px;margin-bottom:6px">Bem-vindo(a)!</h2>
+      <p style="text-align:center;color:#6B7280;font-size:13px;margin-bottom:24px">Crie sua senha para acompanhar o progresso de <strong>${convite.aluno_nome}</strong>.</p>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">E-mail</label>
+        <input type="email" value="${convite.email}" disabled style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:14px;background:#F9FAFB;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Criar senha (mínimo 6 caracteres)</label>
+        <input type="password" id="conv-senha" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:14px;outline:none;box-sizing:border-box">
+      </div>
+      <div id="conv-err" style="display:none;color:#DC2626;font-size:12px;margin-bottom:12px"></div>
+      <button onclick="confirmarConvite('${token}','${convite.email}','${convite.aluno_id}')" style="width:100%;padding:13px;background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer">Criar minha senha e entrar</button>
+    </div>
+  </div>`;
+}
+
+async function confirmarConvite(token, email, alunoId) {
+  const senha = document.getElementById('conv-senha')?.value;
+  const err = document.getElementById('conv-err');
+  if (!senha || senha.length < 6) { err.textContent = 'A senha precisa ter pelo menos 6 caracteres.'; err.style.display='block'; return; }
+
+  // Criar conta no Supabase Auth
+  const { data: authData, error: authError } = await db.auth.signUp({ email, password: senha });
+  if (authError) { err.textContent = authError.message; err.style.display='block'; return; }
+
+  // Criar perfil com role familia
+  await db.from('profiles').upsert({ id: authData.user.id, email, role: 'familia', ativo: true });
+
+  // Marcar convite como usado
+  await db.from('convites_familia').update({ usado: true, usado_em: new Date().toISOString() }).eq('token', token);
+
+  // Login automático
+  await db.auth.signInWithPassword({ email, password: senha });
+  user = (await db.auth.getUser()).data.user;
+  userRole = 'familia';
+  window._alunoFamiliaId = alunoId;
+  iniciarApp();
+}
+
+async function enviarConviteFamilia() {
+  const aluno = window._ultimoAlunoSalvo;
+  if (!aluno?.id) {
+    toast('Salve o aluno primeiro para enviar o convite.', 'error');
+    return;
+  }
+  const emails = [aluno.pai_email, aluno.mae_email].filter(Boolean);
+  if (!emails.length) {
+    toast('Nenhum e-mail de filiação cadastrado para este aluno.', 'error');
+    return;
+  }
+  let enviados = 0;
+  for (const email of emails) {
+    const { data, error } = await db.from('convites_familia').insert({
+      aluno_id: aluno.id,
+      aluno_nome: aluno.nome,
+      email,
+      criado_por: user.id
+    }).select('token').single();
+    if (error) { toast('Erro ao gerar convite: ' + error.message, 'error'); continue; }
+    const link = `${window.location.origin}${window.location.pathname}?convite=${data.token}`;
+    const msg = encodeURIComponent(
+      `Olá! A escola convidou você a acompanhar o progresso de *${aluno.nome}* no Pluramente.\n\n` +
+      `Acesse pelo link abaixo para criar sua senha e ver os registros:\n${link}\n\n` +
+      `_O link expira em 7 dias._`
+    );
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
+    enviados++;
+  }
+  if (enviados) toast(`Convite${enviados > 1 ? 's' : ''} gerado${enviados > 1 ? 's' : ''}! Link${enviados > 1 ? 's' : ''} aberto${enviados > 1 ? 's' : ''} no WhatsApp.`, 'success');
+}
+
 async function salvarAluno() {
   const nome  = document.getElementById('cad-nome')?.value.trim();
   const idade = document.getElementById('cad-idade')?.value;
@@ -10185,7 +10277,8 @@ async function salvarAluno() {
   }
 
   await lgpdRegistrarConsentimento('aluno', data?.id, ['pedagogico','clinico','autorizacao_legal']);
-  toast('Aluno cadastrado!', 'success');
+  window._ultimoAlunoSalvo = { id: data?.id, nome, pai_email, mae_email };
+  toast('Aluno cadastrado! Use o botão "Enviar convite" para dar acesso à família.', 'success');
   fecharModal('modal-cad');
   lgpdResetarModal('aluno','btn-salvar-aluno');
    window._cadDocs = [];
@@ -13718,7 +13811,21 @@ function bootHealthCheck() {
   console.info('[Pluramente] ✅ Boot OK — v' + (typeof LGPD_VERSAO_TERMO !== 'undefined' ? LGPD_VERSAO_TERMO : '?'));
 }
 
-document.addEventListener('DOMContentLoaded', async () => { const isPub = await verificarRotaPublica(); if (!isPub) { bootHealthCheck(); verificarLGPD(); const { data } = await db.auth.getSession(); if (data?.session?.user) { user = data.session.user; await lerPerfilDobanco(); iniciarApp(); } else { mostrarLanding(); } } });
+document.addEventListener('DOMContentLoaded', async () => {
+  // Verificar se é link de convite família
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('convite');
+  if (token) { await ativarConviteFamilia(token); return; }
+
+  const isPub = await verificarRotaPublica();
+  if (!isPub) {
+    bootHealthCheck();
+    verificarLGPD();
+    const { data } = await db.auth.getSession();
+    if (data?.session?.user) { user = data.session.user; await lerPerfilDobanco(); iniciarApp(); }
+    else { mostrarLanding(); }
+  }
+});
 
 
 function abrirPaginaQuemSomos() {
