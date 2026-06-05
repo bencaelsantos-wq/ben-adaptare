@@ -2323,6 +2323,11 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         </div>
       </div>
 
+      <!-- FAMÍLIA botão direto -->
+      <button class="role-btn r-professor" id="role-btn-familia" onclick="selecionarFamilia(this)" style="flex:1">
+         Família
+      </button>
+
       <!-- CLÍNICA dropdown -->
       <div class="role-drop-wrap">
         <button class="role-btn r-clinica" id="role-btn-clinica" onclick="toggleDrop(this)">
@@ -3339,7 +3344,7 @@ function selectDrop(dropGroup, label, role, subRole) {
   userSubRole = subRole || role;
 
   // Ativa visualmente o botão do grupo correto
-  const allBtns = ['role-btn-gestao','role-btn-clinica'];
+  const allBtns = ['role-btn-gestao','role-btn-clinica','role-btn-familia'];
   allBtns.forEach(id => {
     const b = document.getElementById(id);
     if (!b) return;
@@ -3362,6 +3367,17 @@ function selectDrop(dropGroup, label, role, subRole) {
     d.style.opacity='0'; d.style.pointerEvents='none';
     setTimeout(()=>{ d.style.opacity=''; d.style.pointerEvents=''; },200);
   });
+}
+
+function selecionarFamilia(btn) {
+  userRole = 'familia';
+  userSubRole = 'familia';
+  // Fecha dropdowns abertos
+  document.querySelectorAll('.role-drop-wrap').forEach(w => w.classList.remove('open'));
+  // Destaca visualmente
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.className = btn.className.replace(/\br-(professor|gestao|clinica|at|gestao-clinica)\b/,'') + ' r-professor active';
 }
 
 function setRole(r) {
