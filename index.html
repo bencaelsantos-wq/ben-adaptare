@@ -367,6 +367,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .sb-role.gestao-clinica{background:#FEF3C7;color:#92400E}
 .sb-nav{padding:14px 10px;flex:1;overflow-y:auto}
 
+.notif-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;background:#EF4444;color:#fff;font-size:10px;font-weight:700;border-radius:9px;padding:0 5px;margin-left:auto;line-height:1}
 .nav-section{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9CA3AF;padding:10px 11px 4px;margin-top:4px}
 .nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:var(--rsm);font-size:13px;color:#6B7280;cursor:pointer;transition:all .15s;margin-bottom:2px;user-select:none;border-left:3px solid transparent}
 .nav-item:hover{background:#EEF2FF;color:#7C3AED;border-left-color:#C4B5FD}
@@ -3607,7 +3608,7 @@ function iniciarApp() {
     gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); } },
     clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); } },
     'gestao-clinica':{ label:' Gestão Clínica', cls:'at',        sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
-    at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); } },
+    at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
     familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); } },
   };
@@ -3799,7 +3800,7 @@ function renderNavAT() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 5h12M4 8h8M4 11h10M4 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Roteiro de Atuação
     </div>
     <div class="nav-item at-item" id="nav-at-relatorios" onclick="showPage('at-relatorios')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios Recebidos
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios Recebidos<span class="notif-badge" id="badge-at-rel" style="display:none"></span>
     </div>
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item at-item" id="nav-colaboracao-at" onclick="abrirColaboracao()" style="font-weight:600">
@@ -4619,11 +4620,11 @@ async function carregarDashboardAT() {
   try {
     const [{ data: alunos },{ data: rel },{ data: diario }] = await Promise.all([
       db.from('alunos').select('id,nome,serie').eq('at_id',user.id).order('nome'),
-      db.from('relatorios').select('id,aluno_nome,created_at').eq('user_id',user.id).order('created_at',{ascending:false}),
+      db.from('relatorios').select('id,aluno_nome,created_at,lido').eq('destino','at').order('created_at',{ascending:false}),
       db.from('diario_aluno').select('id',{count:'exact'}).eq('user_id',user.id)
     ]);
-    const na=alunos?.length||0, nr=rel?.length||0, nd=diario?.length||0;
-    el('dash-at-alunos',na); el('dash-at-rel',nr);
+    const na=alunos?.length||0, nr=(rel||[]).filter(r=>!r.lido).length, nd=diario?.length||0;
+    el('dash-at-alunos',na); el('dash-at-rel',nr ? `${nr} novo${nr>1?'s':''}` : '0');
     el('dash-at-obj',nd); el('dash-at-estrategias',nr||'0');
     window.atRelatorios=rel||[];
     window._alunosDiario=alunos||[];
@@ -4820,10 +4821,11 @@ async function carregarDiarioFamilia() {
 async function carregarConquistasFamilia() {
   const el = document.getElementById('fam-conquistas-lista');
   if (!el) return;
-  const nomeAluno = window._alunoFamiliaNome || '';
-  let query = db.from('diario_aluno').select('*').contains('destinos', ['familia']).eq('tipo', 'conquista').order('created_at', { ascending: false });
-  if (nomeAluno) query = query.eq('aluno_nome', nomeAluno);
-  const { data } = await query;
+  const { data } = await db.from('diario_aluno')
+    .select('*')
+    .contains('destinos', ['familia'])
+    .eq('tipo', 'conquista')
+    .order('created_at', { ascending: false });
   el.innerHTML = !data?.length
     ? '<div class="empty"><div class="empty-icon">⭐</div><div class="empty-text">Nenhuma conquista registrada ainda.</div></div>'
     : data.map(d => {
@@ -12117,6 +12119,14 @@ async function carregarAlunosAT() {
   if (sel) sel.innerHTML = '<option value="">Selecione um aluno</option>' + perfisATList.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
 }
 
+async function verificarNotificacoesAT() {
+  const { count } = await db.from('relatorios').select('id', { count: 'exact', head: true }).eq('destino','at').eq('lido', false);
+  const badge = document.getElementById('badge-at-rel');
+  if (!badge) return;
+  if (count > 0) { badge.textContent = count > 9 ? '9+' : count; badge.style.display = 'inline-flex'; }
+  else badge.style.display = 'none';
+}
+
 async function carregarRelatoriosAT() {
   await carregarAlunosAT();
   const { data } = await db.from('relatorios').select('*').eq('destino', 'at').order('created_at', { ascending: false });
@@ -12213,6 +12223,11 @@ function abrirRelatorio(r) {
   document.getElementById('mrel-meta').textContent   = `${r.aluno_nome||''} · ${new Date(r.created_at).toLocaleDateString('pt-BR')} · ${r.origem==='clinica'?'🏥 Clínica':'🏫 Escola'}`;
   document.getElementById('mrel-body').textContent   = r.conteudo || '';
   abrirModal('modal-rel');
+  if (!r.lido) {
+    db.from('relatorios').update({ lido: true }).eq('id', r.id).then(() => {
+      verificarNotificacoesAT();
+    });
+  }
 }
 
 // ── GUIA DE PERFIS ───────────────────────────────────────────
