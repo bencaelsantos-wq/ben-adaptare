@@ -3556,6 +3556,10 @@ const roleEscolhido = userRole;
     }
     userRole    = roleReal;
     userSubRole = data.subrole || null;
+    if (roleReal === 'familia') {
+      window._alunoFamiliaNome = data.aluno_nome || '';
+      window._alunoFamiliaId   = data.aluno_id   || '';
+    }
   } catch(e) {
     if (e.message === 'Conta inativa' || e.message === 'Role incorreto') throw e;
     console.warn('lerPerfilDobanco:', e.message);
@@ -4766,11 +4770,14 @@ function renderPagesFamilia() {
 async function carregarDiarioFamilia() {
   const feed = document.getElementById('fam-feed');
   const lista = document.getElementById('fam-diario-lista');
-  const { data } = await db.from('diario_aluno')
-    .select('*')
-    .contains('destinos', ['familia'])
-    .order('created_at', { ascending: false })
-    .limit(100);
+  const nomeAluno = window._alunoFamiliaNome || '';
+  let query = db.from('diario_aluno').select('*').contains('destinos', ['familia']).order('created_at', { ascending: false }).limit(100);
+  if (nomeAluno) query = query.eq('aluno_nome', nomeAluno);
+  const { data } = await query;
+
+  // Atualizar título do dashboard com nome do filho
+  const titulo = document.querySelector('#page-familia-dashboard .page-title');
+  if (titulo && nomeAluno) titulo.textContent = `Olá! Acompanhando ${nomeAluno} 👋`;
 
   // Atualizar stats no dashboard
   const mesAtual = new Date().getMonth();
@@ -4813,11 +4820,10 @@ async function carregarDiarioFamilia() {
 async function carregarConquistasFamilia() {
   const el = document.getElementById('fam-conquistas-lista');
   if (!el) return;
-  const { data } = await db.from('diario_aluno')
-    .select('*')
-    .contains('destinos', ['familia'])
-    .eq('tipo', 'conquista')
-    .order('created_at', { ascending: false });
+  const nomeAluno = window._alunoFamiliaNome || '';
+  let query = db.from('diario_aluno').select('*').contains('destinos', ['familia']).eq('tipo', 'conquista').order('created_at', { ascending: false });
+  if (nomeAluno) query = query.eq('aluno_nome', nomeAluno);
+  const { data } = await query;
   el.innerHTML = !data?.length
     ? '<div class="empty"><div class="empty-icon">⭐</div><div class="empty-text">Nenhuma conquista registrada ainda.</div></div>'
     : data.map(d => {
@@ -10176,8 +10182,11 @@ async function confirmarConvite(token, email, alunoId) {
   const { data: authData, error: authError } = await db.auth.signUp({ email, password: senha });
   if (authError) { err.textContent = authError.message; err.style.display='block'; return; }
 
-  // Criar perfil com role familia
-  await db.from('profiles').upsert({ id: authData.user.id, email, role: 'familia', ativo: true });
+  // Buscar nome do aluno do convite
+  const { data: convData } = await db.from('convites_familia').select('aluno_nome,aluno_id').eq('token', token).maybeSingle();
+  // Criar perfil com role familia + vínculo ao aluno
+  await db.from('profiles').upsert({ id: authData.user.id, email, role: 'familia', ativo: true, aluno_nome: convData?.aluno_nome, aluno_id: convData?.aluno_id });
+  window._alunoFamiliaNome = convData?.aluno_nome || '';
 
   // Marcar convite como usado
   await db.from('convites_familia').update({ usado: true, usado_em: new Date().toISOString() }).eq('token', token);
