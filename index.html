@@ -2754,15 +2754,23 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 
       <!-- ── Seção: Filiação ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍👩‍👧 Filiação</div>
+      <div style="font-size:12px;color:#6B7280;margin:-6px 0 10px;line-height:1.5">Preencha os dados de quem cuida da criança — pai, mãe, dois pais, duas mães, avós ou outro responsável legal.</div>
       <div class="frow">
-        <div style="flex:2"><label class="flabel" for="cad-pai">Nome do pai / responsável</label><input type="text" id="cad-pai"" class="finput" placeholder="Ex: Carlos Eduardo Souza"></div>
-        <div><label class="flabel" for="cad-pai-tel">Telefone do pai</label><input type="text" id="cad-pai-tel" class="finput" placeholder="(11) 99999-9999"></div>
-        <div><label class="flabel" for="cad-pai-email">E-mail do pai</label><input type="email" id="cad-pai-email" class="finput" placeholder="carlos@email.com"></div>
+        <div style="flex:2"><label class="flabel" for="cad-pai">Filiação 1 — Nome completo</label><input type="text" id="cad-pai" class="finput" placeholder="Ex: Carlos Eduardo Souza"></div>
+        <div><label class="flabel" for="cad-pai-tel">Telefone</label><input type="text" id="cad-pai-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel" for="cad-pai-email">E-mail</label><input type="email" id="cad-pai-email" class="finput" placeholder="contato@email.com"></div>
       </div>
       <div class="frow">
-        <div style="flex:2"><label class="flabel" for="cad-mae">Nome da mãe / responsável</label><input type="text" id="cad-mae" class="finput" placeholder="Ex: Fernanda Lima Souza"></div>
-        <div><label class="flabel" for="cad-mae-tel">Telefone da mãe</label><input type="text" id="cad-mae-tel" class="finput" placeholder="(11) 99999-9999"></div>
-        <div><label class="flabel" for="cad-mae-email">E-mail da mãe</label><input type="email" id="cad-mae-email" class="finput" placeholder="fernanda@email.com"></div>
+        <div style="flex:2"><label class="flabel" for="cad-mae">Filiação 2 — Nome completo</label><input type="text" id="cad-mae" class="finput" placeholder="Ex: Fernanda Lima Souza"></div>
+        <div><label class="flabel" for="cad-mae-tel">Telefone</label><input type="text" id="cad-mae-tel" class="finput" placeholder="(11) 99999-9999"></div>
+        <div><label class="flabel" for="cad-mae-email">E-mail</label><input type="email" id="cad-mae-email" class="finput" placeholder="contato@email.com"></div>
+      </div>
+      <div style="margin-top:10px;padding:10px 14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#166534">📩 Acesso da família</div>
+          <div style="font-size:11px;color:#4B7C5A;margin-top:2px">Após salvar, envie um convite de acesso para a família acompanhar o progresso da criança.</div>
+        </div>
+        <button type="button" onclick="enviarConviteFamilia()" class="btn-sm" style="white-space:nowrap;flex-shrink:0">Enviar convite</button>
       </div>
 
       <!-- ── Seção: Escolaridade ── -->
