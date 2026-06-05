@@ -3520,7 +3520,8 @@ const roleEscolhido = userRole;
       'gestao':          'Gestão Educacional',
       'clinica':         'Clínica',
       'at':              'Auxiliar Terapêutico',
-      'gestao-clinica':  'Gestão Clínica'
+      'gestao-clinica':  'Gestão Clínica',
+      'familia':         'Família'
     };
 
       if (roleEscolhido && roleEscolhido !== roleReal) {
@@ -3574,12 +3575,13 @@ function iniciarApp() {
   const sidebar = document.querySelector('.sidebar');
 
   const colorMap = {
-    professor:       { label:'👩‍🏫 Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
-    gestao:          { label:'🏫 Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); } },
-    clinica:         { label:'🏥 Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); } },
-    'gestao-clinica':{ label:'🏥👔 Gestão Clínica', cls:'at',        sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
-    at:              { label:'🧑‍⚕️ AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); } },
+    professor:       { label:' Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
+    gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); } },
+    clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); } },
+    'gestao-clinica':{ label:' Gestão Clínica', cls:'at',        sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
+    at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
+    familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); } },
   };
 
   const cfg = colorMap[userRole] || colorMap['professor'];
@@ -4675,6 +4677,154 @@ function carregarDashboardGC() {
   }
 }
 
+// ── FAMÍLIA ───────────────────────────────────────────────────
+function renderNavFamilia() {
+  document.getElementById('sb-nav').innerHTML = `
+    <div class="nav-section">👨‍👩‍👧 Família</div>
+    <div class="nav-item active" id="nav-familia-dashboard" onclick="showPage('familia-dashboard')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>Início
+    </div>
+    <div class="nav-item" id="nav-familia-diario" onclick="showPage('familia-diario');carregarDiarioFamilia()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 8h6M7 11h6M7 14h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Diário do(a) filho(a)
+    </div>
+    <div class="nav-item" id="nav-familia-conquistas" onclick="showPage('familia-conquistas');carregarConquistasFamilia()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3l2 4 5 .7-3.5 3.4.8 5L10 14l-4.3 2.1.8-5L3 7.7 8 7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Conquistas
+    </div>`;
+  renderPagesFamilia();
+}
+
+function renderPagesFamilia() {
+  document.getElementById('main-content').innerHTML = `
+  <!-- FAMÍLIA: DASHBOARD -->
+  <div id="page-familia-dashboard" class="page active">
+    <div class="page-header">
+      <h1 class="page-title">Olá, família! 👋</h1>
+      <p class="page-sub">Acompanhe o progresso e os registros do(a) seu(sua) filho(a) na escola e na clínica.</p>
+    </div>
+    <div class="stats-grid" style="margin-bottom:24px">
+      <div class="stat-card"><div class="stat-num" id="fam-total-registros" style="color:#1E3A8A">—</div><div class="stat-label">Registros este mês</div></div>
+      <div class="stat-card"><div class="stat-num" id="fam-total-conquistas" style="color:#10B981">—</div><div class="stat-label">Conquistas registradas</div></div>
+      <div class="stat-card"><div class="stat-num" id="fam-total-alertas" style="color:#F59E0B">—</div><div class="stat-label">Comunicados da escola</div></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">✨ Últimas novidades</div>
+      <div id="fam-feed" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+        <div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Carregando registros…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAMÍLIA: DIÁRIO COMPLETO -->
+  <div id="page-familia-diario" class="page">
+    <h1 class="page-title">Diário do(a) filho(a)</h1>
+    <p class="page-sub">Todos os registros compartilhados pela escola e clínica com a família.</p>
+    <div class="toolbar">
+      <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="fam-diario-q" placeholder="Buscar…" oninput="filtrarDiarioFamilia()"></div>
+      <select id="fam-diario-tipo" class="fselect" style="width:auto" onchange="filtrarDiarioFamilia()">
+        <option value="">Todos os tipos</option>
+        <option value="conquista">✅ Conquistas</option>
+        <option value="comunicado">📢 Comunicados</option>
+        <option value="evolucao">📈 Evoluções</option>
+        <option value="observacao">📝 Observações</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="fam-diario-lista" style="margin-top:16px"></div>
+  </div>
+
+  <!-- FAMÍLIA: CONQUISTAS -->
+  <div id="page-familia-conquistas" class="page">
+    <h1 class="page-title">Conquistas ✨</h1>
+    <p class="page-sub">Cada pequena vitória registrada pela equipe.</p>
+    <div class="cards-grid" id="fam-conquistas-lista" style="margin-top:16px"></div>
+  </div>`;
+}
+
+async function carregarDiarioFamilia() {
+  const feed = document.getElementById('fam-feed');
+  const lista = document.getElementById('fam-diario-lista');
+  const { data } = await db.from('diario_aluno')
+    .select('*')
+    .contains('destinos', ['familia'])
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  // Atualizar stats no dashboard
+  const mesAtual = new Date().getMonth();
+  const deste_mes = (data||[]).filter(d => new Date(d.created_at).getMonth() === mesAtual);
+  const el = id => document.getElementById(id);
+  if (el('fam-total-registros')) el('fam-total-registros').textContent = deste_mes.length;
+  if (el('fam-total-conquistas')) el('fam-total-conquistas').textContent = (data||[]).filter(d => d.tipo === 'conquista').length;
+  if (el('fam-total-alertas')) el('fam-total-alertas').textContent = (data||[]).filter(d => d.tipo === 'comunicado').length;
+
+  const tipoIcon = { conquista:'✅', alerta:'⚠️', evolucao:'📈', estrategia:'💡', comunicado:'📢', sugestao:'💬', observacao:'📝' };
+  const origemLabel = { escola:'🏫 Escola', clinica:'🏥 Clínica', at:'🧑‍⚕️ AT', professor:'👩‍🏫 Professor', gestao:'🏫 Gestão' };
+
+  const renderCard = d => {
+    const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
+    const icon = tipoIcon[d.tipo] || '📝';
+    const origem = origemLabel[d.origem] || d.origem || '';
+    return `<div class="item-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:700;color:#1E3A8A">${icon} ${d.tipo||''}</span>
+        <span style="font-size:11px;color:#9CA3AF">${dt}</span>
+      </div>
+      ${d.area ? `<div style="font-size:11px;color:#7C3AED;font-weight:600;margin-bottom:4px">${d.area}</div>` : ''}
+      <div style="font-size:13px;color:#374151;line-height:1.6">${d.texto||''}</div>
+      ${origem ? `<div style="margin-top:8px;font-size:11px;color:#9CA3AF">${origem}${d.autor_nome ? ' · '+d.autor_nome : ''}</div>` : ''}
+    </div>`;
+  };
+
+  if (feed) feed.innerHTML = !data?.length
+    ? '<div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Nenhum registro ainda.</div></div>'
+    : data.slice(0, 5).map(renderCard).join('');
+
+  if (lista) {
+    lista.innerHTML = !data?.length
+      ? '<div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Nenhum registro ainda.</div></div>'
+      : data.map(renderCard).join('');
+    lista._data = data;
+  }
+}
+
+async function carregarConquistasFamilia() {
+  const el = document.getElementById('fam-conquistas-lista');
+  if (!el) return;
+  const { data } = await db.from('diario_aluno')
+    .select('*')
+    .contains('destinos', ['familia'])
+    .eq('tipo', 'conquista')
+    .order('created_at', { ascending: false });
+  el.innerHTML = !data?.length
+    ? '<div class="empty"><div class="empty-icon">⭐</div><div class="empty-text">Nenhuma conquista registrada ainda.</div></div>'
+    : data.map(d => {
+        const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
+        return `<div class="item-card" style="border-left:3px solid #10B981">
+          <div style="font-size:20px;margin-bottom:6px">✅</div>
+          <div style="font-size:14px;font-weight:700;color:#1E3A8A;margin-bottom:4px">${d.aluno_nome||''}</div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">${d.texto||''}</div>
+          <div style="margin-top:8px;font-size:11px;color:#9CA3AF">${dt}</div>
+        </div>`;
+      }).join('');
+}
+
+function filtrarDiarioFamilia() {
+  const q = (document.getElementById('fam-diario-q')?.value||'').toLowerCase();
+  const tipo = document.getElementById('fam-diario-tipo')?.value||'';
+  const lista = document.getElementById('fam-diario-lista');
+  if (!lista?._data) return;
+  const filtrado = lista._data.filter(d =>
+    (!q || (d.texto||'').toLowerCase().includes(q) || (d.aluno_nome||'').toLowerCase().includes(q)) &&
+    (!tipo || d.tipo === tipo)
+  );
+  const tipoIcon = { conquista:'✅', alerta:'⚠️', evolucao:'📈', estrategia:'💡', comunicado:'📢', sugestao:'💬', observacao:'📝' };
+  lista.innerHTML = !filtrado.length
+    ? '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum registro encontrado.</div></div>'
+    : filtrado.map(d => {
+        const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
+        return `<div class="item-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;color:#1E3A8A">${tipoIcon[d.tipo]||'📝'} ${d.tipo||''}</span><span style="font-size:11px;color:#9CA3AF">${dt}</span></div><div style="font-size:13px;color:#374151;line-height:1.6">${d.texto||''}</div></div>`;
+      }).join('');
+}
+
 // ── DEVELOPER ─────────────────────────────────────────────────
 function renderNavDeveloper() {
   document.getElementById('sb-nav').innerHTML = `
@@ -4757,6 +4907,7 @@ function renderPagesDeveloper() {
         <option value="clinica">Clínica</option>
         <option value="gestao-clinica">Gestão Clínica</option>
         <option value="at">AT</option>
+        <option value="familia">Família</option>
         <option value="developer">Developer</option>
       </select>
     </div>
