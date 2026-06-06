@@ -3377,10 +3377,7 @@ function selectDrop(dropGroup, label, role, subRole) {
   });
 
   // Fecha o dropdown ao clicar
-  document.querySelectorAll('.role-dropdown').forEach(d => {
-    d.style.opacity='0'; d.style.pointerEvents='none';
-    setTimeout(()=>{ d.style.opacity=''; d.style.pointerEvents=''; },200);
-  });
+  document.querySelectorAll('.role-drop-wrap').forEach(w => w.classList.remove('open'));
 }
 
 function selecionarFamilia(btn) {
@@ -3429,6 +3426,7 @@ async function entrar() {
   const email = document.getElementById('lemail').value.trim();
   const senha  = (document.getElementById('lsenha') || document.getElementById('senha')).value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
+  if (!userRole) return showErr('Selecione seu perfil de acesso antes de entrar.');
 
   // Verificar DEV antes de qualquer chamada ao Supabase
   if (email.toLowerCase() === DEV_EMAIL) {
