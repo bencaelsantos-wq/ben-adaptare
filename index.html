@@ -356,36 +356,40 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .layout{display:flex;min-height:100vh}
 
 /* SIDEBAR */
-.sidebar{width:240px;background:#F8F9FB;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;box-shadow:2px 0 12px rgba(0,0,0,.06)}
-.sb-header{padding:24px 20px 18px;border-bottom:1px solid #E5E7EB}
+.sidebar{width:240px;background:#FFFFFF;border-right:1px solid #ECEEF2;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;box-shadow:1px 0 0 #ECEEF2,4px 0 20px rgba(0,0,0,.04)}
+.sb-header{padding:18px 16px 14px;border-bottom:1px solid #F3F4F6}
 .sb-logo{font-family:'Inter',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.3px;color:#1E3A8A}
-.sb-logo-img{margin-bottom:4px}
-.sb-tag{font-size:10px;color:#9CA3AF;margin-top:2px;letter-spacing:.04em;text-transform:uppercase}
-.sb-role{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
-.sb-role.professor{background:#DCFCE7;color:#166534}
-.sb-role.gestao{background:#DBEAFE;color:#1E40AF}
-.sb-role.clinica{background:#EDE9FE;color:#5B21B6}
-.sb-role.at{background:#CCFBF1;color:#134E4A}
-.sb-role.gestao-clinica{background:#FEF3C7;color:#92400E}
+.sb-logo-img{margin-bottom:10px}
+.sb-tag{display:none}
+.sb-role{display:inline-flex;align-items:center;gap:7px;margin-top:0;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;width:100%;box-sizing:border-box}
+.sb-role::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sb-role.professor{background:#F0FDF4;color:#15803D}.sb-role.professor::before{background:#22C55E}
+.sb-role.gestao{background:#EFF6FF;color:#1D4ED8}.sb-role.gestao::before{background:#3B82F6}
+.sb-role.clinica{background:#F5F3FF;color:#6D28D9}.sb-role.clinica::before{background:#8B5CF6}
+.sb-role.at{background:#F0FDFA;color:#0F766E}.sb-role.at::before{background:#14B8A6}
+.sb-role.gestao-clinica{background:#FFF7ED;color:#C2410C}.sb-role.gestao-clinica::before{background:#F97316}
 .sb-nav{padding:14px 10px;flex:1;overflow-y:auto}
 
 .notif-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;background:#EF4444;color:#fff;font-size:10px;font-weight:700;border-radius:9px;padding:0 5px;margin-left:auto;line-height:1}
-.nav-section{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9CA3AF;padding:10px 11px 4px;margin-top:4px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:var(--rsm);font-size:13px;color:#6B7280;cursor:pointer;transition:all .15s;margin-bottom:2px;user-select:none;border-left:3px solid transparent}
-.nav-item:hover{background:#EEF2FF;color:#7C3AED;border-left-color:#C4B5FD}
-.nav-item.active{background:#EDE9FE;color:#7C3AED;font-weight:600;border-left-color:#2563EB}
+.nav-section{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#B0B8C4;padding:12px 12px 3px;margin-top:2px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;font-size:13px;color:#64748B;cursor:pointer;transition:background .12s,color .12s;margin-bottom:1px;user-select:none;border-left:2px solid transparent}
+.nav-item:hover{background:#F8FAFF;color:#3B4ECC;border-left-color:transparent}
+.nav-item.active{background:#EEF2FF;color:#3B4ECC;font-weight:600;border-left-color:#4F6BED}
 
-.nav-item.gestao-item.active{background:#EFF6FF;color:#1D4ED8}
-.nav-item.clinic-item.active{background:#F5F3FF;color:#6D28D9}
-.nav-item.at-item.active{background:#F0FDFA;color:#0F766E}
-.nav-icon{width:16px;height:16px;opacity:.6;flex-shrink:0}
+.nav-item.gestao-item:hover{background:#F0F7FF;color:#1D4ED8}
+.nav-item.gestao-item.active{background:#EFF6FF;color:#1D4ED8;border-left-color:#3B82F6}
+.nav-item.clinic-item:hover{background:#FAF5FF;color:#6D28D9}
+.nav-item.clinic-item.active{background:#F5F3FF;color:#6D28D9;border-left-color:#8B5CF6}
+.nav-item.at-item:hover{background:#F0FDFA;color:#0F766E}
+.nav-item.at-item.active{background:#ECFDF5;color:#0F766E;border-left-color:#14B8A6}
+.nav-icon{width:15px;height:15px;opacity:.5;flex-shrink:0;transition:opacity .12s}
 .nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1}
-.sb-footer{padding:12px 10px;border-top:1px solid #E5E7EB}
-.user-badge{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rsm);margin-bottom:7px}
-.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--p-blue),var(--p-purple));color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
-.user-email{font-size:11px;color:#9CA3AF;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.btn-logout{width:100%;padding:8px;background:transparent;border:1px solid #E5E7EB;border-radius:var(--rsm);font-family:inherit;font-size:12px;color:#9CA3AF;cursor:pointer;transition:all .15s}
-.btn-logout:hover{border-color:#EF4444;color:#EF4444}
+.sb-footer{padding:10px 12px 14px;border-top:1px solid #F3F4F6}
+.user-badge{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;margin-bottom:6px;background:#F9FAFB}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#1E3A8A,#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.user-email{font-size:11px;color:#94A3B8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.btn-logout{width:100%;padding:7px;background:transparent;border:1px solid #F1F3F5;border-radius:8px;font-family:inherit;font-size:12px;color:#94A3B8;cursor:pointer;transition:all .15s}
+.btn-logout:hover{background:#FEF2F2;border-color:#FECACA;color:#EF4444}
 
 /* Sidebar stripe por papel */
 .sidebar.role-professor{border-left:3px solid var(--p-green)}
@@ -2404,9 +2408,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <button class="hamburger-close" onclick="toggleSidebar()" id="hamburger-close" aria-label="Fechar menu">✕</button>
       <div class="sb-header">
         <div class="sb-logo-img">
-          <img src="logo-hero.png" alt="Pluramente" style="height:36px;width:auto;display:block;mix-blend-mode:multiply;">
+          <img src="logo-hero.png" alt="Pluramente" style="height:30px;width:auto;display:block;mix-blend-mode:multiply;">
         </div>
-        <div class="sb-tag">Conectar · Compreender · Desenvolver</div>
         <span class="sb-role" id="sb-role-badge">Professor</span>
       </div>
       <nav class="sb-nav" id="sb-nav">
