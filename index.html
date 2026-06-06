@@ -4396,7 +4396,7 @@ function filtrarGRel() {
 
 
 // ── COLABORAÇÃO MULTIPROFISSIONAL — página global ─────────────
-function abrirColaboracao() {
+async function abrirColaboracao() {
   // Oculta todas as páginas existentes
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   // Remove nav-item active
@@ -4417,6 +4417,7 @@ function abrirColaboracao() {
     div.id = 'page-colaboracao';
     div.className = 'page active';
     div.innerHTML = colaboracaoHTML();
+    await carregarColaboracao();
     mc.appendChild(div);
   } else {
     pg.classList.add('active');
@@ -4427,15 +4428,72 @@ function abrirColaboracao() {
 function colaboracaoHTML() {
   return `
     <h1 class="page-title">🤝 Colaboração Multiprofissional</h1>
-    <p class="page-sub">O hub onde escola e clínica atuam juntas — encaminhamentos, pautas e ações coordenadas em torno de cada criança.</p>
+    <p class="page-sub">Mural de casos ativos — selecione um aluno para ver o estado consolidado de toda a equipe.</p>
 
-    <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1.5px solid #C7D2FE;border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start">
-      <div style="font-size:22px;flex-shrink:0">🔄</div>
-      <div>
-        <div style="font-size:13.5px;font-weight:700;color:#1E3A8A;margin-bottom:4px">O ciclo que funciona</div>
-        <p style="font-size:13px;color:#374151;line-height:1.7;margin:0">O professor observa → documenta no Diário → a gestão aciona a clínica → a clínica avalia e devolve estratégias → o professor e o AT aplicam em sala → a gestão monitora. Cada passo tem instrumento dentro do Pluramente.</p>
+    <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1.5px solid #C7D2FE;border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;gap:14px;align-items:center">
+      <div style="font-size:20px;flex-shrink:0">🔄</div>
+      <p style="font-size:12.5px;color:#374151;line-height:1.6;margin:0">Professor observa → documenta no Diário → gestão aciona a clínica → clínica devolve estratégias → professor e AT aplicam → gestão monitora.</p>
+    </div>
+
+    <div class="fcard" style="margin-bottom:16px">
+      <div class="fcard-title" style="margin-bottom:10px">🎓 Selecionar aluno</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <select id="colab-aluno-sel" onchange="carregarMuralAluno(this.value)" style="flex:1;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr800);background:var(--white);outline:none">
+          <option value="">— Selecione um aluno —</option>
+        </select>
       </div>
     </div>
+
+    <div id="colab-mural" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="fcard">
+          <div class="fcard-title">📓 Último registro no Diário</div>
+          <div id="colab-diario" style="margin-top:8px;font-size:13px;color:var(--gr600);line-height:1.6"></div>
+        </div>
+        <div class="fcard">
+          <div class="fcard-title">🔬 Último plano de intervenção</div>
+          <div id="colab-plano" style="margin-top:8px;font-size:13px;color:var(--gr600);line-height:1.6"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="fcard">
+          <div class="fcard-title">🎯 Objetivos terapêuticos ativos</div>
+          <div id="colab-obj" style="margin-top:8px;font-size:13px;color:var(--gr600);line-height:1.6"></div>
+        </div>
+        <div class="fcard">
+          <div class="fcard-title">⚡ Ações rápidas</div>
+          <div id="colab-acoes" style="margin-top:8px;display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="colab-vazio" style="text-align:center;padding:32px 0;color:var(--gr400)">
+      <div style="font-size:32px;margin-bottom:8px">👆</div>
+      <div style="font-size:13px">Selecione um aluno para ver o mural colaborativo</div>
+    </div>
+
+    <div class="fcard" style="margin-top:4px">
+      <div class="fcard-title">👥 Responsabilidades por papel</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px">
+        <div style="background:#F8FAFF;border:1px solid #DBEAFE;border-radius:10px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:#1E3A8A;margin-bottom:6px">👩‍🏫 Professor</div>
+          <ul style="margin:0;padding-left:14px;font-size:12px;color:var(--gr600);line-height:1.8"><li>Registra observações no Diário</li><li>Elabora adaptações pedagógicas</li><li>Aplica estratégias da clínica</li><li>Elabora o PEI com IA</li></ul>
+        </div>
+        <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:#6D28D9;margin-bottom:6px">🏥 Equipe Clínica</div>
+          <ul style="margin:0;padding-left:14px;font-size:12px;color:var(--gr600);line-height:1.8"><li>Recebe demandas da escola</li><li>Avalia com contexto clínico</li><li>Gera plano de intervenção</li><li>Define objetivos terapêuticos</li></ul>
+        </div>
+        <div style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:10px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:#0F766E;margin-bottom:6px">🧑‍⚕️ AT + 🏫 Gestão</div>
+          <ul style="margin:0;padding-left:14px;font-size:12px;color:var(--gr600);line-height:1.8"><li>AT aplica roteiro em sala</li><li>Gestão coordena reuniões</li><li>Gestão monitora PEIs</li><li>Todos participam da pauta</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding:12px 16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;font-size:12px;color:#78350F;line-height:1.7">
+      <strong>⚖️ Base legal:</strong> Colaboração multiprofissional exigida pelo <strong>Decreto nº 12.686/2025</strong> (art. 14), pela <strong>LBI art. 28</strong> e diretrizes do <strong>CFP, CFFa e COFFITO</strong>.
+    </div>`;
+}
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div class="fcard">
@@ -4527,6 +4585,59 @@ function colaboracaoHTML() {
     <div style="margin-top:14px;padding:12px 16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;font-size:12px;color:#78350F;line-height:1.7">
       <strong>⚖️ Base legal:</strong> A colaboração multiprofissional é exigida pelo <strong>Decreto nº 12.686/2025</strong> (art. 14 — planos pedagógicos individualizados com participação da equipe de saúde), pela <strong>LBI, art. 28</strong> (elaboração do PEI por equipe multidisciplinar) e pelas diretrizes do <strong>CFP, CFFa e COFFITO</strong> para integração clínica-pedagógica.
     </div>`;
+}
+
+// ── COLABORAÇÃO — MURAL DE CASOS ────────────────────────────
+async function carregarColaboracao() {
+  const sel = document.getElementById('colab-aluno-sel');
+  if (!sel) return;
+  const { data } = await db.from('alunos').select('id,nome,serie').order('nome');
+  sel.innerHTML = '<option value="">— Selecione um aluno —</option>' +
+    (data||[]).map(a => `<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' · '+a.serie:''}</option>`).join('');
+}
+
+async function carregarMuralAluno(id) {
+  const mural = document.getElementById('colab-mural');
+  const vazio = document.getElementById('colab-vazio');
+  if (!id) { mural.style.display='none'; vazio.style.display='block'; return; }
+
+  const sel = document.getElementById('colab-aluno-sel');
+  const nomeAluno = sel?.selectedOptions[0]?.dataset?.nome || '';
+
+  mural.style.display='block'; vazio.style.display='none';
+
+  const [{ data: diario }, { data: planos }, { data: obj }] = await Promise.all([
+    db.from('diario_aluno').select('*').eq('aluno_id', id).order('data', {ascending:false}).limit(1),
+    db.from('relatorios').select('*').eq('aluno_nome', nomeAluno).order('created_at', {ascending:false}).limit(1),
+    db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle()
+  ]);
+
+  const dEl = document.getElementById('colab-diario');
+  const ultimo = diario?.[0];
+  dEl.innerHTML = ultimo
+    ? `<div style="font-size:11px;color:var(--gr400);margin-bottom:4px">${new Date(ultimo.data).toLocaleDateString('pt-BR')} · ${ultimo.tipo||'Registro'}</div><div style="background:var(--bg2);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.6">${(ultimo.conteudo||'').slice(0,200)}${(ultimo.conteudo||'').length>200?'…':''}</div>`
+    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">📓</div><div class="empty-text">Sem registros ainda</div></div>`;
+
+  const pEl = document.getElementById('colab-plano');
+  const ultimoP = planos?.[0];
+  pEl.innerHTML = ultimoP
+    ? `<div style="font-size:11px;color:var(--gr400);margin-bottom:4px">${new Date(ultimoP.created_at).toLocaleDateString('pt-BR')} · ${ultimoP.origem==='clinica'?'🏥 Clínica':'🏫 Escola'}</div><div style="background:var(--bg2);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.6">${(ultimoP.conteudo||'').slice(0,200)}${(ultimoP.conteudo||'').length>200?'…':''}</div>`
+    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🔬</div><div class="empty-text">Sem plano enviado ainda</div></div>`;
+
+  const oEl = document.getElementById('colab-obj');
+  oEl.innerHTML = obj
+    ? ['cognitivo','comunicacao','social','comportamental','academico'].filter(k=>obj[k]).map(k=>`<div style="margin-bottom:5px"><span style="font-size:10.5px;font-weight:600;color:var(--gr500);text-transform:uppercase;letter-spacing:.04em">${k}</span><div style="font-size:12.5px;color:var(--gr700);line-height:1.5">${obj[k]}</div></div>`).join('')||'<span style="color:var(--gr400)">Nenhum objetivo cadastrado</span>'
+    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🎯</div><div class="empty-text">Sem objetivos cadastrados</div></div>`;
+
+  const acEl = document.getElementById('colab-acoes');
+  const acoes = [
+    { label:'📓 Ver Diário completo', page: userRole==='professor'?'diario-aluno':userRole==='gestao'?'gestao-diario':'ponte-diario' },
+    { label:'📋 Gerar pauta de reunião', page:'gestao-pauta' },
+    { label:'🔬 Ver plano de intervenção', page:'clinica-plano', roles:['clinica','gestao-clinica','gestao'] },
+    { label:'📄 Ver PEI do aluno', page: userRole==='gestao'?'gestao-peis':'pei' },
+    { label:'🎯 Objetivos convergentes', page:'ponte-objetivos' },
+  ].filter(a => !a.roles || a.roles.includes(userRole));
+  acEl.innerHTML = acoes.map(a=>`<button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:9px 12px;font-size:12.5px;text-align:left;height:auto;white-space:normal" onclick="showPage('${a.page}')">${a.label}</button>`).join('');
 }
 
 // ── GUIA DE ENSINO — TABS ────────────────────────────────────
