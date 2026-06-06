@@ -4417,6 +4417,7 @@ async function abrirColaboracao() {
     div.id = 'page-colaboracao';
     div.className = 'page active';
     div.innerHTML = colaboracaoHTML();
+    carregarColaboracao();
     await carregarColaboracao();
     mc.appendChild(div);
   } else {
@@ -4437,11 +4438,9 @@ function colaboracaoHTML() {
 
     <div class="fcard" style="margin-bottom:16px">
       <div class="fcard-title" style="margin-bottom:10px">🎓 Selecionar aluno</div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <select id="colab-aluno-sel" onchange="carregarMuralAluno(this.value)" style="flex:1;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr800);background:var(--white);outline:none">
-          <option value="">— Selecione um aluno —</option>
-        </select>
-      </div>
+      <select id="colab-aluno-sel" onchange="carregarMuralAluno(this.value)" style="width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:var(--rsm);font-family:inherit;font-size:13px;color:var(--gr800);background:var(--white);outline:none">
+        <option value="">— Selecione um aluno —</option>
+      </select>
     </div>
 
     <div id="colab-mural" style="display:none">
@@ -4629,6 +4628,52 @@ async function carregarMuralAluno(id) {
     ? ['cognitivo','comunicacao','social','comportamental','academico'].filter(k=>obj[k]).map(k=>`<div style="margin-bottom:5px"><span style="font-size:10.5px;font-weight:600;color:var(--gr500);text-transform:uppercase;letter-spacing:.04em">${k}</span><div style="font-size:12.5px;color:var(--gr700);line-height:1.5">${obj[k]}</div></div>`).join('')||'<span style="color:var(--gr400)">Nenhum objetivo cadastrado</span>'
     : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🎯</div><div class="empty-text">Sem objetivos cadastrados</div></div>`;
 
+  const acEl = document.getElementById('colab-acoes');
+  const acoes = [
+    { label:'📓 Ver Diário completo', page: userRole==='professor'?'diario-aluno':userRole==='gestao'?'gestao-diario':'ponte-diario' },
+    { label:'📋 Gerar pauta de reunião', page:'gestao-pauta' },
+    { label:'🔬 Ver plano de intervenção', page:'clinica-plano', roles:['clinica','gestao-clinica','gestao'] },
+    { label:'📄 Ver PEI do aluno', page: userRole==='gestao'?'gestao-peis':'pei' },
+    { label:'🎯 Objetivos convergentes', page:'ponte-objetivos' },
+  ].filter(a => !a.roles || a.roles.includes(userRole));
+  acEl.innerHTML = acoes.map(a=>`<button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:9px 12px;font-size:12.5px;text-align:left;height:auto;white-space:normal" onclick="showPage('${a.page}')">${a.label}</button>`).join('');
+}
+
+// ── COLABORAÇÃO — MURAL DE CASOS ────────────────────────────
+async function carregarColaboracao() {
+  const sel = document.getElementById('colab-aluno-sel');
+  if (!sel) return;
+  const { data } = await db.from('alunos').select('id,nome,serie').order('nome');
+  sel.innerHTML = '<option value="">— Selecione um aluno —</option>' +
+    (data||[]).map(a => `<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' · '+a.serie:''}</option>`).join('');
+}
+
+async function carregarMuralAluno(id) {
+  const mural = document.getElementById('colab-mural');
+  const vazio = document.getElementById('colab-vazio');
+  if (!id) { mural.style.display='none'; vazio.style.display='block'; return; }
+  const sel = document.getElementById('colab-aluno-sel');
+  const nomeAluno = sel?.selectedOptions[0]?.dataset?.nome || '';
+  mural.style.display='block'; vazio.style.display='none';
+  const [{ data: diario }, { data: planos }, { data: obj }] = await Promise.all([
+    db.from('diario_aluno').select('*').eq('aluno_id', id).order('data', {ascending:false}).limit(1),
+    db.from('relatorios').select('*').eq('aluno_nome', nomeAluno).order('created_at', {ascending:false}).limit(1),
+    db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle()
+  ]);
+  const dEl = document.getElementById('colab-diario');
+  const ultimo = diario?.[0];
+  dEl.innerHTML = ultimo
+    ? `<div style="font-size:11px;color:var(--gr400);margin-bottom:4px">${new Date(ultimo.data).toLocaleDateString('pt-BR')} · ${ultimo.tipo||'Registro'}</div><div style="background:var(--bg2);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.6">${(ultimo.conteudo||'').slice(0,200)}${(ultimo.conteudo||'').length>200?'…':''}</div>`
+    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">📓</div><div class="empty-text">Sem registros ainda</div></div>`;
+  const pEl = document.getElementById('colab-plano');
+  const ultimoP = planos?.[0];
+  pEl.innerHTML = ultimoP
+    ? `<div style="font-size:11px;color:var(--gr400);margin-bottom:4px">${new Date(ultimoP.created_at).toLocaleDateString('pt-BR')} · ${ultimoP.origem==='clinica'?'🏥 Clínica':'🏫 Escola'}</div><div style="background:var(--bg2);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.6">${(ultimoP.conteudo||'').slice(0,200)}${(ultimoP.conteudo||'').length>200?'…':''}</div>`
+    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🔬</div><div class="empty-text">Sem plano enviado ainda</div></div>`;
+  const oEl = document.getElementById('colab-obj');
+  oEl.innerHTML = obj
+    ? ['cognitivo','comunicacao','social','comportamental','academico'].filter(k=>obj[k]).map(k=>`<div style="margin-bottom:5px"><span style="font-size:10.5px;font-weight:600;color:var(--gr500);text-transform:uppercase;letter-spacing:.04em">${k}</span><div style="font-size:12.5px;color:var(--gr700);line-height:1.5">${obj[k]}</div></div>`).join('')||'<span style="color:var(--gr400)">Nenhum objetivo cadastrado</span>'
+    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🎯</div><div class="empty-text">Sem objetivos cadastrados</div></div>`;
   const acEl = document.getElementById('colab-acoes');
   const acoes = [
     { label:'📓 Ver Diário completo', page: userRole==='professor'?'diario-aluno':userRole==='gestao'?'gestao-diario':'ponte-diario' },
