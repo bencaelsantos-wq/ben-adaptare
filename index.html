@@ -4141,14 +4141,47 @@ function gcRenderEstudantes(lista) {
 function gcRenderClinicas() {
   const grid = document.getElementById('gc-clinicas-grid');
   if (!grid) return;
-  grid.innerHTML = GC_CLINICAS_EXEMPLO.map(c => `
-    <div id="gcc-${c.id}" onclick="gcSelecionarClinica('${c.id}')"
+  const aluno = (alunosCad||[]).find(a => String(a.id) === String(gcSelEstudante?.id));
+  if (!aluno) {
+    grid.innerHTML = '<div style="font-size:12.5px;color:var(--gr400);padding:8px;grid-column:1/-1">Selecione um estudante primeiro.</div>';
+    return;
+  }
+  const clinicas = [];
+  if (aluno.clinica_nome) {
+    const profs = aluno.clinica_profs || [];
+    clinicas.push({
+      id: 'real-main',
+      nome: aluno.clinica_nome,
+      tel: aluno.clinica_tel || '—',
+      email: aluno.clinica_email || '—',
+      prof: profs.map(p => p.nome || p).filter(Boolean).join(', ') || '—',
+      esp: profs.map(p => p.especialidade || '').filter(Boolean).join(', ') || 'Clínica vinculada'
+    });
+  }
+  if (!clinicas.length) {
+    grid.innerHTML = '<div style="font-size:12.5px;color:var(--gr400);padding:8px;grid-column:1/-1">Nenhuma clínica cadastrada para este estudante. Edite o cadastro do aluno para adicionar a clínica.</div>';
+    return;
+  }
+  grid.innerHTML = clinicas.map(c => `
+    <div id="gcc-${c.id}" onclick='gcSelecionarClinicaReal(${JSON.stringify(c).replace(/'/g,"&#39;")})'
       style="background:var(--gr50);border:1.5px solid var(--gr200);border-radius:var(--rmd);padding:11px 13px;cursor:pointer;transition:border-color .15s">
       <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin-bottom:2px">${c.esp}</div>
       <div style="font-size:13px;font-weight:600;color:var(--gr800)">${c.nome}</div>
       <div style="font-size:12px;color:var(--gr500);margin-top:1px">${c.prof}</div>
       <div style="font-size:11px;color:var(--gr400);margin-top:5px">${c.tel} · ${c.email}</div>
     </div>`).join('');
+}
+
+function gcSelecionarClinicaReal(c) {
+  document.querySelectorAll('[id^="gcc-"]').forEach(el => {
+    el.style.borderColor = 'var(--gr200)';
+    el.style.background  = 'var(--gr50)';
+  });
+  const card = document.getElementById('gcc-' + c.id);
+  if (card) { card.style.borderColor='#2563EB'; card.style.background='#EEF2FF'; }
+  gcSelClinica = c;
+  const btn = document.getElementById('gc-btn-s2');
+  if (btn) { btn.style.opacity='1'; btn.style.pointerEvents='auto'; }
 }
 
 function gcFiltrarEstudantes() {
@@ -4234,12 +4267,28 @@ function gcToggleChip(el, groupId) {
   el.classList.add('active');
 }
 
-function gcEnviarFormulario() {
+async function gcEnviarFormulario() {
+  if (!gcSelEstudante || !gcSelClinica) return toast('Selecione estudante e clínica.', 'error');
+  const motivo = gcGetChipAtivo('gc-chips-motivo') || 'Adaptação curricular';
+  const obs    = document.getElementById('gc-obs-escola')?.value?.trim() || '';
+  const pergs  = document.getElementById('gc-perguntas')?.value?.trim() || '';
+  const prazo  = gcGetChipAtivo('gc-chips-prazo') || '7 dias';
+  const conteudo = `Motivo: ${motivo}\n\nObservações da escola:\n${obs||'—'}\n\nPerguntas para a clínica:\n${pergs||'—'}\n\nPrazo de resposta: ${prazo}`;
+  const { error } = await db.from('relatorios').insert({
+    aluno_nome: gcSelEstudante.nome,
+    titulo: `Comunicação escola → clínica — ${gcSelEstudante.nome}`,
+    conteudo,
+    origem: 'escola',
+    destino: 'clinica',
+    lido: false,
+    user_id: user.id
+  });
+  if (error) return toast('Erro ao enviar: ' + error.message, 'error');
   const ok  = document.getElementById('gc-ok-escola');
   const btn = document.getElementById('gc-btn-enviar');
-  if (ok)  { ok.style.display='block'; }
-  if (btn) { btn.disabled=true; btn.textContent='Enviado ✓'; btn.style.background='#059669'; }
-  toast('Formulário enviado! A clínica receberá o link em instantes.', 'success');
+  if (ok)  ok.style.display = 'block';
+  if (btn) { btn.disabled=true; btn.textContent='Enviado'; btn.style.background='#059669'; }
+  toast('Comunicação enviada e registrada com sucesso.', 'success');
 }
 
 function gcFiltrarRelatorios() { /* Filtro UI — implementação futura */ }
