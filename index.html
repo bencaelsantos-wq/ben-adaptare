@@ -4669,7 +4669,7 @@ async function carregarDashboardProfessor() {
     if(acoes){ const s=[];
       if(!nd) s.push('📝 Crie sua primeira adaptação pedagógica para um aluno com NEE.');
       if(!np) s.push('📋 Elabore um PEI — é obrigatório pela Lei nº 13.146/2015.');
-      if(!na) s.push('👦 Aguarde a Gestão Escolar cadastrar os alunos da turma.');
+      if(!na) s.push('Sua turma ainda não tem alunos cadastrados. Solicite à Gestão Escolar o cadastro e vínculo dos alunos.');
       if(na&&nd&&np) s.push('✅ Você tem alunos, adaptações e PEIs. Acione a clínica pelo Diário quando precisar.');
       acoes.innerHTML=s.length?s.map(x=>'<div style="margin-bottom:4px">'+x+'</div>').join(''):'✅ Tudo em dia!'; }
   } catch(e){ console.error('carregarDashboardProfessor:',e); }
@@ -10095,7 +10095,11 @@ function renderAlunosLista() {
   const el = document.getElementById('alunos-lista');
   if (!el) return;
   if (!alunosCad.length) {
-    el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👤</div><div class="empty-text" style="font-size:14px;font-weight:600;color:var(--gr600);margin-bottom:8px">Nenhum aluno cadastrado ainda.</div><div style="font-size:13px;color:var(--gr400);margin-bottom:16px">Cadastre o primeiro aluno para começar a usar a plataforma.</div><button class="btn-p" style="width:auto;padding:10px 24px;display:inline-flex;gap:6px;align-items:center" onclick="abrirModalCad()">+ Cadastrar primeiro aluno</button></div>`;
+    if (userRole === 'gestao') {
+      el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👤</div><div class="empty-text" style="font-size:14px;font-weight:600;color:var(--gr600);margin-bottom:8px">Nenhum aluno cadastrado ainda.</div><div style="font-size:13px;color:var(--gr400);margin-bottom:16px">Cadastre o primeiro aluno para começar a usar a plataforma.</div><button class="btn-p" style="width:auto;padding:10px 24px;display:inline-flex;gap:6px;align-items:center" onclick="abrirModalCad()">+ Cadastrar primeiro aluno</button></div>`;
+    } else {
+      el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div style="width:48px;height:48px;border-radius:12px;background:#EFF6FF;border:1.5px solid #BFDBFE;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="#3B82F6" stroke-width="1.5"/><path d="M2 17c0-3 2.686-5 6-5" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="#3B82F6" stroke-width="1.5"/><path d="M11 16h6" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round"/></svg></div><div style="font-size:14px;font-weight:600;color:#1F2937;margin-bottom:6px">Aguardando Cadastro</div><div style="font-size:13px;color:#6B7280;line-height:1.65;max-width:320px;margin:0 auto">A Gestão Escolar é responsável por cadastrar os alunos e vinculá-los às turmas. Entre em contato com a coordenação para configurar sua turma.</div></div>`;
+    }
     return;
   }
   el.innerHTML = alunosCad.map(a => {
