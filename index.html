@@ -3852,7 +3852,7 @@ function renderPagesGestaoClinica() {
   document.getElementById('main-content').innerHTML = `
   <!-- DASHBOARD DA GESTÃO CLÍNICA -->
   <div id="page-gc-dashboard" class="page active">
-    <h1 class="page-title">📊 Dashboard — Gestão Clínica</h1>
+    <h1 class="page-title">Dashboard — Gestão Clínica</h1>
     <p class="page-sub">Visão executiva da equipe clínica — especialistas, alunos atendidos e integração com a escola.</p>
     <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
       <div class="stat-card"><div class="stat-num" id="dash-gc-especialistas" style="background:linear-gradient(135deg,#7C3AED,#A78BFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="stat-label">Especialistas ativos</div></div>
@@ -3862,16 +3862,16 @@ function renderPagesGestaoClinica() {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">
       <div class="fcard">
-        <div class="fcard-title">🏥 Equipe de especialistas</div>
+        <div class="fcard-title">Equipe de especialistas</div>
         <div id="dash-gc-prof-lista" style="font-size:13px;color:var(--gr500)">Carregando…</div>
       </div>
       <div class="fcard">
-        <div class="fcard-title">🧠 Perfis clínicos recentes</div>
+        <div class="fcard-title">Perfis clínicos recentes</div>
         <div id="dash-gc-perfis-lista" style="font-size:13px;color:var(--gr500)">Carregando…</div>
       </div>
     </div>
     <div class="fcard" style="margin-top:16px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border-color:#C4B5FD">
-      <div class="fcard-title" style="color:#6D28D9">🔔 Próximas ações sugeridas</div>
+      <div class="fcard-title" style="color:#6D28D9">Próximas ações sugeridas</div>
       <div id="dash-gc-acoes" style="font-size:13px;color:var(--gr600);line-height:1.8">Carregando sugestões…</div>
     </div>
   </div>
@@ -8520,21 +8520,21 @@ function renderPagesAT() {
       </div>
     </div>
     <div class="fcard" style="margin-top:16px;background:linear-gradient(135deg,#F0FDFA,#CCFBF1);border-color:#99F6E4">
-      <div class="fcard-title" style="color:#0F766E">🔔 Próximas ações sugeridas</div>
+      <div class="fcard-title" style="color:#0F766E">Próximas ações sugeridas</div>
       <div id="dash-at-acoes" style="font-size:13px;color:var(--gr600);line-height:1.8">Carregando sugestões…</div>
     </div>
   </div>
 
   <div id="page-at-roteiro" class="page">
-    <div class="at-hero"><h2>🧑‍⚕️ Roteiro de Atuação</h2><p>Seu guia prático do dia a dia. Situações, estratégias e o que evitar — linguagem direta, pronta para aplicar.</p></div>
+    <div class="at-hero"><h2>Roteiro de Atuação</h2><p>Seu guia prático do dia a dia. Situações, estratégias e o que evitar — linguagem direta, pronta para aplicar.</p></div>
     <div style="margin-bottom:16px"><select class="fselect" id="at-aluno-sel" style="max-width:320px" onchange="carregarRoteiroAT()"><option value="">Selecione um aluno</option></select></div>
-    <div id="at-roteiro-body"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Selecione um aluno para ver o roteiro de atuação.</div></div></div>
+    <div id="at-roteiro-body"><div class="empty"><div class="empty-icon"></div><div class="empty-text">Selecione um aluno para ver o roteiro de atuação.</div></div></div>
   </div>
 
   <div id="page-at-relatorios" class="page">
     <h1 class="page-title">Relatórios Recebidos</h1>
     <p class="page-sub">Relatórios enviados pela escola e pela clínica para embasar sua atuação diária. Você não acessa os sistemas internos — apenas o que foi compartilhado com você.</p>
-    <div id="at-rel-grid"><div class="empty"><div class="empty-icon">📨</div><div class="empty-text">Nenhum relatório recebido ainda.</div></div></div>
+    <div id="at-rel-grid"><div class="empty"><div class="empty-icon"></div><div class="empty-text">Nenhum relatório recebido ainda.</div></div></div>
   </div>`;
   carregarAlunosAT();
 }
