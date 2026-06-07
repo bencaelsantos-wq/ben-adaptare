@@ -4322,7 +4322,41 @@ async function gcEnviarFormulario() {
   toast('Comunicação enviada e registrada com sucesso.', 'success');
 }
 
-function gcFiltrarRelatorios() { /* Filtro UI — implementação futura */ }
+let _gcRelatoriosList = [];
+async function gcFiltrarRelatorios() {
+  const el = document.getElementById('gc-relatorios-lista');
+  const empty = document.getElementById('gcrel-empty');
+  if (!el) return;
+  if (!_gcRelatoriosList.length) {
+    const { data } = await db.from('relatorios').select('*').eq('destino','escola').order('created_at',{ascending:false});
+    _gcRelatoriosList = data || [];
+  }
+  const q = (document.getElementById('gcrel-q')?.value || '').toLowerCase();
+  const st = document.getElementById('gcrel-fstatus')?.value || '';
+  let lista = _gcRelatoriosList.filter(r => {
+    const matchQ = !q || (r.aluno_nome||'').toLowerCase().includes(q) || (r.titulo||'').toLowerCase().includes(q);
+    const matchSt = !st || (st === 'pendente' ? !r.lido : r.lido);
+    return matchQ && matchSt;
+  });
+  if (!lista.length) {
+    el.querySelectorAll('.gcrel-card').forEach(c => c.remove());
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  el.querySelectorAll('.gcrel-card').forEach(c => c.remove());
+  lista.forEach(r => {
+    const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '';
+    const lidoBadge = r.lido
+      ? '<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#F0FDF4;color:#059669">Respondido</span>'
+      : '<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#FFFBEB;color:#B45309">Aguardando</span>';
+    const div = document.createElement('div');
+    div.className = 'gcrel-card';
+    div.style.cssText = 'background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px';
+    div.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13.5px;font-weight:600;color:var(--gr800)">${r.titulo||'Relatório'}</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Estudante: ${r.aluno_nome||'—'} · ${dt}</div></div>${lidoBadge}</div><div style="font-size:13px;color:var(--gr600);line-height:1.65">${(r.conteudo||'').substring(0,200)}${(r.conteudo||'').length>200?'…':''}</div>`;
+    el.appendChild(div);
+  });
+}
 function gcdFiltrar()           { /* Filtro UI — implementação futura */ }
 
 // ── Gestão Clínica: enviar resposta à escola ─────────────────────
@@ -8341,32 +8375,7 @@ function renderPagesGestao() {
       <select class="filter-sel" id="gcrel-fstatus" onchange="gcFiltrarRelatorios()"><option value="">Todos os status</option><option value="pendente">Aguardando resposta</option><option value="respondido">Respondido</option></select>
     </div>
     <div id="gc-relatorios-lista">
-      <!-- Relatórios de exemplo estáticos -->
-      <div style="background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div>
-            <div style="font-size:13.5px;font-weight:600;color:var(--gr800)">Fonoaudiologia — Centro de Fono SP</div>
-            <div style="font-size:12px;color:var(--gr400);margin-top:2px">Estudante: Sofia Almeida · Enviado em 15/04/2025 · Dr. Marcos Almeida</div>
-          </div>
-          <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#F0FDF4;color:#059669">Respondido</span>
-        </div>
-        <div style="font-size:13px;color:var(--gr600);line-height:1.65">Sofia apresentou boa evolução na fluência verbal nas últimas 4 semanas. Recomendo que a escola incentive atividades orais em pequenos grupos antes de expô-la ao grupo maior...</div>
-        <div style="margin-top:10px"><button class="btn-sm-ghost" style="font-size:12px">Ver relatório completo</button></div>
-      </div>
-      <div style="background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div>
-            <div style="font-size:13.5px;font-weight:600;color:var(--gr800)">Terapia Ocupacional — Clínica Integrar</div>
-            <div style="font-size:12px;color:var(--gr400);margin-top:2px">Estudante: Lucas Mendonça · Enviado em 25/04/2025 · Dra. Renata Souza</div>
-          </div>
-          <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#FFFBEB;color:#B45309">Aguardando resposta</span>
-        </div>
-        <div style="font-size:13px;color:var(--gr400)">Formulário enviado por e-mail e WhatsApp. Prazo: 7 dias (vence em 02/05/2025).</div>
-        <div style="margin-top:10px;display:flex;gap:6px">
-          <button class="btn-sm" style="font-size:12px">Reenviar lembrete</button>
-          <button class="btn-danger" style="font-size:12px">Cancelar envio</button>
-        </div>
-      </div>
+      <div class="empty" id="gcrel-empty" style="display:none"><div class="empty-text">Nenhum relatório recebido ainda.</div></div>
     </div>
     <div style="margin-top:16px;text-align:center">
       <button class="btn-sm" onclick="showPage('gestao-comunicacao')">+ Nova comunicação com clínica</button>
