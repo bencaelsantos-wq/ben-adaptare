@@ -8636,11 +8636,6 @@ function selTpl(el, t) {
 const PLANOS_COM_UPLOAD = ['profissional','escola','admin'];
 
 function uploadArquivoAdaptacao() {
-  const plano = window._userPlano || 'basico';
-  if (!PLANOS_COM_UPLOAD.includes(plano)) {
-    toast('Funcionalidade disponível nos planos Profissional e Escola. Em breve!', 'error');
-    return;
-  }
   document.getElementById('inp-arquivo-adaptacao').click();
 }
 
@@ -13028,7 +13023,14 @@ async function editarEscola(id) {
   document.getElementById('dev-form-escola').scrollIntoView({ behavior: 'smooth' });
 }
 
-function atualizarPrecoPlano() {}
+function atualizarPrecoPlano() {
+  const sel = document.getElementById('dev-plano');
+  if (!sel) return;
+  const parts = sel.value.split('|');
+  const nome = parts[2] || '';
+  const diasEl = document.getElementById('dev-dias');
+  if (diasEl) diasEl.value = nome === 'Enterprise' ? 365 : 30;
+}
 
 async function salvarNovaEscola() {
   const nome     = document.getElementById('dev-nome').value.trim();
