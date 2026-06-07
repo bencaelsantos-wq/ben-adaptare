@@ -367,7 +367,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .sb-role.gestao{background:#EFF6FF;color:#1D4ED8}.sb-role.gestao::before{background:#3B82F6}
 .sb-role.clinica{background:#F5F3FF;color:#6D28D9}.sb-role.clinica::before{background:#8B5CF6}
 .sb-role.at{background:#F0FDFA;color:#0F766E}.sb-role.at::before{background:#14B8A6}
-.sb-role.gestao-clinica{background:#FFF7ED;color:#C2410C}.sb-role.gestao-clinica::before{background:#F97316}
+.sb-role.gestao-clinica{background:#F5F0FF;color:#6D28D9}.sb-role.gestao-clinica::before{background:#7C3AED}
 .sb-nav{padding:14px 10px;flex:1;overflow-y:auto}
 
 .notif-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;background:#EF4444;color:#fff;font-size:10px;font-weight:700;border-radius:9px;padding:0 5px;margin-left:auto;line-height:1}
@@ -3613,7 +3613,7 @@ function iniciarApp() {
     professor:       { label:' Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
     gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); } },
     clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); } },
-    'gestao-clinica':{ label:' Gestão Clínica', cls:'at',        sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
+    'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
     at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
     familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); } },
