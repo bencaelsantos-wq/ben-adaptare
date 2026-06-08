@@ -4015,18 +4015,18 @@ function renderPagesGestaoClinica() {
         <span style="font-size:11px;padding:2px 8px;border-radius:999px;background:#FFFBEB;color:#B45309;font-weight:600">Aguarda resposta</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Escola</div><div style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px">Est. Prof. Mário Costa</div></div>
-        <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Paciente / Estudante</div><div style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px">Lucas Mendonça</div></div>
-        <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Profissional responsável</div><div style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px">Dra. Renata Souza (TO)</div></div>
-        <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Recebido em</div><div style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px">25/04/2025</div></div>
+        <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Escola</div><div id="gcr-escola" style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px">—</div></div>
+        <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Paciente / Estudante</div><div id="gcr-paciente" style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px">—</div></div>
+        <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Profissional responsável</div><div id="gcr-profissional" style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px">—</div></div>
+        <div style="background:var(--gr50);border-radius:var(--rsm);padding:9px 11px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400)">Recebido em</div><div id="gcr-recebido" style="font-size:13px;font-weight:600;color:var(--gr800);margin-top:2px">—</div></div>
       </div>
       <div style="background:var(--gr50);border-radius:var(--rsm);padding:11px 13px;font-size:13px;color:var(--gr600);line-height:1.7">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin-bottom:5px">Motivo</div>
-        Adaptação curricular
+        <span id="gcr-motivo">—</span>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin:10px 0 5px">Observações da escola</div>
-        Lucas apresenta dificuldades de regulação em sala durante atividades coletivas. A professora solicita orientações sobre adaptações no ambiente e estratégias práticas para uso em sala.
+        <span id="gcr-observacoes">—</span>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin:10px 0 5px">Perguntas ao profissional</div>
-        Quais estratégias a terapeuta recomenda aplicar em sala? Há mudanças recentes no quadro do paciente que impactam o desempenho escolar?
+        <span id="gcr-perguntas">—</span>
       </div>
     </div>
 
@@ -4413,12 +4413,26 @@ async function gcdFiltrar() {
     const badge = `<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;${stStyle[r.status]||stStyle.pendente}">${stLabel[r.status]||r.status}</span>`;
     const div = document.createElement('div');
     div.style.cssText = 'background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px';
-    div.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13.5px;font-weight:600;color:var(--gr800)">${escola}</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Paciente: ${aluno} · ${dt}</div></div>${badge}</div>${r.status==='pendente'?'<div style="margin-top:10px"><button class="btn-sm" style="background:#7C3AED;color:#fff;border-color:#7C3AED" onclick="showPage(\'gc-responder\')">Responder</button></div>':''}`;
+    div.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13.5px;font-weight:600;color:var(--gr800)">${escola}</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Paciente: ${aluno} · ${dt}</div></div>${badge}</div>${r.status==='pendente'?'<div style="margin-top:10px"><button class="btn-sm" style="background:#7C3AED;color:#fff;border-color:#7C3AED" onclick="abrirGCResponder(${JSON.stringify(r).replace(/\\\'/g,'\\'+'&#39;').replace(/\"/g,'&quot;')})">Responder</button></div>':''}`;
     el.appendChild(div);
   });
 }
 
 // ── Gestão Clínica: enviar resposta à escola ─────────────────────
+function abrirGCResponder(r) {
+  const c = r.conteudo || {};
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
+  set('gcr-escola',       r.parceiro_nome || c.escola_nome || '—');
+  set('gcr-paciente',     r.aluno_nome    || c.aluno_nome  || '—');
+  set('gcr-profissional', c.profissional  || '—');
+  set('gcr-recebido',     r.criado_em ? new Date(r.criado_em).toLocaleDateString('pt-BR') : '—');
+  set('gcr-motivo',       c.motivo        || '—');
+  set('gcr-observacoes',  c.observacoes   || '—');
+  set('gcr-perguntas',    c.perguntas     || '—');
+  window._gcrSolId = r.id;
+  showPage('gc-responder');
+}
+
 function gcrEnviarResposta() {
   const ok  = document.getElementById('gcr-ok');
   const btn = document.getElementById('gcr-btn-enviar');
