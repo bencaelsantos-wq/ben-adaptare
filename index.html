@@ -13021,7 +13021,14 @@ async function editarEscola(id) {
   document.getElementById('dev-form-escola').scrollIntoView({ behavior: 'smooth' });
 }
 
-function atualizarPrecoPlano() {}
+function atualizarPrecoPlano() {
+  const sel = document.getElementById('dev-plano');
+  if (!sel) return;
+  const parts = sel.value.split('|');
+  const nome = parts[2] || '';
+  const diasEl = document.getElementById('dev-dias');
+  if (diasEl) diasEl.value = nome === 'Enterprise' ? 365 : 30;
+}
 
 async function salvarNovaEscola() {
   const nome     = document.getElementById('dev-nome').value.trim();
