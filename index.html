@@ -3972,7 +3972,8 @@ function renderPagesGestaoClinica() {
       <select class="filter-sel" id="gcd-fstatus" onchange="gcdFiltrar()"><option value="">Todos os status</option><option value="pendente">Aguarda resposta</option><option value="respondido">Respondidos</option></select>
     </div>
     <div id="gc-demandas-lista">
-      <div style="background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px">
+      <div class="empty" id="gcd-empty" style="display:none"><div class="empty-text">Nenhuma demanda recebida ainda.</div></div>
+      <div style="background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px" id="gcd-placeholder-REMOVE" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div>
             <div style="font-size:13.5px;font-weight:600;color:var(--gr800)">Est. Prof. Mário Costa — Adaptação curricular</div>
@@ -4379,7 +4380,43 @@ async function gcFiltrarRelatorios() {
     el.appendChild(div);
   });
 }
-function gcdFiltrar() {}
+let _gcdList = [];
+async function gcdFiltrar() {
+  const el = document.getElementById('gc-demandas-lista');
+  if (!el) return;
+  if (!_gcdList.length) {
+    const { data } = await db.from('solicitacoes_externas')
+      .select('*').eq('tipo','escola_para_clinica')
+      .order('criado_em',{ascending:false});
+    _gcdList = data || [];
+  }
+  const q = (document.getElementById('gcd-q')?.value || '').toLowerCase();
+  const st = document.getElementById('gcd-fstatus')?.value || '';
+  let lista = _gcdList.filter(r => {
+    const nome = (r.aluno_nome || r.conteudo?.aluno_nome || '').toLowerCase();
+    const escola = (r.parceiro_nome || r.conteudo?.escola_nome || '').toLowerCase();
+    const matchQ = !q || nome.includes(q) || escola.includes(q);
+    const matchSt = !st || r.status === st;
+    return matchQ && matchSt;
+  });
+  el.innerHTML = '';
+  if (!lista.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-text">Nenhuma demanda recebida ainda.</div></div>';
+    return;
+  }
+  const stLabel = { pendente:'Aguarda resposta', visualizado:'Visualizado', respondido:'Respondido', revogado:'Revogado' };
+  const stStyle = { pendente:'background:#FFFBEB;color:#B45309', visualizado:'background:#DBEAFE;color:#1D4ED8', respondido:'background:#F0FDF4;color:#059669', revogado:'background:#FEE2E2;color:#991B1B' };
+  lista.forEach(r => {
+    const dt = r.criado_em ? new Date(r.criado_em).toLocaleDateString('pt-BR') : '';
+    const aluno = r.aluno_nome || r.conteudo?.aluno_nome || '—';
+    const escola = r.parceiro_nome || r.conteudo?.escola_nome || '—';
+    const badge = `<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;${stStyle[r.status]||stStyle.pendente}">${stLabel[r.status]||r.status}</span>`;
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px';
+    div.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13.5px;font-weight:600;color:var(--gr800)">${escola}</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Paciente: ${aluno} · ${dt}</div></div>${badge}</div>${r.status==='pendente'?'<div style="margin-top:10px"><button class="btn-sm" style="background:#7C3AED;color:#fff;border-color:#7C3AED" onclick="showPage(\'gc-responder\')">Responder</button></div>':''}`;
+    el.appendChild(div);
+  });
+}
 
 // ── Gestão Clínica: enviar resposta à escola ─────────────────────
 function gcrEnviarResposta() {
