@@ -2465,6 +2465,31 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
+<!-- ══ MODAL: Feedback / Sugestão ══════════════════════════════ -->
+<div class="overlay" id="modal-feedback-usuario" style="z-index:9900">
+  <div class="modal md" style="max-width:480px;padding:28px 32px">
+    <h3 style="font-size:17px;font-weight:700;color:#1E3A8A;margin-bottom:6px">Enviar Sugestão</h3>
+    <p style="font-size:13px;color:#6B7280;margin-bottom:20px">Sua mensagem vai direto para o time Pluramente.</p>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Tipo</label>
+      <select id="fb-tipo" class="finput" style="width:100%">
+        <option value="sugestao">Sugestão de melhoria</option>
+        <option value="bug">Reportar problema</option>
+        <option value="duvida">Dúvida</option>
+        <option value="elogio">Elogio</option>
+      </select>
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Mensagem *</label>
+      <textarea id="fb-mensagem" class="ftarea" rows="4" placeholder="Descreva sua sugestão ou problema..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-ghost" onclick="fecharModal('modal-feedback-usuario')">Cancelar</button>
+      <button class="btn-primary" onclick="enviarFeedbackUsuario()">Enviar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL: Nova Solicitação Externa (stepper) ══ -->
 <div id="modal-nova-solicitacao" class="overlay" onclick="if(event.target===this)fecharModal('modal-nova-solicitacao')">
   <div class="modal lg" style="max-width:580px">
@@ -5177,8 +5202,11 @@ function renderPagesDeveloper() {
   <div id="page-dev-feedback" class="page">
     <h1 class="page-title">Feedbacks & Sugestões</h1>
     <p class="page-sub">Registros enviados pelos usuários para melhoria da ferramenta.</p>
+    <div style="margin-bottom:16px">
+      <button class="btn-primary" onclick="document.getElementById('modal-feedback-usuario').classList.add('open')">+ Enviar sugestão (teste)</button>
+    </div>
     <div id="dev-feedback-lista" style="margin-top:14px">
-      <div class="empty"><div class="empty-icon">💬</div><div class="empty-text">Nenhum feedback registrado ainda.<br>Em breve os usuários poderão enviar sugestões direto da plataforma.</div></div>
+      <div class="empty"><div class="empty-text">Carregando...</div></div>
     </div>
   </div>
 
@@ -6546,7 +6574,8 @@ function showPage(id) {
   if (id === 'ponte-diario' && userRole === 'gestao') carregarDiarioGestao();
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'ponte-objetivos' && userRole === 'gestao') carregarObjetivosGestao();
-  if (id === 'ponte-tradutor') inicializarTradutorGestao();}
+  if (id === 'ponte-tradutor') inicializarTradutorGestao();
+  if (id === 'dev-feedback') carregarFeedbacksDev();}
 // ⚠️ CRÍTICO — expõe showPage em window ANTES do patch em ~linha 7411.
 // NUNCA remova esta linha — sem ela a navegação para de funcionar.
 window.showPage = showPage;
@@ -13440,6 +13469,44 @@ function fecharOnboardingGestao() {
   const key = 'pluramente_onboarding_gestao_' + (user?.id || 'x');
   localStorage.setItem(key, '1');
   fecharModal('modal-onboarding-gestao');
+}
+
+// ── FEEDBACK USUÁRIO ─────────────────────────────────────────
+async function enviarFeedbackUsuario() {
+  const mensagem = document.getElementById('fb-mensagem')?.value.trim();
+  if (!mensagem) return toast('Escreva sua mensagem.', 'error');
+  const tipo = document.getElementById('fb-tipo')?.value || 'sugestao';
+  const { error } = await db.from('feedbacks').insert({
+    user_id: user?.id || null,
+    user_email: user?.email || null,
+    user_role: userRole || null,
+    tipo, mensagem
+  });
+  if (error) return toast('Erro ao enviar. Tente novamente.', 'error');
+  toast('Sugestão enviada! Obrigado.', 'success');
+  fecharModal('modal-feedback-usuario');
+  document.getElementById('fb-mensagem').value = '';
+}
+
+async function carregarFeedbacksDev() {
+  const el = document.getElementById('dev-feedback-lista');
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><div class="empty-text">Carregando...</div></div>';
+  const { data } = await db.from('feedbacks').select('*').order('created_at', { ascending: false });
+  if (!data?.length) { el.innerHTML = '<div class="empty"><div class="empty-text">Nenhum feedback ainda.</div></div>'; return; }
+  const tipoLabel = { sugestao:'Sugestão', bug:'Problema', duvida:'Dúvida', elogio:'Elogio' };
+  const tipoColor = { sugestao:'#EEF2FF;color:#1D4ED8', bug:'#FEE2E2;color:#DC2626', duvida:'#FEF3C7;color:#92400E', elogio:'#F0FDF4;color:#15803D' };
+  el.innerHTML = data.map(f => {
+    const dt = new Date(f.created_at).toLocaleDateString('pt-BR');
+    const bg = tipoColor[f.tipo] || '#F3F4F6;color:#374151';
+    return `<div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:${bg}">${tipoLabel[f.tipo]||f.tipo}</span>
+        <span style="font-size:11px;color:#9CA3AF">${f.user_role||'—'} · ${f.user_email||'anônimo'} · ${dt}</span>
+      </div>
+      <div style="font-size:13px;color:#374151;line-height:1.6">${f.mensagem}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── WHATSAPP ──────────────────────────────────────────────────
