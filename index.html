@@ -4380,7 +4380,7 @@ async function gcFiltrarRelatorios() {
     el.appendChild(div);
   });
 }
-let _gcdList = [];
+let _gcdList = []; window._gcdMap = window._gcdMap || {};
 async function gcdFiltrar() {
   const el = document.getElementById('gc-demandas-lista');
   if (!el) return;
