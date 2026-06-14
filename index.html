@@ -5772,9 +5772,13 @@ async function criarSolicitacao() {
       const txt = encodeURIComponent('Olá ' + parceiroNome + ',\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse o link seguro abaixo para visualizar a solicitação e enviar sua devolutiva:\n\n🔗 ' + link + '\n\n⚠️ Este link é pessoal, intransferível e expira em ' + dias + ' dias.\nPlataforma Pluramente — Comunicação Segura');
       window.open('https://wa.me/' + (num ? '55'+num : '') + '?text=' + txt, '_blank');
     } else if (email) {
-      const assunto = encodeURIComponent('Solicitação de Devolutiva — Pluramente');
-      const corpo = encodeURIComponent('Olá ' + parceiroNome + ',\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse: ' + link + '\n\nEste link expira em breve.\n\nPlataforma Pluramente');
-      window.open('mailto:' + email + '?subject=' + assunto + '&body=' + corpo);
+      db.functions.invoke('enviar-email', { body: {
+        to: email,
+        parceiroNome,
+        link,
+        dias,
+        remetente: 'A equipe Pluramente'
+      }}).catch(() => {});
     }
 
     mostrarToast('✅ Solicitação gerada e enviada!');
