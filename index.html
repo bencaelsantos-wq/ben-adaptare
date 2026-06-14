@@ -4408,7 +4408,7 @@ function abrirGCResponder(r) {
 
 async function gcrEnviarResposta() {
   const btn = document.getElementById('gcr-btn-enviar');
-  const resposta = document.getElementById('gcr-resposta')?.value?.trim();
+  const resposta = document.getElementById('gcr-respostas')?.value?.trim();
   if (!resposta) { toast('Escreva a resposta antes de enviar.', 'error'); return; }
   if (!window._gcrSolId) { toast('Erro: solicitação não identificada.', 'error'); return; }
   if (btn) { btn.disabled=true; btn.textContent='Enviando…'; }
@@ -4427,6 +4427,17 @@ async function gcrEnviarResposta() {
   // atualiza cache local
   const idx = _gcdList.findIndex(r => r.id === window._gcrSolId);
   if (idx !== -1) { _gcdList[idx].status = 'respondido'; _gcdList[idx].resposta = resposta; }
+  // notifica escola por email
+  const sol = window._gcdMap?.[window._gcrSolId];
+  if (sol?.parceiro_email) {
+    db.functions.invoke('enviar-email', { body: {
+      to: sol.parceiro_email,
+      parceiroNome: sol.parceiro_nome || 'Escola',
+      link: window.location.origin,
+      dias: 0,
+      remetente: 'A clínica'
+    }}).catch(() => {});
+  }
 }
 
 // ── Hook: quando a página de Comunicação é exibida, carrega estudantes ──
