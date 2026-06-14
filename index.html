@@ -4406,12 +4406,27 @@ function abrirGCResponder(r) {
   showPage('gc-responder');
 }
 
-function gcrEnviarResposta() {
-  const ok  = document.getElementById('gcr-ok');
+async function gcrEnviarResposta() {
   const btn = document.getElementById('gcr-btn-enviar');
-  if (ok)  { ok.style.display='block'; }
-  if (btn) { btn.disabled=true; btn.textContent='Enviado ✓'; btn.style.background='#059669'; btn.style.borderColor='#059669'; }
+  const resposta = document.getElementById('gcr-resposta')?.value?.trim();
+  if (!resposta) { toast('Escreva a resposta antes de enviar.', 'error'); return; }
+  if (!window._gcrSolId) { toast('Erro: solicitação não identificada.', 'error'); return; }
+  if (btn) { btn.disabled=true; btn.textContent='Enviando…'; }
+  const { error } = await db.from('solicitacoes_externas')
+    .update({ status: 'respondido', resposta, respondido_em: new Date().toISOString() })
+    .eq('id', window._gcrSolId);
+  if (error) {
+    toast('Erro ao enviar resposta.', 'error');
+    if (btn) { btn.disabled=false; btn.textContent='Enviar resposta'; }
+    return;
+  }
+  const ok = document.getElementById('gcr-ok');
+  if (ok) ok.style.display='block';
+  if (btn) { btn.textContent='Enviado ✓'; btn.style.background='#059669'; btn.style.borderColor='#059669'; }
   toast('Resposta enviada à escola com sucesso!', 'success');
+  // atualiza cache local
+  const idx = _gcdList.findIndex(r => r.id === window._gcrSolId);
+  if (idx !== -1) { _gcdList[idx].status = 'respondido'; _gcdList[idx].resposta = resposta; }
 }
 
 // ── Hook: quando a página de Comunicação é exibida, carrega estudantes ──
