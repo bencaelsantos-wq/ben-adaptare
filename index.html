@@ -4145,12 +4145,7 @@ let gcSelEstudante = null;
 let gcSelClinica   = null;
 let gcStep = 1;
 
-const GC_CLINICAS_EXEMPLO = [
-  { id:'c1', esp:'Terapia Ocupacional', nome:'Clínica Integrar',    prof:'Dra. Renata Souza',  tel:'(11) 94721-0033', email:'renata@integrar.com.br' },
-  { id:'c2', esp:'Fonoaudiologia',      nome:'Centro de Fono SP',   prof:'Dr. Marcos Almeida', tel:'(11) 98832-1144', email:'marcos@fonoedu.com.br'  },
-  { id:'c3', esp:'Psicologia',          nome:'Espaço Mente Viva',   prof:'Dra. Camila Torres', tel:'(11) 97700-2288', email:'camila@menteviva.com.br' },
-  { id:'c4', esp:'Fisioterapia',        nome:'Fisio Movimento',     prof:'Dr. Paulo Neto',     tel:'(11) 93388-5500', email:'paulo@fisiomov.com.br'   }
-];
+
 
 // Renderiza os cards de estudante a partir dos alunos cadastrados
 function gcRenderEstudantes(lista) {
@@ -4242,7 +4237,7 @@ function gcSelecionarClinica(id) {
   });
   const card = document.getElementById('gcc-'+id);
   if (card) { card.style.borderColor='#2563EB'; card.style.background='#EEF2FF'; }
-  gcSelClinica = GC_CLINICAS_EXEMPLO.find(c=>c.id===id)||null;
+  gcSelClinica = null;
   const btn = document.getElementById('gc-btn-s2');
   if (btn) { btn.style.opacity='1'; btn.style.pointerEvents='auto'; }
 }
@@ -8430,7 +8425,7 @@ function renderPagesGestao() {
       <select class="filter-sel" id="gcrel-fstatus" onchange="gcFiltrarRelatorios()"><option value="">Todos os status</option><option value="pendente">Aguardando resposta</option><option value="respondido">Respondido</option></select>
     </div>
     <div id="gc-relatorios-lista">
-fix: remover dados falsos de gc-relatorios-lista e gc-demandas-lista
+      <div class="empty"><div class="empty-text">Nenhuma demanda recebida ainda.</div></div>
     </div>
     <div style="margin-top:16px;text-align:center">
       <button class="btn-sm" onclick="showPage('gestao-comunicacao')">+ Nova comunicação com clínica</button>
