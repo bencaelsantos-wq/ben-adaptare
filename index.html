@@ -5778,7 +5778,8 @@ async function criarSolicitacao() {
         link,
         dias,
         remetente: 'A equipe Pluramente'
-      }}).catch(() => {});
+      }}).then(r => { if (r.error) console.error('enviar-email error:', r.error); })
+        .catch(e => console.error('enviar-email catch:', e));
     }
 
     mostrarToast('✅ Solicitação gerada e enviada!');
