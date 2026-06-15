@@ -5953,52 +5953,112 @@ async function carregarSolicitacoes(role) {
   const listaEl = document.getElementById(listaId);
   if (!listaEl) return;
   listaEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gr300)">Carregando...</div>';
-
   try {
     const { data, error } = await db.from('solicitacoes_externas')
       .select('*, alunos(nome, nasc, serie)')
       .eq('criado_por', user.id)
       .order('criado_em', { ascending: false });
-
     if (error) throw error;
     if (!data?.length) {
-      listaEl.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔗</div><div class="empty-text" style="font-size:14px;font-weight:600;color:var(--gr600);margin-bottom:8px">Nenhuma solicitação enviada ainda.</div><div style="font-size:13px;color:var(--gr400);margin-bottom:16px">Crie um link seguro para compartilhar informações do aluno com parceiros externos.</div><button class="btn-p" style="width:auto;padding:10px 24px;display:inline-flex;gap:6px;align-items:center" onclick="abrirModalNovaSolicitacao(userRole)">+ Criar primeira solicitação</button></div>';
+      listaEl.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-text" style="font-size:14px;font-weight:600;color:var(--gr600);margin-bottom:8px">Nenhuma solicitação enviada ainda.</div><div style="font-size:13px;color:var(--gr400);margin-bottom:16px">Crie um link seguro para compartilhar informações do aluno com parceiros externos.</div><button class="btn-p" style="width:auto;padding:10px 24px;display:inline-flex;gap:6px;align-items:center" onclick="abrirModalNovaSolicitacao(userRole)">+ Criar primeira solicitação</button></div>';
       return;
     }
-
-    listaEl.innerHTML = data.map(s => renderCardSolicitacao(s)).join('');
     listaEl._data = data;
+    renderSolicitacoesAgrupadas(listaEl, data);
   } catch(e) {
     listaEl.innerHTML = `<div class="err-msg">${e.message}</div>`;
   }
 }
 
-function renderCardSolicitacao(s) {
-  const aluno = s.alunos || {};
-  const nomeAnon = anonimizarNome(aluno.nome);
- const statusLabel = { pendente:'🟡 Pendente', visualizado:'🔵 Visualizado', respondido:'🟢 Respondido', lido:'🟢 Respondido', revogado:'⛔ Revogado' }[s.status] || s.status;
-  const expirou = new Date(s.expira_em) < new Date();
-  const badgeStatus = s.status === 'lido' ? 'respondido' : s.status;
-const badge = expirou && s.status === 'pendente' ? '<span class="sol-badge expirado">⏰ Expirado</span>' : `<span class="sol-badge ${badgeStatus}">${statusLabel}</span>`;
-  const tipo = s.tipo === 'escola_para_clinica' ? 'Escola → Clínica' : 'Clínica → Escola';
-  const criado = new Date(s.criado_em).toLocaleDateString('pt-BR');
+function renderSolicitacoesAgrupadas(listaEl, data) {
+  // Agrupar por aluno_id
+  const grupos = {};
+  data.forEach(s => {
+    const key = s.aluno_id || '__sem_aluno__';
+    if (!grupos[key]) grupos[key] = { aluno: s.alunos || {}, items: [] };
+    grupos[key].items.push(s);
+  });
 
-  return `<div class="sol-card" data-status="${s.status}" data-id="${s.id}">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-      <div>
-        <div style="font-weight:700;font-size:15px">${nomeAnon} <span style="font-size:13px;color:var(--gr400)">${tipo}</span></div>
-        <div style="font-size:12px;color:var(--gr400);margin-top:2px">Para: ${s.parceiro_nome} · ${criado}</div>
+  const statusLabel = { pendente:'Pendente', visualizado:'Visualizado', respondido:'Respondido', lido:'Respondido', revogado:'Revogado' };
+  const statusColor = { pendente:'#B45309', visualizado:'#1D4ED8', respondido:'#065F46', lido:'#065F46', revogado:'#991B1B' };
+  const statusBg = { pendente:'#FEF9C3', visualizado:'#DBEAFE', respondido:'#D1FAE5', lido:'#D1FAE5', revogado:'#FEE2E2' };
+  const statusDot = { pendente:'#F59E0B', visualizado:'#3B82F6', respondido:'#10B981', lido:'#10B981', revogado:'#EF4444' };
+
+  const cores = ['#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444','#06B6D4'];
+  let corIdx = 0;
+
+  listaEl.style.display = 'block';
+  listaEl.innerHTML = Object.entries(grupos).map(([key, grupo]) => {
+    const nome = grupo.aluno.nome ? anonimizarNome(grupo.aluno.nome) : '—';
+    const serie = grupo.aluno.serie || '';
+    const inicial = nome[0] || '?';
+    const cor = cores[corIdx++ % cores.length];
+    const total = grupo.items.length;
+    const pendentes = grupo.items.filter(s => s.status === 'pendente').length;
+    const respondidos = grupo.items.filter(s => s.status === 'respondido' || s.status === 'lido').length;
+    const resumoBadge = pendentes > 0
+      ? `<span style="font-size:11px;padding:2px 8px;border-radius:99px;background:#FEF9C3;color:#92400E;font-weight:600">${pendentes} pendente${pendentes>1?'s':''}</span>`
+      : respondidos > 0
+      ? `<span style="font-size:11px;padding:2px 8px;border-radius:99px;background:#D1FAE5;color:#065F46;font-weight:600">${respondidos} respondido${respondidos>1?'s':''}</span>`
+      : `<span style="font-size:11px;padding:2px 8px;border-radius:99px;background:#F3F4F6;color:#6B7280">${total} solicitação${total>1?'ões':''}</span>`;
+
+    const linhas = grupo.items.map(s => {
+      const criado = new Date(s.criado_em).toLocaleDateString('pt-BR');
+      const expirou = new Date(s.expira_em) < new Date();
+      const st = s.status === 'lido' ? 'respondido' : s.status;
+      const stFinal = expirou && s.status === 'pendente' ? 'revogado' : st;
+      const stLabel = expirou && s.status === 'pendente' ? 'Expirado' : (statusLabel[st] || st);
+      const dot = `<span style="width:8px;height:8px;border-radius:50%;background:${statusDot[stFinal]||'#9CA3AF'};display:inline-block;flex-shrink:0"></span>`;
+      const badge = `<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:${statusBg[stFinal]||'#F3F4F6'};color:${statusColor[stFinal]||'#6B7280'};font-weight:600;white-space:nowrap">${stLabel}</span>`;
+      const btns = `<div style="display:flex;gap:4px;flex-shrink:0">
+        <button style="font-size:10px;padding:2px 7px;border:1px solid var(--gr200);border-radius:5px;background:#fff;cursor:pointer;color:var(--gr600);white-space:nowrap" onclick="verLinkSolicitacao('${s.id}','${s.token}')">Ver link</button>
+        ${st==='respondido'?`<button style="font-size:10px;padding:2px 7px;border:1px solid #2563EB;border-radius:5px;background:#EFF6FF;cursor:pointer;color:#2563EB;white-space:nowrap" onclick="verRespostaSolicitacao('${s.id}')">Ver resposta</button>`:''}
+        ${st!=='revogado'&&st!=='respondido'?`<button style="font-size:10px;padding:2px 7px;border:1px solid #EF4444;border-radius:5px;background:#fff;cursor:pointer;color:#EF4444;white-space:nowrap" onclick="revogarSolicitacao('${s.id}')">Revogar</button>`:''}
+      </div>`;
+      return `<div class="sol-row" data-status="${stFinal}" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--gr100)">
+        ${dot}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12.5px;font-weight:500;color:var(--gr700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.parceiro_nome||'—'}</div>
+          <div style="font-size:11px;color:var(--gr400);margin-top:1px">${criado}${s.motivo?` · ${s.motivo.slice(0,40)}${s.motivo.length>40?'…':''}`:''}</div>
+        </div>
+        ${badge}
+        ${btns}
+      </div>`;
+    }).join('');
+
+    return `<div class="sol-dossie" style="background:#fff;border:1.5px solid var(--gr100);border-radius:14px;margin-bottom:10px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer" onclick="this.parentElement.classList.toggle('dossie-open')">
+        <div style="width:36px;height:36px;border-radius:10px;background:${cor};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0">${inicial}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;color:var(--gr800)">${nome}${serie?` <span style="font-size:11px;font-weight:400;color:var(--gr400)">${serie}</span>`:''}</div>
+          <div style="font-size:11.5px;color:var(--gr400);margin-top:1px">${total} solicitação${total>1?'ões':''}</div>
+        </div>
+        ${resumoBadge}
+        <svg style="flex-shrink:0;transition:transform .2s;transform:rotate(0deg)" class="dossie-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
-      ${badge}
-    </div>
-    <p style="font-size:13px;color:var(--gr600);margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${s.motivo||''}</p>
-    <div style="display:flex;gap:4px;flex-wrap:wrap">
-      <button style="font-size:11px;padding:3px 8px;border:1px solid var(--gr200);border-radius:6px;background:#fff;cursor:pointer;color:var(--gr600)" onclick="verLinkSolicitacao('${s.id}','${s.token}')">Ver link</button>
-      ${s.status==='respondido' ? `<button style="font-size:11px;padding:3px 8px;border:1px solid #2563EB;border-radius:6px;background:#EFF6FF;cursor:pointer;color:#2563EB" onclick="verRespostaSolicitacao('${s.id}')">Ver resposta</button>` : ''}
-      ${s.status!=='revogado' && s.status!=='respondido' ? `<button style="font-size:11px;padding:3px 8px;border:1px solid #EF4444;border-radius:6px;background:#fff;cursor:pointer;color:#EF4444" onclick="revogarSolicitacao('${s.id}')">Revogar</button>` : ''}
-    </div>
-  </div>`;
+      <div class="dossie-body" style="display:none">${linhas}</div>
+    </div>`;
+  }).join('');
+
+  // Toggle abrir/fechar
+  listaEl.querySelectorAll('.sol-dossie').forEach(d => {
+    const header = d.querySelector('[onclick]');
+    const body = d.querySelector('.dossie-body');
+    const chevron = d.querySelector('.dossie-chevron');
+    // Abrir automaticamente o primeiro com pendente
+    if (d.querySelector('.sol-row[data-status="pendente"]')) {
+      body.style.display = 'block';
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+    }
+    header.onclick = () => {
+      const aberto = body.style.display !== 'none';
+      body.style.display = aberto ? 'none' : 'block';
+      if (chevron) chevron.style.transform = aberto ? 'rotate(0deg)' : 'rotate(180deg)';
+    };
+  });
 }
+
+
 
 function filtrarSolicitacoes(btn, status) {
   document.querySelectorAll('.sol-filtro').forEach(b => b.classList.remove('active'));
