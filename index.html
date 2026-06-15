@@ -5772,14 +5772,12 @@ async function criarSolicitacao() {
       const txt = encodeURIComponent('Olá ' + parceiroNome + ',\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse o link seguro abaixo para visualizar a solicitação e enviar sua devolutiva:\n\n🔗 ' + link + '\n\n⚠️ Este link é pessoal, intransferível e expira em ' + dias + ' dias.\nPlataforma Pluramente — Comunicação Segura');
       window.open('https://wa.me/' + (num ? '55'+num : '') + '?text=' + txt, '_blank');
     } else if (email) {
-      db.functions.invoke('enviar-email', { body: {
-        to: email,
-        parceiroNome,
-        link,
-        dias,
-        remetente: 'A equipe Pluramente'
-      }}).then(r => { if (r.error) console.error('enviar-email error:', r.error); })
-        .catch(e => console.error('enviar-email catch:', e));
+      fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/enviar-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+        body: JSON.stringify({ to: email, parceiroNome, link, dias, remetente: 'A equipe Pluramente' })
+      }).then(r => r.json()).then(d => { if (!d.success) console.error('enviar-email:', d); })
+        .catch(e => console.error('enviar-email fetch error:', e));
     }
 
     mostrarToast('✅ Solicitação gerada e enviada!');
