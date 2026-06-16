@@ -6079,11 +6079,6 @@ function filtrarSolicitacoes(btn, status) {
     }
   });
 }
-  const cards = document.querySelectorAll('.sol-card');
-  cards.forEach(c => {
-    c.style.display = (status === 'todos' || c.dataset.status === status) ? '' : 'none';
-  });
-}
 
 function verLinkSolicitacao(id, token) {
   const baseUrl = window.location.origin + window.location.pathname;
