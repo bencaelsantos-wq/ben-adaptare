@@ -13171,7 +13171,7 @@ async function carregarEscolasDev() {
       <td style="padding:12px 14px;font-size:13px;"><strong>R$ ${parseFloat(e.preco_mensal||0).toFixed(0)}</strong><br><span style="color:#9CA3AF;font-size:11px;">até ${e.max_alunos} alunos</span></td>
       <td style="padding:12px 14px;font-size:13px;color:${vencColor};">${vencStr}</td>
       <td style="padding:12px 14px;">${statusBadge}</td>
-      <td style="padding:12px 14px;display:flex;gap:6px;">${btnAcao}<button onclick="editarEscola('${e.id}')" style="background:#EFF6FF;color:#2563EB;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">✏️ Editar</button></td>
+      <td style="padding:12px 14px;display:flex;gap:6px;">${btnAcao}<button onclick="editarEscola('${e.id}')" style="background:#EFF6FF;color:#2563EB;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">✏️ Editar</button><button onclick="deletarEscola('${e.id}','${e.school_name.replace(/'/g,"\\'")}')" style="background:#FEE2E2;color:#991B1B;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Excluir</button></td>
     </tr>`;
   }).join('');
   document.getElementById('dev-table-wrap').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -13243,8 +13243,7 @@ async function editarEscola(id) {
     const dias = Math.ceil((new Date(e.data_vencimento) - new Date()) / 86400000);
     diasEl.value = Math.max(1, dias);
   }
-  // E-mail não editável (é a chave)
-  document.getElementById('dev-email').readOnly = true;
+  document.getElementById('dev-email').readOnly = false;
   document.getElementById('dev-form-escola').querySelector('h3').textContent = 'Editar escola';
   document.getElementById('dev-form-escola').style.display = 'block';
   document.getElementById('dev-form-escola').scrollIntoView({ behavior: 'smooth' });
@@ -13300,15 +13299,44 @@ async function salvarNovaEscola() {
 }
 
 // ── GERENCIADOR GERAL ─────────────────────────────────────────
+async function dpEnviarConvite() {
+  const email = document.getElementById('dp-inv-email')?.value?.trim();
+  const nome  = document.getElementById('dp-inv-nome')?.value?.trim();
+  const role  = document.getElementById('dp-inv-role')?.value;
+  const btn   = document.getElementById('dp-inv-btn');
+  const msg   = document.getElementById('dp-inv-msg');
+  if (!email) { msg.textContent='Informe o e-mail.'; msg.style.color='#DC2626'; return; }
+  btn.disabled=true; btn.textContent='Enviando…';
+  try {
+    const res = await fetch(SB_URL+'/functions/v1/convidar-usuario', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
+      body: JSON.stringify({email, role, nome})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Erro desconhecido');
+    msg.textContent='Convite enviado! O usuário receberá o e-mail para definir a senha.';
+    msg.style.color='#16A34A';
+    document.getElementById('dp-inv-email').value='';
+    document.getElementById('dp-inv-nome').value='';
+  } catch(e) { msg.textContent='Erro: '+e.message; msg.style.color='#DC2626'; }
+  finally { btn.disabled=false; btn.textContent='Enviar convite'; }
+}
+
+async function deletarEscola(id, nome) {
+  if (!confirm('Excluir permanentemente a escola "'+nome+'"? Esta ação não pode ser desfeita.')) return;
+  const { error } = await db.from('school_plans').delete().eq('id', id);
+  if (error) return alert('Erro: '+error.message);
+  carregarEscolasDev();
+}
+
 function devAba(aba) {
-  const isGer = aba === 'gerenciador';
-  document.getElementById('dev-painel-escolas').style.display    = isGer ? 'none' : 'block';
-  document.getElementById('dev-painel-gerenciador').style.display = isGer ? 'block' : 'none';
-  document.getElementById('dev-tab-escolas').style.background     = isGer ? 'transparent' : '#fff';
-  document.getElementById('dev-tab-escolas').style.color          = isGer ? '#6B7280' : '#1E3A8A';
-  document.getElementById('dev-tab-escolas').style.boxShadow      = isGer ? 'none' : '0 1px 3px rgba(0,0,0,.1)';
-  document.getElementById('dev-tab-gerenciador').style.background = isGer ? '#fff' : 'transparent';
-  document.getElementById('dev-tab-gerenciador').style.color      = isGer ? '#1E3A8A' : '#6B7280';
+  ['escolas','gerenciador','usuarios'].forEach(t => {
+    const painel = document.getElementById('dev-painel-'+t);
+    const tab    = document.getElementById('dev-tab-'+t);
+    if (painel) painel.style.display = t===aba ? 'block' : 'none';
+    if (tab) { tab.style.background=t===aba?'#fff':'transparent'; tab.style.color=t===aba?'#1E3A8A':'#6B7280'; tab.style.boxShadow=t===aba?'0 1px 3px rgba(0,0,0,.1)':'none'; }
+  });
+  if (aba==='gerenciador') carregarGerenciador();
   document.getElementById('dev-tab-gerenciador').style.boxShadow  = isGer ? '0 1px 3px rgba(0,0,0,.1)' : 'none';
   if (isGer) carregarGerenciador();
 }
@@ -15160,7 +15188,8 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
     <!-- ABAS -->
     <div style="display:flex;gap:4px;margin-bottom:16px;background:#E5E7EB;border-radius:10px;padding:4px;width:fit-content;">
       <button id="dev-tab-escolas" onclick="devAba('escolas')" style="padding:7px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#1E3A8A;box-shadow:0 1px 3px rgba(0,0,0,.1);">🏫 Escolas</button>
-      <button id="dev-tab-gerenciador" onclick="devAba('gerenciador')" style="padding:7px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#6B7280;">📊 Gerenciador</button>
+      <button id="dev-tab-gerenciador" onclick="devAba('gerenciador')" style="padding:7px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#6B7280;">Gerenciador</button>
+      <button id="dev-tab-usuarios" onclick="devAba('usuarios')" style="padding:7px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#6B7280;">Usuários</button>
     </div>
 
     <!-- PAINEL ESCOLAS -->
@@ -15249,6 +15278,33 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
       </div>
 
     </div><!-- /dev-painel-gerenciador -->
+
+    <!-- PAINEL USUÁRIOS -->
+    <div id="dev-painel-usuarios" style="display:none;">
+      <div style="background:#fff;border-radius:12px;border:1px solid #E5E7EB;overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:14px;font-weight:600;color:#1E3A8A;">Convidar usuário</span>
+        </div>
+        <div style="padding:24px;max-width:480px;">
+          <p style="font-size:13px;color:#64748B;margin:0 0 20px;">O usuário receberá um e-mail com link para definir a própria senha.</p>
+          <div style="margin-bottom:14px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">E-mail *</label><input type="email" id="dp-inv-email" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="usuario@email.com"></div>
+          <div style="margin-bottom:14px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Nome (opcional)</label><input type="text" id="dp-inv-nome" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="Nome completo"></div>
+          <div style="margin-bottom:20px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Papel</label>
+            <select id="dp-inv-role" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;background:#fff;">
+              <option value="professor">Professor</option>
+              <option value="gestao">Gestão Escolar</option>
+              <option value="gestao-clinica">Gestão Clínica</option>
+              <option value="clinica">Clínica (especialista)</option>
+              <option value="at">AT (Apoio)</option>
+              <option value="familia">Família</option>
+              <option value="developer">Developer</option>
+            </select>
+          </div>
+          <button id="dp-inv-btn" onclick="dpEnviarConvite()" style="background:#2563EB;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Enviar convite</button>
+          <div id="dp-inv-msg" style="margin-top:12px;font-size:13px;"></div>
+        </div>
+      </div>
+    </div><!-- /dev-painel-usuarios -->
 
   </div>
 </div>
