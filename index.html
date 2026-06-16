@@ -3522,7 +3522,7 @@ async function registrar() {
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
   if (senha.length < 6) return showErr('Senha mínima: 6 caracteres.');
   setBtnLoading('btn-registrar', true, 'Criar conta');
-  const { error } = await db.auth.signUp({ email, password: senha });
+  const { error } = await db.auth.signUp({ email, password: senha, options: { data: { role: userRole } } });
   setBtnLoading('btn-registrar', false, 'Criar conta');
   if (error) return showErr(error.message);
   showOk('✅ Conta criada! Verifique seu e-mail e clique no link de confirmação para fazer login.');
