@@ -6014,6 +6014,7 @@ function renderSolicitacoesAgrupadas(listaEl, data) {
         <button style="font-size:10px;padding:2px 7px;border:1px solid var(--gr200);border-radius:5px;background:#fff;cursor:pointer;color:var(--gr600);white-space:nowrap" onclick="verLinkSolicitacao('${s.id}','${s.token}')">Ver link</button>
         ${st==='respondido'?`<button style="font-size:10px;padding:2px 7px;border:1px solid #2563EB;border-radius:5px;background:#EFF6FF;cursor:pointer;color:#2563EB;white-space:nowrap" onclick="verRespostaSolicitacao('${s.id}')">Ver resposta</button>`:''}
         ${st!=='revogado'&&st!=='respondido'?`<button style="font-size:10px;padding:2px 7px;border:1px solid #EF4444;border-radius:5px;background:#fff;cursor:pointer;color:#EF4444;white-space:nowrap" onclick="revogarSolicitacao('${s.id}')">Revogar</button>`:''}
+        ${st==='revogado'?`<button style="font-size:10px;padding:2px 7px;border:1px solid #9CA3AF;border-radius:5px;background:#fff;cursor:pointer;color:#9CA3AF;white-space:nowrap" onclick="deletarSolicitacao('${s.id}')">Apagar</button>`:''}
       </div>`;
       return `<div class="sol-row" data-status="${stFinal}" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--gr100)">
         ${dot}
@@ -6076,6 +6077,17 @@ function verLinkSolicitacao(id, token) {
   if (urlEl) urlEl.textContent = link;
   _solLinkGerado = { token, link };
   abrirModal('modal-link-gerado');
+}
+
+async function deletarSolicitacao(id) {
+  if (!confirm('Apagar permanentemente esta solicitação? Esta ação não pode ser desfeita.')) return;
+  try {
+    await db.from('solicitacoes_externas').delete().eq('id', id);
+    mostrarToast('Solicitação apagada.');
+    carregarSolicitacoes(userRole === 'clinica' ? 'clinica' : 'gestao');
+  } catch(e) {
+    mostrarToast('Erro ao apagar: ' + e.message, true);
+  }
 }
 
 async function revogarSolicitacao(id) {
