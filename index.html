@@ -14373,6 +14373,14 @@ function bootHealthCheck() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Detectar link de convite Supabase (#type=invite ou #type=recovery)
+  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+  if (hashParams.get('type') === 'invite' || hashParams.get('type') === 'recovery') {
+    mostrarLanding();
+    abrirModalDefinirSenha();
+    return;
+  }
+
   // Verificar se é link de convite família
   const params = new URLSearchParams(window.location.search);
   const token = params.get('convite');
@@ -14387,6 +14395,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     else { mostrarLanding(); }
   }
 });
+
+function abrirModalDefinirSenha() {
+  const existing = document.getElementById('modal-definir-senha');
+  if (existing) { existing.style.display='flex'; return; }
+  const m = document.createElement('div');
+  m.id = 'modal-definir-senha';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  m.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.18);">
+      <h2 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#1E293B">Crie sua senha</h2>
+      <p style="margin:0 0 24px;font-size:13px;color:#64748B">Defina uma senha para acessar a plataforma.</p>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px">Nova senha (mín. 6 caracteres)</label>
+        <input type="password" id="ds-senha1" style="width:100%;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;box-sizing:border-box;" placeholder="••••••••">
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px">Confirmar senha</label>
+        <input type="password" id="ds-senha2" style="width:100%;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;box-sizing:border-box;" placeholder="••••••••">
+      </div>
+      <button id="ds-btn" onclick="dsConfirmarSenha()" style="width:100%;background:#2563EB;color:#fff;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">Salvar e entrar</button>
+      <div id="ds-msg" style="margin-top:12px;font-size:13px;text-align:center;"></div>
+    </div>`;
+  document.body.appendChild(m);
+}
+
+async function dsConfirmarSenha() {
+  const s1  = document.getElementById('ds-senha1')?.value;
+  const s2  = document.getElementById('ds-senha2')?.value;
+  const btn = document.getElementById('ds-btn');
+  const msg = document.getElementById('ds-msg');
+  if (!s1 || s1.length < 6) { msg.textContent='Senha deve ter ao menos 6 caracteres.'; msg.style.color='#DC2626'; return; }
+  if (s1 !== s2) { msg.textContent='As senhas não coincidem.'; msg.style.color='#DC2626'; return; }
+  btn.disabled=true; btn.textContent='Salvando…';
+  const { error } = await db.auth.updateUser({ password: s1 });
+  if (error) { msg.textContent='Erro: '+error.message; msg.style.color='#DC2626'; btn.disabled=false; btn.textContent='Salvar e entrar'; return; }
+  msg.textContent='Senha definida! Entrando…'; msg.style.color='#16A34A';
+  window.location.hash = '';
+  setTimeout(async () => {
+    const { data } = await db.auth.getSession();
+    if (data?.session?.user) { user=data.session.user; await lerPerfilDobanco(); document.getElementById('modal-definir-senha').style.display='none'; iniciarApp(); }
+  }, 1200);
+}
 
 
 function abrirPaginaQuemSomos() {
