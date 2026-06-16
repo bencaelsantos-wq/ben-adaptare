@@ -3544,6 +3544,38 @@ async function esqueceuSenha() {
    MODO DEV — acesso de demonstração sem banco de dados
    Não cria conta, não salva nada. Serve para testar o sistema.
 ───────────────────────────────────────────────────────────── */
+function abrirModalConvidar() {
+  const m = document.getElementById('modal-convidar');
+  if (m) { m.style.display = 'flex'; document.getElementById('inv-email').value=''; document.getElementById('inv-nome').value=''; document.getElementById('inv-msg').textContent=''; }
+}
+function fecharModalConvidar() {
+  const m = document.getElementById('modal-convidar'); if (m) m.style.display = 'none';
+}
+async function enviarConvite() {
+  const email = document.getElementById('inv-email')?.value?.trim();
+  const nome = document.getElementById('inv-nome')?.value?.trim();
+  const role = document.getElementById('inv-role')?.value;
+  const btn = document.getElementById('inv-btn');
+  const msg = document.getElementById('inv-msg');
+  if (!email) { msg.textContent = 'Informe o e-mail.'; msg.style.color='#DC2626'; return; }
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const res = await fetch(SB_URL + '/functions/v1/convidar-usuario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ email, role, nome })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro desconhecido');
+    msg.textContent = 'Convite enviado! O usuário receberá um e-mail para definir a senha.';
+    msg.style.color = '#16A34A';
+    setTimeout(()=>{ fecharModalConvidar(); carregarUsuariosDev(); }, 2500);
+  } catch(e) {
+    msg.textContent = 'Erro: ' + e.message;
+    msg.style.color = '#DC2626';
+  } finally { btn.disabled=false; btn.textContent='Enviar convite'; }
+}
+
 function entrarDev() {
   user = {
     id: '00000000-0000-0000-0000-000000000000', // ⚠️ MANTER formato UUID válido — prefixo 'dev-' quebra o Postgres (tipo uuid)
@@ -5208,7 +5240,36 @@ function renderPagesDeveloper() {
   <div id="page-dev-usuarios" class="page">
     <div class="section-header">
       <div><h1 class="page-title">Usuários</h1><p class="page-sub" style="margin-bottom:0">Todos os usuários registrados na plataforma.</p></div>
-      <button class="btn-sm" onclick="carregarUsuariosDev()">↺ Atualizar</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" onclick="abrirModalConvidar()">+ Convidar usuário</button>
+        <button class="btn-sm" onclick="carregarUsuariosDev()">↺ Atualizar</button>
+      </div>
+    </div>
+
+    <!-- Modal convidar -->
+    <div id="modal-convidar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.18)">
+        <h2 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1E293B">Convidar usuário</h2>
+        <p style="margin:0 0 20px;font-size:13px;color:#64748B">O usuário receberá um e-mail para definir a própria senha.</p>
+        <div class="fg"><label>E-mail</label><input type="email" id="inv-email" placeholder="usuario@email.com"></div>
+        <div class="fg"><label>Nome (opcional)</label><input type="text" id="inv-nome" placeholder="Nome completo"></div>
+        <div class="fg">
+          <label>Papel</label>
+          <select id="inv-role" style="width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+            <option value="professor">Professor</option>
+            <option value="gestao">Gestão Escolar</option>
+            <option value="gestao-clinica">Gestão Clínica</option>
+            <option value="clinica">Clínica (especialista)</option>
+            <option value="at">AT (Apoio)</option>
+            <option value="familia">Família</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn-sm" style="flex:1" onclick="fecharModalConvidar()">Cancelar</button>
+          <button class="btn-primary" style="flex:1" id="inv-btn" onclick="enviarConvite()">Enviar convite</button>
+        </div>
+        <div id="inv-msg" style="margin-top:12px;font-size:13px;text-align:center"></div>
+      </div>
     </div>
     <div class="toolbar" style="margin-bottom:14px">
       <div class="search-box"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="dev-user-q" placeholder="Buscar por e-mail…" oninput="filtrarUsuariosDev()"></div>
