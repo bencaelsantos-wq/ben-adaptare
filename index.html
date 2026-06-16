@@ -3482,7 +3482,6 @@ async function entrar() {
   const email = document.getElementById('lemail').value.trim();
   const senha  = (document.getElementById('lsenha') || document.getElementById('senha')).value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
-  if (!userRole) return showErr('Selecione seu perfil de acesso antes de entrar.');
 
   // Verificar DEV antes de qualquer chamada ao Supabase
   if (email.toLowerCase() === DEV_EMAIL) {
