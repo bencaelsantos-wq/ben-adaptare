@@ -6064,6 +6064,21 @@ function renderSolicitacoesAgrupadas(listaEl, data) {
 function filtrarSolicitacoes(btn, status) {
   document.querySelectorAll('.sol-filtro').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  document.querySelectorAll('.sol-dossie').forEach(dossie => {
+    if (status === 'todos') {
+      dossie.style.display = '';
+      return;
+    }
+    const temStatus = dossie.querySelector(`.sol-row[data-status="${status}"]`);
+    dossie.style.display = temStatus ? '' : 'none';
+    if (temStatus) {
+      const body = dossie.querySelector('.dossie-body');
+      const chevron = dossie.querySelector('.dossie-chevron');
+      if (body) body.style.display = 'block';
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+    }
+  });
+}
   const cards = document.querySelectorAll('.sol-card');
   cards.forEach(c => {
     c.style.display = (status === 'todos' || c.dataset.status === status) ? '' : 'none';
