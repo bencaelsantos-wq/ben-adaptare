@@ -4430,13 +4430,11 @@ async function gcrEnviarResposta() {
   // notifica escola por email
   const sol = window._gcdMap?.[window._gcrSolId];
   if (sol?.parceiro_email) {
-    db.functions.invoke('enviar-email', { body: {
-      to: sol.parceiro_email,
-      parceiroNome: sol.parceiro_nome || 'Escola',
-      link: window.location.origin,
-      dias: 0,
-      remetente: 'A clínica'
-    }}).catch(() => {});
+    fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/enviar-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ to: sol.parceiro_email, parceiroNome: sol.parceiro_nome || 'Escola', link: window.location.origin, dias: 0, remetente: 'A clínica' })
+    }).catch(() => {});
   }
 }
 
