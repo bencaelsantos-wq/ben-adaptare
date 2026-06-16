@@ -3499,11 +3499,13 @@ async function entrar() {
     return showErr(error.message);
   }
   user = data.user;
-  // Verificar status da assinatura
-  const statusEscola = await verificarStatusEscola(email.toLowerCase());
-  if (!statusEscola.permitido) {
-    await db.auth.signOut();
-    return showErr(statusEscola.motivo || 'Acesso não autorizado.');
+  // Verificar status da assinatura (developer ignora)
+  if (email.toLowerCase() !== DEV_EMAIL) {
+    const statusEscola = await verificarStatusEscola(email.toLowerCase());
+    if (!statusEscola.permitido) {
+      await db.auth.signOut();
+      return showErr(statusEscola.motivo || 'Acesso não autorizado.');
+    }
   }
   // Ler perfil do banco — define role e subrole reais
   try { await lerPerfilDobanco(); } catch(e) { return; }
