@@ -13299,10 +13299,17 @@ async function salvarNovaEscola() {
 }
 
 // ── GERENCIADOR GERAL ─────────────────────────────────────────
+function dpToggleSubrole() {
+  const role = document.getElementById('dp-inv-role')?.value;
+  const wrap = document.getElementById('dp-inv-subrole-wrap');
+  if (wrap) wrap.style.display = role === 'clinica' ? 'block' : 'none';
+}
+
 async function dpEnviarConvite() {
-  const email = document.getElementById('dp-inv-email')?.value?.trim();
-  const nome  = document.getElementById('dp-inv-nome')?.value?.trim();
-  const role  = document.getElementById('dp-inv-role')?.value;
+  const email   = document.getElementById('dp-inv-email')?.value?.trim();
+  const nome    = document.getElementById('dp-inv-nome')?.value?.trim();
+  const role    = document.getElementById('dp-inv-role')?.value;
+  const subrole = role === 'clinica' ? (document.getElementById('dp-inv-subrole')?.value || '') : '';
   const btn   = document.getElementById('dp-inv-btn');
   const msg   = document.getElementById('dp-inv-msg');
   if (!email) { msg.textContent='Informe o e-mail.'; msg.style.color='#DC2626'; return; }
@@ -13310,7 +13317,7 @@ async function dpEnviarConvite() {
   try {
     const res = await fetch(SB_URL+'/functions/v1/convidar-usuario', {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
-      body: JSON.stringify({email, role, nome})
+      body: JSON.stringify({email, role, subrole, nome})
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Erro desconhecido');
@@ -15289,8 +15296,8 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
           <p style="font-size:13px;color:#64748B;margin:0 0 20px;">O usuário receberá um e-mail com link para definir a própria senha.</p>
           <div style="margin-bottom:14px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">E-mail *</label><input type="email" id="dp-inv-email" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="usuario@email.com"></div>
           <div style="margin-bottom:14px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Nome (opcional)</label><input type="text" id="dp-inv-nome" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="Nome completo"></div>
-          <div style="margin-bottom:20px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Papel</label>
-            <select id="dp-inv-role" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;background:#fff;">
+          <div style="margin-bottom:14px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Papel</label>
+            <select id="dp-inv-role" onchange="dpToggleSubrole()" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;background:#fff;">
               <option value="professor">Professor</option>
               <option value="gestao">Gestão Escolar</option>
               <option value="gestao-clinica">Gestão Clínica</option>
@@ -15298,6 +15305,17 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
               <option value="at">AT (Apoio)</option>
               <option value="familia">Família</option>
               <option value="developer">Developer</option>
+            </select>
+          </div>
+          <div id="dp-inv-subrole-wrap" style="display:none;margin-bottom:20px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Especialidade</label>
+            <select id="dp-inv-subrole" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;background:#fff;">
+              <option value="fono">Fonoaudiologia</option>
+              <option value="fisio">Fisioterapia</option>
+              <option value="to">Terapia Ocupacional</option>
+              <option value="psicopedagogo">Psicopedagogia</option>
+              <option value="psicologo">Psicologia</option>
+              <option value="musicoterapeuta">Musicoterapia</option>
+              <option value="psicomotricista">Psicomotricidade</option>
             </select>
           </div>
           <button id="dp-inv-btn" onclick="dpEnviarConvite()" style="background:#2563EB;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Enviar convite</button>
