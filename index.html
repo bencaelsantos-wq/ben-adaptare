@@ -3310,6 +3310,10 @@ const SB_URL = 'https://wgnrxzoccelzzxwyibwj.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnbnJ4em9jY2Vsenp4d3lpYndqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDIzMDUsImV4cCI6MjA5MjQ3ODMwNX0.gVTkIw9BUtK79LsRtCwUJPla6M3tc3Yv4xh-AouQBpc';
 const CLAUDE_PROXY = 'https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/claude-proxy';
 
+// Captura hash ANTES do Supabase processar e limpar a URL
+const _initHash = new URLSearchParams(window.location.hash.replace(/^#/,''));
+const _isInviteOrRecovery = _initHash.get('type') === 'invite' || _initHash.get('type') === 'recovery';
+
 const db = supabase.createClient(SB_URL, SB_KEY);
 const dbAnon = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-pluramente-anon' } });
 
@@ -14385,11 +14389,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Detectar link de convite Supabase (#type=invite ou #type=recovery)
-  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
-  if (hashParams.get('type') === 'invite' || hashParams.get('type') === 'recovery') {
+  // Detectar link de convite Supabase (hash capturado antes do Supabase limpar a URL)
+  if (_isInviteOrRecovery) {
     mostrarLanding();
-    abrirModalDefinirSenha();
+    setTimeout(() => abrirModalDefinirSenha(), 300);
     return;
   }
 
