@@ -14373,6 +14373,18 @@ function bootHealthCheck() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Detectar link de convite/recovery via onAuthStateChange
+  db.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') return;
+    if (event === 'SIGNED_IN') {
+      const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+      if (hashParams.get('type') === 'invite') {
+        mostrarLanding();
+        abrirModalDefinirSenha();
+      }
+    }
+  });
+
   // Detectar link de convite Supabase (#type=invite ou #type=recovery)
   const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
   if (hashParams.get('type') === 'invite' || hashParams.get('type') === 'recovery') {
@@ -14448,7 +14460,6 @@ async function dsConfirmarSenha() {
   if (error) { msg.textContent='Erro: '+error.message; msg.style.color='#DC2626'; btn.disabled=false; btn.textContent='Salvar e entrar'; return; }
 
   msg.textContent='Senha definida! Entrando…'; msg.style.color='#16A34A';
-  window.location.hash = '';
   setTimeout(async () => {
     const { data } = await db.auth.getSession();
     if (data?.session?.user) { user=data.session.user; await lerPerfilDobanco(); document.getElementById('modal-definir-senha').style.display='none'; iniciarApp(); }
