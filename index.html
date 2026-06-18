@@ -14405,7 +14405,7 @@ function abrirModalDefinirSenha() {
   m.innerHTML = `
     <div style="background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.18);">
       <h2 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#1E293B">Crie sua senha</h2>
-      <p style="margin:0 0 24px;font-size:13px;color:#64748B">Defina uma senha para acessar a plataforma.</p>
+      <p style="margin:0 0 24px;font-size:13px;color:#64748B">Defina uma senha segura: mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo.</p>
       <div style="margin-bottom:14px">
         <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px">Nova senha (mín. 6 caracteres)</label>
         <input type="password" id="ds-senha1" style="width:100%;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;box-sizing:border-box;" placeholder="••••••••">
@@ -14421,15 +14421,32 @@ function abrirModalDefinirSenha() {
 }
 
 async function dsConfirmarSenha() {
-  const s1  = document.getElementById('ds-senha1')?.value;
-  const s2  = document.getElementById('ds-senha2')?.value;
+  const s1  = document.getElementById('ds-senha1')?.value || '';
+  const s2  = document.getElementById('ds-senha2')?.value || '';
   const btn = document.getElementById('ds-btn');
   const msg = document.getElementById('ds-msg');
-  if (!s1 || s1.length < 6) { msg.textContent='Senha deve ter ao menos 6 caracteres.'; msg.style.color='#DC2626'; return; }
+
+  // Validação de força de senha
+  if (s1.length < 8) { msg.textContent='Mínimo de 8 caracteres.'; msg.style.color='#DC2626'; return; }
+  if (!/[A-Z]/.test(s1)) { msg.textContent='Inclua ao menos uma letra maiúscula.'; msg.style.color='#DC2626'; return; }
+  if (!/[a-z]/.test(s1)) { msg.textContent='Inclua ao menos uma letra minúscula.'; msg.style.color='#DC2626'; return; }
+  if (!/[0-9]/.test(s1)) { msg.textContent='Inclua ao menos um número.'; msg.style.color='#DC2626'; return; }
+  if (!/[^A-Za-z0-9]/.test(s1)) { msg.textContent='Inclua ao menos um caractere especial (!@#$%...).'; msg.style.color='#DC2626'; return; }
   if (s1 !== s2) { msg.textContent='As senhas não coincidem.'; msg.style.color='#DC2626'; return; }
+
   btn.disabled=true; btn.textContent='Salvando…';
+  msg.textContent=''; 
+
+  // Garante que o Supabase processou o token do hash antes de atualizar
+  const { data: sessData } = await db.auth.getSession();
+  if (!sessData?.session) {
+    msg.textContent='Sessão expirada. Solicite um novo convite ao administrador.';
+    msg.style.color='#DC2626'; btn.disabled=false; btn.textContent='Salvar e entrar'; return;
+  }
+
   const { error } = await db.auth.updateUser({ password: s1 });
   if (error) { msg.textContent='Erro: '+error.message; msg.style.color='#DC2626'; btn.disabled=false; btn.textContent='Salvar e entrar'; return; }
+
   msg.textContent='Senha definida! Entrando…'; msg.style.color='#16A34A';
   window.location.hash = '';
   setTimeout(async () => {
