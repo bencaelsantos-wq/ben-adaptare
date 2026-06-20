@@ -12300,7 +12300,11 @@ async function popularDropdownProfissionaisCad() {
 function adicionarProfissionalCad() {
   const sel = document.getElementById('cad-profissionais-sel');
   const id = sel?.value;
-  if (!id || (window._cadProfissionaisIds||[]).includes(id)) return;
+  if (!id) {
+    if (sel && sel.options.length <= 1) toast('Nenhum profissional cadastrado. Acesse "Profissionais" e cadastre antes de vincular.', 'error');
+    return;
+  }
+  if ((window._cadProfissionaisIds||[]).includes(id)) return;
   if (!window._cadProfissionaisIds) window._cadProfissionaisIds = [];
   window._cadProfissionaisIds.push(id);
   renderProfissionaisTagsCad();
