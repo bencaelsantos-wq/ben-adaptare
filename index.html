@@ -10156,6 +10156,15 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   doc.text('_____ / _____ / _______', W / 2 + 14, y + 6);
   y += 16;
 
+  // ── TÍTULO DA ATIVIDADE ───────────────────────────────────
+  doc.setFillColor(30, 58, 138);
+  doc.roundedRect(ml, y, W - ml - mr, 10, 2, 2, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.text((opts.subtitulo || opts.titulo || 'Atividade Adaptada').toUpperCase(), ml + 5, y + 7);
+  y += 14;
+
   // ── CONTEÚDO DA FOLHA DO ALUNO ────────────────────────────
   // Separar folha do aluno do guia do professor
   const sepIdx = opts.conteudo.indexOf('---USO EXCLUSIVO DO PROFESSOR---');
