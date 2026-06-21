@@ -9919,7 +9919,7 @@ function gerarPDFDocumento(opts) {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(20, 20, 60);
     doc.setFontSize(9);
-    doc.text(opts.aluno, ml + 3, y + 11);
+    doc.text(opts.aluno || '(não informado)', ml + 3, y + 11);
     doc.text(dataHoje, W / 2 - 10, y + 11);
     doc.text(opts.tipo || 'PEI', W - mr - 35, y + 11);
     // Linha 2: Professor / Coordenador / AT
@@ -9952,7 +9952,7 @@ function gerarPDFDocumento(opts) {
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(20, 20, 60);
       doc.setFontSize(9);
-      doc.text(opts.aluno, ml + 3, y + 11);
+      doc.text(opts.aluno || '(não informado)', ml + 3, y + 11);
       doc.text(dataHoje, W / 2 - 10, y + 11);
       doc.text(opts.tipo || 'PEI', W - mr - 35, y + 11);
       doc.setFontSize(7);
