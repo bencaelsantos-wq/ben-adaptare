@@ -9123,8 +9123,9 @@ ${MONTESSORI_SISTEMA}
 DADOS DO ALUNO:
 - Nome: ${aluno} | Idade: ${idade} | Série: ${serie}
 - Matéria: ${materia} | Tipo de atividade: ${tipoAtiv}
-- Diagnóstico(s): ${perfis.join(', ')}
+- Diagnóstico(s): ${perfis.join(', ')}${ctxDiagnostico ? ` | Informado pelo professor: ${ctxDiagnostico}` : ''}
 ${obs ? `- Observações clínicas: ${obs}` : ''}
+${ctxAluno ? `\nCONTEXTO ADICIONAL INFORMADO PELO PROFESSOR:\n${ctxAluno}` : ''}
 - Nível da atividade: ${nivel === 'basico' ? 'Básico' : nivel === 'avancado' ? 'Avançado' : 'Intermediário'}
 - Tipo de fonte: ${fonteTipo} | Tamanho: ${fonteTamanho} | Espaçamento: ${espacamento}
 
