@@ -9245,7 +9245,7 @@ function downloadAdaptacaoPDF() {
 
   const nomeAluno = dadosUltima.aluno || 'Aluno';
   const materia = dadosUltima.materia || '';
-  const profNome = user?.email?.split('@')[0] || document.getElementById('pei-professor')?.value || '';
+  const profNome = user?.user_metadata?.nome || userProfile?.nome || user?.email?.split('@')[0] || document.getElementById('pei-professor')?.value || '';
 
 
   // Gerar PDF da folha do aluno
