@@ -10247,6 +10247,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     .replace(/PARTE 1.*ALUNO/gi, '')
     .replace(/═+/g, '')
     .replace(/^Nome\s*:\s*_{3,}.*Data\s*:.*$/gim, '')
+    .replace(/^ATIVIDADE ADAPTADA[^\n]*/gim, '')
     .trim();
 
   const maxW = W - ml - mr;
