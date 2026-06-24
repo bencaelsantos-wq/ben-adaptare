@@ -2760,8 +2760,13 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <div class="modal-tags" id="ma-tags"></div>
     <div class="modal-body" id="ma-body"></div>
     <div class="modal-actions">
+<<<<<<< HEAD
+      <button class="btn-copy" onclick="copiarModalAdapt()">Copiar texto</button>
+      <button class="btn-copy" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A" onclick="baixarPDFModalAdapt()">Baixar PDF</button>
+=======
            <button class="btn-copy" onclick="copiarModalAdapt()">Copiar texto</button>
       <button class="btn-copy" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A" onclick="baixarPDFModalAdapt()">Baixar PDF</button>
+>>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
     </div>
   </div>
 </div>
@@ -3373,7 +3378,13 @@ let alunosCad = [], adaptacoesList = [], peiList = [], todosPEI = [], todasAdapt
 let alunoSelId = null, tplSelecionado = '';
 let ultimaAdapt = '', dadosUltima = {};
 let peiGerado = '', peiAluno = {};
+<<<<<<< HEAD
+function abrirModalAdapt(reg) {
+  modalAdaptTxt = reg.texto || reg.adaptacao || '';
+  modalAdaptReg = reg;
+=======
 let modalAdaptTxt = '', modalAdaptReg = null, modalPEItxt = '';
+>>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
 let professoresList = [], profEditId = null;
 let cpMats = [], cpSalas = [];
 
@@ -6874,6 +6885,7 @@ function renderPages() {
                 <textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea>
       </div>
 
+<<<<<<< HEAD
       <!-- Contexto do aluno para a IA -->
       <div style="margin-top:16px;padding:16px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:12px">
         <div style="font-size:13px;font-weight:700;color:#1E3A8A;margin-bottom:12px;display:flex;align-items:center;gap:8px">
@@ -6899,6 +6911,34 @@ function renderPages() {
           </div>
         </div>
       </div>
+
+=======
+      <!-- Contexto do aluno para a IA -->
+      <div style="margin-top:16px;padding:16px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:12px">
+        <div style="font-size:13px;font-weight:700;color:#1E3A8A;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#1E3A8A" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round"/></svg>
+          Contexto do Aluno para a IA <span style="font-weight:400;font-size:11px;color:#6B7DBF">(opcional — quanto mais informação, melhor a proposta)</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label class="flabel" for="inp-ctx-diagnostico">Diagnóstico / CID</label>
+            <input type="text" id="inp-ctx-diagnostico" class="finput" placeholder="Ex: TEA (F84.0), TDAH (F90), Dislexia…" style="margin-top:4px">
+          </div>
+          <div>
+            <label class="flabel" for="inp-ctx-limitacoes">Limitações</label>
+            <textarea id="inp-ctx-limitacoes" class="ftarea" rows="2" placeholder="Ex: dificuldade de concentração por mais de 10 min, não lê textos longos, dificuldade motora fina…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+          <div>
+            <label class="flabel" for="inp-ctx-potencialidades">Potencialidades</label>
+            <textarea id="inp-ctx-potencialidades" class="ftarea" rows="2" placeholder="Ex: boa memória visual, interesse por animais, responde bem a histórias e jogos…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+          <div>
+            <label class="flabel" for="inp-ctx-obs">Outras observações</label>
+            <textarea id="inp-ctx-obs" class="ftarea" rows="2" placeholder="Ex: usa CAA, tem apoio de AT em sala, prefere trabalhar em dupla…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+        </div>
+      </div>
+>>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
       <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>             <option value="georgia">Georgia</option>             <option value="trebuchet">Trebuchet MS</option>             <option value="palatino">Palatino</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>       </div>       <!-- Opções de saída -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
@@ -8994,7 +9034,21 @@ async function gerar() {
   const usaPictograma = document.getElementById('inp-pictogramas')?.checked || false;
   const incluiGuia    = document.getElementById('inp-guia-prof')?.checked !== false;   const nivel        = document.getElementById('inp-nivel')?.value || 'intermediario';   const fonteTipo    = document.getElementById('inp-fonte-tipo')?.value || 'sans';   const fonteTamanho = document.getElementById('inp-fonte-tamanho')?.value || 'medio';   const espacamento  = document.getElementById('inp-espacamento')?.value || 'normal';   const ehMontessori = document.getElementById('inp-materia')?.selectedOptions[0]?.closest('optgroup')?.label === 'Montessori';
 
+<<<<<<< HEAD
+  const ctxDiagnostico    = document.getElementById('inp-ctx-diagnostico')?.value.trim() || '';
+  const ctxLimitacoes     = document.getElementById('inp-ctx-limitacoes')?.value.trim() || '';
+  const ctxPotencialidades = document.getElementById('inp-ctx-potencialidades')?.value.trim() || '';
+  const ctxObs            = document.getElementById('inp-ctx-obs')?.value.trim() || '';
+  const ctxAluno = [
+    ctxDiagnostico     ? `Diagnóstico/CID: ${ctxDiagnostico}` : '',
+    ctxLimitacoes      ? `Limitações: ${ctxLimitacoes}` : '',
+    ctxPotencialidades ? `Potencialidades: ${ctxPotencialidades}` : '',
+    ctxObs             ? `Observações adicionais: ${ctxObs}` : '',
+  ].filter(Boolean).join('\n');
+
+=======
   const ctxDiagnostico = document.getElementById('inp-ctx-diagnostico')?.value.trim() || '';   const ctxLimitacoes     = document.getElementById('inp-ctx-limitacoes')?.value.trim() || '';   const ctxPotencialidades = document.getElementById('inp-ctx-potencialidades')?.value.trim() || '';   const ctxObs            = document.getElementById('inp-ctx-obs')?.value.trim() || '';   const ctxAluno = [     ctxDiagnostico     ? `Diagnóstico/CID: ${ctxDiagnostico}` : '',     ctxLimitacoes      ? `Limitações: ${ctxLimitacoes}` : '',     ctxPotencialidades ? `Potencialidades: ${ctxPotencialidades}` : '',     ctxObs             ? `Observações adicionais: ${ctxObs}` : '',   ].filter(Boolean).join('\n'); 
+>>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
   if (!materia)  return toast('Selecione a matéria.', 'error');
   if (!conteudo) return toast('Cole o conteúdo a adaptar.', 'error');
 
@@ -9152,7 +9206,11 @@ DADOS DO ALUNO:
 - Matéria: ${materia} | Tipo de atividade: ${tipoAtiv}
 - Diagnóstico(s): ${perfis.join(', ')}${ctxDiagnostico ? ` | Informado pelo professor: ${ctxDiagnostico}` : ''}
 ${obs ? `- Observações clínicas: ${obs}` : ''}
+<<<<<<< HEAD
+${ctxAluno ? `\nCONTEXTO ADICIONAL INFORMADO PELO PROFESSOR:\n${ctxAluno}` : ''}
+=======
 ${ctxAluno ? '\nCONTEXTO ADICIONAL INFORMADO PELO PROFESSOR:\n' + ctxAluno : ''}
+>>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
 - Nível da atividade: ${nivel === 'basico' ? 'Básico' : nivel === 'avancado' ? 'Avançado' : 'Intermediário'}
 - Tipo de fonte: ${fonteTipo} | Tamanho: ${fonteTamanho} | Espaçamento: ${espacamento}
 
@@ -10142,11 +10200,13 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
       try { doc.addImage(logoUrl, 'JPEG', ml, 3, 45, 18, '', 'FAST'); } catch(e2) {}
     }
     if (opts.professor) {
+      const _partes = (opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/);
+      const _descAtiv = _partes.length > 1 ? _partes.slice(1).join(' — ') : '';
       doc.setFontSize(7.5);
       doc.setTextColor(120, 130, 160);
       doc.setFont('helvetica', 'normal');
       doc.text('Professor(a): ' + opts.professor, W - mr, 10, { align: 'right' });
-      doc.text(opts.subtitulo || '', W - mr, 16, { align: 'right' });
+      if (_descAtiv) doc.text(_descAtiv, W - mr, 16, { align: 'right' });
     }
     y = 30;
   } else {
@@ -10158,11 +10218,14 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     doc.setTextColor(30, 58, 138);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    doc.text('ATIVIDADE ADAPTADA', ml, 13);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(100, 120, 160);
-    if (opts.professor) doc.text('Prof.: ' + opts.professor + '  |  ' + (opts.subtitulo || ''), W - mr, 13, { align: 'right' });
+    if (opts.professor) {
+      const _p2 = (opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/);
+      const _desc2 = _p2.length > 1 ? _p2.slice(1).join(' — ') : '';
+      doc.text('Prof.: ' + opts.professor + (_desc2 ? '  |  ' + _desc2 : ''), W - mr, 13, { align: 'right' });
+    }
     y = 24;
   }
 
@@ -10190,7 +10253,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(255, 255, 255);
-  doc.text((opts.subtitulo || opts.titulo || 'Atividade Adaptada').toUpperCase(), ml + 5, y + 7);
+  doc.text(((opts.subtitulo || opts.titulo || 'Atividade Adaptada').split(/\s*[—–-]{1,2}\s*/)[0]).toUpperCase(), ml + 5, y + 7);
   y += 14;
 
   // ── CONTEÚDO DA FOLHA DO ALUNO ────────────────────────────
@@ -11761,8 +11824,13 @@ function fecharModal(id, e) {
 }
 
 function abrirModalAdapt(reg) {
+<<<<<<< HEAD
+  modalAdaptTxt = reg.texto || reg.adaptacao || '';
+  modalAdaptReg = reg;
+=======
   modalAdaptTxt = reg.texto || '';
   modalAdaptReg = reg;
+>>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
   document.getElementById('ma-nome').textContent = reg.aluno || reg.aluno_nome || '(sem nome)';
   document.getElementById('ma-meta').textContent = [reg.idade, reg.serie, reg.materia, reg.tipo_ativ].filter(Boolean).join(' · ');
   document.getElementById('ma-tags').innerHTML = (reg.perfis||[]).map(function(p){ return '<span class="ic-tag">'+p.split('—')[0].trim()+'</span>'; }).join('');
@@ -11770,7 +11838,28 @@ function abrirModalAdapt(reg) {
   abrirModal('modal-adapt');
   registrarAuditoria('visualizou_adaptacao', 'adaptacao', reg.id || null);
 }
+<<<<<<< HEAD
+function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(()=>toast('Copiado!','success')); }
+function baixarPDFModalAdapt() {
+  if (!modalAdaptReg) return toast('Dados não disponíveis.','error');
+  const r = modalAdaptReg;
+  gerarPDFDocumento({
+    tipo: 'ATIVIDADE ADAPTADA',
+    titulo: 'Atividade Adaptada',
+    subtitulo: (r.materia||'') + (r.tipo_ativ ? ' — ' + r.tipo_ativ : ''),
+    aluno: r.aluno || r.aluno_nome || '',
+    professor: r.professor || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
+    conteudo: r.texto || r.adaptacao || '',
+    nomeArquivo: 'Adaptacao_' + (r.aluno||r.aluno_nome||'aluno').replace(/\s+/g,'_') + '_' + (r.materia||'').replace(/\s+/g,'_'),
+    isAtividade: true,
+    fonteTipo: r.fonte_tipo || 'sans',
+    fonteTamanho: r.fonte_tamanho || 'medio',
+    espacamento: r.espacamento || 'normal'
+  });
+}
+=======
 function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(()=>toast('Copiado!','success')); } function baixarPDFModalAdapt() {   if (!modalAdaptReg) return toast('Dados não disponíveis.','error');   const r = modalAdaptReg;   gerarPDFDocumento({     tipo: 'ATIVIDADE ADAPTADA',     titulo: 'Atividade Adaptada',     subtitulo: (r.materia||'') + (r.tipo_ativ ? ' — ' + r.tipo_ativ : ''),     aluno: r.aluno || r.aluno_nome || '',     professor: r.professor || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',     conteudo: r.texto || '',     nomeArquivo: 'Adaptacao_' + (r.aluno||r.aluno_nome||'aluno').replace(/\s+/g,'_') + '_' + (r.materia||'').replace(/\s+/g,'_'),     isAtividade: true,     fonteTipo: r.fonte_tipo || 'sans',     fonteTamanho: r.fonte_tamanho || 'medio',     espacamento: r.espacamento || 'normal'   }); }
+>>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
 
 function abrirModalPEI(reg) {
   garantirModalPEI();
