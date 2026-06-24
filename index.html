@@ -3373,9 +3373,7 @@ let alunosCad = [], adaptacoesList = [], peiList = [], todosPEI = [], todasAdapt
 let alunoSelId = null, tplSelecionado = '';
 let ultimaAdapt = '', dadosUltima = {};
 let peiGerado = '', peiAluno = {};
-function abrirModalAdapt(reg) {
-  modalAdaptTxt = reg.texto || reg.adaptacao || '';
-  modalAdaptReg = reg;
+let modalAdaptTxt = '', modalAdaptReg = null, modalPEItxt = '';
 let professoresList = [], profEditId = null;
 let cpMats = [], cpSalas = [];
 
@@ -9193,11 +9191,7 @@ DADOS DO ALUNO:
 - Matéria: ${materia} | Tipo de atividade: ${tipoAtiv}
 - Diagnóstico(s): ${perfis.join(', ')}${ctxDiagnostico ? ` | Informado pelo professor: ${ctxDiagnostico}` : ''}
 ${obs ? `- Observações clínicas: ${obs}` : ''}
-<<<<<<< HEAD
-${ctxAluno ? `\nCONTEXTO ADICIONAL INFORMADO PELO PROFESSOR:\n${ctxAluno}` : ''}
-=======
 ${ctxAluno ? '\nCONTEXTO ADICIONAL INFORMADO PELO PROFESSOR:\n' + ctxAluno : ''}
->>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
 - Nível da atividade: ${nivel === 'basico' ? 'Básico' : nivel === 'avancado' ? 'Avançado' : 'Intermediário'}
 - Tipo de fonte: ${fonteTipo} | Tamanho: ${fonteTamanho} | Espaçamento: ${espacamento}
 
