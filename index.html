@@ -11825,7 +11825,6 @@ function abrirModalAdapt(reg) {
   abrirModal('modal-adapt');
   registrarAuditoria('visualizou_adaptacao', 'adaptacao', reg.id || null);
 }
-<<<<<<< HEAD
 function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(()=>toast('Copiado!','success')); }
 function baixarPDFModalAdapt() {
   if (!modalAdaptReg) return toast('Dados não disponíveis.','error');
@@ -11844,9 +11843,6 @@ function baixarPDFModalAdapt() {
     espacamento: r.espacamento || 'normal'
   });
 }
-=======
-function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(()=>toast('Copiado!','success')); } function baixarPDFModalAdapt() {   if (!modalAdaptReg) return toast('Dados não disponíveis.','error');   const r = modalAdaptReg;   gerarPDFDocumento({     tipo: 'ATIVIDADE ADAPTADA',     titulo: 'Atividade Adaptada',     subtitulo: (r.materia||'') + (r.tipo_ativ ? ' — ' + r.tipo_ativ : ''),     aluno: r.aluno || r.aluno_nome || '',     professor: r.professor || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',     conteudo: r.texto || '',     nomeArquivo: 'Adaptacao_' + (r.aluno||r.aluno_nome||'aluno').replace(/\s+/g,'_') + '_' + (r.materia||'').replace(/\s+/g,'_'),     isAtividade: true,     fonteTipo: r.fonte_tipo || 'sans',     fonteTamanho: r.fonte_tamanho || 'medio',     espacamento: r.espacamento || 'normal'   }); }
->>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
 
 function abrirModalPEI(reg) {
   garantirModalPEI();
