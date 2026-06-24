@@ -2760,13 +2760,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <div class="modal-tags" id="ma-tags"></div>
     <div class="modal-body" id="ma-body"></div>
     <div class="modal-actions">
-<<<<<<< HEAD
       <button class="btn-copy" onclick="copiarModalAdapt()">Copiar texto</button>
       <button class="btn-copy" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A" onclick="baixarPDFModalAdapt()">Baixar PDF</button>
-=======
-           <button class="btn-copy" onclick="copiarModalAdapt()">Copiar texto</button>
-      <button class="btn-copy" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A" onclick="baixarPDFModalAdapt()">Baixar PDF</button>
->>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
     </div>
   </div>
 </div>
@@ -11824,7 +11819,6 @@ function abrirModalAdapt(reg) {
   document.getElementById('ma-body').textContent = reg.texto || reg.adaptacao || '';
   abrirModal('modal-adapt');
   registrarAuditoria('visualizou_adaptacao', 'adaptacao', reg.id || null);
-}
 function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(()=>toast('Copiado!','success')); }
 function baixarPDFModalAdapt() {
   if (!modalAdaptReg) return toast('Dados não disponíveis.','error');
