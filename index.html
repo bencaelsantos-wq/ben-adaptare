@@ -3374,6 +3374,7 @@ let alunoSelId = null, tplSelecionado = '';
 let ultimaAdapt = '', dadosUltima = {};
 let peiGerado = '', peiAluno = {};
 let modalAdaptTxt = '', modalAdaptReg = null, modalPEItxt = '';
+
 // ── LOGIN / ROLE ─────────────────────────────────────────────
 let userSubRole = 'fono';
 
@@ -11810,6 +11811,7 @@ function abrirModalAdapt(reg) {
   document.getElementById('ma-body').textContent = reg.texto || reg.adaptacao || '';
   abrirModal('modal-adapt');
   registrarAuditoria('visualizou_adaptacao', 'adaptacao', reg.id || null);
+}
 function copiarModalAdapt() { navigator.clipboard.writeText(modalAdaptTxt).then(()=>toast('Copiado!','success')); }
 function baixarPDFModalAdapt() {
   if (!modalAdaptReg) return toast('Dados não disponíveis.','error');
