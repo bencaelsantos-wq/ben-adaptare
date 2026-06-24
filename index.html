@@ -3378,13 +3378,9 @@ let alunosCad = [], adaptacoesList = [], peiList = [], todosPEI = [], todasAdapt
 let alunoSelId = null, tplSelecionado = '';
 let ultimaAdapt = '', dadosUltima = {};
 let peiGerado = '', peiAluno = {};
-<<<<<<< HEAD
 function abrirModalAdapt(reg) {
   modalAdaptTxt = reg.texto || reg.adaptacao || '';
   modalAdaptReg = reg;
-=======
-let modalAdaptTxt = '', modalAdaptReg = null, modalPEItxt = '';
->>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
 let professoresList = [], profEditId = null;
 let cpMats = [], cpSalas = [];
 
@@ -11824,13 +11820,8 @@ function fecharModal(id, e) {
 }
 
 function abrirModalAdapt(reg) {
-<<<<<<< HEAD
   modalAdaptTxt = reg.texto || reg.adaptacao || '';
   modalAdaptReg = reg;
-=======
-  modalAdaptTxt = reg.texto || '';
-  modalAdaptReg = reg;
->>>>>>> dd1160f2e730e1d3e245f04885b39ba58e4a316e
   document.getElementById('ma-nome').textContent = reg.aluno || reg.aluno_nome || '(sem nome)';
   document.getElementById('ma-meta').textContent = [reg.idade, reg.serie, reg.materia, reg.tipo_ativ].filter(Boolean).join(' · ');
   document.getElementById('ma-tags').innerHTML = (reg.perfis||[]).map(function(p){ return '<span class="ic-tag">'+p.split('—')[0].trim()+'</span>'; }).join('');
