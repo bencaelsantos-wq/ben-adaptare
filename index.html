@@ -3617,6 +3617,7 @@ async function lerPerfilDobanco() {
       .maybeSingle();
 
     if (error) { console.warn('profiles read error:', error.message); return; }
+    if (data?.nome) window._profNomeDB = data.nome;
 
     if (!data) {
       const roleParaUsar = userRole || user.user_metadata?.role || 'professor';
@@ -9283,7 +9284,7 @@ function downloadAdaptacaoPDF() {
 
   const nomeAluno = dadosUltima.aluno || 'Aluno';
   const materia = dadosUltima.materia || '';
-  const profNome = user?.user_metadata?.nome || user?.email?.split('@')[0] || document.getElementById('pei-professor')?.value || '';
+  const profNome = window._profNomeDB || user?.user_metadata?.nome || user?.email?.split('@')[0] || document.getElementById('pei-professor')?.value || '';
 
 
   // Gerar PDF da folha do aluno
@@ -10215,9 +10216,10 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   doc.setFontSize(7.5);
   doc.setTextColor(50, 70, 140);
   doc.text('ALUNO:', ml + 3, y + 6);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
   doc.setTextColor(20, 20, 60);
-  doc.text(opts.aluno, ml + 18, y + 6);
+  doc.text((opts.aluno || '').toUpperCase(), ml + 18, y + 6);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(50, 70, 140);
   doc.text('DATA:', W / 2, y + 6);
