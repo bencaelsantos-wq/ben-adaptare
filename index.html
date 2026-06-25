@@ -3618,6 +3618,10 @@ async function lerPerfilDobanco() {
 
     if (error) { console.warn('profiles read error:', error.message); return; }
     if (data?.nome) window._profNomeDB = data.nome;
+    if (!window._profNomeDB) {
+      const { data: pd } = await db.from('professores').select('nome').eq('user_id', user.id).maybeSingle();
+      if (pd?.nome) window._profNomeDB = pd.nome;
+    }
 
     if (!data) {
       const roleParaUsar = userRole || user.user_metadata?.role || 'professor';
