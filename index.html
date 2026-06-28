@@ -3698,7 +3698,15 @@ function clearMsgs() {
   ['lerr','lok'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 }
 
-function iniciarApp() {
+async function iniciarApp() {
+  if (!window._profNomeDB && user?.id) {
+    const { data: _pd } = await db.from('professores').select('nome').eq('user_id', user.id).maybeSingle();
+    if (_pd?.nome) window._profNomeDB = _pd.nome;
+    if (!window._profNomeDB && user?.email) {
+      const { data: _pe } = await db.from('professores').select('nome').eq('email', user.email).maybeSingle();
+      if (_pe?.nome) window._profNomeDB = _pe.nome;
+    }
+  }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
@@ -9190,7 +9198,7 @@ Nome: _______________ | Data: ___/___/___
 
 [BLOCO 1 — instrucao curta + exercicio com espaco de resposta]
 [linhas de resposta: _________________________________]
-[espaco de desenho: [ESPACO PARA DESENHO] — NUNCA escreva dentro]
+[espaco de desenho: inclua [ESPACO PARA DESENHO] SOMENTE se a atividade original pede para desenhar, colorir ou criar algo visual]
 
 ---
 
