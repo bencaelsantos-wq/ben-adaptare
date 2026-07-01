@@ -3633,9 +3633,18 @@ async function lerPerfilDobanco() {
     if (!data) {
       const roleParaUsar = userRole || user.user_metadata?.role || 'professor';
       const subroleParaUsar = user.user_metadata?.subrole || '';
+      let orgId = null;
+      try {
+        const { data: conviteRow } = await db.from('convites').select('convidado_por').eq('email', user.email).order('created_at', { ascending:false }).limit(1).maybeSingle();
+        if (conviteRow?.convidado_por) {
+          const { data: inviterProfile } = await db.from('profiles').select('organizacao_id').eq('id', conviteRow.convidado_por).maybeSingle();
+          orgId = inviterProfile?.organizacao_id || null;
+        }
+      } catch(e) {}
       await db.from('profiles').upsert({
         id: user.id, email: user.email,
-        role: roleParaUsar, subrole: subroleParaUsar, ativo: true
+        role: roleParaUsar, subrole: subroleParaUsar, ativo: true,
+        organizacao_id: orgId
       });
       userRole = roleParaUsar;
       userSubRole = subroleParaUsar;
@@ -6588,6 +6597,12 @@ function abrirAnaliseComportamental() {
     return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
   }
   showPage('analise-comp');
+  const sel = document.getElementById('ac-aluno-sel');
+  if (sel) {
+    sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
+      (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+  }
+  carregarAnalisesComportamentais();
 }
 
 const SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL = `Você é um assistente técnico de apoio especializado em Análise do Comportamento Aplicada (ABA), Análise de Perfil Comportamental e Suporte ao Raciocínio Diagnóstico, voltado para profissionais de educação inclusiva, psicopedagogia, psicologia e fonoaudiologia que atendem crianças e adolescentes neurodivergentes ou com suspeita de atraso/transtorno do desenvolvimento.
@@ -6658,15 +6673,49 @@ Gere o relatório completo seguindo as 4 camadas do seu papel.`;
   document.getElementById('ac-resultado-box').style.display = 'none';
   try {
     const texto = await chamarClaude({ prompt, maxTokens: 4000, modulo: 'analise-comportamental' });
+    const alunoId = document.getElementById('ac-aluno-sel')?.value || null;
     window._ultimaAnaliseComp = { texto, aluno: nomeAluno };
     document.getElementById('ac-resultado-texto').textContent = texto;
     document.getElementById('ac-resultado-box').style.display = 'block';
     document.getElementById('ac-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+    const { error: erroSalvar } = await db.from('analises_comportamentais').insert({
+      user_id: user.id,
+      aluno_id: alunoId,
+      aluno_nome: nomeAluno || null,
+      relato,
+      resultado: texto
+    });
+    if (erroSalvar) console.warn('Erro ao salvar análise no histórico:', erroSalvar.message);
+    else carregarAnalisesComportamentais();
   } catch(e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
   } finally {
     btn.disabled = false;
   }
+}
+
+async function carregarAnalisesComportamentais() {
+  const lista = document.getElementById('ac-lista-salvas');
+  if (!lista) return;
+  const { data, error } = await db.from('analises_comportamentais')
+    .select('id, aluno_nome, resultado, created_at')
+    .order('created_at', { ascending: false })
+    .limit(20);
+  if (error || !data?.length) { lista.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhuma análise salva ainda.</p>'; return; }
+  lista.innerHTML = data.map(r => `
+    <div class="ic-card" style="cursor:pointer" onclick='abrirAnaliseSalva(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="ic-nome">${r.aluno_nome || '(sem nome)'}</div>
+      <div style="font-size:11px;color:var(--gr400)">${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>
+  `).join('');
+}
+
+function abrirAnaliseSalva(r) {
+  window._ultimaAnaliseComp = { texto: r.resultado, aluno: r.aluno_nome || '' };
+  document.getElementById('ac-resultado-texto').textContent = r.resultado;
+  document.getElementById('ac-resultado-box').style.display = 'block';
+  document.getElementById('ac-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
 function baixarPDFAnaliseComp() {
@@ -7440,7 +7489,10 @@ function renderPages() {
     <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico. Todo conteúdo gerado deve ser validado por profissional habilitado (psicólogo, neuropsicólogo, psiquiatra ou médico) antes de qualquer comunicação à família.</div>
 
     <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação (opcional)</div><div class="pei-step-sub">Nome do aluno/paciente para referência no relatório</div></div></div>
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação (opcional)</div><div class="pei-step-sub">Vincule a um aluno já cadastrado para salvar no histórico dele, ou digite o nome manualmente</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-aluno-sel">Aluno cadastrado</label>
+        <select id="ac-aluno-sel" class="fselect" onchange="document.getElementById('ac-aluno').value = alunosCad.find(a=>a.id===this.value)?.nome || document.getElementById('ac-aluno').value"><option value="">Nenhum — digitar manualmente abaixo</option></select>
+      </div>
       <div class="fblock"><label class="flabel" for="ac-aluno">Nome do aluno/paciente</label><input type="text" id="ac-aluno" class="finput" placeholder="Ex: João Pedro"></div>
     </div>
 
@@ -7466,6 +7518,11 @@ function renderPages() {
         <button class="btn-copy" onclick="copiarAdapt('ac-resultado-texto')">Copiar texto</button>
         <button class="btn-copy" onclick="baixarPDFAnaliseComp()">Baixar PDF</button>
       </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Análises salvas</h3>
+      <div class="cards-grid" id="ac-lista-salvas"></div>
     </div>
   </div>
 
