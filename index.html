@@ -7434,6 +7434,41 @@ function renderPages() {
     </div>
   </div>
 
+  <div id="page-analise-comp" class="page">
+    <h1 class="page-title">Análise Comportamental</h1>
+    <p class="page-sub">Suporte ao raciocínio diagnóstico — organiza dados observacionais em hipóteses para investigação profissional. Não substitui avaliação formal.</p>
+    <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico. Todo conteúdo gerado deve ser validado por profissional habilitado (psicólogo, neuropsicólogo, psiquiatra ou médico) antes de qualquer comunicação à família.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação (opcional)</div><div class="pei-step-sub">Nome do aluno/paciente para referência no relatório</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-aluno">Nome do aluno/paciente</label><input type="text" id="ac-aluno" class="finput" placeholder="Ex: João Pedro"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Relato da situação observada</div><div class="pei-step-sub">Descreva livremente — quanto mais detalhado, melhor a análise</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-relato">O que foi observado (comportamento, frequência, duração)</label><textarea id="ac-relato" class="ftarea" style="min-height:140px" placeholder="Ex: Nas últimas 3 semanas, durante a transição do recreio para a sala, a criança grita e se joga no chão por cerca de 2 minutos, cerca de 3x por semana..."></textarea></div>
+      <div class="frow">
+        <div><label class="flabel" for="ac-gatilho">Contexto/gatilho identificado</label><textarea id="ac-gatilho" class="ftarea sm" placeholder="Ex: sempre após atividades com muito ruído; quando é solicitado a parar uma atividade preferida..."></textarea></div>
+        <div><label class="flabel" for="ac-tentativas">O que já foi tentado</label><textarea id="ac-tentativas" class="ftarea sm" placeholder="Ex: aviso antecipado de 5 min antes da transição; uso de timer visual..."></textarea></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ac-instrumentos">Instrumentos já aplicados (se houver)</label><textarea id="ac-instrumentos" class="ftarea sm" placeholder="Ex: M-CHAT aplicado em [data], escore X; escala Vineland..."></textarea></div>
+    </div>
+
+    <button class="btn-gerar" id="ac-btn-gerar" onclick="gerarAnaliseComportamental()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar análise
+    </button>
+
+    <div class="result-card show" id="ac-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Relatório gerado</h3>
+      <div id="ac-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copiarAdapt('ac-resultado-texto')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFAnaliseComp()">Baixar PDF</button>
+      </div>
+    </div>
+  </div>
+
 
     <!-- GESTÃO: LISTA DE AEE -->
   <div id="page-gestao-lista-aee" class="page">
