@@ -6618,7 +6618,7 @@ Estruture em blocos: 1. Análise Funcional do Comportamento — 2. Perfil Compor
 # TOM E POSTURA
 Linguagem técnica, precisa, acessível a educadores não-clínicos. Ancore toda afirmação no dado fornecido. Trate a criança sempre com dignidade, evite linguagem patologizante ("criança que apresenta..." em vez de "criança birrenta"). Se os dados sugerirem risco (autolesão, negligência, abuso), interrompa a análise de perfil e sinalize isso como prioridade imediata de encaminhamento, antes de qualquer outra consideração.
 
-Nao use emojis. Nao use markdown com asteriscos duplos para negrito — use MAIUSCULAS para titulos de secao.`;
+Escreva sempre em português correto, com acentuação e cedilha (ex: "análise", "não", "operacionalização", "diagnóstico"). Não use emojis. Não use markdown com asteriscos duplos para negrito — use MAIÚSCULAS para títulos de seção, no formato "CAMADA X - NOME DA SEÇÃO" ou "TÍTULO:".`;
 
 async function gerarAnaliseComportamental() {
   const relato = document.getElementById('ac-relato')?.value.trim();
@@ -6657,7 +6657,7 @@ Gere o relatório completo seguindo as 4 camadas do seu papel.`;
   btn.disabled = true;
   document.getElementById('ac-resultado-box').style.display = 'none';
   try {
-    const texto = await chamarClaude({ prompt, maxTokens: 2500, modulo: 'analise-comportamental' });
+    const texto = await chamarClaude({ prompt, maxTokens: 4000, modulo: 'analise-comportamental' });
     window._ultimaAnaliseComp = { texto, aluno: nomeAluno };
     document.getElementById('ac-resultado-texto').textContent = texto;
     document.getElementById('ac-resultado-box').style.display = 'block';
@@ -6677,7 +6677,7 @@ function baixarPDFAnaliseComp() {
     titulo: 'Análise Comportamental e Suporte ao Raciocínio Diagnóstico',
     subtitulo: 'Uso profissional — não substitui avaliação formal',
     aluno: dados.aluno || 'Não identificado',
-    professor: window._profNomeDB || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
+    professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
     conteudo: dados.texto,
     nomeArquivo: 'Analise_Comportamental_' + (dados.aluno||'paciente').replace(/\s+/g,'_'),
     isAtividade: false
@@ -10090,11 +10090,16 @@ function gerarPDFDocumento(opts) {
 
     // ── TÍTULO DO DOCUMENTO ──────────────────────────────────
     // Box de título
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    const _subLinhas = doc.splitTextToSize(opts.subtitulo || '', W - ml - mr - 10);
+    const _boxH = 12 + (_subLinhas.length * 4.5);
+
     doc.setFillColor(241, 245, 255);
-    doc.roundedRect(ml, y, W - ml - mr, 18, 2, 2, 'F');
+    doc.roundedRect(ml, y, W - ml - mr, _boxH, 2, 2, 'F');
     doc.setDrawColor(30, 58, 138);
     doc.setLineWidth(0.8);
-    doc.line(ml, y, ml, y + 18);
+    doc.line(ml, y, ml, y + _boxH);
 
     doc.setTextColor(30, 58, 138);
     doc.setFont('helvetica', 'bold');
@@ -10104,8 +10109,8 @@ function gerarPDFDocumento(opts) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(80, 80, 120);
-    doc.text(opts.subtitulo, ml + 5, y + 14);
-    y += 24;
+    doc.text(_subLinhas, ml + 5, y + 13);
+    y += _boxH + 6;
 
     // Linha divisória
     doc.setDrawColor(200, 210, 230);
@@ -10192,7 +10197,7 @@ function gerarPDFDocumento(opts) {
     const maxW = W - ml - mr;
    const linhas = doc.splitTextToSize(sanitizarTexto(opts.conteudo), maxW);
 
-    const altLinha = 5;
+    const altLinha = 5.8;
     const rodapeH = 35; // espaço reservado para assinaturas
 
     for (let i = 0; i < linhas.length; i++) {
@@ -10217,7 +10222,8 @@ function gerarPDFDocumento(opts) {
       // Destacar seções em negrito
       const linha = linhas[i];
       const linhaT = linha.trim();
-      const isH1 = /^#{1,2}\s/.test(linhaT) || (/^\d+\.\s[A-Z]/.test(linhaT) && linhaT.length < 80);
+      const isTituloMaiusculo = linhaT.length < 90 && linhaT.length > 3 && linhaT === linhaT.toUpperCase() && /[A-ZÀ-Ú]/.test(linhaT) && !/^\(/.test(linhaT);
+      const isH1 = /^#{1,2}\s/.test(linhaT) || (/^\d+\.\s[A-Z]/.test(linhaT) && linhaT.length < 80) || isTituloMaiusculo;
       const isH2 = /^#{3}\s/.test(linhaT) || (/^\d+\.\d+\s/.test(linhaT) && linhaT.length < 80);
       const isSep = /^---+$/.test(linhaT) || linhaT === '';
       if (isSep) {
