@@ -9004,7 +9004,8 @@ async function gerar() {
   const conteudo     = document.getElementById('inp-conteudo')?.value.trim();
   const tipoAtiv     = tipoLivre || tplSelecionado || 'atividade pedagógica';
   const usaPictograma = document.getElementById('inp-pictogramas')?.checked || false;
-  const incluiGuia    = document.getElementById('inp-guia-prof')?.checked !== false;   const nivel        = document.getElementById('inp-nivel')?.value || 'intermediario';   const fonteTipo    = document.getElementById('inp-fonte-tipo')?.value || 'sans';   const fonteTamanho = document.getElementById('inp-fonte-tamanho')?.value || 'medio';   const espacamento  = document.getElementById('inp-espacamento')?.value || 'normal';   const ehMontessori = document.getElementById('inp-materia')?.selectedOptions[0]?.closest('optgroup')?.label === 'Montessori';
+  const incluiGuia    = document.getElementById('inp-guia-prof')?.checked !== false;
+  const usaMaiusculas = document.getElementById('inp-maiusculas')?.checked || false;   const nivel        = document.getElementById('inp-nivel')?.value || 'intermediario';   const fonteTipo    = document.getElementById('inp-fonte-tipo')?.value || 'sans';   const fonteTamanho = document.getElementById('inp-fonte-tamanho')?.value || 'medio';   const espacamento  = document.getElementById('inp-espacamento')?.value || 'normal';   const ehMontessori = document.getElementById('inp-materia')?.selectedOptions[0]?.closest('optgroup')?.label === 'Montessori';
 
   const ctxDiagnostico    = document.getElementById('inp-ctx-diagnostico')?.value.trim() || '';
   const ctxLimitacoes     = document.getElementById('inp-ctx-limitacoes')?.value.trim() || '';
@@ -9198,7 +9199,12 @@ Nome: _______________ | Data: ___/___/___
 
 [BLOCO 1 — instrucao curta + exercicio com espaco de resposta]
 [linhas de resposta: _________________________________]
+<<<<<<< HEAD
+[espaco de desenho: [ESPACO PARA DESENHO] — inclua SOMENTE se a atividade original envolver desenho ou criacao visual; OMITA se nao houver essa demanda]
+- Se a atividade pede posicionar objetos fisicos sobre numeros impressos, distribua cada numero em coluna propria com espaco generoso: use formato grade, nao linha continua
+=======
 [espaco de desenho: inclua [ESPACO PARA DESENHO] SOMENTE se a atividade original pede para desenhar, colorir ou criar algo visual]
+>>>>>>> a12f4eb03fffb8a0cd65a228bfcf77b445b7aa47
 
 ---
 
@@ -9242,7 +9248,10 @@ NAO FAZER: [1-2 proibicoes criticas]`;
     const texto = await chamarClaude({ prompt, maxTokens: 1500, modulo: 'adaptacao' });
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
-    document.getElementById('result-text').textContent = texto;
+    const textoFinal = usaMaiusculas ? texto.toUpperCase() : texto;
+    ultimaAdapt = textoFinal;
+    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento };
+    document.getElementById('result-text').textContent = textoFinal;
     document.getElementById('result-badge').textContent = `${idade} · ${serie} · ${materia}${isMontessori ? ' · 🌱 Montessori' : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -10195,7 +10204,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
 
   // ── DADOS DO ALUNO (compacto) ─────────────────────────────
   doc.setFillColor(240, 244, 255);
-  doc.roundedRect(ml, y, W - ml - mr, 10, 1.5, 1.5, 'F');
+  doc.roundedRect(ml, y, W - ml - mr, 20, 1.5, 1.5, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(50, 70, 140);
@@ -10210,7 +10219,14 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(20, 20, 60);
   doc.text('_____ / _____ / _______', W / 2 + 14, y + 6);
-  y += 16;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(50, 70, 140);
+  doc.text('PROFESSOR(A):', ml + 3, y + 15);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(20, 20, 60);
+  doc.text('_______________________________________', ml + 35, y + 15);
+  y += 26;
 
   // ── TÍTULO DA ATIVIDADE ───────────────────────────────────
   doc.setFillColor(30, 58, 138);
@@ -10320,7 +10336,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
 
     // Dados do aluno no guia
     doc.setFillColor(240, 244, 255);
-    doc.roundedRect(ml, y, W - ml - mr, 10, 1.5, 1.5, 'F');
+    doc.roundedRect(ml, y, W - ml - mr, 20, 1.5, 1.5, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(50, 70, 140);
