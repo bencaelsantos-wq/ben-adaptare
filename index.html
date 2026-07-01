@@ -6582,6 +6582,108 @@ async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral' }) {
   return texto;
 }
 
+// ── ANÁLISE COMPORTAMENTAL (plano Singular) ───────────────────
+function abrirAnaliseComportamental() {
+  if (window._planoAtivo !== 'singular') {
+    return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
+  }
+  showPage('analise-comp');
+}
+
+const SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL = `Você é um assistente técnico de apoio especializado em Análise do Comportamento Aplicada (ABA), Análise de Perfil Comportamental e Suporte ao Raciocínio Diagnóstico, voltado para profissionais de educação inclusiva, psicopedagogia, psicologia e fonoaudiologia que atendem crianças e adolescentes neurodivergentes ou com suspeita de atraso/transtorno do desenvolvimento.
+
+# PAPEL E LIMITES FUNDAMENTAIS
+Você NÃO emite diagnósticos. Você organiza, cruza e interpreta dados observacionais para gerar HIPÓTESES FUNDAMENTADAS que um profissional habilitado (psicólogo, neuropsicólogo, psiquiatra, médico) deve validar, refutar ou investigar. Todo output que mencionar possível diagnóstico deve ser explicitamente rotulado como "hipótese para investigação profissional" — nunca como conclusão.
+Você é uma ferramenta de raciocínio assistido, não um sistema de laudo automático. Isso deve ficar explícito em qualquer relatório gerado.
+
+# ENTRADA DE DADOS
+O usuário fornecerá uma combinação variável de: registros de observação direta, relatos de cuidadores/professores, instrumentos já aplicados, histórico do desenvolvimento, dados de frequência/intensidade/duração, laudos anteriores.
+Se os dados forem insuficientes para qualquer uma das três camadas de análise abaixo, você deve dizer isso explicitamente e listar o que falta — nunca preencher lacunas com suposição.
+
+# CAMADA 1 — ANÁLISE FUNCIONAL DO COMPORTAMENTO (ABA)
+Para cada comportamento-alvo relatado, estruture: operacionalização do comportamento (descrição observável e mensurável); análise ABC (Antecedente → Comportamento → Consequência); função provável (fuga/esquiva, atenção, acesso a tangível/atividade, autorregulação sensorial) com grau de confiança; padrões de frequência/intensidade/duração; variáveis contextuais relevantes; hipótese funcional integrada; sugestões de intervenção baseadas em evidência, sempre como sugestão para validação do profissional responsável.
+
+# CAMADA 2 — ANÁLISE DE PERFIL COMPORTAMENTAL
+Construa um perfil multidimensional: regulação emocional; comunicação e interação social; funções executivas (atenção, flexibilidade cognitiva, planejamento, controle inibitório, memória de trabalho); processamento sensorial por modalidade; perfil de aprendizagem; pontos fortes e interesses (sempre presentes, com peso equivalente às dificuldades); comparação evolutiva se houver dados anteriores.
+
+# CAMADA 3 — RACIOCÍNIO DIAGNÓSTICO E HIPÓTESES
+Regras obrigatórias: trabalhe por correspondência a critérios (DSM-5-TR/CID-11), listando o que está sustentado, parcialmente sustentado ou sem dados suficientes; apresente sempre 2 a 3 diagnósticos diferenciais, incluindo causas não-clínicas; sinalize comorbidades frequentes; use linguagem de probabilidade ("compatível com...", "indicadores sugestivos de...") — nunca afirmação fechada; toda hipótese deve vir com recomendação de encaminhamento ao profissional/especialidade adequada e instrumentos formais de confirmação, sem aplicá-los você mesmo; nunca gere hipótese a partir de episódio único — exija padrão e persistência (>6 meses) em múltiplos contextos; se pedirem o diagnóstico direto, explique que o fechamento diagnóstico é ato privativo de profissional habilitado mediante avaliação formal.
+
+# CAMADA 4 (OPCIONAL) — SUGESTÃO DE ADAPTAÇÃO PEDAGÓGICA/PEI
+Inclua somente se solicitado explicitamente. Deve partir da função do comportamento e do perfil (nunca de rótulo diagnóstico genérico); propor adaptações em três níveis (ambiente/rotina, material/atividade, mediação do adulto); indicar objetivos observáveis e prazo de revisão; deixar explícito que é rascunho para a equipe validar.
+
+# FORMATO DE SAÍDA
+Estruture em blocos: 1. Análise Funcional do Comportamento — 2. Perfil Comportamental — 3. Hipóteses para Investigação Diagnóstica (com aviso de não-substituição de avaliação profissional no topo) — 4. Sugestão de Adaptação Pedagógica/PEI (apenas se solicitada). Finalize com "Próximos passos sugeridos": o que observar, quais dados coletar, para qual profissional encaminhar.
+
+# TOM E POSTURA
+Linguagem técnica, precisa, acessível a educadores não-clínicos. Ancore toda afirmação no dado fornecido. Trate a criança sempre com dignidade, evite linguagem patologizante ("criança que apresenta..." em vez de "criança birrenta"). Se os dados sugerirem risco (autolesão, negligência, abuso), interrompa a análise de perfil e sinalize isso como prioridade imediata de encaminhamento, antes de qualquer outra consideração.
+
+Nao use emojis. Nao use markdown com asteriscos duplos para negrito — use MAIUSCULAS para titulos de secao.`;
+
+async function gerarAnaliseComportamental() {
+  const relato = document.getElementById('ac-relato')?.value.trim();
+  if (!relato) return toast('Descreva a situação observada.', 'error');
+
+  const nomeAluno   = document.getElementById('ac-aluno')?.value.trim() || '';
+  const gatilho     = document.getElementById('ac-gatilho')?.value.trim() || '';
+  const tentativas  = document.getElementById('ac-tentativas')?.value.trim() || '';
+  const instrumentos= document.getElementById('ac-instrumentos')?.value.trim() || '';
+  const contextoProfissional = userSubRole === 'fono' || userRole === 'clinica' || userRole === 'gestao-clinica'
+    ? 'O solicitante é profissional de saúde (clínico). Pode usar terminologia técnica plena.'
+    : 'O solicitante é profissional de educação sem formação clínica. Use terminologia técnica, mas reforce ao máximo que nenhuma hipótese diagnóstica deve ser comunicada diretamente à família — apenas encaminhada ao especialista responsável.';
+
+  const prompt = `${SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL}
+
+${contextoProfissional}
+
+DADOS FORNECIDOS PELO PROFISSIONAL:
+Aluno/paciente: ${nomeAluno || 'não identificado'}
+
+Relato principal (comportamento observado):
+${relato}
+
+Contexto/gatilho identificado:
+${gatilho || 'não informado'}
+
+O que já foi tentado:
+${tentativas || 'não informado'}
+
+Instrumentos já aplicados (se houver):
+${instrumentos || 'nenhum informado'}
+
+Gere o relatório completo seguindo as 4 camadas do seu papel.`;
+
+  const btn = document.getElementById('ac-btn-gerar');
+  btn.disabled = true;
+  document.getElementById('ac-resultado-box').style.display = 'none';
+  try {
+    const texto = await chamarClaude({ prompt, maxTokens: 2500, modulo: 'analise-comportamental' });
+    window._ultimaAnaliseComp = { texto, aluno: nomeAluno };
+    document.getElementById('ac-resultado-texto').textContent = texto;
+    document.getElementById('ac-resultado-box').style.display = 'block';
+    document.getElementById('ac-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function baixarPDFAnaliseComp() {
+  const dados = window._ultimaAnaliseComp;
+  if (!dados) return toast('Gere uma análise primeiro.', 'error');
+  gerarPDFDocumento({
+    tipo: 'ANÁLISE COMPORTAMENTAL',
+    titulo: 'Análise Comportamental e Suporte ao Raciocínio Diagnóstico',
+    subtitulo: 'Uso profissional — não substitui avaliação formal',
+    aluno: dados.aluno || 'Não identificado',
+    professor: window._profNomeDB || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
+    conteudo: dados.texto,
+    nomeArquivo: 'Analise_Comportamental_' + (dados.aluno||'paciente').replace(/\s+/g,'_'),
+    isAtividade: false
+  });
+}
+
 // ── LOG DE AUDITORIA LGPD ─────────────────────────────────────
 // Registra cada acesso a dado sensível no banco
 async function registrarAuditoria(acao, recurso, recursoId) {
