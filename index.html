@@ -3896,10 +3896,10 @@ function renderNavClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI
     </div>
     <div class="nav-item clinic-item" id="nav-analise-comp-clinica" onclick="abrirAnaliseComportamental()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise Comportamental<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
     </div>
     <div class="nav-item clinic-item" id="nav-analise-comp-clinica" onclick="abrirAnaliseComportamental()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise Comportamental<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
     </div>
     <div class="nav-item clinic-item" id="nav-clinica-monitoramento" onclick="showPage('clinica-monitoramento')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Monitoramento
@@ -6635,9 +6635,34 @@ Linguagem técnica, precisa, acessível a educadores não-clínicos. Ancore toda
 
 Escreva sempre em português correto, com acentuação e cedilha (ex: "análise", "não", "operacionalização", "diagnóstico"). Não use emojis. Não use markdown com asteriscos duplos para negrito — use MAIÚSCULAS para títulos de seção, no formato "CAMADA X - NOME DA SEÇÃO" ou "TÍTULO:".`;
 
+async function processarLaudoAnalise(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('ac-laudo-status');
+  const campo = document.getElementById('ac-laudo-texto');
+  status.style.display = 'block';
+  status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
+  status.textContent = 'Lendo arquivo…';
+  try {
+    let texto = '';
+    if (file.name.endsWith('.pdf')) texto = await extrairTextoPDF(file);
+    else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) texto = await extrairTextoDOCX(file);
+    else { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Formato não suportado. Use PDF ou DOCX.'; return; }
+    if (!texto.trim()) { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Não foi possível extrair texto. Cole manualmente.'; return; }
+    campo.value = (campo.value ? campo.value + '\n\n---\n\n' : '') + texto.trim();
+    status.style.background = '#F0FDF4'; status.style.color = '#166534';
+    status.textContent = 'Laudo importado com sucesso.';
+  } catch(e) {
+    status.style.background = '#FEF2F2'; status.style.color = '#991B1B';
+    status.textContent = 'Erro ao ler o arquivo: ' + (e.message || 'tente outro formato.');
+  }
+  input.value = '';
+}
+
 async function gerarAnaliseComportamental() {
   const relato = document.getElementById('ac-relato')?.value.trim();
   if (!relato) return toast('Descreva a situação observada.', 'error');
+  const laudos = document.getElementById('ac-laudo-texto')?.value.trim() || '';
 
   const nomeAluno   = document.getElementById('ac-aluno')?.value.trim() || '';
   const gatilho     = document.getElementById('ac-gatilho')?.value.trim() || '';
@@ -6665,6 +6690,9 @@ ${tentativas || 'não informado'}
 
 Instrumentos já aplicados (se houver):
 ${instrumentos || 'nenhum informado'}
+
+Trecho de laudos/relatórios anexados (se houver):
+${laudos || 'nenhum anexado'}
 
 Gere o relatório completo seguindo as 4 camadas do seu papel.`;
 
@@ -6722,8 +6750,8 @@ function baixarPDFAnaliseComp() {
   const dados = window._ultimaAnaliseComp;
   if (!dados) return toast('Gere uma análise primeiro.', 'error');
   gerarPDFDocumento({
-    tipo: 'ANÁLISE COMPORTAMENTAL',
-    titulo: 'Análise Comportamental e Suporte ao Raciocínio Diagnóstico',
+    tipo: 'ANÁLISE E ESTRATÉGIAS',
+    titulo: 'Análise e Estratégias Pedagógicas',
     subtitulo: 'Uso profissional — não substitui avaliação formal',
     aluno: dados.aluno || 'Não identificado',
     professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
@@ -7484,9 +7512,17 @@ function renderPages() {
   </div>
 
   <div id="page-analise-comp" class="page">
-    <h1 class="page-title">Análise Comportamental</h1>
-    <p class="page-sub">Suporte ao raciocínio diagnóstico — organiza dados observacionais em hipóteses para investigação profissional. Não substitui avaliação formal.</p>
+    <h1 class="page-title">Análise e Estratégias Pedagógicas</h1>
+    <p class="page-sub">Organiza observações do dia a dia em estratégias individualizadas, respeitando o ritmo e as potencialidades do aluno. Não substitui avaliação formal.</p>
     <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico. Todo conteúdo gerado deve ser validado por profissional habilitado (psicólogo, neuropsicólogo, psiquiatra ou médico) antes de qualquer comunicação à família.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios (opcional)</div><div class="pei-step-sub">Anexe laudos, relatórios terapêuticos ou avaliações já existentes para enriquecer a análise</div></div></div>
+      <button type="button" class="btn-copy" onclick="document.getElementById('ac-inp-laudo').click()">📎 Anexar PDF ou Word</button>
+      <input type="file" id="ac-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoAnalise(this)">
+      <div id="ac-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+      <textarea id="ac-laudo-texto" class="ftarea sm" style="margin-top:10px" placeholder="Texto extraído do laudo aparecerá aqui — você pode editar ou colar diretamente"></textarea>
+    </div>
 
     <div class="pei-step">
       <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação (opcional)</div><div class="pei-step-sub">Vincule a um aluno já cadastrado para salvar no histórico dele, ou digite o nome manualmente</div></div></div>
