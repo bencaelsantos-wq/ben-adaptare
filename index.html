@@ -5329,7 +5329,7 @@ function renderPagesDeveloper() {
       </select>
     </div>
     <div id="dev-usuarios-lista" style="overflow-x:auto">
-      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Cadastro</th><th>Ativo</th></tr></thead>
+      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Cadastro</th><th>Ativo</th><th>Plano</th></tr></thead>
       <tbody id="dev-usuarios-tbody"></tbody></table>
     </div>
   </div>
@@ -5589,7 +5589,7 @@ async function carregarDashboardDev() {
 
 async function carregarUsuariosDev() {
   try {
-    const { data } = await db.from('profiles').select('email,role,ativo,created_at').order('created_at',{ascending:false});
+    const { data } = await db.from('profiles').select('id,email,role,ativo,created_at,plano').order('created_at',{ascending:false});
     window._devUsuarios = data || [];
     filtrarUsuariosDev();
   } catch(e) { toast('Erro ao carregar usuários: '+e.message,'error'); }
@@ -5611,8 +5611,23 @@ function filtrarUsuariosDev() {
       <td><span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:${cores[u.role]||'#9CA3AF'}20;color:${cores[u.role]||'#9CA3AF'}">${u.role||'—'}</span></td>
       <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—'}</td>
       <td>${u.ativo ? '✅' : '⛔'}</td>
+      <td>
+        <select style="font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--gr200)" onchange="atualizarPlanoUsuario('${u.id}', this.value)">
+          <option value="acolhe" ${u.plano==='acolhe'||!u.plano?'selected':''}>Acolhe</option>
+          <option value="integra" ${u.plano==='integra'?'selected':''}>Integra</option>
+          <option value="singular" ${u.plano==='singular'?'selected':''}>Singular</option>
+        </select>
+      </td>
     </tr>`
-  ).join('') || '<tr><td colspan="4" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
+  ).join('') || '<tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
+}
+
+async function atualizarPlanoUsuario(id, novoPlano) {
+  const { error } = await db.from('profiles').update({ plano: novoPlano }).eq('id', id);
+  if (error) return toast('Erro ao atualizar plano: ' + error.message, 'error');
+  const u = (window._devUsuarios||[]).find(x => x.id === id);
+  if (u) u.plano = novoPlano;
+  toast('Plano atualizado!', 'success');
 }
 
 async function carregarConteudoDev() {
