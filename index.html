@@ -3612,17 +3612,19 @@ async function verificarSessao() {
 async function lerPerfilDobanco() {
   try {
     const { data, error } = await db.from('profiles')
-      .select('role, subrole, nome, ativo, plano, organizacao_id')
+      .select('role, subrole, nome, ativo, plano, organizacao_id, addon_analise')
       .eq('id', user.id)
       .maybeSingle();
 
     if (error) { console.warn('profiles read error:', error.message); return; }
 
     if (data?.organizacao_id) {
-      const { data: org } = await db.from('organizacoes').select('plano').eq('id', data.organizacao_id).maybeSingle();
+      const { data: org } = await db.from('organizacoes').select('plano, addon_analise').eq('id', data.organizacao_id).maybeSingle();
       window._planoAtivo = org?.plano || 'acolhe';
+      window._addonAnalise = !!(org?.addon_analise || data?.addon_analise);
     } else {
       window._planoAtivo = data?.plano || 'acolhe';
+      window._addonAnalise = !!data?.addon_analise;
     }
     if (data?.nome) window._profNomeDB = data.nome;
     if (!window._profNomeDB) {
@@ -6608,7 +6610,7 @@ async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral' }) {
 
 // ── ANÁLISE E ESTRATÉGIAS PEDAGÓGICAS (plano Singular) ───────────────────
 function abrirAnaliseComportamental() {
-  if (window._planoAtivo !== 'singular') {
+  if (window._planoAtivo !== 'singular' && !window._addonAnalise) {
     return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
   }
   showPage('analise-comp');
