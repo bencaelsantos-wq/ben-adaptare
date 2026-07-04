@@ -5331,7 +5331,7 @@ function renderPagesDeveloper() {
       </select>
     </div>
     <div id="dev-usuarios-lista" style="overflow-x:auto">
-      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Cadastro</th><th>Ativo</th><th>Plano</th></tr></thead>
+      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Cadastro</th><th>Ativo</th><th>Plano</th><th>Add-on Análise</th></tr></thead>
       <tbody id="dev-usuarios-tbody"></tbody></table>
     </div>
   </div>
@@ -5591,7 +5591,7 @@ async function carregarDashboardDev() {
 
 async function carregarUsuariosDev() {
   try {
-    const { data } = await db.from('profiles').select('id,email,role,ativo,created_at,plano').order('created_at',{ascending:false});
+    const { data } = await db.from('profiles').select('id,email,role,ativo,created_at,plano,addon_analise').order('created_at',{ascending:false});
     window._devUsuarios = data || [];
     filtrarUsuariosDev();
   } catch(e) { toast('Erro ao carregar usuários: '+e.message,'error'); }
@@ -5620,8 +5620,11 @@ function filtrarUsuariosDev() {
           <option value="singular" ${u.plano==='singular'?'selected':''}>Singular</option>
         </select>
       </td>
+      <td style="text-align:center">
+        <input type="checkbox" ${u.addon_analise?'checked':''} onchange="atualizarAddonAnalise('${u.id}', this.checked)" title="Add-on Análise e Estratégias (R$147/197 avulso)">
+      </td>
     </tr>`
-  ).join('') || '<tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
+  ).join('') || '<tr><td colspan="6" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
 }
 
 async function atualizarPlanoUsuario(id, novoPlano) {
@@ -5630,6 +5633,14 @@ async function atualizarPlanoUsuario(id, novoPlano) {
   const u = (window._devUsuarios||[]).find(x => x.id === id);
   if (u) u.plano = novoPlano;
   toast('Plano atualizado!', 'success');
+}
+
+async function atualizarAddonAnalise(id, ativo) {
+  const { error } = await db.from('profiles').update({ addon_analise: ativo }).eq('id', id);
+  if (error) return toast('Erro ao atualizar add-on: ' + error.message, 'error');
+  const u = (window._devUsuarios||[]).find(x => x.id === id);
+  if (u) u.addon_analise = ativo;
+  toast('Add-on atualizado!', 'success');
 }
 
 async function carregarConteudoDev() {
