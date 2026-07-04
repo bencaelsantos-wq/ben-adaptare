@@ -6652,7 +6652,8 @@ Este bloco deve ser compreensível por alguém lendo pela primeira vez, sem prec
 Na primeira vez que usar um termo técnico (ex: "função do comportamento", "reforço diferencial", "flexibilidade cognitiva", nomes de transtornos, siglas como TEA/TDAH/CID-11), inclua entre parênteses uma explicação em linguagem cotidiana. Ao final do relatório, monte uma seção "Glossário deste relatório" listando apenas os termos técnicos efetivamente usados, com definição de 1 linha cada — para consulta rápida por quem não é da área clínica.
 
 # CAMADA 1 — ANÁLISE FUNCIONAL DO COMPORTAMENTO (ABA)
-Para cada comportamento-alvo relatado, estruture (use tabela quando houver múltiplos episódios, para facilitar leitura rápida):
+NUNCA use tabelas em formato markdown (linhas com | e ---). Este relatório é impresso em PDF simples e tabelas markdown não renderizam — aparecem como barras verticais soltas, ilegíveis. Sempre que precisar organizar múltiplos episódios ou comparações, use uma lista com marcadores, no formato "Data: [data] — Antecedente: [x] — Comportamento: [y] — Consequência: [z]", um item por linha.
+Para cada comportamento-alvo relatado, estruture (em lista com marcadores, nunca em tabela):
 - Operacionalização do comportamento: descrição observável e mensurável (não interpretativa). Ex: não "tem birra", mas "grita por mais de 30 segundos e se joga no chão".
 - Análise ABC: Antecedente (contexto/gatilho imediato) → Comportamento → Consequência (o que mantém o comportamento).
 - Função provável do comportamento: classifique segundo as 4 funções clássicas (fuga/esquiva, atenção, acesso a tangível/atividade, autorregulação sensorial), com grau de confiança (alta/média/baixa) e a evidência específica que sustenta essa leitura — sempre apontando de qual registro/relato ela vem.
@@ -6674,7 +6675,7 @@ Construa um perfil multidimensional, não um rótulo único:
 
 # CAMADA 3 — RACIOCÍNIO DIAGNÓSTICO E HIPÓTESES
 Esta é a camada de maior responsabilidade. Regras obrigatórias:
-- Trabalhe por correspondência a critérios, não por impressão geral. Ao levantar uma hipótese (ex: TEA, TDAH, TOD, ansiedade, transtorno de linguagem), diga explicitamente quais critérios do DSM-5-TR ou CID-11 estão sustentados pelos dados, quais estão parcialmente sustentados, e quais não há dados suficientes para avaliar — mas apresente isso de forma legível (tabela ou lista curta com "sustentado / parcial / sem dados"), não como bloco denso de texto clínico.
+- Trabalhe por correspondência a critérios, não por impressão geral. Ao levantar uma hipótese (ex: TEA, TDAH, TOD, ansiedade, transtorno de linguagem), diga explicitamente quais critérios do DSM-5-TR ou CID-11 estão sustentados pelos dados, quais estão parcialmente sustentados, e quais não há dados suficientes para avaliar — apresente isso em lista com marcadores (NUNCA tabela markdown), no formato "Critério X: sustentado — evidência: [...]", não como bloco denso de texto clínico.
 - Sempre apresente diagnósticos diferenciais — pelo menos 2 a 3 hipóteses alternativas plausíveis, incluindo causas não-clínicas: fatores ambientais, contexto escolar inadequado à criança, questões sensoriais isoladas, variação típica do desenvolvimento, e fatores de estresse, trauma ou ruptura de vínculo/cuidador — esta última categoria deve ser considerada sistematicamente antes de hipóteses neurodevelopimentais quando houver histórico de mudanças de cuidador, acolhimento institucional, perdas ou instabilidade familiar, pois sinais de desregulação, hipervigilância ou dificuldade de vínculo podem ser confundidos com quadros do neurodesenvolvimento se essa lente não for aplicada.
 - Sinalize comorbidades frequentes relevantes ao quadro, quando aplicável.
 - Use linguagem de probabilidade e cautela: "os dados são compatíveis com...", "há indicadores sugestivos de...", "recomenda-se investigação para descartar/confirmar...". Nunca: "a criança tem...", "o diagnóstico é...".
@@ -6779,7 +6780,7 @@ Gere o relatório completo seguindo as 4 camadas do seu papel.`;
   btn.disabled = true;
   document.getElementById('ac-resultado-box').style.display = 'none';
   try {
-    const texto = await chamarClaude({ prompt, maxTokens: 4000, modulo: 'analise-comportamental' });
+    const texto = await chamarClaude({ prompt, maxTokens: 7000, modulo: 'analise-comportamental' });
     const alunoId = document.getElementById('ac-aluno-sel')?.value || null;
     window._ultimaAnaliseComp = { texto, aluno: nomeAluno };
     document.getElementById('ac-resultado-texto').textContent = texto;
@@ -6829,9 +6830,10 @@ function baixarPDFAnaliseComp() {
   const dados = window._ultimaAnaliseComp;
   if (!dados) return toast('Gere uma análise primeiro.', 'error');
   gerarPDFDocumento({
-    tipo: 'ANÁLISE E ESTRATÉGIAS',
+    tipo: 'ANÁLISE',
     titulo: 'Análise e Estratégias Pedagógicas',
     subtitulo: 'Uso profissional — não substitui avaliação formal',
+    semAssinatura: true,
     aluno: dados.aluno || 'Não identificado',
     professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
     conteudo: dados.texto,
@@ -10446,7 +10448,13 @@ function gerarPDFDocumento(opts) {
       y += altLinha;
     }
 
-    // ── ASSINATURAS ──────────────────────────────────────────
+    // ── ASSINATURAS (só para documentos formais, ex: PEI/PDI) ──
+    if (opts.semAssinatura) {
+      adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+      doc.save(opts.nomeArquivo + '.pdf');
+      toast('PDF gerado com sucesso!', 'success');
+      return;
+    }
     if (y + rodapeH > H - 10) {
       adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
       doc.addPage();
