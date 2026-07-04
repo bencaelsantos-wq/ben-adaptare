@@ -3668,6 +3668,7 @@ const roleEscolhido = userRole;
     const labelAmigavel = {
       'professor':       'Professor',
       'gestao':          'Gestão Educacional',
+      'coordenacao':     'Coordenação Pedagógica',
       'clinica':         'Clínica',
       'at':              'Auxiliar Terapêutico',
       'gestao-clinica':  'Gestão Clínica',
@@ -3743,6 +3744,7 @@ async function iniciarApp() {
     'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
     at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
+    coordenacao:     { label:' Coordenação',        cls:'gestao',   sidebarCls:'role-gestao',         nav: ()=>renderNavCoordenacao(),   after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); } },
     familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); } },
   };
 
