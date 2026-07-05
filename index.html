@@ -4033,7 +4033,7 @@ function renderNavGestaoClinica() {
     </div>
     <div class="nav-section">Gestão Clínica</div>
     <div class="nav-item clinic-item" id="nav-gc-perfis" onclick="showPage('gc-perfis')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfis dos Alunos
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfis dos Pacientes
     </div>
     <div class="nav-item clinic-item" id="nav-gc-profissionais" onclick="showPage('gc-profissionais')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M11 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Profissionais
@@ -4059,7 +4059,7 @@ function renderPagesGestaoClinica() {
     <p class="page-sub">Visão executiva da equipe clínica — especialistas, alunos atendidos e integração com a escola.</p>
     <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
       <div class="stat-card"><div class="stat-num" id="dash-gc-especialistas" style="background:linear-gradient(135deg,#7C3AED,#A78BFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="stat-label">Especialistas ativos</div></div>
-      <div class="stat-card"><div class="stat-num" id="dash-gc-alunos">—</div><div class="stat-label">Alunos com perfil clínico</div></div>
+      <div class="stat-card"><div class="stat-num" id="dash-gc-alunos">—</div><div class="stat-label">Pacientes com perfil clínico</div></div>
       <div class="stat-card"><div class="stat-num" id="dash-gc-rel" style="background:linear-gradient(135deg,#0891B2,#38BDF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="stat-label">Relatórios gerados</div></div>
       <div class="stat-card"><div class="stat-num" id="dash-gc-escola" style="background:linear-gradient(135deg,#059669,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="stat-label">Escolas integradas</div></div>
     </div>
@@ -4081,7 +4081,7 @@ function renderPagesGestaoClinica() {
 
   <div id="page-gc-perfis" class="page">
     <div class="section-header">
-      <div><h1 class="page-title">Perfis Clínicos dos Alunos</h1>
+      <div><h1 class="page-title">Perfis Clínicos dos Pacientes</h1>
            <p class="page-sub" style="margin-bottom:0">Somente a Gestão Clínica pode excluir perfis.</p></div>
       <button class="btn-sm" onclick="abrirModalCadClinica()">+ Novo perfil</button>
     </div>
@@ -4299,7 +4299,7 @@ function gcRenderEstudantes(lista) {
   const grid = document.getElementById('gc-estudantes-grid');
   if (!grid) return;
   if (!lista || !lista.length) {
-    grid.innerHTML = '<div style="font-size:12.5px;color:var(--gr400);padding:8px;grid-column:1/-1">Nenhum estudante encontrado. Cadastre alunos em "Alunos".</div>';
+    grid.innerHTML = '<div style="font-size:12.5px;color:var(--gr400);padding:8px;grid-column:1/-1">Nenhum paciente encontrado. Cadastre pacientes na aba "Alunos".</div>';
     return;
   }
   grid.innerHTML = lista.map(a => {
@@ -4334,7 +4334,7 @@ function gcRenderClinicas() {
     });
   }
   if (!clinicas.length) {
-    grid.innerHTML = '<div style="font-size:12.5px;color:var(--gr400);padding:8px;grid-column:1/-1">Nenhuma clínica cadastrada para este estudante. Edite o cadastro do aluno para adicionar a clínica.</div>';
+    grid.innerHTML = '<div style="font-size:12.5px;color:var(--gr400);padding:8px;grid-column:1/-1">Nenhuma clínica cadastrada para este paciente. Edite o cadastro do paciente para adicionar a clínica.</div>';
     return;
   }
   grid.innerHTML = clinicas.map(c => `
@@ -4761,7 +4761,7 @@ async function abrirColaboracao() {
 function colaboracaoHTML() {
   return `
     <h1 class="page-title">Colaboração Multiprofissional</h1>
-    <p class="page-sub">Mural de casos ativos — selecione um aluno para ver o estado consolidado de toda a equipe.</p>
+    <p class="page-sub">Mural de casos ativos — selecione um paciente para ver o estado consolidado de toda a equipe.</p>
 
     <div style="margin-bottom:18px">
       <div style="font-size:10.5px;font-weight:700;color:var(--gr400);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">O ciclo que funciona</div>
