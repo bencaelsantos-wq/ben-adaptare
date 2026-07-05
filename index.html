@@ -11237,6 +11237,14 @@ async function salvarAluno() {
   if (!nome) return toast('Informe o nome.', 'error');
   if (!lgpdValidar('aluno')) return;
 
+  if (!_editAlunoId) {
+    const { count } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    const limite = limitesAtuais().alunos;
+    if (limite !== Infinity && (count||0) >= limite) {
+      return toast(`Limite de ${limite} alunos do seu plano atingido. Fale com o suporte para aumentar sua capacidade.`, 'error');
+    }
+  }
+
   let data, error;
   if (_editAlunoId) {
     ({ data, error } = await db.from('alunos').update({
@@ -12684,6 +12692,14 @@ async function salvarProfessor() {
   if (!email) return toast('E-mail é obrigatório para criar o acesso.', 'error');
   if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) return toast('E-mail inválido.', 'error');
   if (!lgpdValidar('prof')) return;
+
+  if (!profEditId) {
+    const { count } = await db.from('professores').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    const limite = limitesAtuais().professores;
+    if (limite !== Infinity && (count||0) >= limite) {
+      return toast(`Limite de ${limite} professores do seu plano atingido. Fale com o suporte para aumentar sua capacidade.`, 'error');
+    }
+  }
 
   const btn = document.querySelector('#modal-cad-prof .btn-sm');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Criando acesso…'; }
