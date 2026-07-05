@@ -5759,7 +5759,6 @@ function filtrarUsuariosDev() {
     return `<tr>
       <td>${u.email||'—'}</td>
       <td><span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:${cores[u.role]||'#9CA3AF'}20;color:${cores[u.role]||'#9CA3AF'}">${u.role||'—'}</span></td>
-      <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—'}</td>
       <td>${u.ativo ? '✅' : '⛔'}</td>
       <td>
         <select style="font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--gr200)" onchange="atualizarPlanoUsuario('${u.id}', this.value)">
