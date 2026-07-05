@@ -3611,22 +3611,56 @@ async function verificarSessao() {
   }
 }
 
+const LIMITES_PLANO = {
+  semente:  { alunos: 10,  professores: 2  },
+  acolhe:   { alunos: 20,  professores: 4  },
+  integra:  { alunos: 50,  professores: 10 },
+  singular: { alunos: 100, professores: 25 },
+  rede:     { alunos: Infinity, professores: Infinity }
+};
+const ORCAMENTO_BASE_PLANO = { semente: 15, acolhe: 25, integra: 40, singular: 70, rede: Infinity };
+const ORCAMENTO_ANALISE_MENSAL = 60;
+const PRECO_EXTRA_PROFESSOR = 20;
+const PRECO_EXTRA_ALUNO = 5;
+const PRECO_PACOTE_IA = 30;
+const ORCAMENTO_POR_PACOTE_IA = 10;
+
+function limitesAtuais() {
+  const base = LIMITES_PLANO[window._planoAtivo] || LIMITES_PLANO.semente;
+  return {
+    alunos: base.alunos === Infinity ? Infinity : base.alunos + (window._extraAlunos||0),
+    professores: base.professores === Infinity ? Infinity : base.professores + (window._extraProfessores||0)
+  };
+}
+
+function orcamentoBaseAtual() {
+  const base = ORCAMENTO_BASE_PLANO[window._planoAtivo] ?? 15;
+  if (base === Infinity) return Infinity;
+  return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
+}
+
 async function lerPerfilDobanco() {
   try {
     const { data, error } = await db.from('profiles')
-      .select('role, subrole, nome, ativo, plano, organizacao_id, addon_analise')
+      .select('role, subrole, nome, ativo, plano, organizacao_id, addon_analise, extra_professores, extra_alunos, extra_ia_pacotes')
       .eq('id', user.id)
       .maybeSingle();
 
     if (error) { console.warn('profiles read error:', error.message); return; }
 
     if (data?.organizacao_id) {
-      const { data: org } = await db.from('organizacoes').select('plano, addon_analise').eq('id', data.organizacao_id).maybeSingle();
+      const { data: org } = await db.from('organizacoes').select('plano, addon_analise, extra_professores, extra_alunos, extra_ia_pacotes').eq('id', data.organizacao_id).maybeSingle();
       window._planoAtivo = org?.plano || 'acolhe';
       window._addonAnalise = !!(org?.addon_analise || data?.addon_analise);
+      window._extraProfessores = org?.extra_professores || 0;
+      window._extraAlunos = org?.extra_alunos || 0;
+      window._extraIaPacotes = org?.extra_ia_pacotes || 0;
     } else {
       window._planoAtivo = data?.plano || 'acolhe';
       window._addonAnalise = !!data?.addon_analise;
+      window._extraProfessores = data?.extra_professores || 0;
+      window._extraAlunos = data?.extra_alunos || 0;
+      window._extraIaPacotes = data?.extra_ia_pacotes || 0;
     }
     if (data?.nome) window._profNomeDB = data.nome;
     if (!window._profNomeDB) {
