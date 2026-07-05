@@ -7106,7 +7106,7 @@ async function salvarProfissionalClinica() {
     const _convResp = await fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/convidar-usuario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token },
-      body: JSON.stringify({ email, nome, papel: 'clinica', sub_papel: especialidade, redirect_to: window.location.href })
+      body: JSON.stringify({ email, nome, role: 'clinica', sub_papel: especialidade, redirect_to: window.location.href })
     });
     if (!_convResp.ok) { const _e = await _convResp.json().catch(()=>({})); throw new Error('Erro ao enviar convite: ' + (_e.error || _convResp.status)); }
 
@@ -12792,7 +12792,7 @@ async function salvarProfessor() {
     const _convResp = await fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/convidar-usuario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token },
-      body: JSON.stringify({ email, nome, papel: 'professor', redirect_to: window.location.href })
+      body: JSON.stringify({ email, nome, role: 'professor', redirect_to: window.location.href })
     });
     if (!_convResp.ok) { const _e = await _convResp.json().catch(()=>({})); throw new Error('Erro ao enviar convite: ' + (_e.error || _convResp.status)); }
 
