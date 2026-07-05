@@ -2415,6 +2415,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <!-- Preenchido via JS conforme o papel -->
       </nav>
       <div class="sb-footer">
+        <div id="widget-consumo-ia" style="display:none;margin-bottom:10px;padding:10px 12px;background:#F8FAFF;border:1px solid #E2E8F0;border-radius:10px;font-size:11px"></div>
         <div class="user-badge">
           <div class="avatar" id="user-avatar">--</div>
           <div class="user-email" id="user-email-lbl">-</div>
@@ -3797,6 +3798,37 @@ async function iniciarApp() {
   cfg.after();
   registrarAcessoDev(user.email||"dev", userRole);
   ocultarWA();
+  if (userRole !== 'developer' && userRole !== 'familia') renderizarWidgetConsumoIA();
+}
+
+async function renderizarWidgetConsumoIA() {
+  const el = document.getElementById('widget-consumo-ia');
+  if (!el) return;
+  try {
+    const baseOrc = await verificarOrcamentoIA('geral');
+    const pctBase = baseOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((baseOrc.gastoBRL / baseOrc.limiteBRL) * 100));
+    let html = `<div style="font-weight:700;color:#1E3A8A;margin-bottom:4px">Plano ${(window._planoAtivo||'acolhe').toUpperCase()}</div>`;
+    if (baseOrc.limiteBRL !== Infinity) {
+      html += barraConsumoIA('Ferramentas pedagógicas', pctBase);
+    }
+    if (window._addonAnalise || window._planoAtivo === 'singular') {
+      const analiseOrc = await verificarOrcamentoIA('analise-comportamental');
+      const pctAnalise = analiseOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((analiseOrc.gastoBRL / analiseOrc.limiteBRL) * 100));
+      html += barraConsumoIA('Análise e Estratégias', pctAnalise);
+    }
+    el.innerHTML = html;
+    el.style.display = 'block';
+  } catch(e) { console.warn('widget consumo IA:', e.message); }
+}
+
+function barraConsumoIA(label, pct) {
+  const cor = pct >= 90 ? '#DC2626' : pct >= 70 ? '#D97706' : '#2563EB';
+  const aviso = pct >= 90 ? `<div style="color:#DC2626;margin-top:2px">Você já usou ${pct}% do limite. Ao atingir 100%, novas gerações ficam bloqueadas até o dia 1º do próximo mês.</div>` : '';
+  return `<div style="margin-top:6px">
+    <div style="display:flex;justify-content:space-between;color:#64748B"><span>${label}</span><span>${pct}%</span></div>
+    <div style="background:#E2E8F0;border-radius:999px;height:5px;margin-top:2px;overflow:hidden"><div style="background:${cor};height:100%;width:${pct}%"></div></div>
+    ${aviso}
+  </div>`;
 }
 // ⚠️ CRÍTICO — expõe iniciarApp em window ANTES dos patches.
 // NUNCA remova esta linha — sem ela os botões de login param de funcionar.
