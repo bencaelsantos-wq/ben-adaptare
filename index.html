@@ -6686,7 +6686,24 @@ async function atualizarBadgesSolicitacoes() {
 }
 
 // ── CHAMADA CENTRALIZADA À API ANTHROPIC (com log de uso) ─────
+async function verificarOrcamentoIA(modulo) {
+  if (window._planoAtivo === 'rede' || window._devMode) return { ok: true };
+  const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
+  const ehAnalise = modulo === 'analise-comportamental';
+  const { data } = await db.from('usage_logs').select('custo_usd, metodo').eq('user_id', user.id).gte('created_at', inicioMes.toISOString());
+  const gastoUSD = (data||[]).filter(r => ehAnalise ? r.metodo === 'analise-comportamental' : r.metodo !== 'analise-comportamental').reduce((s,r)=>s+(r.custo_usd||0),0);
+  const gastoBRL = gastoUSD * 5.5;
+  const limiteBRL = ehAnalise ? ORCAMENTO_ANALISE_MENSAL : orcamentoBaseAtual();
+  return { ok: limiteBRL === Infinity || gastoBRL < limiteBRL, gastoBRL, limiteBRL };
+}
+
 async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral' }) {
+  if (user) {
+    const orc = await verificarOrcamentoIA(modulo);
+    if (!orc.ok) {
+      throw new Error(`Limite mensal de IA do seu plano atingido (R$${orc.limiteBRL.toFixed(0)}). Fale com o suporte para liberar um pacote extra.`);
+    }
+  }
   const r = await fetch(CLAUDE_PROXY, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_KEY}` },
