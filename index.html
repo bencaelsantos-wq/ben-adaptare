@@ -5467,7 +5467,7 @@ function renderPagesDeveloper() {
       </select>
     </div>
     <div id="dev-usuarios-lista" style="overflow-x:auto">
-      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Cadastro</th><th>Ativo</th><th>Plano</th><th>Add-on Análise</th></tr></thead>
+      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Cadastro</th><th>Ativo</th><th>Plano</th><th>Add-on Análise</th><th>Prof. extra</th><th>Alunos extra</th><th>Pacotes IA</th><th>Total/mês</th></tr></thead>
       <tbody id="dev-usuarios-tbody"></tbody></table>
     </div>
   </div>
@@ -5727,7 +5727,7 @@ async function carregarDashboardDev() {
 
 async function carregarUsuariosDev() {
   try {
-    const { data } = await db.from('profiles').select('id,email,role,ativo,created_at,plano,addon_analise').order('created_at',{ascending:false});
+    const { data } = await db.from('profiles').select('id,email,role,ativo,created_at,plano,addon_analise,extra_professores,extra_alunos,extra_ia_pacotes').order('created_at',{ascending:false});
     window._devUsuarios = data || [];
     filtrarUsuariosDev();
   } catch(e) { toast('Erro ao carregar usuários: '+e.message,'error'); }
@@ -5743,24 +5743,37 @@ function filtrarUsuariosDev() {
   const cores = { professor:'#059669', gestao:'#1A56DB', clinica:'#7C3AED', 'gestao-clinica':'#B45309', at:'#0891B2', developer:'#F59E0B' };
   const tbody = document.getElementById('dev-usuarios-tbody');
   if (!tbody) return;
-  tbody.innerHTML = lista.map(u =>
-    `<tr>
+  tbody.innerHTML = lista.map(u => {
+    const PRECO_PLANO = { semente:97, acolhe:197, integra:297, singular:447, rede:0 };
+    const precoBase = PRECO_PLANO[u.plano] || PRECO_PLANO.acolhe;
+    const totalMes = precoBase
+      + (u.extra_professores||0) * 20
+      + (u.extra_alunos||0) * 5
+      + (u.extra_ia_pacotes||0) * 30
+      + (u.addon_analise ? 167 : 0);
+    return `<tr>
       <td>${u.email||'—'}</td>
       <td><span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:${cores[u.role]||'#9CA3AF'}20;color:${cores[u.role]||'#9CA3AF'}">${u.role||'—'}</span></td>
       <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—'}</td>
       <td>${u.ativo ? '✅' : '⛔'}</td>
       <td>
         <select style="font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--gr200)" onchange="atualizarPlanoUsuario('${u.id}', this.value)">
+          <option value="semente" ${u.plano==='semente'?'selected':''}>Semente</option>
           <option value="acolhe" ${u.plano==='acolhe'||!u.plano?'selected':''}>Acolhe</option>
           <option value="integra" ${u.plano==='integra'?'selected':''}>Integra</option>
           <option value="singular" ${u.plano==='singular'?'selected':''}>Singular</option>
+          <option value="rede" ${u.plano==='rede'?'selected':''}>Rede</option>
         </select>
       </td>
       <td style="text-align:center">
-        <input type="checkbox" ${u.addon_analise?'checked':''} onchange="atualizarAddonAnalise('${u.id}', this.checked)" title="Add-on Análise e Estratégias (R$147/197 avulso)">
+        <input type="checkbox" ${u.addon_analise?'checked':''} onchange="atualizarAddonAnalise('${u.id}', this.checked)" title="Add-on Análise e Estratégias">
       </td>
-    </tr>`
-  ).join('') || '<tr><td colspan="6" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
+      <td><input type="number" min="0" value="${u.extra_professores||0}" style="width:50px;font-size:12px;padding:2px 4px" onchange="atualizarExtra('${u.id}','extra_professores',this.value)"></td>
+      <td><input type="number" min="0" value="${u.extra_alunos||0}" style="width:50px;font-size:12px;padding:2px 4px" onchange="atualizarExtra('${u.id}','extra_alunos',this.value)"></td>
+      <td><input type="number" min="0" value="${u.extra_ia_pacotes||0}" style="width:50px;font-size:12px;padding:2px 4px" onchange="atualizarExtra('${u.id}','extra_ia_pacotes',this.value)"></td>
+      <td style="font-weight:700;color:#1E3A8A">R$${totalMes}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="10" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
 }
 
 async function atualizarPlanoUsuario(id, novoPlano) {
@@ -5777,6 +5790,16 @@ async function atualizarAddonAnalise(id, ativo) {
   const u = (window._devUsuarios||[]).find(x => x.id === id);
   if (u) u.addon_analise = ativo;
   toast('Add-on atualizado!', 'success');
+}
+
+async function atualizarExtra(id, campo, valor) {
+  const num = Math.max(0, parseInt(valor, 10) || 0);
+  const { error } = await db.from('profiles').update({ [campo]: num }).eq('id', id);
+  if (error) return toast('Erro ao atualizar: ' + error.message, 'error');
+  const u = (window._devUsuarios||[]).find(x => x.id === id);
+  if (u) u[campo] = num;
+  filtrarUsuariosDev();
+  toast('Atualizado!', 'success');
 }
 
 async function carregarConteudoDev() {
