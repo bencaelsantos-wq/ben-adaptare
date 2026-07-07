@@ -5375,7 +5375,7 @@ function renderNavDeveloper() {
     <div class="nav-item" id="nav-dev-usuarios" onclick="showPage('dev-usuarios')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17c0-3 2.686-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Usuários
     </div>
-    <div class="nav-item" id="nav-dev-acessos" onclick="showPage('dev-acessos')">
+    <div class="nav-item" id="nav-dev-acessos" onclick="showPage('dev-acessos');carregarLogsAcesso()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M2 10h16M2 5h16M2 15h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Logs de Acesso
     </div>
     <div class="nav-item" id="nav-dev-conteudo" onclick="showPage('dev-conteudo')">
@@ -5575,7 +5575,7 @@ async function carregarConsumoIA() {
   try {
     const { data: logs } = await db.from('usage_logs')
       .select('*')
-      .order('criado_em', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(500);
 
     if (!logs || !logs.length) {
@@ -7247,6 +7247,25 @@ async function registrarAcessoDev(userEmail, role) {
       created_at: new Date().toISOString()
     });
   } catch(e) { /* silencioso — não quebra o login se a tabela não existir */ }
+}
+
+async function carregarLogsAcesso() {
+  const tbody = document.getElementById('dev-acessos-tbody');
+  if (!tbody) return;
+  try {
+    const { data, error } = await db.from('logs_acesso').select('*').order('created_at', { ascending: false }).limit(200);
+    if (error) throw error;
+    tbody.innerHTML = (data||[]).length
+      ? data.map(l => `<tr>
+          <td>${l.user_email||'—'}</td>
+          <td>${l.role||'—'}</td>
+          <td>${l.created_at ? new Date(l.created_at).toLocaleString('pt-BR') : '—'}</td>
+          <td style="max-width:260px">${(l.user_agent||'—')}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:var(--gr300);padding:20px">Nenhum acesso registrado ainda.</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#DC2626;padding:20px">Erro ao carregar logs: ${e.message}</td></tr>`;
+  }
 }
 
 
