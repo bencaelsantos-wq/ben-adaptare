@@ -15025,6 +15025,13 @@ function bootHealthCheck() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Detectar link de convite expirado/inválido
+  if (_initHash.get('error') === 'access_denied' && _initHash.get('error_code') === 'otp_expired') {
+    mostrarLanding();
+    setTimeout(() => showErr('Este link de convite expirou. Peça para quem te convidou reenviar o convite.'), 300);
+    history.replaceState(null, '', window.location.pathname);
+  }
+
   // Detectar link de convite/recovery via onAuthStateChange
   db.auth.onAuthStateChange((event) => {
     if (event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') return;
