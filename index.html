@@ -6769,10 +6769,15 @@ async function verificarOrcamentoIA(modulo) {
   if (window._planoAtivo === 'rede' || window._devMode) return { ok: true };
   const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
   const ehAnalise = modulo === 'analise-comportamental';
+  const ehLaudos = modulo === 'linha-tempo-laudos';
   const { data } = await db.from('usage_logs').select('custo_usd, metodo').eq('user_id', user.id).gte('created_at', inicioMes.toISOString());
-  const gastoUSD = (data||[]).filter(r => ehAnalise ? r.metodo === 'analise-comportamental' : r.metodo !== 'analise-comportamental').reduce((s,r)=>s+(r.custo_usd||0),0);
+  const gastoUSD = (data||[]).filter(r => {
+    if (ehAnalise) return r.metodo === 'analise-comportamental';
+    if (ehLaudos) return r.metodo === 'linha-tempo-laudos';
+    return r.metodo !== 'analise-comportamental' && r.metodo !== 'linha-tempo-laudos';
+  }).reduce((s,r)=>s+(r.custo_usd||0),0);
   const gastoBRL = gastoUSD * 5.5;
-  const limiteBRL = ehAnalise ? ORCAMENTO_ANALISE_MENSAL : orcamentoBaseAtual();
+  const limiteBRL = ehAnalise ? ORCAMENTO_ANALISE_MENSAL : ehLaudos ? ORCAMENTO_LAUDOS_MENSAL : orcamentoBaseAtual();
   return { ok: limiteBRL === Infinity || gastoBRL < limiteBRL, gastoBRL, limiteBRL };
 }
 
