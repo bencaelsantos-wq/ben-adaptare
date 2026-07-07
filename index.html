@@ -7867,6 +7867,47 @@ function renderPages() {
     </div>
   </div>
 
+  <div id="page-linha-laudos" class="page">
+    <h1 class="page-title">Linha do Tempo de Laudos e Avaliações</h1>
+    <p class="page-sub">Consolida vários laudos, relatórios médicos e avaliações ao longo do tempo em um resumo único, com linha do tempo por fonte e data. Traduz o impacto no aprendizado para a equipe pedagógica, e mantém o resumo fiel para a equipe clínica.</p>
+    <div class="pei-legal"><strong>Importante:</strong> este resumo é compilado a partir dos documentos anexados. Consulte sempre os laudos originais para fins legais ou formais.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação</div><div class="pei-step-sub">Vincule a um aluno já cadastrado para salvar no histórico dele, ou digite o nome manualmente</div></div></div>
+      <div class="fblock"><label class="flabel" for="lt-aluno-sel">Aluno cadastrado</label>
+        <select id="lt-aluno-sel" class="fselect" onchange="document.getElementById('lt-aluno').value = alunosCad.find(a=>a.id===this.value)?.nome || document.getElementById('lt-aluno').value"><option value="">Nenhum — digitar manualmente abaixo</option></select>
+      </div>
+      <div class="fblock"><label class="flabel" for="lt-aluno">Nome do aluno/paciente</label><input type="text" id="lt-aluno" class="finput" placeholder="Ex: João Pedro"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios</div><div class="pei-step-sub">Anexe quantos documentos precisar — PDF ou Word. Cada um é adicionado ao texto abaixo</div></div></div>
+      <button type="button" class="btn-copy" onclick="document.getElementById('lt-inp-laudos').click()">📎 Anexar PDF ou Word</button>
+      <input type="file" id="lt-inp-laudos" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="processarLaudosMultiplos(this)">
+      <div id="lt-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+      <textarea id="lt-laudo-texto" class="ftarea" style="margin-top:10px;min-height:180px" placeholder="Texto extraído de cada laudo aparecerá aqui, separado por documento — você pode editar ou colar diretamente"></textarea>
+    </div>
+
+    <button class="btn-gerar" id="lt-btn-gerar" onclick="gerarLinhaDoTempoLaudos()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar linha do tempo
+    </button>
+
+    <div class="result-card show" id="lt-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Resumo gerado</h3>
+      <div id="lt-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copiarAdapt('lt-resultado-texto')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFLinhaDoTempo()">Baixar PDF</button>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Linhas do tempo salvas</h3>
+      <div class="cards-grid" id="lt-lista-salvas"></div>
+    </div>
+  </div>
+
 
     <!-- GESTÃO: LISTA DE AEE -->
   <div id="page-gestao-lista-aee" class="page">
