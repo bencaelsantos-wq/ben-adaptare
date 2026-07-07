@@ -3677,10 +3677,11 @@ async function lerPerfilDobanco() {
 
     if (!data) {
       const roleParaUsar = userRole || user.user_metadata?.role || 'professor';
-      const subroleParaUsar = user.user_metadata?.subrole || '';
+      let subroleParaUsar = user.user_metadata?.subrole || '';
       let orgId = null;
       try {
-        const { data: conviteRow } = await db.from('convites').select('convidado_por').eq('email', user.email).order('created_at', { ascending:false }).limit(1).maybeSingle();
+        const { data: conviteRow } = await db.from('convites').select('convidado_por, sub_papel').eq('email', user.email).order('created_at', { ascending:false }).limit(1).maybeSingle();
+        if (!subroleParaUsar) subroleParaUsar = conviteRow?.sub_papel || '';
         if (conviteRow?.convidado_por) {
           const { data: inviterProfile } = await db.from('profiles').select('organizacao_id').eq('id', conviteRow.convidado_por).maybeSingle();
           orgId = inviterProfile?.organizacao_id || null;
