@@ -7066,6 +7066,143 @@ function baixarPDFAnaliseComp() {
   });
 }
 
+// ── LINHA DO TEMPO DE LAUDOS E AVALIAÇÕES ─────────────────────
+async function processarLaudosMultiplos(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  const status = document.getElementById('lt-laudo-status');
+  const campo = document.getElementById('lt-laudo-texto');
+  status.style.display = 'block';
+  status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
+  status.textContent = `Lendo ${files.length} arquivo(s)…`;
+  let sucesso = 0, falha = 0;
+  for (const file of files) {
+    try {
+      let texto = '';
+      if (file.name.endsWith('.pdf')) texto = await extrairTextoPDF(file);
+      else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) texto = await extrairTextoDOCX(file);
+      else { falha++; continue; }
+      if (!texto.trim()) { falha++; continue; }
+      campo.value = (campo.value ? campo.value + '\n\n===DOCUMENTO: ' + file.name + '===\n\n' : '===DOCUMENTO: ' + file.name + '===\n\n') + texto.trim();
+      sucesso++;
+    } catch(e) { falha++; }
+  }
+  if (sucesso) { status.style.background = '#F0FDF4'; status.style.color = '#166534'; status.textContent = `${sucesso} documento(s) importado(s) com sucesso.` + (falha ? ` ${falha} falharam.` : ''); }
+  else { status.style.background = '#FEF2F2'; status.style.color = '#991B1B'; status.textContent = 'Não foi possível importar nenhum arquivo. Cole o texto manualmente.'; }
+  input.value = '';
+}
+
+const SYSTEM_PROMPT_LINHA_TEMPO_LAUDOS = `Você é um assistente técnico especializado em compilar e organizar cronologicamente laudos médicos, neuropsicológicos, fonoaudiológicos, de terapia ocupacional e de acompanhamento institucional de uma criança ou adolescente, produzidos por diferentes profissionais ao longo do tempo.
+
+# PAPEL E LIMITES
+Você NÃO cria informação nova nem interpreta além do que os documentos fornecidos dizem. Sua função é organizar, consolidar e tornar acessível o que já está escrito nos laudos — com fidelidade máxima ao conteúdo original. Sempre que houver divergência entre fontes (ex: idade diferente relatada para o mesmo marco de desenvolvimento), registre ambas as versões e cite a fonte de cada uma, sem tentar resolver a divergência por conta própria.
+Se um documento não trouxer informação sobre alguma seção abaixo, omita essa seção ou marque como "não informado nas fontes fornecidas" — nunca invente ou complete com suposição.
+
+# ESTRUTURA OBRIGATÓRIA DO RESUMO
+Organize nesta ordem, omitindo seções sem dados nas fontes:
+1. Dados Gerais e Familiares
+2. Histórico Gestacional e Neonatal
+3. Desenvolvimento Motor e de Linguagem (marcos iniciais)
+4. Alimentação
+5. Sono
+6. Histórico de Saúde Física
+7. Medicação
+8. Histórico Escolar
+9. Comportamento Social e Perfil Sensorial
+10. Linha do Tempo Diagnóstica e Avaliações — para CADA documento/laudo fornecido, em ordem cronológica, estruture: ano/data, profissional responsável (nome e especialidade/registro se informado), instituição, o que foi avaliado, protocolos/instrumentos utilizados se houver, principais achados, diagnóstico ou hipótese levantada, e recomendações. Cite a fonte de cada bloco (documento de origem e data) ao final do bloco.
+11. Síntese Geral — um parágrafo conectando a evolução do quadro ao longo do tempo, destacando padrões consistentes entre as avaliações e progressos registrados.
+
+# CAMADA PEDAGÓGICA (sempre incluir)
+Adicione uma seção final "Impacto no Processo de Aprendizagem e Estratégias Pedagógicas", escrita em linguagem acessível para educadores sem formação clínica: traduza o que os laudos revelam em termos de como isso se manifesta em sala de aula e no processo de aprendizagem, e sugira estratégias pedagógicas coerentes com o histórico apresentado. Deixe explícito que são sugestões de partida, a validar com a equipe.
+
+# REGRAS DE FIDELIDADE
+- Nunca presuma estrutura familiar além do que os documentos informam.
+- Nunca converta uma hipótese diagnóstica antiga em conclusão definitiva — mantenha o status (hipótese/confirmado/descartado) exatamente como registrado na fonte, respeitando a data de cada avaliação.
+- Sempre cite fonte, profissional e data ao lado de cada afirmação clínica relevante.
+- Este documento é para organização e consulta — inclua no final um aviso reforçando que os documentos originais devem ser sempre consultados para fins legais ou formais, e que decisões clínicas ou pedagógicas devem envolver os profissionais responsáveis.
+
+# TOM
+Técnico, preciso, sem jargão desnecessário na camada pedagógica. Trate a criança/adolescente sempre com dignidade. Escreva sempre em português correto, com acentuação e cedilha. Não use emojis. Não use markdown com asteriscos duplos — use MAIÚSCULAS para títulos de seção principais. Nunca use tabelas em formato markdown (barras verticais); use listas com marcadores.`;
+
+async function gerarLinhaDoTempoLaudos() {
+  const laudos = document.getElementById('lt-laudo-texto')?.value.trim();
+  if (!laudos) return toast('Anexe ou cole ao menos um laudo/relatório.', 'error');
+  const nomeAluno = document.getElementById('lt-aluno')?.value.trim() || '';
+
+  const prompt = `${SYSTEM_PROMPT_LINHA_TEMPO_LAUDOS}
+
+ALUNO/PACIENTE: ${nomeAluno || 'não identificado'}
+
+DOCUMENTOS FORNECIDOS (laudos, relatórios e avaliações):
+${laudos}
+
+Gere o Resumo Consolidado de Laudos e Avaliações completo, seguindo a estrutura obrigatória.`;
+
+  const btn = document.getElementById('lt-btn-gerar');
+  btn.disabled = true;
+  document.getElementById('lt-resultado-box').style.display = 'none';
+  try {
+    const texto = await chamarClaude({ prompt, maxTokens: 7000, modulo: 'linha-tempo-laudos' });
+    const alunoId = document.getElementById('lt-aluno-sel')?.value || null;
+    window._ultimaLinhaTempoLaudos = { texto, aluno: nomeAluno };
+    document.getElementById('lt-resultado-texto').textContent = texto;
+    document.getElementById('lt-resultado-box').style.display = 'block';
+    document.getElementById('lt-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+    const { error: erroSalvar } = await db.from('linhas_tempo_laudos').insert({
+      user_id: user.id,
+      aluno_id: alunoId,
+      aluno_nome: nomeAluno || null,
+      resultado: texto
+    });
+    if (erroSalvar) console.warn('Erro ao salvar linha do tempo:', erroSalvar.message);
+    else carregarLinhasDoTempo();
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function carregarLinhasDoTempo() {
+  const lista = document.getElementById('lt-lista-salvas');
+  if (!lista) return;
+  const { data, error } = await db.from('linhas_tempo_laudos')
+    .select('id, aluno_nome, resultado, created_at')
+    .order('created_at', { ascending: false })
+    .limit(20);
+  if (error || !data?.length) { lista.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhuma linha do tempo salva ainda.</p>'; return; }
+  lista.innerHTML = data.map(r => `
+    <div class="ic-card" style="cursor:pointer" onclick='abrirLinhaTempoSalva(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="ic-nome">${r.aluno_nome || '(sem nome)'}</div>
+      <div style="font-size:11px;color:var(--gr400)">${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>
+  `).join('');
+}
+
+function abrirLinhaTempoSalva(r) {
+  window._ultimaLinhaTempoLaudos = { texto: r.resultado, aluno: r.aluno_nome || '' };
+  document.getElementById('lt-resultado-texto').textContent = r.resultado;
+  document.getElementById('lt-resultado-box').style.display = 'block';
+  document.getElementById('lt-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function baixarPDFLinhaDoTempo() {
+  const dados = window._ultimaLinhaTempoLaudos;
+  if (!dados) return toast('Gere uma linha do tempo primeiro.', 'error');
+  gerarPDFDocumento({
+    tipo: 'LINHA DO TEMPO',
+    titulo: 'Resumo Consolidado de Laudos e Avaliações',
+    subtitulo: 'Uso profissional — consulte sempre os documentos originais',
+    semAssinatura: true,
+    aluno: dados.aluno || 'Não identificado',
+    professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
+    conteudo: dados.texto,
+    nomeArquivo: 'Linha_Tempo_Laudos_' + (dados.aluno||'paciente').replace(/\s+/g,'_'),
+    isAtividade: false
+  });
+}
+
 // ── LOG DE AUDITORIA LGPD ─────────────────────────────────────
 // Registra cada acesso a dado sensível no banco
 async function registrarAuditoria(acao, recurso, recursoId) {
