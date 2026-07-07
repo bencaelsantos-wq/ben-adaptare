@@ -6827,6 +6827,19 @@ function abrirAnaliseComportamental() {
   carregarAnalisesComportamentais();
 }
 
+function abrirLinhaDoTempoLaudos() {
+  if (window._planoAtivo !== 'singular' && !window._addonLaudos) {
+    return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
+  }
+  showPage('linha-laudos');
+  const sel = document.getElementById('lt-aluno-sel');
+  if (sel) {
+    sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
+      (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+  }
+  carregarLinhasDoTempo();
+}
+
 const SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL = `Você é um assistente técnico de apoio especializado em Análise do Comportamento Aplicada (ABA), Análise de Perfil Comportamental e Suporte ao Raciocínio Diagnóstico, voltado para equipes multidisciplinares de educação inclusiva (professores, coordenadores pedagógicos, psicopedagogos, psicólogos escolares, fonoaudiólogos) que atendem crianças e adolescentes neurodivergentes ou com suspeita de atraso/transtorno do desenvolvimento.
 
 O leitor principal do seu relatório é, com frequência, um(a) PROFESSOR(A) ou membro de equipe pedagógica — nem sempre alguém com formação clínica. Isso não deve reduzir o rigor técnico da análise, mas deve moldar como ela é comunicada: precisão sem jargão não-explicado, profundidade sem exclusão de quem vai usar o relatório no dia a dia da sala de aula.
