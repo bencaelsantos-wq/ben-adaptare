@@ -2804,7 +2804,12 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div id="perfil-aluno-adaptacoes" style="font-size:13px;color:var(--gr400);margin-bottom:16px">Carregando…</div>
       <!-- PEIs -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📋 PEIs elaborados</div>
-      <div id="perfil-aluno-peis" style="font-size:13px;color:var(--gr400)">Carregando…</div>
+      <div id="perfil-aluno-peis" style="font-size:13px;color:var(--gr400);margin-bottom:16px">Carregando…</div>
+      <!-- Análises e Estratégias -->
+      <div id="perfil-aluno-analise-wrap" style="display:none">
+        <div style="font-size:11px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">🧩 Análises e Estratégias</div>
+        <div id="perfil-aluno-analises" style="font-size:13px;color:var(--gr400)">Carregando…</div>
+      </div>
     </div>
   </div>
 </div>
@@ -11083,6 +11088,8 @@ async function abrirPerfilAluno(a) {
   // Adaptações
   const adaptEl = document.getElementById('perfil-aluno-adaptacoes');
   const peisEl  = document.getElementById('perfil-aluno-peis');
+  const analiseWrap = document.getElementById('perfil-aluno-analise-wrap');
+  const analiseEl = document.getElementById('perfil-aluno-analises');
   try {
     const [{ data: adapts }, { data: peis }] = await Promise.all([
       db.from('adaptacoes').select('id,materia,created_at').eq('aluno_nome', a.nome).order('created_at',{ascending:false}).limit(5),
@@ -11092,6 +11099,19 @@ async function abrirPerfilAluno(a) {
     adaptEl.innerHTML = (adapts||[]).length
       ? (adapts||[]).map(ad => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${ad.materia||'Sem matéria'}</span><span style="font-size:11px;color:var(--gr400)">${(ad.created_at||'').slice(0,10)}</span></div>`).join('')
       : '<span style="color:var(--gr400)">Nenhuma adaptação ainda</span>';
+
+    if (window._planoAtivo === 'singular' || window._addonAnalise) {
+      analiseWrap.style.display = 'block';
+      const { data: analises } = await db.from('analises_comportamentais')
+        .select('id,resultado,created_at')
+        .eq('aluno_id', a.id)
+        .order('created_at',{ascending:false}).limit(5);
+      analiseEl.innerHTML = (analises||[]).length
+        ? (analises||[]).map(r => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick='abrirAnaliseSalva(${JSON.stringify(r).replace(/'/g,"&#39;")})'><span>Análise gerada</span><span style="font-size:11px;color:var(--gr400)">${(r.created_at||'').slice(0,10)}</span></div>`).join('')
+        : '<span style="color:var(--gr400)">Nenhuma análise ainda</span>';
+    } else {
+      analiseWrap.style.display = 'none';
+    }
 
     peisEl.innerHTML = (peis||[]).length
       ? (peis||[]).map(p => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>PEI</span><span style="font-size:11px;padding:2px 8px;background:${p.status==='finalizado'?'#DCFCE7':'#FEF3C7'};color:${p.status==='finalizado'?'#166534':'#92400E'};border-radius:999px">${p.status||'rascunho'}</span><span style="font-size:11px;color:var(--gr400)">${(p.created_at||'').slice(0,10)}</span></div>`).join('')
