@@ -3832,6 +3832,11 @@ async function renderizarWidgetConsumoIA() {
       const pctAnalise = analiseOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((analiseOrc.gastoBRL / analiseOrc.limiteBRL) * 100));
       html += barraConsumoIA('Análise e Estratégias', pctAnalise);
     }
+    if (window._addonLaudos || window._planoAtivo === 'singular') {
+      const laudosOrc = await verificarOrcamentoIA('linha-tempo-laudos');
+      const pctLaudos = laudosOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((laudosOrc.gastoBRL / laudosOrc.limiteBRL) * 100));
+      html += barraConsumoIA('Linha do Tempo de Laudos', pctLaudos);
+    }
     el.innerHTML = html;
     el.style.display = 'block';
   } catch(e) { console.warn('widget consumo IA:', e.message); }
