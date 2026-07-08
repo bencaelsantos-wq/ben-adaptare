@@ -2807,9 +2807,14 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📋 PEIs elaborados</div>
       <div id="perfil-aluno-peis" style="font-size:13px;color:var(--gr400);margin-bottom:16px">Carregando…</div>
       <!-- Análises e Estratégias -->
-      <div id="perfil-aluno-analise-wrap" style="display:none">
+      <div id="perfil-aluno-analise-wrap" style="display:none;margin-bottom:16px">
         <div style="font-size:11px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">🧩 Análises e Estratégias</div>
         <div id="perfil-aluno-analises" style="font-size:13px;color:var(--gr400)">Carregando…</div>
+      </div>
+      <!-- Linha do Tempo de Laudos -->
+      <div id="perfil-aluno-laudos-wrap" style="display:none">
+        <div style="font-size:11px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📄 Linha do Tempo de Laudos</div>
+        <div id="perfil-aluno-laudos" style="font-size:13px;color:var(--gr400)">Carregando…</div>
       </div>
     </div>
   </div>
@@ -7031,12 +7036,14 @@ Gere o relatório completo seguindo as 4 camadas do seu papel.`;
   btn.disabled = true;
   document.getElementById('ac-resultado-box').style.display = 'none';
   try {
-    const texto = await chamarClaude({ prompt, maxTokens: 7000, modulo: 'analise-comportamental' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 7000, modulo: 'analise-comportamental' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     const alunoId = document.getElementById('ac-aluno-sel')?.value || null;
     window._ultimaAnaliseComp = { texto, aluno: nomeAluno };
     document.getElementById('ac-resultado-texto').textContent = texto;
     document.getElementById('ac-resultado-box').style.display = 'block';
     document.getElementById('ac-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    renderizarWidgetConsumoIA();
 
     const { error: erroSalvar } = await db.from('analises_comportamentais').insert({
       user_id: user.id,
@@ -7158,8 +7165,11 @@ async function gerarLinhaDoTempoLaudos() {
   const laudos = document.getElementById('lt-laudo-texto')?.value.trim();
   if (!laudos) return toast('Anexe ou cole ao menos um laudo/relatório.', 'error');
   const nomeAluno = document.getElementById('lt-aluno')?.value.trim() || '';
+  const dataAtualExtenso = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
 
   const prompt = `${SYSTEM_PROMPT_LINHA_TEMPO_LAUDOS}
+
+DATA ATUAL DO SISTEMA (use exatamente esta data em "Resumo elaborado em", nunca invente outra): ${dataAtualExtenso}
 
 ALUNO/PACIENTE: ${nomeAluno || 'não identificado'}
 
@@ -7172,12 +7182,14 @@ Gere o Resumo Consolidado de Laudos e Avaliações completo, seguindo a estrutur
   btn.disabled = true;
   document.getElementById('lt-resultado-box').style.display = 'none';
   try {
-    const texto = await chamarClaude({ prompt, maxTokens: 7000, modulo: 'linha-tempo-laudos' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 7000, modulo: 'linha-tempo-laudos' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     const alunoId = document.getElementById('lt-aluno-sel')?.value || null;
     window._ultimaLinhaTempoLaudos = { texto, aluno: nomeAluno };
     document.getElementById('lt-resultado-texto').textContent = texto;
     document.getElementById('lt-resultado-box').style.display = 'block';
     document.getElementById('lt-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    renderizarWidgetConsumoIA();
 
     const { error: erroSalvar } = await db.from('linhas_tempo_laudos').insert({
       user_id: user.id,
@@ -11391,6 +11403,19 @@ async function abrirPerfilAluno(a) {
       analiseEl.innerHTML = (analises||[]).length
         ? (analises||[]).map(r => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick='abrirAnaliseSalva(${JSON.stringify(r).replace(/'/g,"&#39;")})'><span>Análise gerada</span><span style="font-size:11px;color:var(--gr400)">${(r.created_at||'').slice(0,10)}</span></div>`).join('')
         : '<span style="color:var(--gr400)">Nenhuma análise ainda</span>';
+    }
+
+    const laudosWrap = document.getElementById('perfil-aluno-laudos-wrap');
+    const laudosElP = document.getElementById('perfil-aluno-laudos');
+    if (window._planoAtivo === 'singular' || window._addonLaudos) {
+      laudosWrap.style.display = 'block';
+      const { data: linhasTempo } = await db.from('linhas_tempo_laudos')
+        .select('id,resultado,created_at')
+        .eq('aluno_id', a.id)
+        .order('created_at',{ascending:false}).limit(5);
+      laudosElP.innerHTML = (linhasTempo||[]).length
+        ? (linhasTempo||[]).map(r => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick='abrirLinhaTempoSalva(${JSON.stringify(r).replace(/'/g,"&#39;")})'><span>Linha do tempo gerada</span><span style="font-size:11px;color:var(--gr400)">${(r.created_at||'').slice(0,10)}</span></div>`).join('')
+        : '<span style="color:var(--gr400)">Nenhuma linha do tempo ainda</span>';
     } else {
       analiseWrap.style.display = 'none';
     }
