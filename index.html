@@ -6968,10 +6968,13 @@ async function processarLaudoAnalise(input) {
   status.textContent = 'Lendo arquivo…';
   try {
     let texto = '';
-    if (file.name.endsWith('.pdf')) texto = await extrairTextoPDF(file);
+    if (file.name.endsWith('.pdf')) {
+      texto = await extrairTextoPDF(file);
+      if (!texto.trim()) texto = await extrairTextoPDFComOCR(file, status);
+    }
     else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) texto = await extrairTextoDOCX(file);
     else { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Formato não suportado. Use PDF ou DOCX.'; return; }
-    if (!texto.trim()) { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Não foi possível extrair texto. Cole manualmente.'; return; }
+    if (!texto.trim()) { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Não foi possível extrair texto, mesmo com OCR. Cole manualmente.'; return; }
     campo.value = (campo.value ? campo.value + '\n\n---\n\n' : '') + texto.trim();
     status.style.background = '#F0FDF4'; status.style.color = '#166534';
     status.textContent = 'Laudo importado com sucesso.';
@@ -7098,7 +7101,10 @@ async function processarLaudosMultiplos(input) {
   for (const file of files) {
     try {
       let texto = '';
-      if (file.name.endsWith('.pdf')) texto = await extrairTextoPDF(file);
+      if (file.name.endsWith('.pdf')) {
+        texto = await extrairTextoPDF(file);
+        if (!texto.trim()) { status.textContent = `Documento "${file.name}" sem texto — aplicando OCR…`; texto = await extrairTextoPDFComOCR(file, status); }
+      }
       else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) texto = await extrairTextoDOCX(file);
       else { falha++; continue; }
       if (!texto.trim()) { falha++; continue; }
