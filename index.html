@@ -392,10 +392,10 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .nav-icon{width:15px;height:15px;opacity:.5;flex-shrink:0;transition:opacity .12s}
 .nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1}
 .sb-footer{padding:10px 12px 14px;border-top:1px solid #F3F4F6}
-.user-badge{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;margin-bottom:6px;background:#F9FAFB}
+.user-badge{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:#F9FAFB}
 .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#1E3A8A,#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
 .user-email{font-size:11px;color:#94A3B8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-.btn-logout{width:100%;padding:7px;background:transparent;border:1px solid #F1F3F5;border-radius:8px;font-family:inherit;font-size:12px;color:#94A3B8;cursor:pointer;transition:all .15s}
+.btn-logout{width:100%;padding:5px;background:transparent;border:1px solid #F1F3F5;border-radius:7px;font-family:inherit;font-size:11px;color:#94A3B8;cursor:pointer;transition:all .15s}
 .btn-logout:hover{background:#FEF2F2;border-color:#FECACA;color:#EF4444}
 
 /* Sidebar stripe por papel */
@@ -2422,7 +2422,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <!-- Preenchido via JS conforme o papel -->
       </nav>
       <div class="sb-footer">
-        <div id="widget-consumo-ia" style="display:none;margin-bottom:10px;padding:10px 12px;background:#F8FAFF;border:1px solid #E2E8F0;border-radius:10px;font-size:11px"></div>
+        <div id="widget-consumo-ia" style="display:none;margin-bottom:6px;padding:7px 9px;background:#F8FAFF;border:1px solid #E2E8F0;border-radius:8px;font-size:9.5px"></div>
         <div class="user-badge">
           <div class="avatar" id="user-avatar">--</div>
           <div class="user-email" id="user-email-lbl">-</div>
@@ -3823,7 +3823,7 @@ async function renderizarWidgetConsumoIA() {
   try {
     const baseOrc = await verificarOrcamentoIA('geral');
     const pctBase = baseOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((baseOrc.gastoBRL / baseOrc.limiteBRL) * 100));
-    let html = `<div style="font-weight:700;color:#1E3A8A;margin-bottom:4px">Plano ${(window._planoAtivo||'acolhe').toUpperCase()}</div>`;
+    let html = `<div style="font-weight:700;color:#1E3A8A;margin-bottom:2px;font-size:10px">Plano ${(window._planoAtivo||'acolhe').toUpperCase()}</div>`;
     if (baseOrc.limiteBRL !== Infinity) {
       html += barraConsumoIA('Ferramentas pedagógicas', pctBase);
     }
@@ -3844,10 +3844,10 @@ async function renderizarWidgetConsumoIA() {
 
 function barraConsumoIA(label, pct) {
   const cor = pct >= 90 ? '#DC2626' : pct >= 70 ? '#D97706' : '#2563EB';
-  const aviso = pct >= 90 ? `<div style="color:#DC2626;margin-top:2px">Você já usou ${pct}% do limite. Ao atingir 100%, novas gerações ficam bloqueadas até o dia 1º do próximo mês.</div>` : '';
-  return `<div style="margin-top:6px">
-    <div style="display:flex;justify-content:space-between;color:#64748B"><span>${label}</span><span>${pct}%</span></div>
-    <div style="background:#E2E8F0;border-radius:999px;height:5px;margin-top:2px;overflow:hidden"><div style="background:${cor};height:100%;width:${pct}%"></div></div>
+  const aviso = pct >= 90 ? `<div style="color:#DC2626;margin-top:1px;font-size:9px;line-height:1.3">Limite quase atingido — bloqueia no dia 1º</div>` : '';
+  return `<div style="margin-top:4px">
+    <div style="display:flex;justify-content:space-between;color:#94A3B8;font-size:9.5px"><span>${label}</span><span>${pct}%</span></div>
+    <div style="background:#E2E8F0;border-radius:999px;height:3px;margin-top:1px;overflow:hidden"><div style="background:${cor};height:100%;width:${pct}%"></div></div>
     ${aviso}
   </div>`;
 }
