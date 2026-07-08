@@ -9728,7 +9728,9 @@ async function extrairTextoPDF(file) {
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         const pdf = await pdfjsLib.getDocument(typedArray).promise;
         let textoTotal = '';
-        for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+        const limitePaginas = 20;
+        if (pdf.numPages > limitePaginas) textoTotal += `[Aviso: documento tem ${pdf.numPages} páginas — apenas as primeiras ${limitePaginas} foram lidas]\n\n`;
+        for (let i = 1; i <= Math.min(pdf.numPages, limitePaginas); i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
           const textoPage = content.items.map(item => item.str).join(' ');
@@ -9752,7 +9754,7 @@ async function extrairTextoPDFComOCR(file, statusEl) {
         if (!pdfjsLib) { reject(new Error('Biblioteca PDF não carregada.')); return; }
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         const pdf = await pdfjsLib.getDocument(typedArray).promise;
-        const maxPaginas = Math.min(pdf.numPages, 15);
+        const maxPaginas = Math.min(pdf.numPages, 20);
         let textoTotal = '';
         for (let i = 1; i <= maxPaginas; i++) {
           if (statusEl) statusEl.textContent = `Documento sem texto — aplicando OCR (página ${i} de ${maxPaginas})…`;
