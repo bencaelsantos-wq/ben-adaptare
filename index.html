@@ -7078,10 +7078,12 @@ async function carregarAnalisesComportamentais() {
 }
 
 function abrirAnaliseSalva(r) {
+  fecharModal('modal-perfil-aluno');
+  showPage('analise-comp');
   window._ultimaAnaliseComp = { texto: r.resultado, aluno: r.aluno_nome || '' };
   document.getElementById('ac-resultado-texto').textContent = r.resultado;
   document.getElementById('ac-resultado-box').style.display = 'block';
-  document.getElementById('ac-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  setTimeout(() => document.getElementById('ac-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
 }
 
 function baixarPDFAnaliseComp() {
@@ -7223,10 +7225,12 @@ async function carregarLinhasDoTempo() {
 }
 
 function abrirLinhaTempoSalva(r) {
+  fecharModal('modal-perfil-aluno');
+  showPage('linha-laudos');
   window._ultimaLinhaTempoLaudos = { texto: r.resultado, aluno: r.aluno_nome || '' };
   document.getElementById('lt-resultado-texto').textContent = r.resultado;
   document.getElementById('lt-resultado-box').style.display = 'block';
-  document.getElementById('lt-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  setTimeout(() => document.getElementById('lt-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
 }
 
 function baixarPDFLinhaDoTempo() {
