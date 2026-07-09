@@ -3277,24 +3277,24 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div class="lgpd-bloco" id="lgpd-bloco-clinica">
         <div class="lgpd-bloco-titulo">⚖️ Proteção de dados sensíveis de saúde — LGPD Art. 11º e 14º</div>
         <div class="lgpd-bloco-aviso">Diagnósticos, hipóteses clínicas e observações comportamentais são <strong>dados sensíveis de saúde</strong> e têm proteção máxima sob a LGPD. Dados de crianças exigem autorização expressa dos responsáveis legais. Confirme cada item.</div>
-        <label class="lgpd-item" id="lgpd-cli-1" onclick="lgpdToggle('lgpd-cli-1','lgpd-cb-cli-1','lgpd-cli','btn-salvar-clinica')">
-          <input type="checkbox" id="lgpd-cb-cli-1" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-cli','btn-salvar-clinica')">
+        <label class="lgpd-item" id="lgpd-cli-1" onclick="lgpdToggle('lgpd-cli-1','lgpd-cb-cli-1','lgpd-clinica','btn-salvar-clinica')">
+          <input type="checkbox" id="lgpd-cb-cli-1" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-clinica','btn-salvar-clinica')">
           <div class="lgpd-item-texto">
             <strong>Finalidade exclusivamente terapêutica</strong>
             <span>Confirmo que os dados clínicos registrados serão utilizados exclusivamente para elaboração de planos terapêuticos e integração com a equipe pedagógica deste paciente.</span>
           </div>
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
-        <label class="lgpd-item" id="lgpd-cli-2" onclick="lgpdToggle('lgpd-cli-2','lgpd-cb-cli-2','lgpd-cli','btn-salvar-clinica')">
-          <input type="checkbox" id="lgpd-cb-cli-2" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-cli','btn-salvar-clinica')">
+        <label class="lgpd-item" id="lgpd-cli-2" onclick="lgpdToggle('lgpd-cli-2','lgpd-cb-cli-2','lgpd-clinica','btn-salvar-clinica')">
+          <input type="checkbox" id="lgpd-cb-cli-2" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-clinica','btn-salvar-clinica')">
           <div class="lgpd-item-texto">
             <strong>Compartilhamento restrito e com autorização</strong>
             <span>Dados clínicos só serão compartilhados com a escola vinculada mediante formulário fechado e rastreável. Nenhuma informação será enviada a terceiros não autorizados.</span>
           </div>
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
-        <label class="lgpd-item" id="lgpd-cli-3" onclick="lgpdToggle('lgpd-cli-3','lgpd-cb-cli-3','lgpd-cli','btn-salvar-clinica')">
-          <input type="checkbox" id="lgpd-cb-cli-3" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-cli','btn-salvar-clinica')">
+        <label class="lgpd-item" id="lgpd-cli-3" onclick="lgpdToggle('lgpd-cli-3','lgpd-cb-cli-3','lgpd-clinica','btn-salvar-clinica')">
+          <input type="checkbox" id="lgpd-cb-cli-3" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-clinica','btn-salvar-clinica')">
           <div class="lgpd-item-texto">
             <strong>Autorização do responsável legal</strong>
             <span>Declaro possuir autorização expressa dos responsáveis legais pelo paciente para registrar, tratar e compartilhar as informações clínicas aqui inseridas, conforme Art. 14º da LGPD e normas do conselho profissional competente.</span>
@@ -3801,7 +3801,7 @@ async function iniciarApp() {
   const colorMap = {
     professor:       { label:' Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
     gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); setTimeout(verificarOnboardingGestao, 800); verificarNotificacoesSolicitacoes(); } },
-    clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); verificarNotificacoesSolicitacoes(); } },
+    clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); verificarNotificacoesSolicitacoes(); const btnNovoPerfilClinica = document.getElementById('btn-novo-perfil-clinica'); if (btnNovoPerfilClinica) btnNovoPerfilClinica.style.display = 'none'; } },
     'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
     at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
@@ -4189,7 +4189,7 @@ function renderPagesGestaoClinica() {
     <div class="section-header">
       <div><h1 class="page-title">Perfis Clínicos dos Pacientes</h1>
            <p class="page-sub" style="margin-bottom:0">Somente a Gestão Clínica pode excluir perfis.</p></div>
-      <button class="btn-sm" onclick="abrirModalCadClinica()">+ Novo perfil</button>
+      <button class="btn-sm" id="btn-novo-perfil-clinica" onclick="abrirModalCadClinica()">+ Novo perfil</button>
     </div>
     <div class="cards-grid" id="gc-perfis-grid">
       <div class="empty"><div class="empty-icon">🧠</div><div class="empty-text">Nenhum perfil cadastrado.</div></div>
