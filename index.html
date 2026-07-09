@@ -3879,6 +3879,9 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-historico" onclick="showPage('historico')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico
     </div>
+    <div class="nav-item" id="nav-estudo-caso" onclick="showPage('estudo-caso');carregarEstudosCaso()">
+       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso
+    </div>
     <div class="nav-item" id="nav-pei" onclick="showPage('pei')">
        <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Elaborar PEI
     </div>
@@ -3940,6 +3943,15 @@ function renderNavGestao() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17c0-3 2.686-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 4l1.5 1.5L18 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Professores
     </div>
     <div class="nav-section">Documentos</div>
+    <div class="nav-item gestao-item" id="nav-estudo-caso" onclick="showPage('estudo-caso');carregarEstudosCaso()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso
+    </div>
+    <div class="nav-item gestao-item" id="nav-estudo-caso" onclick="showPage('estudo-caso');carregarEstudosCaso()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso
+    </div>
+    <div class="nav-item gestao-item" id="nav-estudo-caso" onclick="showPage('estudo-caso');carregarEstudosCaso()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso
+    </div>
     <div class="nav-item gestao-item" id="nav-gestao-peis" onclick="showPage('gestao-peis')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PEIs
     </div>
@@ -3996,6 +4008,9 @@ function renderNavCoordenacao() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17c0-3 2.686-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 4l1.5 1.5L18 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Professores 🔒
     </div>
     <div class="nav-section">Documentos</div>
+    <div class="nav-item gestao-item" id="nav-estudo-caso" onclick="showPage('estudo-caso');carregarEstudosCaso()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso
+    </div>
     <div class="nav-item gestao-item" id="nav-gestao-peis" onclick="showPage('gestao-peis')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PEIs
     </div>
@@ -7810,6 +7825,48 @@ function renderPages() {
     <div class="cards-grid" id="hist-grid"></div>
   </div>
 
+  <!-- ESTUDO DE CASO -->
+  <div id="page-estudo-caso" class="page">
+    <h1 class="page-title">Estudo de Caso</h1>
+    <p class="page-sub">Identificação pedagógica de barreiras, potencialidades e necessidades de apoio — base para o PAEE/PEI.</p>
+    <div class="pei-legal"><strong>Base legal:</strong> Decreto nº 12.686/2025 (Política Nacional de Educação Especial Inclusiva). O Estudo de Caso é a etapa pedagógica que identifica as necessidades do estudante e <strong>não depende de laudo médico</strong> — o laudo, quando existir, é um documento complementar, nunca pré-requisito para o atendimento.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Aluno e responsável pelo estudo</div></div></div>
+      <div class="frow">
+        <div><label class="flabel" for="ec-aluno-sel">Aluno</label>
+          <select id="ec-aluno-sel" class="fselect"><option value="">Selecione um aluno cadastrado</option></select>
+        </div>
+        <div><label class="flabel" for="ec-data">Data de realização</label><input type="date" id="ec-data" class="finput"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ec-responsavel">Responsável pelo Estudo de Caso</label><input type="text" id="ec-responsavel" class="finput" placeholder="Nome do professor/coordenador que conduziu o estudo"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Barreiras e potencialidades</div><div class="pei-step-sub">Observação pedagógica direta, sem depender de diagnóstico</div></div></div>
+      <div class="fblock"><label class="flabel" for="ec-barreiras">Barreiras identificadas</label><textarea id="ec-barreiras" class="ftarea sm" placeholder="Ex: Dificuldade de permanecer em atividades longas, sensibilidade a estímulos sonoros, dificuldade de comunicação verbal…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ec-potencialidades">Potencialidades e interesses</label><textarea id="ec-potencialidades" class="ftarea sm" placeholder="Ex: Boa memória visual, interesse por música, facilidade com rotinas estruturadas…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ec-contexto">Contexto escolar observado</label><textarea id="ec-contexto" class="ftarea sm" placeholder="Ex: Interação com colegas, adaptação à sala, participação em atividades coletivas…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ec-recursos">Recursos e apoios de acessibilidade necessários</label><textarea id="ec-recursos" class="ftarea sm" placeholder="Ex: CAA, apoio de AT em sala, tempo estendido, material em fonte ampliada…"></textarea></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Participação da família</div><div class="pei-step-sub">Registro obrigatório de escuta da família nesta etapa</div></div></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gr600);cursor:pointer">
+        <input type="checkbox" id="ec-participacao-familia" style="width:16px;height:16px">
+        A família foi ouvida/consultada na elaboração deste Estudo de Caso
+      </label>
+      <div class="fblock" style="margin-top:10px"><label class="flabel" for="ec-obs-familia">Observações da família (opcional)</label><textarea id="ec-obs-familia" class="ftarea sm" placeholder="Percepções e contribuições relatadas pela família…"></textarea></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" onclick="salvarEstudoCaso()">Salvar Estudo de Caso</button>
+    </div>
+
+    <h2 class="page-title" style="font-size:16px;margin-bottom:10px">Estudos de Caso salvos</h2>
+    <div class="cards-grid" id="ec-lista-salvos"><p style="color:var(--gr400);font-size:13px">Nenhum estudo de caso registrado ainda.</p></div>
+  </div>
+
   <!-- PEI -->
   <div id="page-pei" class="page">
     <h1 class="page-title">Elaborar PEI</h1>
@@ -9068,6 +9125,48 @@ function renderPagesGestao() {
       <button class="btn-sm" onclick="abrirModalCad()">+ Cadastrar aluno</button>
     </div>
     <div class="cards-grid-3" id="gestao-alunos-lista"></div>
+  </div>
+
+  <!-- ESTUDO DE CASO -->
+  <div id="page-estudo-caso" class="page">
+    <h1 class="page-title">Estudo de Caso</h1>
+    <p class="page-sub">Identificação pedagógica de barreiras, potencialidades e necessidades de apoio — base para o PAEE/PEI.</p>
+    <div class="pei-legal"><strong>Base legal:</strong> Decreto nº 12.686/2025 (Política Nacional de Educação Especial Inclusiva). O Estudo de Caso é a etapa pedagógica que identifica as necessidades do estudante e <strong>não depende de laudo médico</strong> — o laudo, quando existir, é um documento complementar, nunca pré-requisito para o atendimento.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Aluno e responsável pelo estudo</div></div></div>
+      <div class="frow">
+        <div><label class="flabel" for="ec-aluno-sel">Aluno</label>
+          <select id="ec-aluno-sel" class="fselect"><option value="">Selecione um aluno cadastrado</option></select>
+        </div>
+        <div><label class="flabel" for="ec-data">Data de realização</label><input type="date" id="ec-data" class="finput"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ec-responsavel">Responsável pelo Estudo de Caso</label><input type="text" id="ec-responsavel" class="finput" placeholder="Nome do professor/coordenador que conduziu o estudo"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Barreiras e potencialidades</div><div class="pei-step-sub">Observação pedagógica direta, sem depender de diagnóstico</div></div></div>
+      <div class="fblock"><label class="flabel" for="ec-barreiras">Barreiras identificadas</label><textarea id="ec-barreiras" class="ftarea sm" placeholder="Ex: Dificuldade de permanecer em atividades longas, sensibilidade a estímulos sonoros, dificuldade de comunicação verbal…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ec-potencialidades">Potencialidades e interesses</label><textarea id="ec-potencialidades" class="ftarea sm" placeholder="Ex: Boa memória visual, interesse por música, facilidade com rotinas estruturadas…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ec-contexto">Contexto escolar observado</label><textarea id="ec-contexto" class="ftarea sm" placeholder="Ex: Interação com colegas, adaptação à sala, participação em atividades coletivas…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ec-recursos">Recursos e apoios de acessibilidade necessários</label><textarea id="ec-recursos" class="ftarea sm" placeholder="Ex: CAA, apoio de AT em sala, tempo estendido, material em fonte ampliada…"></textarea></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Participação da família</div><div class="pei-step-sub">Registro obrigatório de escuta da família nesta etapa</div></div></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gr600);cursor:pointer">
+        <input type="checkbox" id="ec-participacao-familia" style="width:16px;height:16px">
+        A família foi ouvida/consultada na elaboração deste Estudo de Caso
+      </label>
+      <div class="fblock" style="margin-top:10px"><label class="flabel" for="ec-obs-familia">Observações da família (opcional)</label><textarea id="ec-obs-familia" class="ftarea sm" placeholder="Percepções e contribuições relatadas pela família…"></textarea></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" onclick="salvarEstudoCaso()">Salvar Estudo de Caso</button>
+    </div>
+
+    <h2 class="page-title" style="font-size:16px;margin-bottom:10px">Estudos de Caso salvos</h2>
+    <div class="cards-grid" id="ec-lista-salvos"><p style="color:var(--gr400);font-size:13px">Nenhum estudo de caso registrado ainda.</p></div>
   </div>
 
   <!-- GESTÃO: TODOS OS PEIs -->
@@ -10577,6 +10676,67 @@ function popularPeiSel() {
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
     alunosCad.map(a => `<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+}
+
+async function carregarEstudosCaso() {
+  const sel = document.getElementById('ec-aluno-sel');
+  if (sel) {
+    sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
+      (alunosCad || []).map(a => `<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+  }
+  const listaEl = document.getElementById('ec-lista-salvos');
+  if (!listaEl) return;
+  const { data, error } = await db.from('estudos_caso')
+    .select('id, aluno_nome, data_realizacao, participacao_familia, created_at')
+    .order('created_at', { ascending: false })
+    .limit(30);
+  if (error || !data?.length) { listaEl.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhum estudo de caso registrado ainda.</p>'; return; }
+  listaEl.innerHTML = data.map(r => `
+    <div class="ic-card">
+      <div class="ic-nome">${r.aluno_nome || '(sem nome)'}</div>
+      <div style="font-size:11px;color:var(--gr400)">${r.data_realizacao ? new Date(r.data_realizacao+'T00:00:00').toLocaleDateString('pt-BR') : new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+      <div style="font-size:12px;margin-top:4px">${r.participacao_familia ? '✅ Família ouvida' : '— Sem registro de escuta da família'}</div>
+    </div>
+  `).join('');
+}
+
+async function salvarEstudoCaso() {
+  const alunoSel = document.getElementById('ec-aluno-sel');
+  const alunoId = alunoSel?.value || null;
+  const alunoNome = alunoSel?.selectedOptions[0]?.text || null;
+  const data_realizacao = document.getElementById('ec-data')?.value || null;
+  const responsavel_nome = document.getElementById('ec-responsavel')?.value.trim() || null;
+  const barreiras = document.getElementById('ec-barreiras')?.value.trim();
+  const potencialidades = document.getElementById('ec-potencialidades')?.value.trim();
+  const contexto_escolar = document.getElementById('ec-contexto')?.value.trim();
+  const recursos_acessibilidade = document.getElementById('ec-recursos')?.value.trim();
+  const participacao_familia = document.getElementById('ec-participacao-familia')?.checked || false;
+  const observacoes_familia = document.getElementById('ec-obs-familia')?.value.trim() || null;
+
+  if (!alunoId) return toast('Selecione o aluno.', 'error');
+  if (!barreiras || !potencialidades) return toast('Preencha barreiras e potencialidades identificadas.', 'error');
+
+  const { error } = await db.from('estudos_caso').insert({
+    user_id: user.id,
+    aluno_id: alunoId,
+    aluno_nome: alunoNome,
+    data_realizacao,
+    responsavel_nome,
+    barreiras,
+    potencialidades,
+    contexto_escolar,
+    recursos_acessibilidade,
+    participacao_familia,
+    observacoes_familia
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Estudo de Caso salvo!', 'success');
+  ['ec-responsavel','ec-barreiras','ec-potencialidades','ec-contexto','ec-recursos','ec-obs-familia'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('ec-participacao-familia').checked = false;
+  carregarEstudosCaso();
 }
 
 function renderPeiLista() {
