@@ -4309,6 +4309,98 @@ function renderPagesGestaoClinica() {
     <div style="margin-top:10px">
       <button class="btn-sm-ghost" onclick="showPage('gc-demandas')">← Voltar às demandas</button>
     </div>
+  </div>
+
+  <div id="page-analise-comp" class="page">
+    <h1 class="page-title">Análise e Estratégias Pedagógicas</h1>
+    <p class="page-sub">Organiza observações do dia a dia em estratégias individualizadas, respeitando o ritmo e as potencialidades do aluno. Não substitui avaliação formal.</p>
+    <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico. Todo conteúdo gerado deve ser validado por profissional habilitado (psicólogo, neuropsicólogo, psiquiatra ou médico) antes de qualquer comunicação à família.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios (opcional)</div><div class="pei-step-sub">Anexe laudos, relatórios terapêuticos ou avaliações já existentes para enriquecer a análise</div></div></div>
+      <button type="button" class="btn-copy" onclick="document.getElementById('ac-inp-laudo').click()">📎 Anexar PDF ou Word</button>
+      <input type="file" id="ac-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoAnalise(this)">
+      <div id="ac-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+      <textarea id="ac-laudo-texto" class="ftarea sm" style="margin-top:10px" placeholder="Texto extraído do laudo aparecerá aqui — você pode editar ou colar diretamente"></textarea>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação (opcional)</div><div class="pei-step-sub">Vincule a um aluno já cadastrado para salvar no histórico dele, ou digite o nome manualmente</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-aluno-sel">Aluno cadastrado</label>
+        <select id="ac-aluno-sel" class="fselect" onchange="document.getElementById('ac-aluno').value = alunosCad.find(a=>a.id===this.value)?.nome || document.getElementById('ac-aluno').value"><option value="">Nenhum — digitar manualmente abaixo</option></select>
+      </div>
+      <div class="fblock"><label class="flabel" for="ac-aluno">Nome do aluno/paciente</label><input type="text" id="ac-aluno" class="finput" placeholder="Ex: João Pedro"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Relato da situação observada</div><div class="pei-step-sub">Descreva livremente — quanto mais detalhado, melhor a análise</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-relato">O que foi observado (comportamento, frequência, duração)</label><textarea id="ac-relato" class="ftarea" style="min-height:140px" placeholder="Ex: Nas últimas 3 semanas, durante a transição do recreio para a sala, a criança grita e se joga no chão por cerca de 2 minutos, cerca de 3x por semana..."></textarea></div>
+      <div class="frow">
+        <div><label class="flabel" for="ac-gatilho">Contexto/gatilho identificado</label><textarea id="ac-gatilho" class="ftarea sm" placeholder="Ex: sempre após atividades com muito ruído; quando é solicitado a parar uma atividade preferida..."></textarea></div>
+        <div><label class="flabel" for="ac-tentativas">O que já foi tentado</label><textarea id="ac-tentativas" class="ftarea sm" placeholder="Ex: aviso antecipado de 5 min antes da transição; uso de timer visual..."></textarea></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ac-instrumentos">Instrumentos já aplicados (se houver)</label><textarea id="ac-instrumentos" class="ftarea sm" placeholder="Ex: M-CHAT aplicado em [data], escore X; escala Vineland..."></textarea></div>
+    </div>
+
+    <button class="btn-gerar" id="ac-btn-gerar" onclick="gerarAnaliseComportamental()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar análise com a Lou
+    </button>
+
+    <div class="result-card show" id="ac-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Relatório gerado</h3>
+      <div id="ac-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copiarAdapt('ac-resultado-texto')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFAnaliseComp()">Baixar PDF</button>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Análises salvas</h3>
+      <div class="cards-grid" id="ac-lista-salvas"></div>
+    </div>
+  </div>
+
+  <div id="page-linha-laudos" class="page">
+    <h1 class="page-title">Linha do Tempo de Laudos e Avaliações</h1>
+    <p class="page-sub">Consolida vários laudos, relatórios médicos e avaliações ao longo do tempo em um resumo único, com linha do tempo por fonte e data. Traduz o impacto no aprendizado para a equipe pedagógica, e mantém o resumo fiel para a equipe clínica.</p>
+    <div class="pei-legal"><strong>Importante:</strong> este resumo é compilado a partir dos documentos anexados. Consulte sempre os laudos originais para fins legais ou formais.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação</div><div class="pei-step-sub">Vincule a um aluno já cadastrado para salvar no histórico dele, ou digite o nome manualmente</div></div></div>
+      <div class="fblock"><label class="flabel" for="lt-aluno-sel">Aluno cadastrado</label>
+        <select id="lt-aluno-sel" class="fselect" onchange="document.getElementById('lt-aluno').value = alunosCad.find(a=>a.id===this.value)?.nome || document.getElementById('lt-aluno').value"><option value="">Nenhum — digitar manualmente abaixo</option></select>
+      </div>
+      <div class="fblock"><label class="flabel" for="lt-aluno">Nome do aluno/paciente</label><input type="text" id="lt-aluno" class="finput" placeholder="Ex: João Pedro"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios</div><div class="pei-step-sub">Anexe quantos documentos precisar — PDF ou Word. Cada um é adicionado ao texto abaixo</div></div></div>
+      <button type="button" class="btn-copy" onclick="document.getElementById('lt-inp-laudos').click()">📎 Anexar PDF ou Word</button>
+      <input type="file" id="lt-inp-laudos" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="processarLaudosMultiplos(this)">
+      <div id="lt-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+      <textarea id="lt-laudo-texto" class="ftarea" style="margin-top:10px;min-height:180px" placeholder="Texto extraído de cada laudo aparecerá aqui, separado por documento — você pode editar ou colar diretamente"></textarea>
+    </div>
+
+    <button class="btn-gerar" id="lt-btn-gerar" onclick="gerarLinhaDoTempoLaudos()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar linha do tempo com a Lou
+    </button>
+
+    <div class="result-card show" id="lt-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Resumo gerado</h3>
+      <div id="lt-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copiarAdapt('lt-resultado-texto')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFLinhaDoTempo()">Baixar PDF</button>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Linhas do tempo salvas</h3>
+      <div class="cards-grid" id="lt-lista-salvas"></div>
+    </div>
   </div>`;
   carregarPerfisGestaoClinica();
 }
