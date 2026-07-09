@@ -7134,7 +7134,7 @@ Gere o relatório completo seguindo as 4 camadas do seu papel.`;
   btn.disabled = true;
   document.getElementById('ac-resultado-box').style.display = 'none';
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 7000, modulo: 'analise-comportamental' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 5000, modulo: 'analise-comportamental' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     const alunoId = document.getElementById('ac-aluno-sel')?.value || null;
     window._ultimaAnaliseComp = { texto, aluno: nomeAluno };
@@ -7282,7 +7282,7 @@ Gere o Resumo Consolidado de Laudos e Avaliações completo, seguindo a estrutur
   btn.disabled = true;
   document.getElementById('lt-resultado-box').style.display = 'none';
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 7000, modulo: 'linha-tempo-laudos' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 5000, modulo: 'linha-tempo-laudos' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     const alunoId = document.getElementById('lt-aluno-sel')?.value || null;
     window._ultimaLinhaTempoLaudos = { texto, aluno: nomeAluno };
