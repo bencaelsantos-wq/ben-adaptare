@@ -7309,6 +7309,52 @@ Gere o Resumo Consolidado de Laudos e Avaliações completo, seguindo a estrutur
   }
 }
 
+async function carregarDevolutivasClinica() {
+  const sel = document.getElementById('dc-aluno-sel');
+  if (sel) {
+    const lista = window._alunosDiario?.length ? window._alunosDiario : (await db.from('alunos').select('id,nome').eq('clinica_email', user.email).order('nome')).data || [];
+    sel.innerHTML = '<option value="">Selecione</option>' + lista.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+  }
+  const listaEl = document.getElementById('dc-lista-salvas');
+  if (!listaEl) return;
+  const { data, error } = await db.from('devolutivas_clinicas')
+    .select('id, aluno_nome, conteudo, autorizado_familia, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  if (error || !data?.length) { listaEl.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhuma devolutiva registrada ainda.</p>'; return; }
+  listaEl.innerHTML = data.map(r => `
+    <div class="ic-card">
+      <div class="ic-nome">${r.aluno_nome || '(sem nome)'}</div>
+      <div style="font-size:11px;color:var(--gr400)">${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+      <div style="font-size:12px;margin-top:4px">${r.autorizado_familia ? '✅ Compartilhado com a escola' : '🔒 Somente você'}</div>
+    </div>
+  `).join('');
+}
+
+async function salvarDevolutivaClinica() {
+  const alunoSel = document.getElementById('dc-aluno-sel');
+  const alunoId = alunoSel?.value || null;
+  const alunoNome = alunoSel?.selectedOptions[0]?.text || null;
+  const conteudo = document.getElementById('dc-conteudo')?.value.trim();
+  const autorizado = document.getElementById('dc-autorizado')?.checked || false;
+  if (!alunoId) return toast('Selecione o aluno/paciente.', 'error');
+  if (!conteudo) return toast('Escreva a devolutiva.', 'error');
+
+  const { error } = await db.from('devolutivas_clinicas').insert({
+    user_id: user.id,
+    aluno_id: alunoId,
+    aluno_nome: alunoNome,
+    conteudo,
+    autorizado_familia: autorizado
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast(autorizado ? 'Devolutiva salva e compartilhada com a escola!' : 'Devolutiva salva — visível só para você.', 'success');
+  document.getElementById('dc-conteudo').value = '';
+  document.getElementById('dc-autorizado').checked = false;
+  carregarDevolutivasClinica();
+}
+
 async function carregarLinhasDoTempo() {
   const lista = document.getElementById('lt-lista-salvas');
   if (!lista) return;
