@@ -2816,6 +2816,11 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <div style="font-size:11px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📄 Linha do Tempo de Laudos</div>
         <div id="perfil-aluno-laudos" style="font-size:13px;color:var(--gr400)">Carregando…</div>
       </div>
+      <!-- Devolutiva Clínica -->
+      <div id="perfil-aluno-devolutiva-wrap" style="display:none;margin-top:16px">
+        <div style="font-size:11px;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✅ Devolutiva Clínica</div>
+        <div id="perfil-aluno-devolutivas" style="font-size:13px;color:var(--gr400)">Carregando…</div>
+      </div>
     </div>
   </div>
 </div>
@@ -11598,7 +11603,25 @@ async function abrirPerfilAluno(a) {
         ? (linhasTempo||[]).map(r => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick='abrirLinhaTempoSalva(${JSON.stringify(r).replace(/'/g,"&#39;")})'><span>Linha do tempo gerada</span><span style="font-size:11px;color:var(--gr400)">${(r.created_at||'').slice(0,10)}</span></div>`).join('')
         : '<span style="color:var(--gr400)">Nenhuma linha do tempo ainda</span>';
     } else {
-      analiseWrap.style.display = 'none';
+      laudosWrap.style.display = 'none';
+    }
+
+    const devolutivaWrap = document.getElementById('perfil-aluno-devolutiva-wrap');
+    const devolutivaEl = document.getElementById('perfil-aluno-devolutivas');
+    if (['gestao','coordenacao','gestao-clinica'].includes(userRole)) {
+      const { data: devolutivas } = await db.from('devolutivas_clinicas')
+        .select('id,conteudo,created_at')
+        .eq('aluno_id', a.id)
+        .eq('autorizado_familia', true)
+        .order('created_at',{ascending:false}).limit(5);
+      if ((devolutivas||[]).length) {
+        devolutivaWrap.style.display = 'block';
+        devolutivaEl.innerHTML = devolutivas.map(r => `<div style="padding:8px 0;border-bottom:1px solid var(--gr100)"><div style="font-size:12px;color:var(--gr700)">${r.conteudo}</div><div style="font-size:11px;color:var(--gr400);margin-top:2px">${(r.created_at||'').slice(0,10)}</div></div>`).join('');
+      } else {
+        devolutivaWrap.style.display = 'none';
+      }
+    } else {
+      devolutivaWrap.style.display = 'none';
     }
 
     peisEl.innerHTML = (peis||[]).length
