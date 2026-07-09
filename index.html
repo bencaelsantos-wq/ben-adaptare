@@ -6794,7 +6794,7 @@ async function verificarOrcamentoIA(modulo) {
   const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
   const ehAnalise = modulo === 'analise-comportamental';
   const ehLaudos = modulo === 'linha-tempo-laudos';
-  const { data } = await db.from('usage_logs').select('custo_usd, metodo').eq('user_id', user.id).gte('created_at', inicioMes.toISOString());
+  const { data } = await db.from('usage_logs').select('custo_usd, metodo').gte('created_at', inicioMes.toISOString());
   const gastoUSD = (data||[]).filter(r => {
     if (ehAnalise) return r.metodo === 'analise-comportamental';
     if (ehLaudos) return r.metodo === 'linha-tempo-laudos';
