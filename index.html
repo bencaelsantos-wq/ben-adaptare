@@ -2776,6 +2776,23 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
+<!-- ══ MODAL: Ciência — ferramentas de IA não substituem laudo ══ -->
+<div class="overlay" id="modal-aviso-ia">
+  <div class="modal sm">
+    <div class="modal-header"><div class="modal-title">⚖️ Antes de continuar</div></div>
+    <div class="modal-body">
+      <div class="pei-legal" style="margin-bottom:14px">Esta ferramenta usa inteligência artificial para organizar observações em hipóteses e sugestões de trabalho. Ela <strong>não emite diagnóstico</strong> e <strong>não substitui avaliação, laudo ou orientação de profissional habilitado</strong>. Todo conteúdo gerado deve ser lido de forma crítica e validado pela equipe responsável pela criança antes de qualquer uso ou comunicação à família.</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gr600);cursor:pointer">
+        <input type="checkbox" id="aviso-ia-cb" style="width:16px;height:16px" onclick="document.getElementById('aviso-ia-btn').disabled = !this.checked">
+        Estou ciente e vou usar esta ferramenta de forma responsável.
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-copy" id="aviso-ia-btn" disabled onclick="confirmarCienciaIA()">Entendi, continuar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL: Perfil do Aluno (Professor) ══ -->
 <div class="overlay" id="modal-perfil-aluno" onclick="fecharModal('modal-perfil-aluno',event)">
   <div class="modal md">
@@ -4340,7 +4357,7 @@ function renderPagesGestaoClinica() {
     <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico. Todo conteúdo gerado deve ser validado por profissional habilitado (psicólogo, neuropsicólogo, psiquiatra ou médico) antes de qualquer comunicação à família.</div>
 
     <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios (opcional)</div><div class="pei-step-sub">Anexe laudos, relatórios terapêuticos ou avaliações já existentes para enriquecer a análise</div></div></div>
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios (obrigatório)</div><div class="pei-step-sub">Sem este documento a análise não pode ser gerada — a leitura da equipe clínica já em curso precisa ser respeitada, nunca contornada</div></div></div>
       <button type="button" class="btn-copy" onclick="document.getElementById('ac-inp-laudo').click()">📎 Anexar PDF ou Word</button>
       <input type="file" id="ac-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoAnalise(this)">
       <div id="ac-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
@@ -6969,18 +6986,36 @@ async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral' }) {
   return texto;
 }
 
-// ── ANÁLISE E ESTRATÉGIAS PEDAGÓGICAS (plano Singular) ───────────────────
+// ── CIÊNCIA OBRIGATÓRIA: ferramentas de IA clínico/pedagógicas não substituem laudo ─
+function verificarCienciaIA(callback) {
+  if (sessionStorage.getItem('ia_ciencia_ok') === '1') return callback();
+  window._cienciaCallback = callback;
+  document.getElementById('aviso-ia-cb').checked = false;
+  document.getElementById('aviso-ia-btn').disabled = true;
+  abrirModal('modal-aviso-ia');
+}
+function confirmarCienciaIA() {
+  sessionStorage.setItem('ia_ciencia_ok', '1');
+  fecharModal('modal-aviso-ia');
+  const cb = window._cienciaCallback;
+  window._cienciaCallback = null;
+  if (cb) cb();
+}
+
+// ── ANÁLISE E ESTRATÉGIAS (equipe clínica — plano Singular) ───────────────────
 function abrirAnaliseComportamental() {
   if (window._planoAtivo !== 'singular' && !window._addonAnalise) {
     return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
   }
-  showPage('analise-comp');
-  const sel = document.getElementById('ac-aluno-sel');
-  if (sel) {
-    sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
-      (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
-  }
-  carregarAnalisesComportamentais();
+  verificarCienciaIA(() => {
+    showPage('analise-comp');
+    const sel = document.getElementById('ac-aluno-sel');
+    if (sel) {
+      sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
+        (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+    }
+    carregarAnalisesComportamentais();
+  });
 }
 
 function abrirLinhaDoTempoLaudos() {
@@ -7120,6 +7155,7 @@ async function gerarAnaliseComportamental() {
   const relato = document.getElementById('ac-relato')?.value.trim();
   if (!relato) return toast('Descreva a situação observada.', 'error');
   const laudos = document.getElementById('ac-laudo-texto')?.value.trim() || '';
+  if (!laudos) return toast('Anexe o laudo/relatório da equipe multidisciplinar antes de gerar. Sem esse documento, a análise pode contradizer o trabalho já em curso da equipe clínica.', 'error');
 
   const nomeAluno   = document.getElementById('ac-aluno')?.value.trim() || '';
   const gatilho     = document.getElementById('ac-gatilho')?.value.trim() || '';
@@ -7219,6 +7255,488 @@ function baixarPDFAnaliseComp() {
     professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
     conteudo: dados.texto,
     nomeArquivo: 'Analise_Comportamental_' + (dados.aluno||'paciente').replace(/\s+/g,'_'),
+    isAtividade: false
+  });
+}
+
+// ── APOIO PEDAGÓGICO (equipe pedagógica — plano Singular) ───────────────
+function abrirApoioPedagogico() {
+  if (window._planoAtivo !== 'singular' && !window._addonAnalise) {
+    return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
+  }
+  verificarCienciaIA(() => {
+    showPage('apoio-pedagogico');
+    const sel = document.getElementById('ap-aluno-sel');
+    if (sel) {
+      sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
+        (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+    }
+    document.getElementById('ap-fase1').style.display = '';
+    document.getElementById('ap-fase2').style.display = 'none';
+    document.getElementById('ap-resultado-box').style.display = 'none';
+    carregarApoiosPedagogicos();
+  });
+}
+
+const SYSTEM_PROMPT_APOIO_PEDAGOGICO = `Você atuará como um Especialista em Observação Pedagógica Inclusiva.
+
+Sua função NÃO é diagnosticar crianças nem produzir conclusões clínicas.
+
+Sua função é observar comportamentos dentro do contexto escolar, compreender possíveis relações entre ambiente, aprendizagem, comunicação, regulação emocional e interação social e transformar essas observações em orientações pedagógicas práticas.
+
+Você possui conhecimentos sólidos sobre:
+
+• Desenvolvimento Infantil
+• Educação Inclusiva
+• Educação Especial
+• Práticas Montessori
+• Neurodesenvolvimento
+• TEA
+• TDAH
+• Deficiência Intelectual
+• Altas Habilidades/Superdotação
+• Transtornos de Aprendizagem
+• Processamento Sensorial
+• Comunicação Alternativa
+• ABA (como referência científica, sem transformar toda análise em intervenção ABA)
+• Psicologia do Desenvolvimento
+• Psicopedagogia
+• Funções Executivas
+• Autorregulação
+• Aprendizagem baseada em evidências
+
+Seu olhar principal é PEDAGÓGICO.
+
+Você compreende que o comportamento é influenciado por múltiplos fatores:
+
+- ambiente;
+- rotina;
+- demandas acadêmicas;
+- comunicação;
+- relações sociais;
+- processamento sensorial;
+- estado emocional;
+- previsibilidade;
+- autonomia;
+- motivação;
+- interesses da criança.
+
+Nunca afirme que uma criança "faz porque quer".
+
+Sempre investigue:
+
+"O que esse comportamento pode estar comunicando?"
+
+Evite rótulos.
+
+Evite interpretações moralizantes.
+
+Evite conclusões precipitadas.
+
+Sempre considere que diferentes hipóteses podem explicar o mesmo comportamento.
+
+Sempre diferencie:
+
+• fato observado
+• interpretação
+• hipótese
+• necessidade de novas observações
+
+Ao receber uma observação, responda utilizando exatamente esta estrutura:
+
+# 1. Descrição objetiva
+
+Reescreva os fatos observáveis sem julgamentos.
+
+Exemplo:
+
+"A criança permaneceu em pé durante aproximadamente 8 minutos enquanto os colegas realizavam atividade escrita."
+
+Nunca escreva:
+
+"A criança estava desobedecendo."
+
+---
+
+# 2. Contexto
+
+Analise:
+
+• momento da rotina
+
+• ambiente
+
+• quantidade de estímulos
+
+• demandas
+
+• pessoas envolvidas
+
+• mudanças ocorridas
+
+---
+
+# 3. Possíveis funções do comportamento
+
+Levante hipóteses considerando:
+
+- busca de informação
+- fuga de demanda
+- busca de previsibilidade
+- necessidade sensorial
+- comunicação
+- acesso a objetos
+- interação social
+- autorregulação
+- dificuldade executiva
+- ansiedade
+- dificuldade de compreensão
+
+Explique cada hipótese.
+
+Nunca escolha apenas uma hipótese.
+
+---
+
+# 4. Aspectos do desenvolvimento envolvidos
+
+Analise possíveis relações com:
+
+• atenção
+
+• linguagem
+
+• comunicação
+
+• flexibilidade cognitiva
+
+• funções executivas
+
+• planejamento
+
+• memória de trabalho
+
+• coordenação motora
+
+• autorregulação
+
+• habilidades sociais
+
+• autonomia
+
+---
+
+# 5. Barreiras observadas
+
+Identifique barreiras pedagógicas.
+
+Não descreva apenas dificuldades da criança.
+
+Observe:
+
+- ambiente
+
+- metodologia
+
+- comunicação
+
+- previsibilidade
+
+- recursos
+
+- tempo
+
+- mediação
+
+---
+
+# 6. Potencialidades
+
+Sempre identifique pontos fortes.
+
+Exemplos:
+
+interesses
+
+habilidades
+
+preferências
+
+formas de aprender
+
+competências sociais
+
+iniciativas
+
+autonomia existente
+
+---
+
+# 7. Estratégias pedagógicas
+
+Proponha estratégias concretas.
+
+Sempre explique POR QUE cada estratégia pode funcionar.
+
+Priorize adaptações de ambiente antes de mudanças comportamentais.
+
+---
+
+# 8. O que observar nas próximas semanas
+
+Elabore perguntas investigativas.
+
+Exemplo:
+
+"O comportamento ocorre apenas durante atividades escritas?"
+
+"Ocorre em outros ambientes?"
+
+"Existe relação com ruído?"
+
+---
+
+# 9. Quando compartilhar com a equipe clínica
+
+Indique somente quando pertinente.
+
+Explique quais informações podem ser úteis para psicólogo, TO, fonoaudiólogo, neuropediatra ou outros profissionais.
+
+Nunca solicite encaminhamento sem justificativa.
+
+---
+
+# 10. Síntese
+
+Produza um resumo objetivo em linguagem acessível para professores e famílias.
+
+Tom:
+
+acolhedor
+
+científico
+
+ético
+
+baseado em evidências
+
+sem diagnósticos
+
+sem rótulos
+
+sem culpabilização.
+
+Sempre utilize linguagem centrada na pessoa e respeitosa.
+
+O objetivo final é compreender a criança para apoiar sua aprendizagem, participação e desenvolvimento, promovendo práticas inclusivas.
+
+NÃO USAR TERMOS CLÍNICOS, NÃO SUGERIR HIPÓTESE DIAGNÓSTICA, NÃO TRAZER PARA O USUÁRIO NADA QUE REMETA A UM RELATÓRIO CLÍNICO.
+
+# INTEGRAÇÃO COM OS DADOS FORNECIDOS PELO PROFISSIONAL
+Você vai receber: trecho de laudo/relatório da equipe multidisciplinar, relato da situação, contexto escolar, tentativas já feitas pela escola, objetivos que a equipe clínica já orienta para este aluno, e perguntas de aprofundamento com respostas do profissional. Use TODOS esses dados nas seções acima — nunca invente ou presuma além do que foi informado; se um dado necessário não foi fornecido, diga "não há informação suficiente sobre X" em vez de completar a lacuna. Na seção 7 (Estratégias pedagógicas), toda estratégia proposta precisa estar em harmonia com os objetivos que a equipe clínica já definiu (informados pelo profissional) — nunca contradizer ou propor um caminho pedagógico paralelo e desalinhado. Na seção 9, avalie explicitamente se algo do que foi observado merece ser compartilhado com a equipe clínica já envolvida no caso.
+
+Escreva sempre em português correto, com acentuação e cedilha. Não use emojis. Não use markdown com asteriscos duplos para negrito. Nunca use tabelas em formato markdown — use listas com marcadores.`;
+
+async function processarLaudoApoio(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('ap-laudo-status');
+  const campo = document.getElementById('ap-laudo-texto');
+  status.style.display = 'block';
+  status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
+  status.textContent = 'Lendo arquivo…';
+  try {
+    let texto = '';
+    if (file.name.endsWith('.pdf')) {
+      texto = await extrairTextoPDF(file);
+      if (!texto.trim()) texto = await extrairTextoPDFComOCR(file, status);
+    }
+    else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) texto = await extrairTextoDOCX(file);
+    else { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Formato não suportado. Use PDF ou DOCX.'; return; }
+    if (!texto.trim()) { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Não foi possível extrair texto, mesmo com OCR. Cole manualmente.'; return; }
+    campo.value = (campo.value ? campo.value + '\n\n---\n\n' : '') + texto.trim();
+    status.style.background = '#F0FDF4'; status.style.color = '#166534';
+    status.textContent = 'Laudo importado com sucesso.';
+  } catch(e) {
+    status.style.background = '#FEF2F2'; status.style.color = '#991B1B';
+    status.textContent = 'Erro ao ler o arquivo: ' + (e.message || 'tente outro formato.');
+  }
+  input.value = '';
+}
+
+function coletarDadosFase1Apoio() {
+  return {
+    alunoNome: document.getElementById('ap-aluno')?.value.trim() || '',
+    laudo: document.getElementById('ap-laudo-texto')?.value.trim() || '',
+    relato: document.getElementById('ap-relato')?.value.trim() || '',
+    contexto: document.getElementById('ap-contexto')?.value.trim() || '',
+    tentativas: document.getElementById('ap-tentativas')?.value.trim() || '',
+    objetivosClinicos: document.getElementById('ap-objetivos-clinicos')?.value.trim() || ''
+  };
+}
+
+async function avancarApoioPedagogico() {
+  const d = coletarDadosFase1Apoio();
+  if (!d.laudo) return toast('Anexe o laudo/relatório da equipe multidisciplinar antes de continuar.', 'error');
+  if (!d.relato) return toast('Descreva o que foi observado em sala.', 'error');
+  if (!d.contexto) return toast('Descreva o contexto escolar.', 'error');
+  if (!d.tentativas) return toast('Descreva o que já foi tentado pela escola.', 'error');
+  if (!d.objetivosClinicos) return toast('Informe os objetivos que a equipe clínica já definiu, conforme o laudo anexado.', 'error');
+
+  const btn = document.getElementById('ap-btn-continuar');
+  btn.disabled = true;
+  const prompt = `Você vai apoiar a elaboração de uma proposta pedagógica para um aluno, a partir dos dados abaixo. Antes de gerar a proposta final, identifique o que está faltando para não presumir nada sobre o caso.
+
+Aluno: ${d.alunoNome || 'não identificado'}
+
+Trecho de laudo/relatório da equipe multidisciplinar:
+${d.laudo}
+
+O que foi observado em sala:
+${d.relato}
+
+Contexto escolar:
+${d.contexto}
+
+O que já foi tentado pela escola:
+${d.tentativas}
+
+Objetivos/orientações que a equipe clínica já definiu:
+${d.objetivosClinicos}
+
+Gere exatamente 4 perguntas objetivas e específicas para ESTE caso (nunca genéricas) que, se respondidas, eliminam qualquer necessidade de suposição na hora de montar a proposta pedagógica. Nunca peça informação clínica que já deveria constar no laudo — foque em detalhes pedagógicos e práticos que faltam.
+
+Responda APENAS no formato abaixo, uma pergunta por linha, sem numeração e sem nenhum texto antes ou depois:
+PERGUNTA: [pergunta 1]
+PERGUNTA: [pergunta 2]
+PERGUNTA: [pergunta 3]
+PERGUNTA: [pergunta 4]`;
+
+  try {
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 500, modulo: 'analise-comportamental' });
+    const perguntas = [...textoBruto.matchAll(/PERGUNTA:\s*(.+)/g)].map(m => m[1].trim()).filter(Boolean).slice(0, 4);
+    if (!perguntas.length) throw new Error('A Lou não conseguiu gerar as perguntas. Tente novamente.');
+    window._apoioFase1 = d;
+    window._apoioPerguntas = perguntas;
+    document.getElementById('ap-perguntas-ia').innerHTML = perguntas.map((p, i) => `
+      <div class="fblock"><label class="flabel">${p}</label><textarea id="ap-resposta-${i}" class="ftarea sm" placeholder="Sua resposta…"></textarea></div>
+    `).join('');
+    document.getElementById('ap-fase2').style.display = '';
+    document.getElementById('ap-fase2').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function gerarApoioPedagogicoFinal() {
+  const d = window._apoioFase1;
+  const perguntas = window._apoioPerguntas || [];
+  if (!d || !perguntas.length) return toast('Reinicie o formulário — sessão perdida.', 'error');
+
+  const respostas = perguntas.map((p, i) => {
+    const r = document.getElementById(`ap-resposta-${i}`)?.value.trim() || '';
+    return { pergunta: p, resposta: r };
+  });
+  if (respostas.some(r => !r.resposta)) return toast('Responda todas as perguntas de aprofundamento.', 'error');
+
+  const btn = document.getElementById('ap-btn-gerar');
+  btn.disabled = true;
+  document.getElementById('ap-resultado-box').style.display = 'none';
+
+  const blocoPerguntas = respostas.map(r => `Pergunta: ${r.pergunta}\nResposta: ${r.resposta}`).join('\n\n');
+
+  const prompt = `${SYSTEM_PROMPT_APOIO_PEDAGOGICO}
+
+DADOS FORNECIDOS PELO PROFISSIONAL:
+Aluno: ${d.alunoNome || 'não identificado'}
+
+Trecho de laudo/relatório da equipe multidisciplinar:
+${d.laudo}
+
+O que foi observado em sala:
+${d.relato}
+
+Contexto escolar:
+${d.contexto}
+
+O que já foi tentado pela escola:
+${d.tentativas}
+
+Objetivos/orientações que a equipe clínica já definiu:
+${d.objetivosClinicos}
+
+Perguntas de aprofundamento e respostas do profissional:
+${blocoPerguntas}
+
+Gere a proposta pedagógica completa seguindo o formato de saída do seu papel.`;
+
+  try {
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'analise-comportamental' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+    const alunoId = document.getElementById('ap-aluno-sel')?.value || null;
+    window._ultimoApoioPedagogico = { texto, aluno: d.alunoNome };
+    document.getElementById('ap-resultado-texto').textContent = texto;
+    document.getElementById('ap-resultado-box').style.display = 'block';
+    document.getElementById('ap-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    renderizarWidgetConsumoIA();
+
+    const { error: erroSalvar } = await db.from('apoios_pedagogicos').insert({
+      user_id: user.id,
+      aluno_id: alunoId,
+      aluno_nome: d.alunoNome || null,
+      relato: d.relato,
+      resultado: texto
+    });
+    if (erroSalvar) console.warn('Erro ao salvar apoio pedagógico no histórico:', erroSalvar.message);
+    else carregarApoiosPedagogicos();
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function carregarApoiosPedagogicos() {
+  const lista = document.getElementById('ap-lista-salvas');
+  if (!lista) return;
+  const { data, error } = await db.from('apoios_pedagogicos')
+    .select('id, aluno_nome, resultado, created_at')
+    .order('created_at', { ascending: false })
+    .limit(20);
+  if (error || !data?.length) { lista.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhuma proposta salva ainda.</p>'; return; }
+  lista.innerHTML = data.map(r => `
+    <div class="ic-card" style="cursor:pointer" onclick='abrirApoioSalvo(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="ic-nome">${r.aluno_nome || '(sem nome)'}</div>
+      <div style="font-size:11px;color:var(--gr400)">${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>
+  `).join('');
+}
+
+function abrirApoioSalvo(r) {
+  fecharModal('modal-perfil-aluno');
+  showPage('apoio-pedagogico');
+  document.getElementById('ap-fase1').style.display = 'none';
+  document.getElementById('ap-fase2').style.display = 'none';
+  window._ultimoApoioPedagogico = { texto: r.resultado, aluno: r.aluno_nome || '' };
+  document.getElementById('ap-resultado-texto').textContent = r.resultado;
+  document.getElementById('ap-resultado-box').style.display = 'block';
+  setTimeout(() => document.getElementById('ap-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+}
+
+function baixarPDFApoioPedagogico() {
+  const dados = window._ultimoApoioPedagogico;
+  if (!dados) return toast('Gere uma proposta primeiro.', 'error');
+  gerarPDFDocumento({
+    tipo: 'APOIO',
+    titulo: 'Apoio Pedagógico',
+    subtitulo: 'Uso profissional — não substitui avaliação formal',
+    semAssinatura: true,
+    aluno: dados.aluno || 'Não identificado',
+    professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
+    conteudo: dados.texto,
+    nomeArquivo: 'Apoio_Pedagogico_' + (dados.aluno||'aluno').replace(/\s+/g,'_'),
     isAtividade: false
   });
 }
@@ -8227,54 +8745,67 @@ function renderPages() {
     </div>
   </div>
 
-  <div id="page-analise-comp" class="page">
-    <h1 class="page-title">Análise e Estratégias Pedagógicas</h1>
-    <p class="page-sub">Organiza observações do dia a dia em estratégias individualizadas, respeitando o ritmo e as potencialidades do aluno. Não substitui avaliação formal.</p>
-    <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico. Todo conteúdo gerado deve ser validado por profissional habilitado (psicólogo, neuropsicólogo, psiquiatra ou médico) antes de qualquer comunicação à família.</div>
+  <div id="page-apoio-pedagogico" class="page">
+    <h1 class="page-title">Apoio Pedagógico</h1>
+    <p class="page-sub">Estratégias pedagógicas individualizadas, construídas em diálogo com o que a equipe clínica já orienta para este aluno. Não substitui avaliação formal.</p>
+    <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico e não interpreta comportamento clínico — apenas organiza estratégias pedagógicas alinhadas ao que já foi definido pela equipe clínica responsável. Todo conteúdo gerado deve ser lido de forma crítica pela equipe pedagógica.</div>
 
-    <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios (opcional)</div><div class="pei-step-sub">Anexe laudos, relatórios terapêuticos ou avaliações já existentes para enriquecer a análise</div></div></div>
-      <button type="button" class="btn-copy" onclick="document.getElementById('ac-inp-laudo').click()">📎 Anexar PDF ou Word</button>
-      <input type="file" id="ac-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoAnalise(this)">
-      <div id="ac-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
-      <textarea id="ac-laudo-texto" class="ftarea sm" style="margin-top:10px" placeholder="Texto extraído do laudo aparecerá aqui — você pode editar ou colar diretamente"></textarea>
-    </div>
-
-    <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação (opcional)</div><div class="pei-step-sub">Vincule a um aluno já cadastrado para salvar no histórico dele, ou digite o nome manualmente</div></div></div>
-      <div class="fblock"><label class="flabel" for="ac-aluno-sel">Aluno cadastrado</label>
-        <select id="ac-aluno-sel" class="fselect" onchange="document.getElementById('ac-aluno').value = alunosCad.find(a=>a.id===this.value)?.nome || document.getElementById('ac-aluno').value"><option value="">Nenhum — digitar manualmente abaixo</option></select>
+    <div id="ap-fase1">
+      <div class="pei-step">
+        <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Aluno</div></div></div>
+        <div class="fblock"><label class="flabel" for="ap-aluno-sel">Aluno cadastrado</label>
+          <select id="ap-aluno-sel" class="fselect" onchange="document.getElementById('ap-aluno').value = alunosCad.find(a=>a.id===this.value)?.nome || document.getElementById('ap-aluno').value"><option value="">Selecione um aluno cadastrado</option></select>
+        </div>
+        <div class="fblock"><label class="flabel" for="ap-aluno">Nome do aluno</label><input type="text" id="ap-aluno" class="finput" placeholder="Ex: João Pedro"></div>
       </div>
-      <div class="fblock"><label class="flabel" for="ac-aluno">Nome do aluno/paciente</label><input type="text" id="ac-aluno" class="finput" placeholder="Ex: João Pedro"></div>
-    </div>
 
-    <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Relato da situação observada</div><div class="pei-step-sub">Descreva livremente — quanto mais detalhado, melhor a análise</div></div></div>
-      <div class="fblock"><label class="flabel" for="ac-relato">O que foi observado (comportamento, frequência, duração)</label><textarea id="ac-relato" class="ftarea" style="min-height:140px" placeholder="Ex: Nas últimas 3 semanas, durante a transição do recreio para a sala, a criança grita e se joga no chão por cerca de 2 minutos, cerca de 3x por semana..."></textarea></div>
-      <div class="frow">
-        <div><label class="flabel" for="ac-gatilho">Contexto/gatilho identificado</label><textarea id="ac-gatilho" class="ftarea sm" placeholder="Ex: sempre após atividades com muito ruído; quando é solicitado a parar uma atividade preferida..."></textarea></div>
-        <div><label class="flabel" for="ac-tentativas">O que já foi tentado</label><textarea id="ac-tentativas" class="ftarea sm" placeholder="Ex: aviso antecipado de 5 min antes da transição; uso de timer visual..."></textarea></div>
+      <div class="pei-step">
+        <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudo ou relatório da equipe multidisciplinar (obrigatório)</div><div class="pei-step-sub">Sem este documento a proposta não pode ser gerada — o objetivo é somar à equipe clínica, nunca substituí-la</div></div></div>
+        <button type="button" class="btn-copy" onclick="document.getElementById('ap-inp-laudo').click()">📎 Anexar PDF ou Word</button>
+        <input type="file" id="ap-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoApoio(this)">
+        <div id="ap-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+        <textarea id="ap-laudo-texto" class="ftarea sm" style="margin-top:10px" placeholder="Texto extraído do laudo aparecerá aqui — você pode editar ou colar diretamente"></textarea>
       </div>
-      <div class="fblock"><label class="flabel" for="ac-instrumentos">Instrumentos já aplicados (se houver)</label><textarea id="ac-instrumentos" class="ftarea sm" placeholder="Ex: M-CHAT aplicado em [data], escore X; escala Vineland..."></textarea></div>
+
+      <div class="pei-step">
+        <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Relato e alinhamento com a equipe clínica</div><div class="pei-step-sub">Todos os campos abaixo são obrigatórios — quanto mais preciso, mais fiel a proposta</div></div></div>
+        <div class="fblock"><label class="flabel" for="ap-relato">O que foi observado em sala (situação, frequência, contexto)</label><textarea id="ap-relato" class="ftarea" style="min-height:120px" placeholder="Ex: Nas últimas semanas, durante atividades em grupo, o aluno se afasta e não participa das propostas coletivas..."></textarea></div>
+        <div class="frow">
+          <div><label class="flabel" for="ap-contexto">Contexto escolar (rotina, interação, adaptação à sala)</label><textarea id="ap-contexto" class="ftarea sm" placeholder="Ex: adaptação à sala, interação com colegas, participação em atividades coletivas..."></textarea></div>
+          <div><label class="flabel" for="ap-tentativas">O que já foi tentado pela escola</label><textarea id="ap-tentativas" class="ftarea sm" placeholder="Ex: rotina visual, tempo extra, mediação do adulto..."></textarea></div>
+        </div>
+        <div class="fblock"><label class="flabel" for="ap-objetivos-clinicos">Objetivos e orientações que a equipe clínica já definiu para este aluno</label><textarea id="ap-objetivos-clinicos" class="ftarea sm" placeholder="Ex: segundo o laudo/relatório anexado, a equipe já orienta trabalhar autonomia em transições e comunicação funcional..."></textarea></div>
+      </div>
+
+      <button class="btn-gerar" id="ap-btn-continuar" onclick="avancarApoioPedagogico()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Continuar — a Lou vai perguntar o que falta
+      </button>
     </div>
 
-    <button class="btn-gerar" id="ac-btn-gerar" onclick="gerarAnaliseComportamental()">
-      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
-      Gerar análise com a Lou
-    </button>
+    <div id="ap-fase2" style="display:none;margin-top:20px">
+      <div class="pei-step">
+        <div class="pei-step-header"><div class="pei-step-num">4</div><div><div class="pei-step-title">Perguntas de aprofundamento</div><div class="pei-step-sub">A Lou identificou o que falta para não presumir nada — responda todas antes de gerar a proposta</div></div></div>
+        <div id="ap-perguntas-ia"></div>
+      </div>
+      <button class="btn-gerar" id="ap-btn-gerar" onclick="gerarApoioPedagogicoFinal()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Gerar proposta pedagógica com a Lou
+      </button>
+    </div>
 
-    <div class="result-card show" id="ac-resultado-box" style="display:none;margin-top:20px">
-      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Relatório gerado</h3>
-      <div id="ac-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
+    <div class="result-card show" id="ap-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Proposta gerada</h3>
+      <div id="ap-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
       <div class="result-actions">
-        <button class="btn-copy" onclick="copiarAdapt('ac-resultado-texto')">Copiar texto</button>
-        <button class="btn-copy" onclick="baixarPDFAnaliseComp()">Baixar PDF</button>
+        <button class="btn-copy" onclick="copiarAdapt('ap-resultado-texto')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFApoioPedagogico()">Baixar PDF</button>
       </div>
     </div>
 
     <div style="margin-top:28px">
-      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Análises salvas</h3>
-      <div class="cards-grid" id="ac-lista-salvas"></div>
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Propostas salvas</h3>
+      <div class="cards-grid" id="ap-lista-salvas"></div>
     </div>
   </div>
 
@@ -9167,6 +9698,70 @@ function renderPagesGestao() {
 
     <h2 class="page-title" style="font-size:16px;margin-bottom:10px">Estudos de Caso salvos</h2>
     <div class="cards-grid" id="ec-lista-salvos"><p style="color:var(--gr400);font-size:13px">Nenhum estudo de caso registrado ainda.</p></div>
+  </div>
+
+  <div id="page-apoio-pedagogico" class="page">
+    <h1 class="page-title">Apoio Pedagógico</h1>
+    <p class="page-sub">Estratégias pedagógicas individualizadas, construídas em diálogo com o que a equipe clínica já orienta para este aluno. Não substitui avaliação formal.</p>
+    <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico e não interpreta comportamento clínico — apenas organiza estratégias pedagógicas alinhadas ao que já foi definido pela equipe clínica responsável. Todo conteúdo gerado deve ser lido de forma crítica pela equipe pedagógica.</div>
+
+    <div id="ap-fase1">
+      <div class="pei-step">
+        <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Aluno</div></div></div>
+        <div class="fblock"><label class="flabel" for="ap-aluno-sel">Aluno cadastrado</label>
+          <select id="ap-aluno-sel" class="fselect" onchange="document.getElementById('ap-aluno').value = alunosCad.find(a=>a.id===this.value)?.nome || document.getElementById('ap-aluno').value"><option value="">Selecione um aluno cadastrado</option></select>
+        </div>
+        <div class="fblock"><label class="flabel" for="ap-aluno">Nome do aluno</label><input type="text" id="ap-aluno" class="finput" placeholder="Ex: João Pedro"></div>
+      </div>
+
+      <div class="pei-step">
+        <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudo ou relatório da equipe multidisciplinar (obrigatório)</div><div class="pei-step-sub">Sem este documento a proposta não pode ser gerada — o objetivo é somar à equipe clínica, nunca substituí-la</div></div></div>
+        <button type="button" class="btn-copy" onclick="document.getElementById('ap-inp-laudo').click()">📎 Anexar PDF ou Word</button>
+        <input type="file" id="ap-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoApoio(this)">
+        <div id="ap-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+        <textarea id="ap-laudo-texto" class="ftarea sm" style="margin-top:10px" placeholder="Texto extraído do laudo aparecerá aqui — você pode editar ou colar diretamente"></textarea>
+      </div>
+
+      <div class="pei-step">
+        <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Relato e alinhamento com a equipe clínica</div><div class="pei-step-sub">Todos os campos abaixo são obrigatórios — quanto mais preciso, mais fiel a proposta</div></div></div>
+        <div class="fblock"><label class="flabel" for="ap-relato">O que foi observado em sala (situação, frequência, contexto)</label><textarea id="ap-relato" class="ftarea" style="min-height:120px" placeholder="Ex: Nas últimas semanas, durante atividades em grupo, o aluno se afasta e não participa das propostas coletivas..."></textarea></div>
+        <div class="frow">
+          <div><label class="flabel" for="ap-contexto">Contexto escolar (rotina, interação, adaptação à sala)</label><textarea id="ap-contexto" class="ftarea sm" placeholder="Ex: adaptação à sala, interação com colegas, participação em atividades coletivas..."></textarea></div>
+          <div><label class="flabel" for="ap-tentativas">O que já foi tentado pela escola</label><textarea id="ap-tentativas" class="ftarea sm" placeholder="Ex: rotina visual, tempo extra, mediação do adulto..."></textarea></div>
+        </div>
+        <div class="fblock"><label class="flabel" for="ap-objetivos-clinicos">Objetivos e orientações que a equipe clínica já definiu para este aluno</label><textarea id="ap-objetivos-clinicos" class="ftarea sm" placeholder="Ex: segundo o laudo/relatório anexado, a equipe já orienta trabalhar autonomia em transições e comunicação funcional..."></textarea></div>
+      </div>
+
+      <button class="btn-gerar" id="ap-btn-continuar" onclick="avancarApoioPedagogico()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Continuar — a Lou vai perguntar o que falta
+      </button>
+    </div>
+
+    <div id="ap-fase2" style="display:none;margin-top:20px">
+      <div class="pei-step">
+        <div class="pei-step-header"><div class="pei-step-num">4</div><div><div class="pei-step-title">Perguntas de aprofundamento</div><div class="pei-step-sub">A Lou identificou o que falta para não presumir nada — responda todas antes de gerar a proposta</div></div></div>
+        <div id="ap-perguntas-ia"></div>
+      </div>
+      <button class="btn-gerar" id="ap-btn-gerar" onclick="gerarApoioPedagogicoFinal()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Gerar proposta pedagógica com a Lou
+      </button>
+    </div>
+
+    <div class="result-card show" id="ap-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Proposta gerada</h3>
+      <div id="ap-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copiarAdapt('ap-resultado-texto')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFApoioPedagogico()">Baixar PDF</button>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Propostas salvas</h3>
+      <div class="cards-grid" id="ap-lista-salvas"></div>
+    </div>
   </div>
 
   <!-- GESTÃO: TODOS OS PEIs -->
