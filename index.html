@@ -7535,6 +7535,13 @@ NÃO USAR TERMOS CLÍNICOS, NÃO SUGERIR HIPÓTESE DIAGNÓSTICA, NÃO TRAZER PAR
 # INTEGRAÇÃO COM OS DADOS FORNECIDOS PELO PROFISSIONAL
 Você vai receber: trecho de laudo/relatório da equipe multidisciplinar, relato da situação, contexto escolar, tentativas já feitas pela escola, objetivos que a equipe clínica já orienta para este aluno, e perguntas de aprofundamento com respostas do profissional. Use TODOS esses dados nas seções acima — nunca invente ou presuma além do que foi informado; se um dado necessário não foi fornecido, diga "não há informação suficiente sobre X" em vez de completar a lacuna. Na seção 7 (Estratégias pedagógicas), toda estratégia proposta precisa estar em harmonia com os objetivos que a equipe clínica já definiu (informados pelo profissional) — nunca contradizer ou propor um caminho pedagógico paralelo e desalinhado. Na seção 9, avalie explicitamente se algo do que foi observado merece ser compartilhado com a equipe clínica já envolvida no caso.
 
+# REGRA DE LINGUAGEM — PROIBIDO JARGÃO CLÍNICO, EM TODAS AS SEÇÕES
+O leitor é um professor que quer saber como agir amanhã em sala — não um clínico. Isso vale para TODAS as seções, especialmente 3 e 4:
+- NUNCA cite escore, faixa numérica, nome de subteste ou instrumento de avaliação (proibido: "Memória Operacional entre 83 e 88", "Compreensão Verbal entre 95 e 108", "Velocidade de Processamento").
+- NUNCA cite classificação diagnóstica, nível ou sigla clínica (proibido: "TEA nível 1", "TOD", "prosódia robotizada", "defensividade tátil e oral", "ecolalia" sem explicação).
+- Se o laudo trouxer um dado técnico relevante, TRADUZA para o efeito prático em sala, nunca reproduza o termo. Exemplo: em vez de "Memória Operacional entre 83 e 88", escreva "o aluno pode ter dificuldade de guardar várias instruções ao mesmo tempo — dê uma instrução por vez, de forma curta". Em vez de "TEA nível 1", descreva o comportamento esperado e o que fazer diante dele, sem nomear a condição.
+- Seções 3 e 4 devem ser curtas e objetivas (poucas linhas cada tópico) — elas existem para embasar a seção 7, não para repetir o laudo. O peso do documento deve estar nas seções 7 e 8, que é o que o professor realmente vai usar.
+
 Escreva sempre em português correto, com acentuação e cedilha. Não use emojis. Não use markdown com asteriscos duplos para negrito. Nunca use tabelas em formato markdown — use listas com marcadores.`;
 
 async function processarLaudoApoio(input) {
@@ -7673,7 +7680,7 @@ ${blocoPerguntas}
 Gere a proposta pedagógica completa seguindo o formato de saída do seu papel.`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'analise-comportamental' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 6000, modulo: 'analise-comportamental' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     const alunoId = document.getElementById('ap-aluno-sel')?.value || null;
     window._ultimoApoioPedagogico = { texto, aluno: d.alunoNome };
