@@ -10138,6 +10138,127 @@ function renderPagesClinica() {
     </div>
   </div>
 
+  ${userSubRole === 'adaptacao' ? `
+  <div id="page-nova" class="page">
+    <h1 class="page-title">Nova adaptação</h1>
+    <p class="page-sub">Quanto mais detalhes você fornecer, mais precisa será a adaptação gerada pela IA.</p>
+    <div class="info-banner"><strong>Dica:</strong> Selecione um paciente vinculado a você para preencher os dados automaticamente.</div>
+
+    <div class="fcard">
+      <div class="fcard-title">Dados do paciente</div>
+      <div id="painel-cadastrado" class="show">
+        <div class="fblock"><label class="flabel" for="aluno-search">Buscar paciente</label>
+          <div class="aluno-selector">
+            <input class="aluno-search" id="aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSel()">
+            <div id="aluno-lista-sel"></div>
+          </div>
+        </div>
+        <div class="aluno-sel-info" id="aluno-sel-info"></div>
+      </div>
+        <div class="frow">
+          <div><label class="flabel" for="inp-aluno">Nome do paciente</label><input type="text" id="inp-aluno" class="finput" placeholder="Ex: João Silva"></div>
+          <div><label class="flabel" for="inp-idade">Idade</label><select id="inp-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option><option>20 anos ou mais</option></select></div>
+        </div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">Matéria e tipo de atividade</div>
+      <div class="frow">
+        <div><label class="flabel" for="inp-materia">Matéria / Área</label>
+          <select id="inp-materia" class="fselect" onchange="atualizarTemplates()">
+            <option value="">Selecione</option>
+            <optgroup label="Montessori">
+              <option>Educação Cósmica</option><option>Vida Prática</option><option>Linguagem Oral e Escrita (Montessori)</option><option>Matemática (Montessori)</option><option>Sensorial</option><option>Cultura Geral</option><option>Arte e Expressão</option><option>Movimento e Coordenação</option><option>Botânica e Zoologia</option><option>Geografia e Geologia</option><option>História do Universo</option><option>Educação para a Paz</option>
+            </optgroup>
+            <optgroup label="Convencional">
+              <option>Língua Portuguesa</option><option>Matemática</option><option>Ciências da Natureza</option><option>História</option><option>Geografia</option><option>Artes</option><option>Educação Física</option><option>Língua Inglesa</option><option>Filosofia</option><option>Sociologia</option><option>Biologia</option><option>Física</option><option>Química</option><option>Ensino Religioso</option><option>Redação e Produção Textual</option>
+            </optgroup>
+            <optgroup label="Outros">
+              <option>Projeto de Vida / Protagonismo</option><option>Tecnologia e Computação</option><option>Música</option><option>Teatro e Expressão Dramática</option><option>Atividade Multidisciplinar</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Templates de atividade</label>
+          <div class="templates-grid" id="templates-grid"><span style="font-size:12px;color:var(--gr400)">Selecione uma matéria</span></div>
+        </div>
+      </div>
+      <div class="fblock"><label class="flabel" for="inp-tipo-livre">Ou descreva livremente o tipo de atividade</label><input type="text" id="inp-tipo-livre" class="finput" placeholder="Ex: Avaliação oral com apoio visual, atividade em dupla com mediação…"></div>
+    </div>
+
+   <div class="fcard">
+      <div class="fcard-title">Conteúdo a adaptar</div>
+      <div class="fblock">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label class="flabel" for="inp-conteudo" style="margin:0">Cole aqui o texto, atividade ou enunciado original</label>
+          <button type="button" id="btn-upload-arquivo" onclick="uploadArquivoAdaptacao()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#EEF2FF;color:#2563EB;border:1.5px solid rgba(37,99,235,.2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 7l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Importar PDF ou Word
+          </button>
+          <input type="file" id="inp-arquivo-adaptacao" accept=".pdf,.doc,.docx" style="display:none" onchange="processarArquivoAdaptacao(this)">
+        </div>
+        <div id="upload-status" style="display:none;font-size:12px;color:#2563EB;margin-bottom:6px;padding:6px 10px;background:#EEF2FF;border-radius:6px"></div>
+                <textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea>
+      </div>
+
+      <!-- Contexto do aluno para a IA -->
+      <div style="margin-top:16px;padding:16px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:12px">
+        <div style="font-size:13px;font-weight:700;color:#1E3A8A;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#1E3A8A" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round"/></svg>
+          Contexto do Paciente para a IA <span style="font-weight:400;font-size:11px;color:#6B7DBF">(opcional — quanto mais informação, melhor a proposta)</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label class="flabel" for="inp-ctx-diagnostico">Diagnóstico / CID</label>
+            <input type="text" id="inp-ctx-diagnostico" class="finput" placeholder="Ex: TEA (F84.0), TDAH (F90), Dislexia…" style="margin-top:4px">
+          </div>
+          <div>
+            <label class="flabel" for="inp-ctx-limitacoes">Limitações</label>
+            <textarea id="inp-ctx-limitacoes" class="ftarea" rows="2" placeholder="Ex: dificuldade de concentração por mais de 10 min, não lê textos longos, dificuldade motora fina…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+          <div>
+            <label class="flabel" for="inp-ctx-potencialidades">Potencialidades</label>
+            <textarea id="inp-ctx-potencialidades" class="ftarea" rows="2" placeholder="Ex: boa memória visual, interesse por animais, responde bem a histórias e jogos…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+          <div>
+            <label class="flabel" for="inp-ctx-obs">Outras observações</label>
+            <textarea id="inp-ctx-obs" class="ftarea" rows="2" placeholder="Ex: usa CAA, tem apoio de AT em sala, prefere trabalhar em dupla…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>             <option value="georgia">Georgia</option>             <option value="trebuchet">Trebuchet MS</option>             <option value="palatino">Palatino</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>       </div>       <!-- Opções de saída -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
+          <input type="checkbox" id="inp-pictogramas" style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+          <span>🖼️ Incluir pictogramas na atividade do paciente</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
+          <input type="checkbox" id="inp-guia-prof" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+          <span>📋 Incluir guia de aplicação no PDF</span>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar adaptação com a Lou
+    </button>
+    <div class="gen-box" id="gen-box"><div class="spin"></div><span>IA gerando adaptação personalizada…</span></div>
+    <div class="result-card" id="result-card">
+      <div class="result-header">
+        <div class="result-title">Adaptação gerada pela IA</div>
+        <div class="result-badge" id="result-badge">—</div>
+      </div>
+      <div class="result-text" id="result-text"></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
+        <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
+        <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
+      </div>
+    </div>
+  </div>` : ''}
+
   <div id="page-clinica-perfil" class="page">
     <div class="clinic-hero"><h2> Módulo Clínico — Perfil Funcional</h2><p>Construa o perfil funcional do aluno. Essas informações alimentam o plano de intervenção integrado e os relatórios para escola e AT.</p></div>
     <div class="section-header">
