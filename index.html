@@ -3829,7 +3829,7 @@ async function iniciarApp() {
   const cfg = colorMap[userRole] || colorMap['professor'];
 
   if (userRole === 'clinica') {
-    const subLabel = { fono:'Fono', fisio:'Fisio', to:'TO', psicopedagogo:'Psicopedagogo', psicologo:'Psicólogo', musicoterapeuta:'Musicoterapeuta', psicomotricista:'Psicomotricista', outro:'Clínico' }[userSubRole] || 'Clínica';
+    const subLabel = { fono:'Fono', fisio:'Fisio', to:'TO', psicopedagogo:'Psicopedagogo', psicologo:'Psicólogo', musicoterapeuta:'Musicoterapeuta', psicomotricista:'Psicomotricista', adaptacao:'Adaptação', outro:'Clínico' }[userSubRole] || 'Clínica';
     cfg.label = `🏥 ${subLabel}`;
   }
 
@@ -4082,6 +4082,10 @@ function renderNavClinica() {
     <div class="nav-item clinic-item active" id="nav-clinica-dashboard" onclick="showPage('clinica-dashboard');carregarDashboardClinica()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Dashboard
     </div>
+    ${userSubRole === 'adaptacao' ? `
+    <div class="nav-item clinic-item" id="nav-clinica-nova-adapt" onclick="showPage('nova');carregarAlunosAdaptacaoClinica()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova Adaptação
+    </div>` : ''}
     <div class="nav-section">Módulo Clínico</div>
     <div class="nav-item clinic-item" id="nav-clinica-perfil" onclick="showPage('clinica-perfil')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfil Clínico
@@ -7765,7 +7769,7 @@ const ESPECIALIDADE_LABELS = {
   fono:'Fonoaudiologia', fisio:'Fisioterapia', to:'Terapia Ocupacional',
   psicopedagogo:'Psicopedagogia', psicologo:'Psicologia',
   musicoterapeuta:'Musicoterapia', psicomotricista:'Psicomotricidade',
-  at:'Acomp. Terapêutico (AT)', outro:'Outro'
+  at:'Acomp. Terapêutico (AT)', adaptacao:'Adaptação de Atividades', outro:'Outro'
 };
 
 async function salvarProfissionalClinica() {
@@ -11992,6 +11996,12 @@ async function carregarAlunos() {
   renderAlSel();
   renderAlunosLista();
   popularPeiSel();
+}
+
+async function carregarAlunosAdaptacaoClinica() {
+  const { data } = await db.from('alunos').select('*').eq('clinica_email', user.email).order('nome');
+  alunosCad = data || [];
+  renderAlSel();
 }
 
 async function carregarAlunosGestao() {
@@ -16356,6 +16366,7 @@ document.getElementById('page-quem-somos-overlay')?.addEventListener('click', fu
             <option value="musicoterapeuta">Musicoterapia</option>
             <option value="psicomotricista">Psicomotricidade</option>
             <option value="at">Acomp. Terapêutico (AT)</option>
+            <option value="adaptacao">Adaptação de Atividades</option>
             <option value="outro">Outro</option>
           </select>
         </div>
@@ -17112,6 +17123,7 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
               <option value="psicologo">Psicologia</option>
               <option value="musicoterapeuta">Musicoterapia</option>
               <option value="psicomotricista">Psicomotricidade</option>
+              <option value="adaptacao">Adaptação de Atividades</option>
             </select>
           </div>
           <button id="dp-inv-btn" onclick="dpEnviarConvite()" style="background:#2563EB;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Enviar convite</button>
