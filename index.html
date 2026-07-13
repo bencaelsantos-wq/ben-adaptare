@@ -2358,6 +2358,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           <button class="drop-item r-clinica" onclick="selectDrop('clinica','Psicólogo','clinica','psicologo')">Psicologia</button>
           <button class="drop-item r-clinica" onclick="selectDrop('clinica','Musicoterapeuta','clinica','musicoterapeuta')">Musicoterapia</button>
           <button class="drop-item r-clinica" onclick="selectDrop('clinica','Psicomotricista','clinica','psicomotricista')">Psicomotricidade</button>
+          <button class="drop-item r-clinica" onclick="selectDrop('clinica','Adaptação','clinica','adaptacao')">Adaptação de Atividades</button>
         </div>
       </div>
 
@@ -4189,6 +4190,12 @@ function renderNavGestaoClinica() {
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item clinic-item" id="nav-colaboracao-gc" onclick="abrirColaboracao()" style="font-weight:600">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional
+    </div>
+    <div class="nav-item clinic-item" id="nav-gc-diario" onclick="showPage('ponte-diario')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno
+    </div>
+    <div class="nav-item clinic-item" id="nav-gc-objetivos-conv" onclick="showPage('ponte-objetivos')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes
     </div>`;
   renderPagesGestaoClinica();
 }
@@ -4482,8 +4489,7 @@ async function excluirPerfilClinicaGestao(id, nome) {
 }
 
 async function carregarProfissionaisClinica() {
-  const { data } = await db.from('professores').select('*').order('nome');
-  if (data) { window._professoresList = data; popularDropdownProf(); }
+  const { data } = await db.from('profissionais_clinica').select('*').eq('user_id', user.id).order('nome');
   const grid = document.getElementById('gc-prof-grid');
   if (!grid) return;
   const lista = data || [];
@@ -4493,18 +4499,15 @@ async function carregarProfissionaisClinica() {
   }
   grid.innerHTML = lista.map(p => {
     const iniciais = (p.nome||'?').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
-    const mats  = (p.materias||[]).map(m=>`<span class="prof-badge mat">📚 ${m}</span>`).join('');
-    const salas = (p.salas||[]).map(s=>`<span class="prof-badge sala">🚪 ${s}</span>`).join('');
+    const especialidadeLabel = ESPECIALIDADE_LABELS[p.especialidade] || p.especialidade || '—';
     return `<div class="prof-card">
       <div class="prof-card-top">
         <div class="prof-avatar">${iniciais}</div>
         <div><div class="prof-nome">${p.nome||'(sem nome)'}</div>
         <div class="prof-email">${[p.email,p.vinculo].filter(Boolean).join(' · ')||'—'}</div></div>
       </div>
-      ${mats?`<div class="prof-info-row">${mats}</div>`:''}
-      ${salas?`<div class="prof-info-row">${salas}</div>`:''}
+      <div class="prof-info-row"><span class="prof-badge mat">🩺 ${especialidadeLabel}</span></div>
       <div class="prof-card-actions">
-        <button class="btn-sm" style="font-size:12px;padding:6px 13px" onclick='prepEditProf(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Editar</button>
         <button class="btn-danger" onclick="excluirProfissional('${p.id}','${(p.nome||'').replace(/'/g,"&#39;")}')">Excluir</button>
       </div>
     </div>`;
@@ -4513,7 +4516,7 @@ async function carregarProfissionaisClinica() {
 
 async function excluirProfissional(id, nome) {
   if (!confirm(`Excluir ${nome}?`)) return;
-  const { error } = await db.from('professores').delete().eq('id', id);
+  const { error } = await db.from('profissionais_clinica').delete().eq('id', id);
   if (error) return toast('Erro: ' + error.message, 'error');
   toast('Profissional excluído.', 'success');
   carregarProfissionaisClinica();
