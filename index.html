@@ -3223,6 +3223,13 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <button class="modal-close" onclick="fecharModal('modal-cad-clinica')">×</button>
     </div>
     <div style="margin-top:16px">
+      <div class="fblock" style="margin-bottom:14px;padding:12px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:10px">
+        <label class="flabel" style="margin-bottom:6px">Preencher automaticamente a partir do laudo (opcional)</label>
+        <button type="button" class="btn-copy" onclick="document.getElementById('cc-inp-laudo').click()">📎 Anexar laudo/relatório (PDF ou Word)</button>
+        <input type="file" id="cc-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoPerfilClinico(this)">
+        <div id="cc-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+        <div style="font-size:11px;color:#6B7DBF;margin-top:6px">A IA sugere o preenchimento dos campos abaixo — revise e corrija antes de salvar. Nenhum campo é preenchido sem sua confirmação ao clicar em "Salvar perfil".</div>
+      </div>
       <div class="frow">
         <div><label class="flabel" for="cc-nome">Nome do aluno *</label><input type="text" id="cc-nome" class="finput" placeholder="Nome completo"></div>
         <div><label class="flabel" for="cc-idade">Idade</label><input type="text" id="cc-idade" class="finput" placeholder="Ex: 8 anos"></div>
@@ -14300,6 +14307,73 @@ function renderPerfisClinicaGrid() {
       </div>
       ${p.preservadas ? `<div style="margin-top:8px;font-size:12px;color:var(--gr600)">✅ <strong>Preservadas:</strong> ${p.preservadas.slice(0,80)}${p.preservadas.length>80?'…':''}</div>` : ''}
     </div>`).join('');
+}
+
+async function processarLaudoPerfilClinico(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('cc-laudo-status');
+  status.style.display = 'block';
+  status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
+  status.textContent = 'Lendo arquivo…';
+  try {
+    let texto = '';
+    if (file.name.endsWith('.pdf')) {
+      texto = await extrairTextoPDF(file);
+      if (!texto.trim()) texto = await extrairTextoPDFComOCR(file, status);
+    }
+    else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) texto = await extrairTextoDOCX(file);
+    else { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Formato não suportado. Use PDF ou DOCX.'; return; }
+    if (!texto.trim()) { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Não foi possível extrair texto, mesmo com OCR. Preencha manualmente.'; return; }
+
+    status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
+    status.textContent = 'IA lendo o laudo e sugerindo o preenchimento…';
+
+    const prompt = `Extraia do texto de laudo/relatório abaixo as informações para um cadastro de perfil clínico. Responda APENAS em JSON válido, sem markdown, com exatamente estas chaves:
+{
+  "idade": "",
+  "diagnostico": "",
+  "hipoteses": "",
+  "comunicacao": "",
+  "regulacao": "",
+  "sensorial": "",
+  "motricidade": "",
+  "preservadas": "",
+  "comprometidas": "",
+  "comportamento": ""
+}
+Para "comunicacao", escolha exatamente uma destas opções ou deixe vazio: "Verbal fluente", "Verbal com limitações", "Verbal emergente", "Não-verbal — usa CAA", "Não-verbal — sem CAA formal".
+Para "regulacao", escolha exatamente uma destas: "Preservada", "Comprometida — crises frequentes", "Em desenvolvimento", "Necessita suporte constante".
+Para "sensorial", escolha exatamente uma destas: "Sem particularidades", "Hipersensibilidade", "Hipossensibilidade", "Misto (hipo + hiper)".
+Para "motricidade", escolha exatamente uma destas: "Preservada", "Motricidade fina comprometida", "Motricidade ampla comprometida", "Ambas comprometidas".
+Se uma informação não estiver claramente no texto, deixe a chave como string vazia — nunca invente ou deduza.
+
+TEXTO DO LAUDO:
+${texto.slice(0, 12000)}`;
+
+    const respostaBruta = await chamarClaude({ prompt, maxTokens: 700, modulo: 'perfil-clinico-extracao' });
+    const json = respostaBruta.replace(/```json|```/g, '').trim();
+    const dados = JSON.parse(json);
+
+    if (dados.idade) document.getElementById('cc-idade').value = dados.idade;
+    if (dados.diagnostico) document.getElementById('cc-diag').value = dados.diagnostico;
+    if (dados.hipoteses) document.getElementById('cc-hipotese').value = dados.hipoteses;
+    if (dados.preservadas) document.getElementById('cc-preservadas').value = dados.preservadas;
+    if (dados.comprometidas) document.getElementById('cc-comprometidas').value = dados.comprometidas;
+    if (dados.comportamento) document.getElementById('cc-comportamento').value = dados.comportamento;
+    const mapaSelects = { comunicacao: 'cc-comunicacao', regulacao: 'cc-regulacao', sensorial: 'cc-sensorio', motricidade: 'cc-motricidade' };
+    Object.keys(mapaSelects).forEach(campo => {
+      const sel = document.getElementById(mapaSelects[campo]);
+      if (sel && dados[campo] && [...sel.options].some(o => o.value === dados[campo])) sel.value = dados[campo];
+    });
+
+    status.style.background = '#F0FDF4'; status.style.color = '#166534';
+    status.textContent = 'Campos preenchidos a partir do laudo — revise e corrija antes de salvar.';
+  } catch(e) {
+    status.style.background = '#FEF2F2'; status.style.color = '#991B1B';
+    status.textContent = 'Erro ao processar o laudo: ' + (e.message || 'tente novamente ou preencha manualmente.');
+  }
+  input.value = '';
 }
 
 async function abrirModalCadClinica(p) {
