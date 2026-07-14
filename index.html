@@ -11142,44 +11142,63 @@ async function baixarPDFAdaptacaoComImagens() {
   if (!itensComImagem.length) return toast('Selecione ao menos uma imagem antes de gerar o PDF com imagens.', 'error');
 
   toast('Montando PDF com imagens…', 'success');
+
+  const separador = '***GUIA_PROFESSOR***';
+  const partes = ultimaAdapt.split(separador);
+  const folhaAluno = partes[0].trim();
+  const guiaProf = partes[1] ? partes[1].trim() : null;
+  const incluiGuia = dadosUltima.incluiGuia !== false;
+  const nomeAluno = dadosUltima.aluno || 'Aluno';
+  const materia = dadosUltima.materia || '';
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || document.getElementById('pei-professor')?.value || '';
+
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
-  const ml = 15, mr = 15;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, ml = 20, mr = 20;
+
+  const opts = {
+    tipo: 'ATIVIDADE ADAPTADA',
+    titulo: 'Atividade Adaptada',
+    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv : ''),
+    aluno: nomeAluno,
+    professor: profNome,
+    conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
+    guiaProf: incluiGuia ? guiaProf : null
+  };
+
+  gerarPDFAtividade(doc, opts, W, H, ml, mr);
+
+  doc.addPage();
   let y = 20;
-
-  doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text(sanitizarTexto('Atividade Adaptada - ' + (dadosUltima.aluno||'')), ml, y);
-  y += 10;
-  doc.setFontSize(10.5); doc.setFont('helvetica','normal');
-  const folhaAluno = ultimaAdapt.split('***GUIA_PROFESSOR***')[0].trim();
-  const linhas = doc.splitTextToSize(sanitizarTexto(folhaAluno), W - ml - mr);
-  linhas.forEach(l => {
-    if (y > H - 20) { doc.addPage(); y = 20; }
-    doc.text(l, ml, y);
-    y += 6;
-  });
-
-  y += 6;
-  if (y > H - 30) { doc.addPage(); y = 20; }
-  doc.setFont('helvetica','bold'); doc.text('Imagens de apoio', ml, y); y += 8;
-  doc.setFont('helvetica','normal');
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, 0, W, 3, 'F');
+  doc.setFillColor(245, 248, 255);
+  doc.rect(0, 3, W, 16, 'F');
+  doc.setTextColor(30, 58, 138);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('IMAGENS DE APOIO', ml, 13);
+  y = 26;
 
   for (const item of itensComImagem) {
     try {
       const base64 = await imagemParaBase64(item.urlEscolhida);
       const formato = base64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-      if (y > H - 70) { doc.addPage(); y = 20; }
+      if (y > H - 100) { doc.addPage(); y = 20; }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(30, 30, 30);
       doc.text(sanitizarTexto(item.termo), ml, y);
-      y += 5;
+      y += 6;
       doc.addImage(base64, formato, ml, y, 80, 80);
-      y += 88;
+      y += 90;
     } catch(e) {
       console.warn('Falha ao inserir imagem de', item.termo, e);
     }
   }
 
-  doc.save('Adaptacao_com_imagens_' + (dadosUltima.aluno||'aluno').replace(/\s+/g,'_') + '.pdf');
+  doc.save('Adaptacao_com_imagens_' + nomeAluno.replace(/\s+/g,'_') + '.pdf');
+  toast('PDF gerado com sucesso!', 'success');
 }
 
 async function salvarAdapt() {
