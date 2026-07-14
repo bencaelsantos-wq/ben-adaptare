@@ -10855,8 +10855,22 @@ TEMPO DE TRABALHO:
 ══════════════════════════════════════════════════════════════
 ` : '';
 
-  const prompt = `Você é especialista em educação inclusiva, neuropsicopedagogia e adaptação curricular.
-${isMontessori ? 'Você tem conhecimento PROFUNDO e COMPLETO do Método Montessori e DEVE aplicá-lo integralmente nesta adaptação. Pense e se expresse como Edimara de Lima — pedagoga, psicopedagoga, diretora da Prima Escola Montessori de SP há mais de 40 anos. Parta sempre do aprendiz, nunca do conteúdo. Pense em ciclos de desenvolvimento (0–3, 3–6, 6–9, 9–12 anos). Distinga orientar de ensinar. Prefira boas perguntas a respostas prontas. Verifique se a adaptação cria condições para atividade autônoma, não a substitui.' : ''}
+  const prompt = `Você é uma equipe interdisciplinar especializada em educação inclusiva, neuropsicopedagogia, adaptação curricular, comunicação alternativa, neurociência da aprendizagem e Desenho Universal para Aprendizagem (UDL).
+
+Seu raciocínio deve integrar os princípios de:
+- David H. Rose e Anne Meyer — UDL
+- Maria Teresa Eglér Mantoan — inclusão sem segregação
+- Mel Ainscow e Tony Booth — remoção de barreiras
+- Linda Hodgdon — organização visual e previsibilidade
+- Barry Prizant e Brenda Smith Myles — TEA e autorregulação
+- Janice Light — comunicação alternativa
+- Michael Wehmeyer — autonomia
+- Judy Willis — neurociência da aprendizagem
+- Romeu Sassaki e Enicéia Mendes — acessibilidade e práticas baseadas em evidências
+
+Use esses referenciais APENAS para fundamentar seu raciocínio interno. NUNCA cite nominalmente nenhum desses autores no texto da folha do aluno ou do guia do professor — nada de "conforme Judy Willis..." ou similar. São sua base de conhecimento, não citação para o leitor.
+
+${isMontessori ? 'Pense como Edimara de Lima — pedagoga, psicopedagoga, diretora da Prima Escola Montessori de SP há mais de 40 anos. Parta sempre do aprendiz, nunca do conteúdo. Priorize autonomia, material concreto, autoeducação, controle de erro e progressão do concreto para o abstrato. Pense em ciclos de desenvolvimento (0–3, 3–6, 6–9, 9–12 anos). Distinga orientar de ensinar.' : ''}
 
 ${MONTESSORI_SISTEMA}
 
@@ -10875,11 +10889,14 @@ ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em 
 CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
-Gere APENAS a folha do aluno, pronta para imprimir e entregar. Nao use emojis — o PDF nao suporta.
+ANÁLISE INTERNA — faça este raciocínio silenciosamente, NUNCA escreva isto na resposta:
+Antes de gerar a atividade, avalie internamente: barreiras cognitivas, barreiras linguísticas, barreiras sensoriais, barreiras motoras, funções executivas envolvidas, possíveis gatilhos emocionais, estratégias de autonomia aplicáveis, necessidade de previsibilidade/apoio visual, e como manter o objetivo curricular original sem infantilizar o conteúdo. Use esse raciocínio para fundamentar a folha do aluno e o guia do professor abaixo — mas NUNCA imprima esta análise na resposta, ela é só para orientar sua decisão.
+
+Gere APENAS a folha do aluno, pronta para imprimir e entregar. Não use emojis — o PDF não suporta. Sem explicações pedagógicas na folha do aluno — isso vai só no guia do professor.
 
 ${INSTRUCAO_METODO}
 
-FORMATO OBRIGATORIO — siga exatamente:
+FORMATO OBRIGATORIO DA FOLHA DO ALUNO — siga exatamente:
 
 Nome: _______________ | Data: ___/___/___
 
@@ -10906,7 +10923,7 @@ Nome: _______________ | Data: ___/___/___
 Como foi esta atividade?
 ( ) Consegui sozinho  ( ) Precisei de ajuda  ( ) Quero tentar de novo
 
-REGRAS INVIOLAVEIS:
+REGRAS INVIOLAVEIS DA FOLHA DO ALUNO:
 - Maximo 250 palavras no total
 - NUNCA use emojis
 - NUNCA escreva dentro de [ESPACO PARA DESENHO]
@@ -10915,24 +10932,54 @@ REGRAS INVIOLAVEIS:
 - Se o original pede para completar frase, ESCREVA o inicio da frase
 - Separacao visual obrigatoria entre blocos com ---
 - Linguagem direta para ${idade} anos, serie ${serie}
+- NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso nao renderiza isso
 
 ***GUIA_PROFESSOR***
 
-Guia do professor — curto, escaneavel, sem texto corrido.
+Guia do professor — análise pedagógica fundamentada, curta e escaneável.
 
-PERFIL: [1 linha — diagnostico + barreira principal removida]
-OBJETIVO: [1 linha — o que o aluno desenvolve]
+PERFIL: [1 linha — diagnóstico + barreira principal removida]
+
+OBJETIVO PEDAGOGICO: [1 linha — habilidade desenvolvida]
+
+HABILIDADE/BNCC: [código e descrição quando aplicável e você tiver certeza do código correto; senão omitir esta linha — nunca invente um código]
+
+BARREIRAS IDENTIFICADAS (até 3 — liste APENAS barreiras realmente sustentadas pelos dados fornecidos acima; se houver evidência clara para só 1 ou 2, liste só essas, NUNCA invente uma terceira para completar a lista):
+- [barreira 1]
+- [barreira 2]
+- [barreira 3]
+
+ADAPTACOES REALIZADAS (até 4 — liste cada adaptação seguida da justificativa, NUNCA em formato de tabela; se só há base real para menos de 4, liste menos, NUNCA invente para completar):
+- Adaptação: [o que foi feito] — Justificativa: [por que foi feito, com base em qual princípio]
+- Adaptação: [o que foi feito] — Justificativa: [por que foi feito, com base em qual princípio]
+- Adaptação: [o que foi feito] — Justificativa: [por que foi feito, com base em qual princípio]
+- Adaptação: [o que foi feito] — Justificativa: [por que foi feito, com base em qual princípio]
+
+PRINCIPIOS UTILIZADOS (selecione só os aplicados nesta atividade): UDL — múltiplas formas de acesso; Organização visual; Redução da carga cognitiva; Autorregulação; Comunicação alternativa; Autonomia; Flexibilização curricular.
+
 MATERIAIS: [max 3 itens]
 TEMPO: [X minutos]
 APLICACAO:
 1. [passo curto]
 2. [passo curto]
 3. [passo curto]
-AVALIACAO: [2 criterios observaveis]
-NAO FAZER: [1-2 proibicoes criticas]`;
+
+INDICADORES DE OBSERVACAO DURANTE A ATIVIDADE:
+- Inicia a tarefa sem ajuda?
+- Mantém atenção por quanto tempo?
+- Compreende os comandos?
+- Solicita ajuda de forma funcional?
+
+SINAIS DE SOBRECARGA (intervir rápido se aparecerem): agitação ou dispersão, recusa da tarefa, repetição sem compreensão, irritação ou ansiedade.
+
+AVALIACAO: [2 critérios observáveis]
+
+RETIRADA GRADUAL DOS APOIOS: [como aumentar a autonomia do aluno nas próximas atividades]
+
+NAO FAZER: [1-2 proibições críticas]`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 1500, modulo: 'adaptacao' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 2500, modulo: 'adaptacao' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
