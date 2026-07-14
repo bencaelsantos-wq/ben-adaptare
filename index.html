@@ -3353,6 +3353,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 const SB_URL = 'https://wgnrxzoccelzzxwyibwj.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnbnJ4em9jY2Vsenp4d3lpYndqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDIzMDUsImV4cCI6MjA5MjQ3ODMwNX0.gVTkIw9BUtK79LsRtCwUJPla6M3tc3Yv4xh-AouQBpc';
 const CLAUDE_PROXY = 'https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/claude-proxy';
+const PIXABAY_PROXY = 'https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/pixabay-proxy';
 
 // Captura hash ANTES do Supabase processar e limpar a URL
 const _initHash = new URLSearchParams(window.location.hash.replace(/^#/,''));
@@ -4522,6 +4523,42 @@ async function excluirProfissional(id, nome) {
   carregarProfissionaisClinica();
 }
 
+async function carregarBancoImagens() {
+  const grid = document.getElementById('dev-banco-imagens-grid');
+  if (!grid) return;
+  const { data } = await db.from('banco_imagens_atividades').select('*').order('created_at', { ascending: false });
+  const lista = data || [];
+  if (!lista.length) { grid.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhuma imagem cadastrada ainda.</p>'; return; }
+  grid.innerHTML = lista.map(img => `
+    <div class="item-card">
+      <img src="${img.url}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">
+      <div class="ic-tags">${(img.tags||[]).map(t=>`<span class="ic-tag">${t}</span>`).join('')}</div>
+      <button class="btn-danger" style="margin-top:8px" onclick="excluirImagemBanco('${img.id}')">Excluir</button>
+    </div>
+  `).join('');
+}
+
+async function adicionarImagemBanco() {
+  const url = document.getElementById('bi-url')?.value.trim();
+  const tagsRaw = document.getElementById('bi-tags')?.value.trim();
+  if (!url) return toast('Cole a URL da imagem.', 'error');
+  if (!tagsRaw) return toast('Informe ao menos uma tag.', 'error');
+  const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+  const { error } = await db.from('banco_imagens_atividades').insert({ url, tags });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Imagem adicionada ao banco!', 'success');
+  document.getElementById('bi-url').value = '';
+  document.getElementById('bi-tags').value = '';
+  carregarBancoImagens();
+}
+
+async function excluirImagemBanco(id) {
+  if (!confirm('Excluir esta imagem do banco?')) return;
+  const { error } = await db.from('banco_imagens_atividades').delete().eq('id', id);
+  if (error) return toast('Erro: ' + error.message, 'error');
+  carregarBancoImagens();
+}
+
 // ══ MÓDULO: COMUNICAÇÃO ESCOLA ↔ CLÍNICA ═══════════════════════
 
 // ── Estado do módulo (Gestão Educacional) ───────────────────────
@@ -5658,6 +5695,17 @@ function renderPagesDeveloper() {
     <h1 class="page-title">Conteúdo da Plataforma</h1>
     <p class="page-sub">Volume de dados gerados por cada módulo.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px" id="dev-conteudo-grid"></div>
+
+    <div class="fcard" style="margin-top:28px">
+      <div class="fcard-title">🖼️ Banco de Imagens para Atividades</div>
+      <p class="page-sub" style="margin:0 0 12px">Imagens usadas na opção "Banco próprio" da Adaptação de Atividades. Cole a URL de uma imagem já hospedada em algum lugar (ex: Imgur, link público do Drive) e as tags de busca.</p>
+      <div class="frow">
+        <div><label class="flabel" for="bi-url">URL da imagem</label><input type="text" id="bi-url" class="finput" placeholder="https://..."></div>
+        <div><label class="flabel" for="bi-tags">Tags (separadas por vírgula)</label><input type="text" id="bi-tags" class="finput" placeholder="cavalo, animal, fazenda"></div>
+      </div>
+      <button class="btn-sm" style="margin-top:8px" onclick="adicionarImagemBanco()">+ Adicionar ao banco</button>
+      <div class="cards-grid" id="dev-banco-imagens-grid" style="margin-top:16px"></div>
+    </div>
   </div>
 
   <!-- FEEDBACKS -->
@@ -7934,6 +7982,7 @@ function showPage(id) {
   if (id === 'at-relatorios') carregarRelatoriosAT();
   if (id === 'gc-perfis') carregarPerfisGestaoClinica();
   if (id === 'gc-profissionais') carregarProfissionaisClinica();
+  if (id === 'dev-conteudo') carregarBancoImagens();
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'guia-gestao') renderGuiaGestao();
   if (id === 'diversidade') renderDiversidade();
@@ -10255,7 +10304,16 @@ function renderPagesClinica() {
         <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
+        <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
       </div>
+    </div>
+
+    <div class="fcard" id="ap-img-painel" style="display:none;margin-top:16px">
+      <div class="fcard-title">Imagens da atividade</div>
+      <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um.</p>
+      <div id="ap-img-itens"></div>
+      <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
+      <button class="btn-gerar" style="margin-top:14px" onclick="baixarPDFAdaptacaoComImagens()">Baixar PDF com imagens</button>
     </div>
   </div>` : ''}
 
@@ -10887,6 +10945,159 @@ function downloadAdaptacaoPDF() {
     isAtividade: true,
     guiaProf: incluiGuia ? guiaProf : null
   });
+}
+
+// ── IMAGENS DA ATIVIDADE (banco próprio + banco gratuito) ────────────
+function extrairItensParaIlustrar(texto) {
+  const linhas = texto.split('\n');
+  const itens = [];
+  const gatilho = /(pinte|desenhe|circule|ilustre|colora[çc][ãa]o|cole a figura|recorte e cole)[^:]*:\s*(.+)/i;
+  linhas.forEach(l => {
+    const m = l.match(gatilho);
+    if (m) {
+      m[2].split(/,| e /).forEach(parte => {
+        const item = parte.replace(/[.;].*$/, '').trim();
+        if (item && item.length > 1 && item.length < 40) itens.push(item);
+      });
+    }
+  });
+  return [...new Set(itens)];
+}
+
+function detectarItensImagem() {
+  if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
+  const folhaAluno = ultimaAdapt.split('***GUIA_PROFESSOR***')[0];
+  const termos = extrairItensParaIlustrar(folhaAluno);
+  window._imgItens = termos.length
+    ? termos.map(t => ({ termo: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
+    : [{ termo: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
+  if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
+  document.getElementById('ap-img-painel').style.display = '';
+  renderizarPainelImagens();
+  document.getElementById('ap-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function renderizarPainelImagens() {
+  const cont = document.getElementById('ap-img-itens');
+  cont.innerHTML = window._imgItens.map((item, i) => `
+    <div style="border:1px solid var(--gr200);border-radius:10px;padding:10px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <input type="text" class="finput" value="${item.termo}" oninput="window._imgItens[${i}].termo=this.value" placeholder="Ex: cavalo" style="flex:1;min-width:120px">
+        <select class="fselect" style="width:190px" onchange="window._imgItens[${i}].fonte=this.value">
+          <option value="proprio" ${item.fonte==='proprio'?'selected':''}>Banco próprio</option>
+          <option value="pixabay" ${item.fonte==='pixabay'?'selected':''}>Banco de sites gratuitos</option>
+        </select>
+        <button class="btn-sm" onclick="buscarImagemItem(${i})">Buscar</button>
+        <button class="btn-danger" onclick="removerItemImagem(${i})">Remover</button>
+      </div>
+      <div id="ai-resultados-${i}" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+  `).join('');
+  window._imgItens.forEach((_, i) => renderResultadosItem(i));
+}
+
+function renderResultadosItem(i) {
+  const item = window._imgItens[i];
+  const box = document.getElementById('ai-resultados-'+i);
+  if (!box) return;
+  if (!item.resultados.length) { box.innerHTML = ''; return; }
+  box.innerHTML = item.resultados.map(u => `<img src="${u}" onclick="escolherImagemItem(${i},'${u.replace(/'/g,"&#39;")}')" style="width:70px;height:70px;object-fit:cover;border-radius:6px;cursor:pointer;border:3px solid ${item.urlEscolhida===u?'#2563EB':'transparent'}">`).join('');
+}
+
+async function buscarImagemItem(i) {
+  const item = window._imgItens[i];
+  if (!item.termo.trim()) return toast('Digite o item a buscar.', 'error');
+  const box = document.getElementById('ai-resultados-'+i);
+  box.innerHTML = '<span style="font-size:12px;color:var(--gr400)">Buscando…</span>';
+  try {
+    let urls = [];
+    if (item.fonte === 'proprio') {
+      const { data } = await db.from('banco_imagens_atividades').select('url,tags').contains('tags', [item.termo.trim().toLowerCase()]);
+      urls = (data||[]).map(d => d.url);
+    } else {
+      const r = await fetch(`${PIXABAY_PROXY}?q=${encodeURIComponent(item.termo.trim())}&image_type=illustration`, {
+        headers: { 'Authorization': `Bearer ${SB_KEY}` }
+      });
+      const data = await r.json();
+      urls = (data.hits||[]).slice(0,8).map(h => h.webformatURL);
+    }
+    item.resultados = urls;
+    if (!urls.length) { box.innerHTML = '<span style="font-size:12px;color:#B45309">Nenhuma imagem encontrada para "'+item.termo+'".</span>'; return; }
+    renderResultadosItem(i);
+  } catch(e) {
+    box.innerHTML = '<span style="font-size:12px;color:#991B1B">Erro ao buscar: '+(e.message||'tente novamente')+'</span>';
+  }
+}
+
+function escolherImagemItem(i, url) {
+  window._imgItens[i].urlEscolhida = url;
+  renderResultadosItem(i);
+}
+
+function removerItemImagem(i) {
+  window._imgItens.splice(i, 1);
+  renderizarPainelImagens();
+}
+
+function adicionarItemImagemManual() {
+  if (!window._imgItens) window._imgItens = [];
+  window._imgItens.push({ termo:'', fonte:'proprio', resultados:[], urlEscolhida:null });
+  renderizarPainelImagens();
+}
+
+function imagemParaBase64(url) {
+  return fetch(url).then(r => r.blob()).then(blob => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  }));
+}
+
+async function baixarPDFAdaptacaoComImagens() {
+  if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
+  const itensComImagem = (window._imgItens||[]).filter(i => i.urlEscolhida);
+  if (!itensComImagem.length) return toast('Selecione ao menos uma imagem antes de gerar o PDF com imagens.', 'error');
+
+  toast('Montando PDF com imagens…', 'success');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+  const ml = 15, mr = 15;
+  let y = 20;
+
+  doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text(sanitizarTexto('Atividade Adaptada - ' + (dadosUltima.aluno||'')), ml, y);
+  y += 10;
+  doc.setFontSize(10.5); doc.setFont('helvetica','normal');
+  const folhaAluno = ultimaAdapt.split('***GUIA_PROFESSOR***')[0].trim();
+  const linhas = doc.splitTextToSize(sanitizarTexto(folhaAluno), W - ml - mr);
+  linhas.forEach(l => {
+    if (y > H - 20) { doc.addPage(); y = 20; }
+    doc.text(l, ml, y);
+    y += 6;
+  });
+
+  y += 6;
+  if (y > H - 30) { doc.addPage(); y = 20; }
+  doc.setFont('helvetica','bold'); doc.text('Imagens de apoio', ml, y); y += 8;
+  doc.setFont('helvetica','normal');
+
+  for (const item of itensComImagem) {
+    try {
+      const base64 = await imagemParaBase64(item.urlEscolhida);
+      const formato = base64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+      if (y > H - 70) { doc.addPage(); y = 20; }
+      doc.text(sanitizarTexto(item.termo), ml, y);
+      y += 4;
+      doc.addImage(base64, formato, ml, y, 50, 50);
+      y += 58;
+    } catch(e) {
+      console.warn('Falha ao inserir imagem de', item.termo, e);
+    }
+  }
+
+  doc.save('Adaptacao_com_imagens_' + (dadosUltima.aluno||'aluno').replace(/\s+/g,'_') + '.pdf');
 }
 
 async function salvarAdapt() {
