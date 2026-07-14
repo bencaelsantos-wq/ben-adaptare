@@ -10519,6 +10519,24 @@ function selecionarAluno(id) {
   info.style.display = 'block';
   info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${tags}</div>${a.observacoes ? `<div style="margin-top:6px;font-size:12px;color:var(--gr600)">${a.observacoes.slice(0,130)}…</div>` : ''}`;
   filtrarAlSel();
+
+  const inpAluno = document.getElementById('inp-aluno');
+  if (inpAluno) inpAluno.value = a.nome || '';
+  const inpIdade = document.getElementById('inp-idade');
+  if (inpIdade && a.idade) {
+    const opt = [...inpIdade.options].find(o => o.value === a.idade || o.text === a.idade);
+    if (opt) inpIdade.value = opt.value;
+  }
+
+  // Pré-preenche o contexto para a IA a partir do Perfil Clínico do paciente (sempre editável)
+  const ctxDiag = document.getElementById('inp-ctx-diagnostico');
+  const ctxLim  = document.getElementById('inp-ctx-limitacoes');
+  const ctxPot  = document.getElementById('inp-ctx-potencialidades');
+  const ctxObs  = document.getElementById('inp-ctx-obs');
+  if (ctxDiag) ctxDiag.value = [a.diagnostico, a.hipotese].filter(Boolean).join(' — ') || '';
+  if (ctxLim)  ctxLim.value  = a.comprometidas || '';
+  if (ctxPot)  ctxPot.value  = a.preservadas || '';
+  if (ctxObs)  ctxObs.value  = [a.comportamento, a.observacoes].filter(Boolean).join('\n') || '';
 }
 
 // ── TEMPLATES ────────────────────────────────────────────────
