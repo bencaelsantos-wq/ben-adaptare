@@ -10707,10 +10707,19 @@ async function gerar() {
   document.getElementById('gen-box').classList.add('show');
   document.getElementById('result-card').classList.remove('show');
 
-  const estrategiasTexto = perfis.map(p => {
-    const k = Object.keys(ESTRATEGIAS).find(k => p.includes(k.split('—')[0].trim()) || p.startsWith(k.split(' ')[0]));
-    return k ? ESTRATEGIAS[k] : null;
-  }).filter(Boolean).join('\n\n');
+  const textoDiagnosticoBusca = [ctxDiagnostico, a.diagnostico, a.hipotese].filter(Boolean).join(' ').toLowerCase();
+  const estrategiasDiagnostico = Object.keys(ESTRATEGIAS).filter(k => {
+    const chave = k.split('—')[0].trim().toLowerCase();
+    return chave && (textoDiagnosticoBusca.includes(chave) || textoDiagnosticoBusca.includes(chave.split(' ')[0]));
+  }).map(k => ESTRATEGIAS[k]);
+
+  const estrategiasTexto = [...new Set([
+    ...perfis.map(p => {
+      const k = Object.keys(ESTRATEGIAS).find(k => p.includes(k.split('—')[0].trim()) || p.startsWith(k.split(' ')[0]));
+      return k ? ESTRATEGIAS[k] : null;
+    }).filter(Boolean),
+    ...estrategiasDiagnostico
+  ])].join('\n\n');
 
   // ── BASE DE CONHECIMENTO MONTESSORI ──────────────────────────
   const isMontessori = materia.toLowerCase().includes('montessori') ||
@@ -10923,7 +10932,8 @@ AVALIACAO: [2 criterios observaveis]
 NAO FAZER: [1-2 proibicoes criticas]`;
 
   try {
-    const texto = await chamarClaude({ prompt, maxTokens: 1500, modulo: 'adaptacao' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 1500, modulo: 'adaptacao' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
     const textoFinal = usaMaiusculas ? texto.toUpperCase() : texto;
@@ -11114,9 +11124,9 @@ async function baixarPDFAdaptacaoComImagens() {
       const formato = base64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
       if (y > H - 70) { doc.addPage(); y = 20; }
       doc.text(sanitizarTexto(item.termo), ml, y);
-      y += 4;
-      doc.addImage(base64, formato, ml, y, 50, 50);
-      y += 58;
+      y += 5;
+      doc.addImage(base64, formato, ml, y, 80, 80);
+      y += 88;
     } catch(e) {
       console.warn('Falha ao inserir imagem de', item.termo, e);
     }
@@ -12331,7 +12341,7 @@ function sanitizarTexto(txt) {
                                                                                                                                               'Ú':'U','Ù':'U','Û':'U','Ü':'U',
                                                                                                                                                       'Ç':'C','Ñ':'N',
                                                                                                                                                               '\u2019':"'",'`':"'",'\u201C':'"','\u201D':'"',
-                                                                                                                                                                      '\u2013':'-','\u2014':'-','\u2026':'...'
+                                                                                                                                                                      '\u2013':'-','\u2014':'-','\u2026':'...','\u2212':'-','\u00D7':'x','\u00F7':'/'
                                                                                                                                                                             };
                                                                                                                                                                                   return mapa[c] || '';
                                                                                                                                                                                       });
