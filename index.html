@@ -10899,7 +10899,16 @@ Para CADA exercício do conteúdo original, monte mentalmente esta matriz antes 
 TESTE DE ADAPTAÇÃO REAL — obrigatório, antes de finalizar cada exercício:
 Pergunte-se: "este exercício, do jeito que vou escrever, ainda exige exatamente as mesmas funções cognitivas do original, na mesma quantidade?" Se a resposta for SIM, você NÃO adaptou — apenas mudou a aparência. Reformule até a resposta ser NÃO.
 
-REGRA INEGOCIÁVEL: uma atividade só é considerada adaptada quando há mudança real na demanda cognitiva de pelo menos uma função (executiva, linguística, sensorial ou motora) em CADA exercício, preservando o objetivo pedagógico. Mudança apenas de layout, quantidade de exercícios, separação em blocos ou estética NÃO caracteriza adaptação — isso é decoração, não adaptação.
+PERGUNTA DE AUTONOMIA — obrigatória, raciocínio interno:
+"Se este aluno fosse realizar esta atividade sem apoio humano constante, quais partes gerariam dependência do adulto?" Reestruture a atividade para reduzir essa dependência sempre que possível, sem abrir mão do apoio realmente necessário.
+
+PERFIL DE APRENDIZAGEM — raciocínio interno:
+Considere também os interesses específicos, hiperfocos, canais preferenciais de aprendizagem, habilidades preservadas e conhecimentos prévios informados em "Potencialidades"/"Observações". Sempre que possível, use essas potencialidades para facilitar o acesso ao conteúdo — por exemplo, se o aluno tem interesse forte por um tema específico, ambiente os exercícios nesse tema mantendo o objetivo curricular original (ex: em vez de "João tinha 5 maçãs", usar "Marte possui 2 luas" para um aluno com hiperfoco em astronomia). Só faça essa ambientação se houver informação real de interesse do aluno — nunca invente um interesse não informado.
+
+TESTE DE DIGNIDADE — obrigatório, raciocínio interno:
+Pergunte-se: "se outro aluno da mesma idade recebesse esta atividade, ela pareceria respeitosa e compatível com sua faixa etária?" Se a resposta for NÃO, reduza infantilização, excesso de ícones/decoração e linguagem excessivamente simplificada. Preserve sempre a dignidade do estudante — adaptar não é infantilizar.
+
+REGRA INEGOCIÁVEL: uma atividade só é considerada adaptada quando há mudança real na forma como o estudante acessa ou executa a tarefa, reduzindo barreiras cognitivas, linguísticas, sensoriais, motoras ou executivas, preservando o objetivo pedagógico. Mudança apenas de layout, quantidade de exercícios, separação em blocos ou estética NÃO caracteriza adaptação — isso é decoração, não adaptação.
 
 TÉCNICAS OBRIGATÓRIAS DE REDUÇÃO REAL DE CARGA (aplique a que for pertinente ao exercício):
 - Operações com mais de um passo mental (ex: subtração com reagrupamento/"empresta", divisão, contas de dois dígitos): DECOMPONHA em subpassos visíveis e sequenciais, cada um com seu próprio espaço de resposta. Nunca entregue a conta inteira de uma vez para quem tem memória operacional ou função executiva comprometida — o aluno resolve um subpasso, escreve o resultado, e só então avança para o próximo. Exemplo do padrão esperado (adapte aos números do conteúdo original): "82 − 47. Primeiro: 12 − 7 = ___. Agora: 7 − 4 = ___. Resposta final: ___."
@@ -10951,6 +10960,18 @@ REGRAS INVIOLAVEIS DA FOLHA DO ALUNO:
 - Linguagem direta para ${idade} anos, serie ${serie}
 - NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso nao renderiza isso
 
+AUTOAVALIAÇÃO DA ADAPTAÇÃO — obrigatória, raciocínio interno, antes de responder:
+Avalie a atividade que você está prestes a entregar contra esta escala. Se qualquer resposta for NÃO, reescreva a atividade antes de entregá-la — não entregue sabendo que falhou em algum item:
+- Objetivo curricular preservado?
+- Barreiras removidas de verdade (não só camufladas)?
+- Autonomia do aluno aumentou?
+- Carga cognitiva adequada ao perfil informado?
+- Linguagem acessível para a idade/série?
+- Não infantiliza?
+- Mantém desafio suficiente (não esvaziou o conteúdo)?
+- Favorece participação ativa, não passiva?
+- Pode ser realizada com menor mediação constante do adulto?
+
 ***GUIA_PROFESSOR***
 
 Guia do professor — análise pedagógica fundamentada, curta e escaneável.
@@ -10993,10 +11014,12 @@ AVALIACAO: [2 critérios observáveis]
 
 RETIRADA GRADUAL DOS APOIOS: [como aumentar a autonomia do aluno nas próximas atividades]
 
+GENERALIZACAO (max 2 linhas): [como estimular essa habilidade fora da atividade — sala, casa, recreio, rotina, jogos]
+
 NAO FAZER: [1-2 proibições críticas]`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 2500, modulo: 'adaptacao' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 2800, modulo: 'adaptacao' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
