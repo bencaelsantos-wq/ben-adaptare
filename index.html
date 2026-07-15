@@ -3395,6 +3395,29 @@ const ESTRATEGIAS = {
   'Deficiência Múltipla':'Deficiência Múltipla: planejar com base no perfil específico, priorizar comunicação funcional, foco em vida independente e participação, equipe multiprofissional.'
 };
 
+function detectarTiposExercicio(conteudo) {
+  const texto = (conteudo || '').toLowerCase();
+  const tipos = [];
+  if (/\d{2,}\s*[-−]\s*\d{2,}|subtra[cç][aã]o|reagrupamento/.test(texto)) tipos.push('operacao_reagrupamento');
+  if (/divis[aã]o|dividir/.test(texto)) tipos.push('divisao');
+  if (/\d+\s*[x×]\s*\d+|multiplica[cç][aã]o/.test(texto)) tipos.push('multiplicacao');
+  if (/problema|tinha \d+.*ganhou|comprou.*vendeu/.test(texto)) tipos.push('problema_texto');
+  if (/leia o texto|interprete|responda com base no texto/.test(texto)) tipos.push('leitura_interpretacao');
+  if (/escreva um texto|reda[cç][aã]o|produ[cç][aã]o textual/.test(texto)) tipos.push('producao_escrita');
+  if (/sequ[eê]ncia|padr[aã]o|continue a s[eé]rie/.test(texto)) tipos.push('sequencia_padrao');
+  return tipos;
+}
+
+const TECNICAS_POR_TIPO = {
+  operacao_reagrupamento: `OPERAÇÃO COM REAGRUPAMENTO: decomponha em subpassos visíveis e sequenciais, cada um com seu próprio espaço de resposta. Nunca entregue a conta inteira de uma vez para quem tem memória operacional ou função executiva comprometida. Padrão esperado (adapte aos números do conteúdo original): "82 − 47. Primeiro: 12 − 7 = ___. Agora: 7 − 4 = ___. Resposta final: ___."`,
+  divisao: `DIVISÃO: quebre em passos (quantos grupos completos, quanto sobra), com apoio visual de agrupamento quando possível. Evite pedir o algoritmo da divisão longa completo de uma vez para perfis com função executiva/memória operacional comprometida.`,
+  multiplicacao: `MULTIPLICAÇÃO: quando o diagnóstico indicar dificuldade de memória operacional, ofereça apoio de decomposição (ex: 6×7 = 6×5 + 6×2) ou representação visual de grupos iguais, em vez de exigir só o resultado direto.`,
+  problema_texto: `PROBLEMA DE TEXTO: nunca deixe como parágrafo corrido para quem tem dificuldade de leitura, atenção ou processamento. Quebre em passos numerados: 1) frase curta por linha, 2) destaque cada quantidade separadamente, 3) marcação explícita da operação (☐ juntar ☐ tirar ☐ multiplicar ☐ dividir), 4) só então peça a resolução.`,
+  leitura_interpretacao: `LEITURA/INTERPRETAÇÃO: reduza o texto a parágrafos curtos, uma ideia por parágrafo. Perguntas de compreensão devem vir logo após o trecho correspondente, não todas ao final. Para dificuldades de atenção sustentada, numere os parágrafos e refira a pergunta ao número.`,
+  producao_escrita: `PRODUÇÃO ESCRITA: ofereça estrutura de apoio (início de frase, banco de palavras, roteiro de tópicos) em vez de folha em branco, quando o diagnóstico indicar dificuldade de planejamento, organização ou disgrafia. Reduza a extensão exigida sem reduzir a exigência de conteúdo/ideia.`,
+  sequencia_padrao: `SEQUÊNCIA/PADRÃO: explicite o padrão com apoio visual (ex: destaque a regra antes da sequência) quando houver dificuldade de raciocínio abstrato ou função executiva.`
+};
+
 const TEMPLATES = {
   'Língua Portuguesa':['Interpretação de texto','Produção textual','Ortografia','Leitura em voz alta','Vocabulário','Sequência narrativa'],
   'Matemática':['Resolução de problemas','Operações básicas','Geometria','Frações e decimais','Raciocínio lógico','Visão de conjunto','Tabuleiro de xadrez','A grande divisão','Armário de potências','Raiz quadrada'],
@@ -10722,6 +10745,9 @@ async function gerar() {
   ])].join('\n\n');
 
   // ── BASE DE CONHECIMENTO MONTESSORI ──────────────────────────
+  const tiposDetectados = detectarTiposExercicio(conteudo);
+  const tecnicasTexto = tiposDetectados.map(t => TECNICAS_POR_TIPO[t]).filter(Boolean).join('\n');
+
   const isMontessori = materia.toLowerCase().includes('montessori') ||
     ['Educação Cósmica','Vida Prática','Sensorial','Botânica e Zoologia',
      'Geografia e Geologia','História do Universo','Educação para a Paz',
@@ -10910,9 +10936,10 @@ Pergunte-se: "se outro aluno da mesma idade recebesse esta atividade, ela parece
 
 REGRA INEGOCIÁVEL: uma atividade só é considerada adaptada quando há mudança real na forma como o estudante acessa ou executa a tarefa, reduzindo barreiras cognitivas, linguísticas, sensoriais, motoras ou executivas, preservando o objetivo pedagógico. Mudança apenas de layout, quantidade de exercícios, separação em blocos ou estética NÃO caracteriza adaptação — isso é decoração, não adaptação.
 
-TÉCNICAS OBRIGATÓRIAS DE REDUÇÃO REAL DE CARGA (aplique a que for pertinente ao exercício):
-- Operações com mais de um passo mental (ex: subtração com reagrupamento/"empresta", divisão, contas de dois dígitos): DECOMPONHA em subpassos visíveis e sequenciais, cada um com seu próprio espaço de resposta. Nunca entregue a conta inteira de uma vez para quem tem memória operacional ou função executiva comprometida — o aluno resolve um subpasso, escreve o resultado, e só então avança para o próximo. Exemplo do padrão esperado (adapte aos números do conteúdo original): "82 − 47. Primeiro: 12 − 7 = ___. Agora: 7 − 4 = ___. Resposta final: ___."
-- Problemas de texto/enunciados (ex: "João tinha X, ganhou mais Y"): NUNCA deixe como parágrafo corrido para quem tem dificuldade de leitura, atenção ou processamento — quebre em passos numerados e visualmente separados: 1) leia a situação em uma frase curta por linha, 2) identifique e destaque cada quantidade separadamente, 3) ofereça marcação explícita da operação (ex: caixas de seleção "☐ juntar ☐ tirar"), 4) só então peça a resolução.
+TÉCNICAS OBRIGATÓRIAS DE REDUÇÃO REAL DE CARGA PARA ESTE CONTEÚDO ESPECÍFICO:
+${tecnicasTexto || 'Nenhum padrão de operação/exercício específico foi detectado automaticamente — aplique a REGRA INEGOCIÁVEL e o TESTE DE ADAPTAÇÃO REAL diretamente ao conteúdo, garantindo redução real de carga cognitiva em cada exercício.'}
+
+REGRAS UNIVERSAIS DE APOIO (valem para qualquer tipo de exercício):
 - Apoio visual deve ter FUNÇÃO, nunca ser decorativo. Nunca adicione imagem/ícone só para ilustrar o tema (ex: frutas soltas no fim da folha sem relação com o cálculo). Se usar apoio visual, ele precisa representar diretamente a quantidade ou a estrutura do problema (ex: marcadores repetidos representando unidades a contar, ícone ao lado de cada personagem/quantidade de um problema).
 - Quando o diagnóstico indicar memória operacional ou função executiva comprometida, ofereça retirada gradual de apoio dentro da própria atividade quando possível: um primeiro exercício com o passo a passo decomposto e visível, um exercício seguinte do mesmo tipo com menos apoio, e um último exercício só com a operação — replicando a mesma lógica pedagógica com autonomia crescente, não simplesmente repetindo o mesmo nível de apoio em todos os itens.
 
