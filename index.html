@@ -3398,13 +3398,15 @@ const ESTRATEGIAS = {
 function detectarTiposExercicio(conteudo) {
   const texto = (conteudo || '').toLowerCase();
   const tipos = [];
-  if (/\d{2,}\s*[-−]\s*\d{2,}|subtra[cç][aã]o|reagrupamento/.test(texto)) tipos.push('operacao_reagrupamento');
+  const pareceSequencia = /\d+\s*[-−]\s*\d+\s*[-−]\s*\d+/.test(texto);
+  const pareceContaDeSubtrair = /\d{2,}\s*[-−]\s*\d{2,}\s*=/.test(texto);
+  if ((pareceContaDeSubtrair && !pareceSequencia) || /subtra[cç][aã]o|reagrupamento/.test(texto)) tipos.push('operacao_reagrupamento');
   if (/divis[aã]o|dividir/.test(texto)) tipos.push('divisao');
   if (/\d+\s*[x×]\s*\d+|multiplica[cç][aã]o/.test(texto)) tipos.push('multiplicacao');
   if (/problema|tinha \d+.*ganhou|comprou.*vendeu/.test(texto)) tipos.push('problema_texto');
   if (/leia o texto|interprete|responda com base no texto/.test(texto)) tipos.push('leitura_interpretacao');
   if (/escreva um texto|reda[cç][aã]o|produ[cç][aã]o textual/.test(texto)) tipos.push('producao_escrita');
-  if (/sequ[eê]ncia|padr[aã]o|continue a s[eé]rie/.test(texto)) tipos.push('sequencia_padrao');
+  if (pareceSequencia || /sequ[eê]ncia|padr[aã]o|continue a s[eé]rie/.test(texto)) tipos.push('sequencia_padrao');
   return tipos;
 }
 
