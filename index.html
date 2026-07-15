@@ -11095,7 +11095,10 @@ function downloadAdaptacaoPDF() {
     conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
     nomeArquivo: 'Adaptacao_' + nomeAluno.replace(/\s+/g,'_') + '_' + materia.replace(/\s+/g,'_') + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g,'-'),
     isAtividade: true,
-    guiaProf: incluiGuia ? guiaProf : null
+    guiaProf: incluiGuia ? guiaProf : null,
+    fonteTamanho: dadosUltima.fonteTamanho,
+    espacamento: dadosUltima.espacamento,
+    fonteTipo: dadosUltima.fonteTipo
   });
 }
 
@@ -11233,7 +11236,10 @@ async function baixarPDFAdaptacaoComImagens() {
     aluno: nomeAluno,
     professor: profNome,
     conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
-    guiaProf: incluiGuia ? guiaProf : null
+    guiaProf: incluiGuia ? guiaProf : null,
+    fonteTamanho: dadosUltima.fonteTamanho,
+    espacamento: dadosUltima.espacamento,
+    fonteTipo: dadosUltima.fonteTipo
   };
 
   gerarPDFAtividade(doc, opts, W, H, ml, mr);
@@ -12294,7 +12300,18 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     .replace(/═+/g, '')
     .replace(/^Nome\s*:\s*_{3,}.*Data\s*:.*$/gim, '')
     .replace(/^ATIVIDADE ADAPTADA[^\n]*/gim, '')
+    .replace(/^FOLHA DO ALUNO\s*$/gim, '')
+    .replace(/^BLOCO\s*(\d+)\s*[-—–]?\s*.*$/gim, '$1.')
     .trim();
+
+  // Extrai a primeira linha não vazia como título da atividade, para render formatado à parte
+  const linhasFolhaTmp = folhaLimpa.split('\n');
+  let tituloAtividade = '';
+  let corpoInicioIdx = 0;
+  for (let i = 0; i < linhasFolhaTmp.length; i++) {
+    if (linhasFolhaTmp[i].trim()) { tituloAtividade = linhasFolhaTmp[i].trim().replace(/\*\*/g,'').replace(/^#{1,6}\s*/,''); corpoInicioIdx = i + 1; break; }
+  }
+  const folhaSemTitulo = linhasFolhaTmp.slice(corpoInicioIdx).join('\n').trim();
 
   const maxW = W - ml - mr;
   const rodapeH = 20;
@@ -12304,10 +12321,19 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   const fontSize = fontSizeMap[opts.fonteTamanho] || 9.5;
   const altLinhaCustom = lineHeightMap[opts.espacamento] || 5.2;
   const altLinha = altLinhaCustom;
+
+  if (tituloAtividade) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(fontSize + 2);
+    doc.setTextColor(30, 58, 138);
+    doc.text(sanitizarTexto(tituloAtividade.toUpperCase()), W / 2, y, { align: 'center' });
+    y += altLinha + 3;
+  }
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(fontSize);
   doc.setTextColor(25, 25, 25);
-   const linhas = doc.splitTextToSize(sanitizarTexto(folhaLimpa), maxW);
+   const linhas = doc.splitTextToSize(sanitizarTexto(folhaSemTitulo), maxW);
   for (let i = 0; i < linhas.length; i++) {
     if (y + altLinha > H - rodapeH) {
       adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
