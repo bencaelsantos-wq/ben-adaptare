@@ -11074,7 +11074,7 @@ NAO FAZER: [1-2 proibições críticas]`;
 function downloadAdaptacaoPDF() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
 
-  const separador = '***GUIA_PROFESSOR***';
+  const separador = /\*{0,3}\s*GUIA[_\s]PROFESSOR\s*\*{0,3}/i;
   const partes = ultimaAdapt.split(separador);
   const folhaAluno = partes[0].trim();
   const guiaProf = partes[1] ? partes[1].trim() : null;
@@ -11121,7 +11121,7 @@ function extrairItensParaIlustrar(texto) {
 
 function detectarItensImagem() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
-  const folhaAluno = ultimaAdapt.split('***GUIA_PROFESSOR***')[0];
+  const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA[_\s]PROFESSOR\s*\*{0,3}/i)[0];
   const termos = extrairItensParaIlustrar(folhaAluno);
   window._imgItens = termos.length
     ? termos.map(t => ({ termo: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
@@ -11216,7 +11216,7 @@ async function baixarPDFAdaptacaoComImagens() {
 
   toast('Montando PDF com imagens…', 'success');
 
-  const separador = '***GUIA_PROFESSOR***';
+  const separador = /\*{0,3}\s*GUIA[_\s]PROFESSOR\s*\*{0,3}/i;
   const partes = ultimaAdapt.split(separador);
   const folhaAluno = partes[0].trim();
   const guiaProf = partes[1] ? partes[1].trim() : null;
