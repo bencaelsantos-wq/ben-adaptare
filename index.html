@@ -11159,6 +11159,7 @@ REGRAS INVIOLAVEIS DA FOLHA DO ALUNO:
 - Maximo 250 palavras no total
 - NUNCA use emojis
 - NUNCA escreva dentro de [ESPACO PARA DESENHO]
+- NUNCA use [ESPACO PARA DESENHO] em exercícios de completar palavra, ligar/associar item à imagem, ou qualquer exercício que já usa o marcador [IMAGEM: nome-do-item] — esses dois marcadores são mutuamente exclusivos no mesmo item. [ESPACO PARA DESENHO] é só para quando o original pede explicitamente "desenhe" ou "ilustre livremente"
 - NUNCA invente conteudo — adapte so o que existe no original
 - Se o original pede para circular palavras, ESCREVA as palavras na folha
 - Se o original pede para completar frase, ESCREVA o inicio da frase
@@ -11280,7 +11281,7 @@ async function downloadAdaptacaoPDF() {
   gerarPDFDocumento({
     tipo: 'ATIVIDADE ADAPTADA',
     titulo: 'Atividade Adaptada',
-    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv : ''),
+    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv.replace(/\b\w/g, c => c.toUpperCase()) : ''),
     aluno: nomeAluno,
     professor: profNome,
     conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
@@ -12614,7 +12615,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   doc.setFontSize(11);
   doc.setTextColor(255, 255, 255);
   doc.text(((opts.subtitulo || opts.titulo || 'Atividade Adaptada').split(/\s*[—–-]{1,2}\s*/)[0]).toUpperCase(), ml + 5, y + 7);
-  y += 14;
+  y += 20;
 
   // ── CONTEÚDO DA FOLHA DO ALUNO ────────────────────────────
   // Separar folha do aluno do guia do professor
@@ -12814,7 +12815,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
 
     // Dados do aluno no guia
     doc.setFillColor(240, 244, 255);
-    doc.roundedRect(ml, y, W - ml - mr, 20, 1.5, 1.5, 'F');
+    doc.roundedRect(ml, y, W - ml - mr, 14, 1.5, 1.5, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(50, 70, 140);
@@ -12827,8 +12828,8 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     doc.text('MATÉRIA:', W / 2, y + 6);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(20, 20, 60);
-    doc.text(opts.subtitulo || '', W / 2 + 20, y + 6);
-    y += 16;
+    doc.text(sanitizarTexto((opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/)[0]), W / 2 + 20, y + 6);
+    y += 20;
 
     // Conteúdo do guia
     const guiaLimpo = guia
@@ -12854,24 +12855,38 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       }
       const linha = linhasGuia[i];
       const linhaT = linha.trim();
-      const isH = /^\*\*[^*]/.test(linhaT) && linhaT.includes('**');
+      const campoRotulo = /^(PERFIL|OBJETIVO PEDAGOGICO|HABILIDADE\/BNCC|BARREIRAS IDENTIFICADAS|ADAPTACOES REALIZADAS|PRINCIPIOS UTILIZADOS|MATERIAIS|TEMPO|APLICACAO|INDICADORES DE OBSERVACAO[^:]*|SINAIS DE SOBRECARGA|AVALIACAO|RETIRADA GRADUAL DOS APOIOS|GENERALIZACAO[^:]*)\s*:/i;
+      const isNaoFazer = /^NAO FAZER\s*:/i.test(linhaT);
+      const isH = campoRotulo.test(linhaT) && !isNaoFazer;
       const isSep = /^-{3,}$/.test(linhaT) || linhaT === '';
       if (isSep) { y += 2; continue; }
       const limpa = linhaT.replace(/\*\*/g, '');
-      if (isH) {
+      if (isNaoFazer) {
+        const linhasCaixa = doc.splitTextToSize(sanitizarTexto(limpa.toUpperCase()), maxW - 10);
+        const altCaixa = linhasCaixa.length * altLinha + 8;
+        if (y + altCaixa > H - rodapeH) {
+          adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+          doc.addPage();
+          y = 10;
+        }
+        doc.setFillColor(30, 58, 138);
+        doc.roundedRect(ml, y, W - ml - mr, altCaixa, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(255, 255, 255);
+        linhasCaixa.forEach((l, li) => doc.text(l, ml + 5, y + 6 + li * altLinha));
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(25, 25, 25);
+        y += altCaixa + 4;
+      } else if (isH) {
         y += 2;
-        doc.setFillColor(235, 241, 255);
-        doc.rect(ml, y - 3.5, W - ml - mr, 7, 'F');
-        doc.setDrawColor(30, 58, 138);
-        doc.setLineWidth(0.5);
-        doc.line(ml, y - 3.5, ml, y + 3.5);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9.5);
         doc.setTextColor(20, 40, 120);
-        doc.text(limpa, ml + 3, y + 0.5);
+        doc.text(limpa, ml, y);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(25, 25, 25);
-        y += 9;
+        y += altLinha + 1;
       } else {
         doc.text(limpa || linha, ml, y);
         y += altLinha;
@@ -14476,7 +14491,7 @@ function baixarPDFModalAdapt() {
   gerarPDFDocumento({
     tipo: 'ATIVIDADE ADAPTADA',
     titulo: 'Atividade Adaptada',
-    subtitulo: (r.materia||'') + (r.tipo_ativ ? ' — ' + r.tipo_ativ : ''),
+    subtitulo: (r.materia||'') + (r.tipo_ativ ? ' — ' + r.tipo_ativ.replace(/\b\w/g, c => c.toUpperCase()) : ''),
     aluno: r.aluno || r.aluno_nome || '',
     professor: r.professor || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
     conteudo: r.texto || r.adaptacao || '',
