@@ -8337,7 +8337,7 @@ function renderPages() {
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
-        <button class="btn-copy" onclick="abrirModalRegistroAtividade()">💾 Registrar Observação</button>
+
       </div>
     </div>
   </div>
@@ -10495,7 +10495,7 @@ function renderPagesClinica() {
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
-        <button class="btn-copy" onclick="abrirModalRegistroAtividade()">💾 Registrar Observação</button>
+
         <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
       </div>
     </div>
@@ -11645,7 +11645,7 @@ function baixarFolhaRegistro() {
 
 async function salvarAdapt() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
-  const { error } = await db.from('adaptacoes').insert({
+  const { data, error } = await db.from('adaptacoes').insert({
     user_id: user.id,
     aluno_id:   dadosUltima.alunoId  || null,
     aluno_nome: dadosUltima.aluno    || null,
@@ -11656,9 +11656,10 @@ async function salvarAdapt() {
     perfis:     dadosUltima.perfis   || [],
     observacoes:dadosUltima.obs      || null,
     adaptacao:  ultimaAdapt
-  });
+  }).select('id').single();
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
-  toast('Adaptação salva!', 'success');
+  if (data?.id) dadosUltima.adaptacaoId = data.id;
+  toast('Adaptação salva! Depois de aplicar, use "💾 Registrar Observação" na lista de Adaptações salvas.', 'success');
   carregarAdaptacoes();
 }
 
@@ -11717,6 +11718,7 @@ function cardAdaptacao(r, gestao=false) {
     <div class="ic-tags">${tags}</div>
     <div class="ic-prev">${(r.texto||'').slice(0,100)}…</div>
     <div class="ic-date">${dt}</div>
+    <button class="btn-sm" style="margin-top:8px" onclick='event.stopPropagation();abrirModalRegistroAtividadeDe(${JSON.stringify(r).replace(/'/g,"&#39;")})'>💾 Registrar Observação</button>
   </div>`;
 }
 
@@ -13034,10 +13036,10 @@ function getChipUnico(containerId) {
   return document.getElementById(containerId)?.querySelector('.chip.active')?.textContent.trim() || null;
 }
 
-function abrirModalRegistroAtividade() {
-  if (!dadosUltima || !dadosUltima.aluno) return toast('Gere uma adaptação primeiro.', 'error');
-  document.getElementById('ra-aluno-nome').textContent = dadosUltima.aluno;
-  document.getElementById('ra-atividade-nome').textContent = dadosUltima.tipoAtiv || dadosUltima.materia || '';
+function prepararModalRegistro(contexto) {
+  window._registroContexto = contexto;
+  document.getElementById('ra-aluno-nome').textContent = contexto.alunoNome || '';
+  document.getElementById('ra-atividade-nome').textContent = contexto.atividade || '';
   document.getElementById('ra-data').value = new Date().toISOString().slice(0,10);
   document.getElementById('ra-tempo').value = '';
   ['ra-chips-objetivo','ra-chips-antes','ra-chips-compreensao','ra-escala-atencao','ra-chips-organizacao','ra-chips-estrategias','ra-chips-apoios','ra-escala-regulacao','ra-escala-autonomia','ra-chips-favoreceram','ra-chips-resultado'].forEach(id => {
@@ -13047,16 +13049,37 @@ function abrirModalRegistroAtividade() {
   abrirModal('modal-registro-atividade');
 }
 
+function abrirModalRegistroAtividade() {
+  if (!dadosUltima || !dadosUltima.aluno) return toast('Gere uma adaptação primeiro.', 'error');
+  prepararModalRegistro({
+    adaptacaoId: dadosUltima.adaptacaoId || null,
+    alunoId: dadosUltima.alunoId || null,
+    alunoNome: dadosUltima.aluno || null,
+    atividade: dadosUltima.tipoAtiv || dadosUltima.materia || null
+  });
+}
+
+function abrirModalRegistroAtividadeDe(r) {
+  prepararModalRegistro({
+    adaptacaoId: r.id || null,
+    alunoId: r.aluno_id || null,
+    alunoNome: r.aluno || r.aluno_nome || null,
+    atividade: r.tipo_ativ || r.materia || null
+  });
+}
+
 async function salvarRegistroAtividade() {
-  if (!dadosUltima?.alunoId) return toast('Aluno não identificado — gere a atividade a partir de um aluno cadastrado.', 'error');
+  const ctx = window._registroContexto;
+  if (!ctx?.alunoId) return toast('Aluno não identificado — abra o registro a partir de uma atividade salva ou recém-gerada.', 'error');
   const escalaAtencao = getChipUnico('ra-escala-atencao');
   const escalaRegulacao = getChipUnico('ra-escala-regulacao');
   const escalaAutonomia = getChipUnico('ra-escala-autonomia');
   const payload = {
     user_id: user.id,
-    aluno_id: dadosUltima.alunoId,
-    aluno_nome: dadosUltima.aluno || null,
-    atividade: dadosUltima.tipoAtiv || dadosUltima.materia || null,
+    aluno_id: ctx.alunoId,
+    aluno_nome: ctx.alunoNome || null,
+    atividade: ctx.atividade || null,
+    adaptacao_id: ctx.adaptacaoId || null,
     data_registro: document.getElementById('ra-data')?.value || null,
     tempo_min: parseInt(document.getElementById('ra-tempo')?.value) || null,
     objetivo_observado: getChipsAtivos('ra-chips-objetivo'),
