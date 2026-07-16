@@ -2794,6 +2794,138 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
+<!-- ══ MODAL: Registro de Observação da Atividade (digital) ══ -->
+<div class="overlay" id="modal-registro-atividade" onclick="fecharModal('modal-registro-atividade',event)">
+  <div class="modal md">
+    <div class="modal-header">
+      <div class="modal-title">Registro de Observação — <span id="ra-aluno-nome"></span></div>
+      <button class="modal-close" onclick="fecharModal('modal-registro-atividade')">×</button>
+    </div>
+    <div style="margin-top:12px;max-height:70vh;overflow-y:auto;padding-right:6px">
+      <div class="frow">
+        <div><label class="flabel">Atividade</label><div id="ra-atividade-nome" style="font-size:13px;color:var(--gr600);padding:8px 0"></div></div>
+        <div><label class="flabel" for="ra-data">Data</label><input type="date" id="ra-data" class="finput"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ra-tempo">Tempo de realização (minutos)</label><input type="number" id="ra-tempo" class="finput" style="max-width:120px"></div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Objetivo observado</div>
+      <div id="ra-chips-objetivo" style="display:flex;flex-wrap:wrap;gap:6px">
+        ${''}
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Atenção</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Memória operacional</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Planejamento</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Organização</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Linguagem</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Comunicação</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Coordenação motora</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Autorregulação</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Flexibilidade cognitiva</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Raciocínio lógico</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Antes de iniciar</div>
+      <div id="ra-chips-antes" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Iniciou espontaneamente</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Precisou de incentivo</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Demonstrou resistência</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Demonstrou interesse</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Solicitou ajuda</button>
+      </div>
+      <div class="fblock" style="margin-top:8px"><textarea id="ra-obs-antes" class="ftarea sm" placeholder="Observações antes de iniciar…"></textarea></div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Durante a atividade</div>
+      <label class="flabel">Compreensão</label>
+      <div id="ra-chips-compreensao" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-compreensao')">Imediata</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-compreensao')">Repetição</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-compreensao')">Demonstração</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-compreensao')">Apoio contínuo</button>
+      </div>
+
+      <label class="flabel">Atenção (0 = ausente · 4 = plena)</label>
+      <div id="ra-escala-atencao" style="display:flex;gap:6px;margin-bottom:10px">
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-atencao')">0</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-atencao')">1</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-atencao')">2</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-atencao')">3</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-atencao')">4</button>
+      </div>
+
+      <label class="flabel">Organização</label>
+      <div id="ra-chips-organizacao" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-organizacao')">Sozinho</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-organizacao')">Lembretes</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-organizacao')">Apoio constante</button>
+      </div>
+
+      <label class="flabel">Estratégias espontâneas</label>
+      <div id="ra-chips-estrategias" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Contagem</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Material concreto</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Desenho</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Fala em voz alta</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Tentativa e erro</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Observação do modelo</button>
+      </div>
+
+      <label class="flabel">Apoios necessários</label>
+      <div id="ra-chips-apoios" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Nenhum</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Verbal</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Gestual</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Visual</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Demonstração</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Material concreto</button>
+      </div>
+
+      <label class="flabel">Regulação (0 = desregulado · 4 = plenamente regulado)</label>
+      <div id="ra-escala-regulacao" style="display:flex;gap:6px;margin-bottom:10px">
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-regulacao')">0</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-regulacao')">1</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-regulacao')">2</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-regulacao')">3</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-regulacao')">4</button>
+      </div>
+
+      <label class="flabel">Autonomia (0 = dependente · 4 = totalmente autônomo)</label>
+      <div id="ra-escala-autonomia" style="display:flex;gap:6px;margin-bottom:10px">
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-autonomia')">0</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-autonomia')">1</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-autonomia')">2</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-autonomia')">3</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-escala-autonomia')">4</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Estratégias que favoreceram o desempenho</div>
+      <div id="ra-chips-favoreceram" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Divisão em etapas</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Apoio visual</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Material concreto</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Checklist</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Modelagem</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Reforço positivo</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Pausas</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Escolhas guiadas</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Resultado observado</div>
+      <div id="ra-chips-resultado" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-resultado')">Independente</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-resultado')">Com poucos apoios</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-resultado')">Com apoio frequente</button>
+        <button type="button" class="chip" onclick="toggleChipUnico(this,'ra-chips-resultado')">Não conseguiu concluir</button>
+      </div>
+
+      <div class="fblock" style="margin-top:14px"><label class="flabel" for="ra-obs-importantes">Observações importantes</label><textarea id="ra-obs-importantes" class="ftarea sm"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ra-recomendacoes">Recomendações para as próximas atividades</label><textarea id="ra-recomendacoes" class="ftarea sm"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ra-reflexao">O que esta atividade nos ensinou sobre a forma como este aluno aprende?</label><textarea id="ra-reflexao" class="ftarea sm"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-copy" onclick="salvarRegistroAtividade()">Salvar registro</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL: Perfil do Aluno (Professor) ══ -->
 <div class="overlay" id="modal-perfil-aluno" onclick="fecharModal('modal-perfil-aluno',event)">
   <div class="modal md">
@@ -2818,6 +2950,9 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📋 Observações clínicas</div>
         <div id="perfil-aluno-obs" style="font-size:13px;color:var(--gr600);line-height:1.7;background:var(--gr50);border-radius:var(--rsm);padding:10px 12px"></div>
       </div>
+      <!-- Progresso (IPA) -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📈 Evolução — Atenção, Regulação e Autonomia</div>
+      <div id="perfil-progresso-aluno" style="margin-bottom:16px">Carregando…</div>
       <!-- Adaptações -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📝 Adaptações geradas</div>
       <div id="perfil-aluno-adaptacoes" style="font-size:13px;color:var(--gr400);margin-bottom:16px">Carregando…</div>
@@ -8202,6 +8337,7 @@ function renderPages() {
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
+        <button class="btn-copy" onclick="abrirModalRegistroAtividade()">💾 Registrar Observação</button>
       </div>
     </div>
   </div>
@@ -12867,6 +13003,100 @@ function renderAlunosLista() {
   }).join('');
 }
 
+function toggleChipMulti(el) {
+  el.classList.toggle('active');
+}
+function getChipsAtivos(containerId) {
+  return [...(document.getElementById(containerId)?.querySelectorAll('.chip.active') || [])].map(c => c.textContent.trim());
+}
+function toggleChipUnico(el, containerId) {
+  document.getElementById(containerId)?.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+function getChipUnico(containerId) {
+  return document.getElementById(containerId)?.querySelector('.chip.active')?.textContent.trim() || null;
+}
+
+function abrirModalRegistroAtividade() {
+  if (!dadosUltima || !dadosUltima.aluno) return toast('Gere uma adaptação primeiro.', 'error');
+  document.getElementById('ra-aluno-nome').textContent = dadosUltima.aluno;
+  document.getElementById('ra-atividade-nome').textContent = dadosUltima.tipoAtiv || dadosUltima.materia || '';
+  document.getElementById('ra-data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('ra-tempo').value = '';
+  ['ra-chips-objetivo','ra-chips-antes','ra-chips-compreensao','ra-escala-atencao','ra-chips-organizacao','ra-chips-estrategias','ra-chips-apoios','ra-escala-regulacao','ra-escala-autonomia','ra-chips-favoreceram','ra-chips-resultado'].forEach(id => {
+    document.getElementById(id)?.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  });
+  ['ra-obs-antes','ra-obs-importantes','ra-recomendacoes','ra-reflexao'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  abrirModal('modal-registro-atividade');
+}
+
+async function salvarRegistroAtividade() {
+  if (!dadosUltima?.alunoId) return toast('Aluno não identificado — gere a atividade a partir de um aluno cadastrado.', 'error');
+  const escalaAtencao = getChipUnico('ra-escala-atencao');
+  const escalaRegulacao = getChipUnico('ra-escala-regulacao');
+  const escalaAutonomia = getChipUnico('ra-escala-autonomia');
+  const payload = {
+    user_id: user.id,
+    aluno_id: dadosUltima.alunoId,
+    aluno_nome: dadosUltima.aluno || null,
+    atividade: dadosUltima.tipoAtiv || dadosUltima.materia || null,
+    data_registro: document.getElementById('ra-data')?.value || null,
+    tempo_min: parseInt(document.getElementById('ra-tempo')?.value) || null,
+    objetivo_observado: getChipsAtivos('ra-chips-objetivo'),
+    antes_iniciar: getChipsAtivos('ra-chips-antes'),
+    observacoes_antes: document.getElementById('ra-obs-antes')?.value.trim() || null,
+    compreensao: getChipUnico('ra-chips-compreensao'),
+    atencao_nivel: escalaAtencao !== null ? parseInt(escalaAtencao) : null,
+    organizacao: getChipUnico('ra-chips-organizacao'),
+    estrategias_espontaneas: getChipsAtivos('ra-chips-estrategias'),
+    apoios_necessarios: getChipsAtivos('ra-chips-apoios'),
+    regulacao_nivel: escalaRegulacao !== null ? parseInt(escalaRegulacao) : null,
+    autonomia_nivel: escalaAutonomia !== null ? parseInt(escalaAutonomia) : null,
+    estrategias_favoreceram: getChipsAtivos('ra-chips-favoreceram'),
+    resultado: getChipUnico('ra-chips-resultado'),
+    observacoes_importantes: document.getElementById('ra-obs-importantes')?.value.trim() || null,
+    recomendacoes: document.getElementById('ra-recomendacoes')?.value.trim() || null,
+    reflexao: document.getElementById('ra-reflexao')?.value.trim() || null,
+  };
+  const { error } = await db.from('registros_atividade').insert(payload);
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Registro salvo! Já entra no gráfico de evolução do aluno.', 'success');
+  fecharModal('modal-registro-atividade');
+}
+
+async function carregarProgressoAluno(alunoId) {
+  const cont = document.getElementById('perfil-progresso-aluno');
+  if (!cont || !alunoId) return;
+  const { data } = await db.from('registros_atividade')
+    .select('data_registro, atencao_nivel, regulacao_nivel, autonomia_nivel, created_at')
+    .eq('aluno_id', alunoId)
+    .order('created_at', { ascending: true })
+    .limit(12);
+  const lista = data || [];
+  if (!lista.length) { cont.innerHTML = '<p style="color:var(--gr400);font-size:12px">Nenhum registro de observação ainda. Use "💾 Registrar Observação" após gerar uma atividade.</p>'; return; }
+  const largura = 260, altura = 60;
+  const passo = lista.length > 1 ? largura / (lista.length - 1) : 0;
+  function pontos(campo) {
+    return lista.map((r, i) => {
+      const v = r[campo] == null ? 2 : r[campo];
+      const x = lista.length > 1 ? i * passo : largura/2;
+      const y = altura - (v/4)*altura;
+      return `${x},${y}`;
+    }).join(' ');
+  }
+  const dataIni = lista[0].data_registro || lista[0].created_at;
+  const dataFim = lista[lista.length-1].data_registro || lista[lista.length-1].created_at;
+  cont.innerHTML = `
+    <div style="font-size:11px;color:var(--gr500);margin-bottom:4px">Últimos ${lista.length} registros — <span style="color:#2563EB">●</span> Atenção &nbsp; <span style="color:#059669">●</span> Regulação &nbsp; <span style="color:#7C3AED">●</span> Autonomia</div>
+    <svg width="100%" height="70" viewBox="0 0 ${largura} ${altura}" preserveAspectRatio="none" style="overflow:visible">
+      <polyline points="${pontos('atencao_nivel')}" fill="none" stroke="#2563EB" stroke-width="2"/>
+      <polyline points="${pontos('regulacao_nivel')}" fill="none" stroke="#059669" stroke-width="2"/>
+      <polyline points="${pontos('autonomia_nivel')}" fill="none" stroke="#7C3AED" stroke-width="2"/>
+    </svg>
+    <div style="font-size:10px;color:var(--gr400);margin-top:2px">${new Date(dataIni).toLocaleDateString('pt-BR')} → ${new Date(dataFim).toLocaleDateString('pt-BR')}</div>
+  `;
+}
+
 async function abrirPerfilAluno(a) {
   // Avatar
   const cores = ['#2563EB','#7C3AED','#059669','#0891B2','#D97706'];
@@ -12903,6 +13133,7 @@ async function abrirPerfilAluno(a) {
   }
 
   abrirModal('modal-perfil-aluno');
+  carregarProgressoAluno(a.id);
 
   // Adaptações
   const adaptEl = document.getElementById('perfil-aluno-adaptacoes');
