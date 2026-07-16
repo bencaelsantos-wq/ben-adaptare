@@ -11204,7 +11204,8 @@ REGRAS INVIOLAVEIS DA FOLHA DO ALUNO:
 - Separacao visual obrigatoria entre blocos com ---
 - Linguagem direta para ${idade} anos, serie ${serie}
 - NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso nao renderiza isso
-- O numero de cada questao e o enunciado devem ficar NA MESMA LINHA (ex: "1. Olhe a figura e complete com a letra que falta."). NUNCA escreva o numero sozinho em uma linha e o enunciado em outra linha separada — isso parece erro de formatacao no PDF.
+- O numero de cada questao e o enunciado devem ficar SEMPRE na mesma linha, sem quebra de linha entre eles (ex correto: "1. Olhe a figura e complete com a letra que falta."; ex ERRADO, nunca faça isso: "1.\nOlhe a figura e complete com a letra que falta."). O numero e o texto do enunciado sao uma unica frase, nunca dois elementos separados.
+- Em exercicios de reorganizar/desembaralhar letras ou palavras, o "exemplo resolvido" tem que mostrar a transformacao de verdade: o lado de entrada DEVE estar embaralhado/incorreto e só o lado de saida mostra a palavra certa (ex correto: "Exemplo: OMRA -> AMOR"; ex ERRADO, nunca faça isso: "Exemplo: AMOR -> AMOR"). Nunca repita a mesma palavra já correta dos dois lados do exemplo.
 - Ao pedir para completar letras faltantes em uma palavra, mantenha a palavra INTEIRA no mesmo estilo de caixa (todas maiusculas OU todas minusculas) — nunca misture (ex: nunca "Cachorro: C A __ H O R R O", use "CACHORRO: C A __ H O R R O" ou "cachorro: c a __ h o r r o"). Duas grafias diferentes da mesma palavra dificultam reconhecimento para varios perfis.
 - Quando um item da atividade se beneficiar de apoio visual (pictograma) para reduzir barreira de linguagem/leitura conforme a TABELA BARREIRA → ESTRATÉGIA, escreva o marcador [IMAGEM: nome-do-item] logo após o texto desse item, com o nome em minúsculas e sem acento (ex: "CACHORRO [IMAGEM: cachorro]"). Use no máximo 1 marcador por item, só quando a imagem representar diretamente a palavra/conceito — nunca use para decoração.
 
@@ -12738,27 +12739,39 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       y += altDesenho + 4;
       continue;
     }
-    const matchImg = limpa.match(/\[IMAGEM:\s*([^\]]+)\]/i);
-    if (matchImg) {
-      const nomeImg = matchImg[1].trim().toLowerCase();
-      const textoSemMarcador = limpa.replace(matchImg[0], '').trim();
-      const b64 = opts.imagensPorItem && opts.imagensPorItem[nomeImg];
-      if (textoSemMarcador) doc.text(textoSemMarcador, ml, y);
-      if (b64) {
-        const imgSize = 18;
-        if (y + imgSize > H - rodapeH) {
-          adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
-          doc.addPage();
-          y = 10;
-        }
-        try {
-          const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-          doc.addImage(b64, formato, ml, y + 2, imgSize, imgSize);
-          y += imgSize + 4;
-        } catch(e) { y += altLinha; }
-      } else {
-        y += altLinha;
+    const imgMatches = [...limpa.matchAll(/\[IMAGEM:\s*([^\]]+)\]/gi)];
+    if (imgMatches.length) {
+      const itens = [];
+      let cursor = 0;
+      imgMatches.forEach(m => {
+        const rotulo = limpa.slice(cursor, m.index).trim();
+        itens.push({ rotulo, nome: m[1].trim().toLowerCase() });
+        cursor = m.index + m[0].length;
+      });
+      const restante = limpa.slice(cursor).trim();
+      if (restante) itens[itens.length - 1].rotulo = (itens[itens.length - 1].rotulo + ' ' + restante).trim();
+
+      const imgSize = 22;
+      const celulaW = maxW / itens.length;
+      const altCelula = imgSize + altLinha + 4;
+      if (y + altCelula > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 10;
       }
+      itens.forEach((item, idx) => {
+        const x = ml + idx * celulaW;
+        if (item.rotulo) doc.text(item.rotulo, x, y);
+        const b64 = opts.imagensPorItem && opts.imagensPorItem[item.nome];
+        if (b64) {
+          try {
+            const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+            const largura = Math.min(imgSize, celulaW - 4);
+            doc.addImage(b64, formato, x, y + 3, largura, largura);
+          } catch(e) {}
+        }
+      });
+      y += altCelula;
       continue;
     }
     const matchCaixa = limpa.match(/^\[CAIXA:\s*(.+)\]$/i);
@@ -12813,11 +12826,11 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     if (isH) {
       y += 2;
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
+      doc.setFontSize(fontSize + 0.5);
       doc.setTextColor(30, 58, 138);
       doc.text(limpa, ml, y);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.5);
+      doc.setFontSize(fontSize);
       doc.setTextColor(25, 25, 25);
       y += altLinha + 1;
     } else if (/!!.+!!/.test(limpa)) {
@@ -12876,8 +12889,10 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       .replace(/---USO EXCLUSIVO DO PROFESSOR---/gi, '')
       .trim();
 
+    const fontSizeGuia = 12;
+    const altLinha = 6.2;
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9.5);
+    doc.setFontSize(fontSizeGuia);
     doc.setTextColor(25, 25, 25);
 
     const linhasGuia = doc.splitTextToSize(sanitizarTexto(guiaLimpo), maxW);    for (let i = 0; i < linhasGuia.length; i++) {
@@ -12888,7 +12903,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         doc.rect(0, 0, W, 3, 'F');
         y = 10;
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9.5);
+        doc.setFontSize(fontSizeGuia);
         doc.setTextColor(25, 25, 25);
       }
       const linha = linhasGuia[i];
@@ -12910,7 +12925,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         doc.setFillColor(30, 58, 138);
         doc.roundedRect(ml, y, W - ml - mr, altCaixa, 2, 2, 'F');
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.5);
+        doc.setFontSize(fontSizeGuia);
         doc.setTextColor(255, 255, 255);
         linhasCaixa.forEach((l, li) => doc.text(l, ml + 5, y + 6 + li * altLinha));
         doc.setFont('helvetica', 'normal');
@@ -12919,7 +12934,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       } else if (isH) {
         y += 2;
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.5);
+        doc.setFontSize(fontSizeGuia);
         doc.setTextColor(20, 40, 120);
         doc.text(limpa, ml, y);
         doc.setFont('helvetica', 'normal');
@@ -12971,6 +12986,8 @@ function sanitizarTexto(txt) {
                                                                                                                                                                                       }
                                                                                                                                                                                       
 function adicionarRodapePagina(doc, W, H, ml, mr, numPag) {
+  const _fsAntes = doc.internal.getFontSize();
+  const _fontAntes = doc.getFont();
   doc.setDrawColor(220, 220, 220);
   doc.setLineWidth(0.3);
   doc.line(ml, H - 10, W - mr, H - 10);
@@ -12980,6 +12997,8 @@ function adicionarRodapePagina(doc, W, H, ml, mr, numPag) {
   doc.text('Pluramente — Plataforma de Integração Clínica-Pedagógica | pluramente.ia.br', W / 2, H - 5, { align: 'center' });
   doc.text('Pág. ' + numPag, W - mr, H - 5, { align: 'right' });
   doc.setTextColor(30, 30, 30);
+  doc.setFont(_fontAntes.fontName, _fontAntes.fontStyle);
+  doc.setFontSize(_fsAntes);
 }
 
 // ── ALUNOS CADASTRADOS ───────────────────────────────────────
