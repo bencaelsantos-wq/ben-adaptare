@@ -10862,6 +10862,39 @@ async function extrairTextoDOCX(file) {
 }
 
 // ── GERAR ADAPTAÇÃO ──────────────────────────────────────────
+async function buscarAprendizadoAluno(alunoId) {
+  if (!alunoId) return '';
+  const { data } = await db.from('registros_atividade')
+    .select('estrategias_favoreceram, apoios_necessarios, atencao_nivel, regulacao_nivel, autonomia_nivel, recomendacoes')
+    .eq('aluno_id', alunoId)
+    .order('data_registro', { ascending: false })
+    .limit(6);
+  if (!data || !data.length) return '';
+
+  const contarFrequencia = (campo) => {
+    const contagem = {};
+    data.forEach(r => (r[campo] || []).forEach(v => contagem[v] = (contagem[v]||0) + 1));
+    return Object.entries(contagem).sort((a,b) => b[1]-a[1]).slice(0,4).map(([v]) => v);
+  };
+  const favoreceram = contarFrequencia('estrategias_favoreceram');
+  const apoiosFrequentes = contarFrequencia('apoios_necessarios');
+
+  const media = (campo) => {
+    const vals = data.map(r => r[campo]).filter(v => v !== null && v !== undefined);
+    return vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : null;
+  };
+  const mAtencao = media('atencao_nivel'), mRegulacao = media('regulacao_nivel'), mAutonomia = media('autonomia_nivel');
+  const recomendacoes = data.map(r => r.recomendacoes).filter(Boolean).slice(0,2);
+
+  const partes = [];
+  if (favoreceram.length) partes.push(`- Estratégias que já funcionaram bem com este aluno em atividades anteriores: ${favoreceram.join(', ')}.`);
+  if (apoiosFrequentes.length) partes.push(`- Apoios que este aluno costuma precisar: ${apoiosFrequentes.join(', ')}.`);
+  if (mAtencao || mRegulacao || mAutonomia) partes.push(`- Médias recentes (escala 0-4) — Atenção: ${mAtencao ?? '-'} | Regulação: ${mRegulacao ?? '-'} | Autonomia: ${mAutonomia ?? '-'}.`);
+  if (recomendacoes.length) partes.push(`- Recomendações registradas em atividades anteriores: ${recomendacoes.join(' | ')}`);
+
+  return partes.join('\n');
+}
+
 async function gerar() {
   let aluno, idade, serie, perfis, obs;
 
@@ -10911,6 +10944,8 @@ async function gerar() {
     }).filter(Boolean),
     ...estrategiasDiagnostico
   ])].join('\n\n');
+
+  const aprendizadoTexto = await buscarAprendizadoAluno(alunoSelId);
 
   // ── BASE DE CONHECIMENTO MONTESSORI ──────────────────────────
   const tiposDetectados = detectarTiposExercicio(conteudo);
@@ -11079,7 +11114,10 @@ ${ctxAluno ? '\nCONTEXTO ADICIONAL INFORMADO PELO PROFESSOR:\n' + ctxAluno : ''}
 
 ESTRATÉGIAS PEDAGÓGICAS OBRIGATÓRIAS POR DIAGNÓSTICO:
 ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em evidências.'}
-
+${aprendizadoTexto ? `
+APRENDIZADO DE ATIVIDADES ANTERIORES (baseado em registros reais de aplicação deste aluno — use para não repetir estratégias que não funcionaram e reforçar as que funcionaram):
+${aprendizadoTexto}
+` : ''}
 CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
