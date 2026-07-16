@@ -3723,14 +3723,18 @@ async function lerPerfilDobanco() {
 
     if (error) { console.warn('profiles read error:', error.message); return; }
 
+    window._organizacaoId = data?.organizacao_id || null;
+
     if (data?.organizacao_id) {
-      const { data: org } = await db.from('organizacoes').select('plano, addon_analise, addon_laudos, extra_professores, extra_alunos, extra_ia_pacotes').eq('id', data.organizacao_id).maybeSingle();
+      const { data: org } = await db.from('organizacoes').select('plano, addon_analise, addon_laudos, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url').eq('id', data.organizacao_id).maybeSingle();
       window._planoAtivo = org?.plano || 'acolhe';
       window._addonAnalise = !!(org?.addon_analise || data?.addon_analise);
       window._addonLaudos = !!(org?.addon_laudos || data?.addon_laudos);
       window._extraProfessores = org?.extra_professores || 0;
       window._extraAlunos = org?.extra_alunos || 0;
       window._extraIaPacotes = org?.extra_ia_pacotes || 0;
+      window._nomeInstituicao = org?.nome || '';
+      window._logoEscolaUrl = org?.logo_url || null;
     } else {
       window._planoAtivo = data?.plano || 'acolhe';
       window._addonAnalise = !!data?.addon_analise;
@@ -3738,6 +3742,8 @@ async function lerPerfilDobanco() {
       window._extraProfessores = data?.extra_professores || 0;
       window._extraAlunos = data?.extra_alunos || 0;
       window._extraIaPacotes = data?.extra_ia_pacotes || 0;
+      window._nomeInstituicao = '';
+      window._logoEscolaUrl = null;
     }
     if (data?.nome) window._profNomeDB = data.nome;
     if (!window._profNomeDB) {
@@ -3851,12 +3857,12 @@ async function iniciarApp() {
 
   const colorMap = {
     professor:       { label:' Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
-    gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); setTimeout(verificarOnboardingGestao, 800); verificarNotificacoesSolicitacoes(); } },
-    clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); verificarNotificacoesSolicitacoes(); const btnNovoPerfilClinica = document.getElementById('btn-novo-perfil-clinica'); if (btnNovoPerfilClinica) btnNovoPerfilClinica.style.display = 'none'; } },
-    'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); } },
-    at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); } },
+    gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); setTimeout(verificarOnboardingGestao, 800); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); } },
+    clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); const btnNovoPerfilClinica = document.getElementById('btn-novo-perfil-clinica'); if (btnNovoPerfilClinica) btnNovoPerfilClinica.style.display = 'none'; } },
+    'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); carregarLogoEscola(); } },
+    at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); carregarLogoEscola(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
-    coordenacao:     { label:' Coordenação',        cls:'gestao',   sidebarCls:'role-gestao',         nav: ()=>renderNavCoordenacao(),   after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); verificarNotificacoesSolicitacoes(); } },
+    coordenacao:     { label:' Coordenação',        cls:'gestao',   sidebarCls:'role-gestao',         nav: ()=>renderNavCoordenacao(),   after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); } },
     familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); } },
   };
 
@@ -4237,8 +4243,22 @@ function renderPagesGestaoClinica() {
   document.getElementById('main-content').innerHTML = `
   <!-- DASHBOARD DA GESTÃO CLÍNICA -->
   <div id="page-gc-dashboard" class="page active">
-    <h1 class="page-title">Dashboard — Gestão Clínica</h1>
-    <p class="page-sub">Visão executiva da equipe clínica — especialistas, alunos atendidos e integração com a escola.</p>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title" style="margin-bottom:4px">Dashboard — Gestão Clínica</h1>
+        <p class="page-sub" style="margin-bottom:0">Visão executiva da equipe clínica — especialistas, alunos atendidos e integração com a escola.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <input type="text" id="inp-nome-instituicao" class="finput" placeholder="Nome da clínica" style="width:200px" onchange="salvarNomeInstituicao(this.value)">
+        <div id="logo-preview" style="width:96px;height:44px;border:1.5px dashed var(--gr200);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-shrink:0;position:relative;cursor:pointer" title="Clique para enviar logo da clínica">
+          <span id="logo-placeholder" style="font-size:10px;color:var(--gr400);text-align:center;line-height:1.3">Logo<br>clínica</span>
+          <img id="logo-img" src="" style="display:none;max-width:92px;max-height:40px;object-fit:contain;border-radius:4px">
+          <label style="position:absolute;inset:0;cursor:pointer;border-radius:var(--rsm)"><input type="file" id="logo-upload" accept="image/png,image/jpeg,image/svg+xml" style="display:none" onchange="uploadLogoEscola(this)"></label>
+        </div>
+        <button id="btn-remover-logo" class="btn-sm-ghost" style="font-size:11px;display:none" onclick="removerLogoEscola()">🗑️ Remover logo</button>
+      </div>
+    </div>
+    <span id="logo-status" style="display:none">PNG, JPG ou SVG · máx. 2MB</span>
     <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
       <div class="stat-card"><div class="stat-num" id="dash-gc-especialistas" style="background:linear-gradient(135deg,#7C3AED,#A78BFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="stat-label">Especialistas ativos</div></div>
       <div class="stat-card"><div class="stat-num" id="dash-gc-alunos">—</div><div class="stat-label">Pacientes com perfil clínico</div></div>
@@ -8181,6 +8201,7 @@ function renderPages() {
         <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
+        <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
       </div>
     </div>
   </div>
@@ -9429,6 +9450,7 @@ function renderPagesGestao() {
         <p class="page-sub" style="margin-bottom:0;text-transform:capitalize" id="gestao-painel-data">—</p>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <input type="text" id="inp-nome-instituicao" class="finput" placeholder="Nome da escola" style="width:200px" onchange="salvarNomeInstituicao(this.value)">
         <div id="logo-preview" style="width:96px;height:44px;border:1.5px dashed var(--gr200);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-shrink:0;position:relative;cursor:pointer" title="Clique para enviar logo da escola">
           <span id="logo-placeholder" style="font-size:10px;color:var(--gr400);text-align:center;line-height:1.3">Logo<br>escola</span>
           <img id="logo-img" src="" style="display:none;max-width:92px;max-height:40px;object-fit:contain;border-radius:4px">
@@ -10336,6 +10358,7 @@ function renderPagesClinica() {
         <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
+        <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
         <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
       </div>
     </div>
@@ -12227,6 +12250,12 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
       doc.addImage(logoUrl, 'PNG', ml, 3, 45, 18, '', 'FAST');
     } catch(e) {
       try { doc.addImage(logoUrl, 'JPEG', ml, 3, 45, 18, '', 'FAST'); } catch(e2) {}
+    }
+    if (window._nomeInstituicao) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(60, 70, 110);
+      doc.text(sanitizarTexto(window._nomeInstituicao), ml + 47, 12);
     }
     if (opts.professor) {
       const _partes = (opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/);
