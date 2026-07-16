@@ -8337,8 +8337,15 @@ function renderPages() {
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
-
+        <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
       </div>
+    </div>
+
+    <div class="fcard" id="ap-img-painel" style="display:none;margin-top:16px">
+      <div class="fcard-title">Imagens da atividade</div>
+      <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF ao lado do texto — clique em "Baixar PDF" acima depois de selecionar.</p>
+      <div id="ap-img-itens"></div>
+      <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
   </div>
 
@@ -10502,10 +10509,9 @@ function renderPagesClinica() {
 
     <div class="fcard" id="ap-img-painel" style="display:none;margin-top:16px">
       <div class="fcard-title">Imagens da atividade</div>
-      <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um.</p>
+      <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF ao lado do texto — clique em "Baixar PDF" acima depois de selecionar.</p>
       <div id="ap-img-itens"></div>
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
-      <button class="btn-gerar" style="margin-top:14px" onclick="baixarPDFAdaptacaoComImagens()">Baixar PDF com imagens</button>
     </div>
   </div>` : ''}
 
@@ -11090,7 +11096,7 @@ TABELA BARREIRA → ESTRATÉGIA (consulte antes de escolher uma estratégia visu
 - Memória operacional → Passo a passo, checklist, exemplo resolvido
 - Atenção sustentada → Caixa de foco, destaque, agenda visual
 - Organização/planejamento → Fluxograma, organizador gráfico, agenda visual
-- Linguagem/leitura → Pictograma, exemplo resolvido
+- Linguagem/leitura → Pictograma (marcador [IMAGEM: nome-do-item]), exemplo resolvido
 - Flexibilidade cognitiva → Fluxograma
 - Processamento visuoespacial/raciocínio matemático → Linha numérica
 - Autorregulação → Escala visual, agenda visual
@@ -11161,6 +11167,7 @@ REGRAS INVIOLAVEIS DA FOLHA DO ALUNO:
 - NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso nao renderiza isso
 - O numero de cada questao e o enunciado devem ficar NA MESMA LINHA (ex: "1. Olhe a figura e complete com a letra que falta."). NUNCA escreva o numero sozinho em uma linha e o enunciado em outra linha separada — isso parece erro de formatacao no PDF.
 - Ao pedir para completar letras faltantes em uma palavra, mantenha a palavra INTEIRA no mesmo estilo de caixa (todas maiusculas OU todas minusculas) — nunca misture (ex: nunca "Cachorro: C A __ H O R R O", use "CACHORRO: C A __ H O R R O" ou "cachorro: c a __ h o r r o"). Duas grafias diferentes da mesma palavra dificultam reconhecimento para varios perfis.
+- Quando um item da atividade se beneficiar de apoio visual (pictograma) para reduzir barreira de linguagem/leitura conforme a TABELA BARREIRA → ESTRATÉGIA, escreva o marcador [IMAGEM: nome-do-item] logo após o texto desse item, com o nome em minúsculas e sem acento (ex: "CACHORRO [IMAGEM: cachorro]"). Use no máximo 1 marcador por item, só quando a imagem representar diretamente a palavra/conceito — nunca use para decoração.
 
 AUTOAVALIAÇÃO DA ADAPTAÇÃO — obrigatória, raciocínio interno, antes de responder:
 Avalie a atividade que você está prestes a entregar contra esta escala. Se qualquer resposta for NÃO, reescreva a atividade antes de entregá-la — não entregue sabendo que falhou em algum item:
@@ -11243,7 +11250,7 @@ NAO FAZER: [1-2 proibições críticas]`;
 
 
 // ── DOWNLOAD PDF DA ADAPTAÇÃO ────────────────────────────────
-function downloadAdaptacaoPDF() {
+async function downloadAdaptacaoPDF() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
 
   const separador = /\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i;
@@ -11256,6 +11263,18 @@ function downloadAdaptacaoPDF() {
   const materia = dadosUltima.materia || '';
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || document.getElementById('pei-professor')?.value || '';
 
+  const itensComImagem = (window._imgItens||[]).filter(i => i.urlEscolhida);
+  const imagensPorItem = {};
+  if (itensComImagem.length) {
+    toast('Montando PDF com imagens…', 'success');
+    for (const item of itensComImagem) {
+      try {
+        imagensPorItem[item.termo.trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida);
+      } catch(e) {
+        console.warn('Falha ao carregar imagem de', item.termo, e);
+      }
+    }
+  }
 
   // Gerar PDF da folha do aluno
   gerarPDFDocumento({
@@ -11270,12 +11289,16 @@ function downloadAdaptacaoPDF() {
     guiaProf: incluiGuia ? guiaProf : null,
     fonteTamanho: dadosUltima.fonteTamanho,
     espacamento: dadosUltima.espacamento,
-    fonteTipo: dadosUltima.fonteTipo
+    fonteTipo: dadosUltima.fonteTipo,
+    imagensPorItem
   });
 }
 
 // ── IMAGENS DA ATIVIDADE (banco próprio + banco gratuito) ────────────
 function extrairItensParaIlustrar(texto) {
+  const marcadores = [...texto.matchAll(/\[IMAGEM:\s*([^\]]+)\]/gi)].map(m => m[1].trim().toLowerCase());
+  if (marcadores.length) return [...new Set(marcadores)];
+
   const linhas = texto.split('\n');
   const itens = [];
   const gatilhoLista = /(pinte|desenhe|circule|ilustre|colora[çc][ãa]o|cole a figura|recorte e cole)[^:]*:\s*(.+)/i;
@@ -11393,74 +11416,6 @@ function imagemParaBase64(url) {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   }));
-}
-
-async function baixarPDFAdaptacaoComImagens() {
-  if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
-  const itensComImagem = (window._imgItens||[]).filter(i => i.urlEscolhida);
-  if (!itensComImagem.length) return toast('Selecione ao menos uma imagem antes de gerar o PDF com imagens.', 'error');
-
-  toast('Montando PDF com imagens…', 'success');
-
-  const separador = /\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i;
-  const partes = ultimaAdapt.split(separador);
-  const folhaAluno = partes[0].trim();
-  const guiaProf = partes[1] ? partes[1].trim() : null;
-  const incluiGuia = dadosUltima.incluiGuia !== false;
-  const nomeAluno = dadosUltima.aluno || 'Aluno';
-  const materia = dadosUltima.materia || '';
-  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || document.getElementById('pei-professor')?.value || '';
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const W = 210, H = 297, ml = 20, mr = 20;
-
-  const opts = {
-    tipo: 'ATIVIDADE ADAPTADA',
-    titulo: 'Atividade Adaptada',
-    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv : ''),
-    aluno: nomeAluno,
-    professor: profNome,
-    conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
-    guiaProf: incluiGuia ? guiaProf : null,
-    fonteTamanho: dadosUltima.fonteTamanho,
-    espacamento: dadosUltima.espacamento,
-    fonteTipo: dadosUltima.fonteTipo
-  };
-
-  gerarPDFAtividade(doc, opts, W, H, ml, mr);
-
-  doc.addPage();
-  let y = 20;
-  doc.setFillColor(30, 58, 138);
-  doc.rect(0, 0, W, 3, 'F');
-  doc.setFillColor(245, 248, 255);
-  doc.rect(0, 3, W, 16, 'F');
-  doc.setTextColor(30, 58, 138);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('IMAGENS DE APOIO', ml, 13);
-  y = 26;
-
-  for (const item of itensComImagem) {
-    try {
-      const base64 = await imagemParaBase64(item.urlEscolhida);
-      const formato = base64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-      if (y > H - 100) { doc.addPage(); y = 20; }
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10.5);
-      doc.setTextColor(30, 30, 30);
-      doc.text(sanitizarTexto(item.termo), ml, y);
-      y += 6;
-      doc.addImage(base64, formato, ml, y, 80, 80);
-      y += 90;
-    } catch(e) {
-      console.warn('Falha ao inserir imagem de', item.termo, e);
-    }
-  }
-
-  doc.save('Adaptacao_com_imagens_' + nomeAluno.replace(/\s+/g,'_') + '.pdf');
-  toast('PDF gerado com sucesso!', 'success');
 }
 
 function linhaCampoRegistro(doc, x, y, rotulo, valor, largura) {
@@ -12742,6 +12697,29 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setTextColor(25, 25, 25);
       doc.setFontSize(fontSize);
       y += altDesenho + 4;
+      continue;
+    }
+    const matchImg = limpa.match(/\[IMAGEM:\s*([^\]]+)\]/i);
+    if (matchImg) {
+      const nomeImg = matchImg[1].trim().toLowerCase();
+      const textoSemMarcador = limpa.replace(matchImg[0], '').trim();
+      const b64 = opts.imagensPorItem && opts.imagensPorItem[nomeImg];
+      if (textoSemMarcador) doc.text(textoSemMarcador, ml, y);
+      if (b64) {
+        const imgSize = 18;
+        if (y + imgSize > H - rodapeH) {
+          adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+          doc.addPage();
+          y = 10;
+        }
+        try {
+          const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+          doc.addImage(b64, formato, ml, y + 2, imgSize, imgSize);
+          y += imgSize + 4;
+        } catch(e) { y += altLinha; }
+      } else {
+        y += altLinha;
+      }
       continue;
     }
     const matchCaixa = limpa.match(/^\[CAIXA:\s*(.+)\]$/i);
