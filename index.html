@@ -11159,6 +11159,8 @@ REGRAS INVIOLAVEIS DA FOLHA DO ALUNO:
 - Separacao visual obrigatoria entre blocos com ---
 - Linguagem direta para ${idade} anos, serie ${serie}
 - NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso nao renderiza isso
+- O numero de cada questao e o enunciado devem ficar NA MESMA LINHA (ex: "1. Olhe a figura e complete com a letra que falta."). NUNCA escreva o numero sozinho em uma linha e o enunciado em outra linha separada — isso parece erro de formatacao no PDF.
+- Ao pedir para completar letras faltantes em uma palavra, mantenha a palavra INTEIRA no mesmo estilo de caixa (todas maiusculas OU todas minusculas) — nunca misture (ex: nunca "Cachorro: C A __ H O R R O", use "CACHORRO: C A __ H O R R O" ou "cachorro: c a __ h o r r o"). Duas grafias diferentes da mesma palavra dificultam reconhecimento para varios perfis.
 
 AUTOAVALIAÇÃO DA ADAPTAÇÃO — obrigatória, raciocínio interno, antes de responder:
 Avalie a atividade que você está prestes a entregar contra esta escala. Se qualquer resposta for NÃO, reescreva a atividade antes de entregá-la — não entregue sabendo que falhou em algum item:
@@ -11244,7 +11246,7 @@ NAO FAZER: [1-2 proibições críticas]`;
 function downloadAdaptacaoPDF() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
 
-  const separador = /\*{0,3}\s*GUIA[_\s]PROFESSOR\s*\*{0,3}/i;
+  const separador = /\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i;
   const partes = ultimaAdapt.split(separador);
   const folhaAluno = partes[0].trim();
   const guiaProf = partes[1] ? partes[1].trim() : null;
@@ -11276,22 +11278,36 @@ function downloadAdaptacaoPDF() {
 function extrairItensParaIlustrar(texto) {
   const linhas = texto.split('\n');
   const itens = [];
-  const gatilho = /(pinte|desenhe|circule|ilustre|colora[çc][ãa]o|cole a figura|recorte e cole)[^:]*:\s*(.+)/i;
-  linhas.forEach(l => {
-    const m = l.match(gatilho);
+  const gatilhoLista = /(pinte|desenhe|circule|ilustre|colora[çc][ãa]o|cole a figura|recorte e cole)[^:]*:\s*(.+)/i;
+  const gatilhoBloco = /(ligue|associe|relacione|una)\s.*(desenho|imagem|figura)/i;
+  for (let i = 0; i < linhas.length; i++) {
+    const l = linhas[i];
+    const m = l.match(gatilhoLista);
     if (m) {
       m[2].split(/,| e /).forEach(parte => {
         const item = parte.replace(/[.;].*$/, '').trim();
         if (item && item.length > 1 && item.length < 40) itens.push(item);
       });
+      continue;
     }
-  });
+    if (gatilhoBloco.test(l)) {
+      for (let j = i + 1; j < Math.min(i + 10, linhas.length); j++) {
+        const cand = linhas[j].trim();
+        if (!cand) continue;
+        if (/^[A-ZÀ-Ú][A-ZÀ-Úa-zà-ú]{1,25}$/.test(cand)) {
+          itens.push(cand);
+        } else if (itens.length) {
+          break;
+        }
+      }
+    }
+  }
   return [...new Set(itens)];
 }
 
 function detectarItensImagem() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
-  const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA[_\s]PROFESSOR\s*\*{0,3}/i)[0];
+  const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i)[0];
   const termos = extrairItensParaIlustrar(folhaAluno);
   window._imgItens = termos.length
     ? termos.map(t => ({ termo: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
@@ -11386,7 +11402,7 @@ async function baixarPDFAdaptacaoComImagens() {
 
   toast('Montando PDF com imagens…', 'success');
 
-  const separador = /\*{0,3}\s*GUIA[_\s]PROFESSOR\s*\*{0,3}/i;
+  const separador = /\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i;
   const partes = ultimaAdapt.split(separador);
   const folhaAluno = partes[0].trim();
   const guiaProf = partes[1] ? partes[1].trim() : null;
@@ -11523,7 +11539,7 @@ function baixarFolhaRegistro() {
   y = 26;
 
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
-  const nomeAtividade = (dadosUltima?.tipoAtiv || dadosUltima?.materia || '');
+  const nomeAtividade = (dadosUltima?.tipoAtiv || dadosUltima?.materia || '').replace(/\b\w/g, c => c.toUpperCase());
 
   doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
   doc.text('IDENTIFICAÇÃO', ml, y); y += 7;
@@ -12696,9 +12712,9 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
       doc.addPage();
       doc.setFillColor(30, 58, 138);
       doc.rect(0, 0, W, 3, 'F');
-      y = 10;
+      y = 16;
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.5);
+      doc.setFontSize(fontSize);
       doc.setTextColor(25, 25, 25);
     }
     const linha = linhas[i];
