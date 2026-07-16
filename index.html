@@ -11300,6 +11300,186 @@ async function baixarPDFAdaptacaoComImagens() {
   toast('PDF gerado com sucesso!', 'success');
 }
 
+function linhaCampoRegistro(doc, x, y, rotulo, valor, largura) {
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(50,70,140);
+  doc.text(rotulo + ':', x, y);
+  const rw = doc.getTextWidth(rotulo + ': ');
+  doc.setFont('helvetica','normal'); doc.setTextColor(20,20,60);
+  if (valor) {
+    doc.text(String(valor), x + rw + 2, y);
+  } else {
+    doc.setDrawColor(150,150,150); doc.setLineWidth(0.2);
+    doc.line(x + rw + 2, y + 0.5, x + largura, y + 0.5);
+  }
+  return y + 7;
+}
+
+function desenharChecklistRegistro(doc, x, y, maxX, opcoes) {
+  const boxSize = 3.2;
+  let cx = x, cy = y;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  opcoes.forEach(opt => {
+    const textW = doc.getTextWidth(opt);
+    const totalW = boxSize + 2 + textW + 6;
+    if (cx + totalW > maxX) { cx = x; cy += 7; }
+    doc.setDrawColor(60,60,60);
+    doc.setLineWidth(0.3);
+    doc.rect(cx, cy - boxSize, boxSize, boxSize);
+    doc.setTextColor(25,25,25);
+    doc.text(opt, cx + boxSize + 2, cy);
+    cx += totalW;
+  });
+  return cy + 7;
+}
+
+function desenharEscala0a4Registro(doc, x, y, label, maxX) {
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(30,58,138);
+  doc.text(label, x, y);
+  let cx = x + doc.getTextWidth(label) + 8;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(25,25,25);
+  for (let n = 0; n <= 4; n++) {
+    doc.setDrawColor(60,60,60);
+    doc.circle(cx, y - 1.2, 3, 'S');
+    doc.text(String(n), cx - 1.2, y);
+    cx += 9;
+  }
+  return y + 8;
+}
+
+function baixarFolhaRegistro() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, H = 297, ml = 18, mr = 18;
+  const maxX = W - mr;
+  let y = 0;
+
+  function novaPaginaRegistro() {
+    adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+    doc.addPage();
+    doc.setFillColor(30,58,138); doc.rect(0,0,W,4,'F');
+    y = 16;
+  }
+  function garantirEspacoRegistro(altura) {
+    if (y + altura > H - 15) novaPaginaRegistro();
+  }
+
+  doc.setFillColor(30,58,138);
+  doc.rect(0,0,W,18,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text('FOLHA DE REGISTRO E OBSERVAÇÃO DA ATIVIDADE', W/2, 11, { align:'center' });
+  y = 26;
+
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+  const nomeAtividade = (dadosUltima?.tipoAtiv || dadosUltima?.materia || '');
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('IDENTIFICAÇÃO', ml, y); y += 7;
+  y = linhaCampoRegistro(doc, ml, y, 'Aluno', dadosUltima?.aluno, maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Data', '', maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Profissional', profNome, maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Área de atuação', '', maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Atividade', nomeAtividade, maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Tempo de realização (minutos)', '', maxX);
+  y += 4;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('OBJETIVO OBSERVADO', ml, y); y += 6;
+  y = desenharChecklistRegistro(doc, ml, y, maxX, ['Atenção','Memória operacional','Planejamento','Organização','Linguagem','Comunicação','Coordenação motora','Autorregulação','Flexibilidade cognitiva','Raciocínio lógico','Outro: ______']);
+  y += 5;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('ANTES DE INICIAR', ml, y); y += 6;
+  y = desenharChecklistRegistro(doc, ml, y, maxX, ['Iniciou espontaneamente','Precisou de incentivo','Demonstrou resistência','Demonstrou interesse','Solicitou ajuda']);
+  y += 3;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(25,25,25);
+  doc.text('Observações:', ml, y); y += 6;
+  doc.setDrawColor(180,180,180); doc.setLineWidth(0.2);
+  doc.line(ml, y, maxX, y); y += 7;
+  doc.line(ml, y, maxX, y); y += 9;
+
+  garantirEspacoRegistro(70);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('DURANTE A ATIVIDADE', ml, y); y += 7;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(50,70,140);
+  doc.text('Compreensão:', ml, y);
+  y = desenharChecklistRegistro(doc, ml + doc.getTextWidth('Compreensão: ') + 2, y, maxX, ['Imediata','Repetição','Demonstração','Apoio contínuo']);
+  y += 3;
+
+  y = desenharEscala0a4Registro(doc, ml, y, 'ATENÇÃO (0=ausente · 4=plena)', maxX);
+  y += 2;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(50,70,140);
+  doc.text('Organização:', ml, y);
+  y = desenharChecklistRegistro(doc, ml + doc.getTextWidth('Organização: ') + 2, y, maxX, ['Sozinho','Lembretes','Apoio constante']);
+  y += 3;
+
+  garantirEspacoRegistro(40);
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(50,70,140);
+  doc.text('Estratégias espontâneas:', ml, y); y += 5;
+  y = desenharChecklistRegistro(doc, ml, y, maxX, ['Contagem','Material concreto','Desenho','Fala em voz alta','Tentativa e erro','Observação do modelo','Outra: ______']);
+  y += 4;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(50,70,140);
+  doc.text('Apoios necessários:', ml, y); y += 5;
+  y = desenharChecklistRegistro(doc, ml, y, maxX, ['Nenhum','Verbal','Gestual','Visual','Demonstração','Material concreto','Outro: ______']);
+  y += 4;
+
+  y = desenharEscala0a4Registro(doc, ml, y, 'REGULAÇÃO (0=desregulado · 4=regulado)', maxX);
+  y += 2;
+  y = desenharEscala0a4Registro(doc, ml, y, 'AUTONOMIA (0=dependente · 4=autônomo)', maxX);
+  y += 6;
+
+  garantirEspacoRegistro(45);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('ESTRATÉGIAS QUE FAVORECERAM O DESEMPENHO', ml, y); y += 6;
+  y = desenharChecklistRegistro(doc, ml, y, maxX, ['Divisão em etapas','Apoio visual','Material concreto','Checklist','Modelagem','Reforço positivo','Pausas','Escolhas guiadas','Outra: ______']);
+  y += 5;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('RESULTADO OBSERVADO', ml, y); y += 6;
+  y = desenharChecklistRegistro(doc, ml, y, maxX, ['Independente','Com poucos apoios','Com apoio frequente','Não conseguiu concluir']);
+  y += 8;
+
+  garantirEspacoRegistro(85);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('OBSERVAÇÕES IMPORTANTES', ml, y); y += 7;
+  for (let i=0;i<3;i++){ doc.setDrawColor(180,180,180); doc.line(ml,y,maxX,y); y+=7; }
+  y += 3;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('RECOMENDAÇÕES PARA AS PRÓXIMAS ATIVIDADES', ml, y); y += 7;
+  for (let i=0;i<3;i++){ doc.line(ml,y,maxX,y); y+=7; }
+  y += 3;
+
+  garantirEspacoRegistro(65);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
+  doc.text('REFLEXÃO', ml, y); y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(25,25,25);
+  doc.text('O que esta atividade nos ensinou sobre a forma como este aluno aprende?', ml, y); y += 7;
+  for (let i=0;i<3;i++){ doc.line(ml,y,maxX,y); y+=7; }
+  y += 10;
+
+  garantirEspacoRegistro(30);
+  doc.setDrawColor(60,60,60); doc.setLineWidth(0.3);
+  doc.line(ml, y, ml + 80, y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(80,80,80);
+  doc.text('Assinatura do profissional', ml, y + 5);
+  doc.line(ml + 100, y, maxX, y);
+  doc.text('Data', ml + 100, y + 5);
+
+  adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+
+  doc.save('Folha_Registro_' + (dadosUltima?.aluno||'aluno').replace(/\s+/g,'_') + '.pdf');
+  toast('PDF gerado com sucesso!', 'success');
+}
+
 async function salvarAdapt() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
   const { error } = await db.from('adaptacoes').insert({
@@ -14152,52 +14332,42 @@ async function responderSolFamilia(btn) {
 
 
 // ── LOGO DA ESCOLA ────────────────────────────────────────────
-async function carregarLogoEscola() {
-  if (userRole === 'professor') return;
-  try {
-    const { data } = await db.from('profiles')
-      .select('subrole')
-      .eq('id', user.id)
-      .maybeSingle();
+function chaveArmazenamentoLogo() {
+  return window._organizacaoId ? 'org_' + window._organizacaoId + '/logo' : 'escola_' + user.id + '/logo';
+}
 
-    // Verificar se existe logo salvo
-    const path = 'escola_' + user.id + '/logo';
-    const { data: urlData } = db.storage
-      .from('logos-instituicoes')
-      .getPublicUrl(path);
-
-    if (urlData?.publicUrl) {
-      // Testar se o arquivo existe
-      const resp = await fetch(urlData.publicUrl, { method: 'HEAD' });
-      if (resp.ok) {
-        window._logoEscolaUrl = urlData.publicUrl;
-        mostrarLogoPreview(urlData.publicUrl);
-      }
-    }
-  } catch(e) {
-    console.warn('Logo não encontrado:', e);
-  }
+function carregarLogoEscola() {
+  mostrarLogoPreview(window._logoEscolaUrl || null);
+  const inpNome = document.getElementById('inp-nome-instituicao');
+  if (inpNome) inpNome.value = window._nomeInstituicao || '';
 }
 
 function mostrarLogoPreview(url) {
   const img = document.getElementById('logo-img');
   const placeholder = document.getElementById('logo-placeholder');
   const btnRemover = document.getElementById('btn-remover-logo');
-  if (img) { img.src = url; img.style.display = 'block'; }
-  if (placeholder) placeholder.style.display = 'none';
-  if (btnRemover) btnRemover.style.display = 'inline-flex';
+  if (url) {
+    if (img) { img.src = url; img.style.display = 'block'; }
+    if (placeholder) placeholder.style.display = 'none';
+    if (btnRemover) btnRemover.style.display = 'inline-flex';
+  } else {
+    if (img) { img.src = ''; img.style.display = 'none'; }
+    if (placeholder) placeholder.style.display = 'block';
+    if (btnRemover) btnRemover.style.display = 'none';
+  }
 }
 
 async function uploadLogoEscola(input) {
   const file = input.files[0];
   if (!file) return;
   if (file.size > 2 * 1024 * 1024) return toast('Logo deve ter no máximo 2MB.', 'error');
+  if (!window._organizacaoId) return toast('Sua conta ainda não está vinculada a uma organização — fale com o suporte.', 'error');
 
   const status = document.getElementById('logo-status');
   if (status) status.textContent = '⏳ Enviando...';
 
   try {
-    const path = 'escola_' + user.id + '/logo';
+    const path = chaveArmazenamentoLogo();
     const { error } = await db.storage
       .from('logos-instituicoes')
       .upload(path, file, { upsert: true, contentType: file.type });
@@ -14208,7 +14378,10 @@ async function uploadLogoEscola(input) {
       .from('logos-instituicoes')
       .getPublicUrl(path);
 
-    window._logoEscolaUrl = urlData.publicUrl + '?t=' + Date.now();
+    const urlComCache = urlData.publicUrl + '?t=' + Date.now();
+    await db.from('organizacoes').update({ logo_url: urlComCache }).eq('id', window._organizacaoId);
+
+    window._logoEscolaUrl = urlComCache;
     mostrarLogoPreview(window._logoEscolaUrl);
     if (status) status.textContent = '✅ Logo salvo com sucesso!';
     toast('Logo cadastrado! Aparecerá nos próximos PDFs.', 'success');
@@ -14221,21 +14394,26 @@ async function uploadLogoEscola(input) {
 
 async function removerLogoEscola() {
   try {
-    const path = 'escola_' + user.id + '/logo';
+    const path = chaveArmazenamentoLogo();
     await db.storage.from('logos-instituicoes').remove([path]);
+    if (window._organizacaoId) await db.from('organizacoes').update({ logo_url: null }).eq('id', window._organizacaoId);
     window._logoEscolaUrl = null;
-    const img = document.getElementById('logo-img');
-    const placeholder = document.getElementById('logo-placeholder');
-    const btnRemover = document.getElementById('btn-remover-logo');
+    mostrarLogoPreview(null);
     const status = document.getElementById('logo-status');
-    if (img) { img.src = ''; img.style.display = 'none'; }
-    if (placeholder) placeholder.style.display = 'block';
-    if (btnRemover) btnRemover.style.display = 'none';
     if (status) status.textContent = 'PNG, JPG ou SVG · máx. 2MB';
     toast('Logo removido.', 'success');
   } catch(e) {
     toast('Erro ao remover logo.', 'error');
   }
+}
+
+async function salvarNomeInstituicao(valor) {
+  if (!window._organizacaoId) return toast('Sua conta ainda não está vinculada a uma organização — fale com o suporte.', 'error');
+  const nome = (valor || '').trim();
+  const { error } = await db.from('organizacoes').update({ nome }).eq('id', window._organizacaoId);
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  window._nomeInstituicao = nome;
+  toast('Nome da instituição salvo!', 'success');
 }
 
 async function carregarProfessores() {
