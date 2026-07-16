@@ -11220,7 +11220,7 @@ Avalie a atividade que você está prestes a entregar contra esta escala. Se qua
 - Favorece participação ativa, não passiva?
 - Pode ser realizada com menor mediação constante do adulto?
 
-***GUIA_PROFESSOR***
+${incluiGuia ? `***GUIA_PROFESSOR***
 
 Guia do professor — análise pedagógica fundamentada, curta e escaneável.
 
@@ -11264,10 +11264,10 @@ RETIRADA GRADUAL DOS APOIOS: [como aumentar a autonomia do aluno nas próximas a
 
 GENERALIZACAO (max 2 linhas): [como estimular essa habilidade fora da atividade — sala, casa, recreio, rotina, jogos]
 
-NAO FAZER: [1-2 proibições críticas]`;
+NAO FAZER: [1-2 proibições críticas]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 2800, modulo: 'adaptacao' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: incluiGuia ? 2800 : 1200, modulo: 'adaptacao' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
@@ -11275,7 +11275,7 @@ NAO FAZER: [1-2 proibições críticas]`;
     ultimaAdapt = textoFinal;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento };
     document.getElementById('result-text').textContent = textoFinal;
-    document.getElementById('result-badge').textContent = `${idade} · ${serie} · ${materia}${isMontessori ? ' · 🌱 Montessori' : ''}`;
+    document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
   } catch(e) {
