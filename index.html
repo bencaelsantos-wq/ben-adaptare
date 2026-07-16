@@ -12589,6 +12589,55 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       y += altDesenho + 4;
       continue;
     }
+    const matchCaixa = limpa.match(/^\[CAIXA:\s*(.+)\]$/i);
+    if (matchCaixa) {
+      const linhasCaixa = doc.splitTextToSize(sanitizarTexto(matchCaixa[1]), maxW - 10);
+      const altCaixa = linhasCaixa.length * altLinha + 8;
+      if (y + altCaixa > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 10;
+      }
+      doc.setFillColor(240, 244, 255);
+      doc.setDrawColor(30, 58, 138);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(ml, y, W - ml - mr, altCaixa, 2, 2, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(30, 58, 138);
+      linhasCaixa.forEach((l, li) => doc.text(l, ml + 5, y + 6 + li * altLinha));
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      y += altCaixa + 4;
+      continue;
+    }
+    const matchLinhaNum = limpa.match(/^\[LINHA NUMERICA:\s*(-?\d+)\s*a\s*(-?\d+)\]$/i);
+    if (matchLinhaNum) {
+      const ini = parseInt(matchLinhaNum[1], 10), fim = parseInt(matchLinhaNum[2], 10);
+      const qtd = Math.max(1, fim - ini);
+      const altReta = 16;
+      if (y + altReta > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 10;
+      }
+      const larguraReta = W - ml - mr - 10;
+      doc.setDrawColor(60, 60, 60);
+      doc.setLineWidth(0.4);
+      doc.line(ml + 5, y + 6, ml + 5 + larguraReta, y + 6);
+      for (let n = 0; n <= qtd; n++) {
+        const x = ml + 5 + (larguraReta * n / qtd);
+        doc.line(x, y + 3, x, y + 9);
+        doc.setFontSize(7);
+        doc.setTextColor(60, 60, 60);
+        doc.text(String(ini + n), x, y + 13, { align: 'center' });
+      }
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      y += altReta + 4;
+      continue;
+    }
     if (isH) {
       y += 2;
       doc.setFont('helvetica', 'bold');
@@ -12599,6 +12648,13 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setFontSize(9.5);
       doc.setTextColor(25, 25, 25);
       y += altLinha + 1;
+    } else if (/!!.+!!/.test(limpa)) {
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(180, 60, 20);
+      doc.text(limpa.replace(/!!/g, ''), ml, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(25, 25, 25);
+      y += altLinha;
     } else {
       doc.text(limpa || linha, ml, y);
       y += altLinha;
