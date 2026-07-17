@@ -11253,7 +11253,10 @@ Nome: _______________ | Data: ___/___/___
 [linhas de resposta: _________________________________]
 [espaco de desenho: inclua [ESPACO PARA DESENHO] SOMENTE se a atividade original pede para desenhar, colorir ou criar algo visual]
 - NUNCA crie grades, tabelas ou colunas feitas de caracteres de texto (traços, barras verticais, pipes) para representar posicionamento de material concreto (barras de contas, fichas, blocos) — papel impresso nao tem espaco fisico real para isso.
-- NUNCA tente desenhar um diagrama, esquema ou ilustracao usando caracteres de texto (barras verticais |, barras invertidas \, tracos, espacos para simular posicao, emojis em sequencia formando uma figura). Fonte de PDF nao e monoespacada, esse tipo de "desenho com texto" sempre sai desalinhado e ilegivel. Se o conteudo original tem um diagrama assim (ex: partes de uma planta desenhadas com emoji e barras), NAO reproduza o desenho — em vez disso, liste cada parte como um item de texto simples com seu marcador [IMAGEM: nome-da-parte], no formato "NOME DA PARTE [IMAGEM: nome] -> definicao curta" (max 6 palavras na definicao, pra caber ao lado da imagem).
+- NUNCA tente desenhar um diagrama, esquema ou ilustracao usando caracteres de texto (barras verticais |, barras invertidas \, tracos, espacos para simular posicao, emojis em sequencia formando uma figura). Fonte de PDF nao e monoespacada, esse tipo de "desenho com texto" sempre sai desalinhado e ilegivel. Se o conteudo original tem um diagrama assim, NUNCA o substitua por campos em branco sem nenhuma pista de qual e qual — troque SEMPRE por um marcador [IMAGEM:] por parte, usando UM dos dois formatos abaixo conforme o tipo de exercicio:
+  a) Exercicio de LIGAR/ASSOCIAR parte a funcao/definicao: "NOME DA PARTE [IMAGEM: nome] -> definicao curta" (max 6 palavras na definicao).
+  b) Exercicio de IDENTIFICAR/NOMEAR cada parte (o aluno tem que escrever o nome ao ver a parte): "[IMAGEM: nome-da-parte] Nome: ___________" — um item por parte, na mesma ordem do original, cada um com seu proprio marcador de imagem ANTES do campo de resposta, nunca deixe um campo "Nome: ___" sem a imagem correspondente logo antes.
+  Nunca omita o marcador [IMAGEM:] nesses dois casos — sem ele o aluno fica sem nenhuma pista visual de qual parte responder.
 - Se a atividade original pede manipular material concreto sobre numeros, REFORMULE para o aluno REGISTRAR o resultado por escrito (ex: "Depois de contar com o Material Dourado, escreva o numero que voce formou: ___"), deixando a manipulacao fisica como instrucao separada para o professor/AT conduzir oralmente, nao como grade no papel.
 
 ---
@@ -11407,7 +11410,7 @@ async function downloadAdaptacaoPDF() {
   gerarPDFDocumento({
     tipo: 'ATIVIDADE ADAPTADA',
     titulo: 'Atividade Adaptada',
-    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv.replace(/\b\w/g, c => c.toUpperCase()) : ''),
+    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''),
     aluno: nomeAluno,
     professor: profNome,
     conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
@@ -12858,6 +12861,13 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     if (isSep) { y += isSep ? 2 : 0; continue; }
 const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\s*$/, '');
     if (!limpa) { y += altLinha; continue; }
+    if (/^_{6,}$/.test(limpa)) {
+      doc.setDrawColor(120, 120, 120);
+      doc.setLineWidth(0.3);
+      doc.line(ml, y - 1.5, ml + maxW, y - 1.5);
+      y += altLinha;
+      continue;
+    }
     if (/\[ESPACO PARA DESENHO\]|\[ESPA.O PARA DESENHO\]/i.test(limpa)) {
       const altDesenho = 45;
       if (y + altDesenho > H - rodapeH) {
@@ -14689,7 +14699,7 @@ function baixarPDFModalAdapt() {
   gerarPDFDocumento({
     tipo: 'ATIVIDADE ADAPTADA',
     titulo: 'Atividade Adaptada',
-    subtitulo: (r.materia||'') + (r.tipo_ativ ? ' — ' + r.tipo_ativ.replace(/\b\w/g, c => c.toUpperCase()) : ''),
+    subtitulo: (r.materia||'') + (r.tipo_ativ ? ' — ' + r.tipo_ativ.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''),
     aluno: r.aluno || r.aluno_nome || '',
     professor: r.professor || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
     conteudo: r.texto || r.adaptacao || '',
