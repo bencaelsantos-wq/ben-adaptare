@@ -3992,9 +3992,9 @@ async function iniciarApp() {
 
   const colorMap = {
     professor:       { label:' Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
-    gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); setTimeout(verificarOnboardingGestao, 800); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); } },
+    gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); setTimeout(verificarOnboardingGestao, 800); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); carregarBancoImagensOrg(); } },
     clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); const btnNovoPerfilClinica = document.getElementById('btn-novo-perfil-clinica'); if (btnNovoPerfilClinica) btnNovoPerfilClinica.style.display = 'none'; } },
-    'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); carregarLogoEscola(); } },
+    'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); carregarLogoEscola(); carregarBancoImagensOrg(); } },
     at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); carregarLogoEscola(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
     coordenacao:     { label:' Coordenação',        cls:'gestao',   sidebarCls:'role-gestao',         nav: ()=>renderNavCoordenacao(),   after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); } },
@@ -4774,6 +4774,30 @@ async function excluirImagemBanco(id) {
   const { error } = await db.from('banco_imagens_atividades').delete().eq('id', id);
   if (error) return toast('Erro: ' + error.message, 'error');
   carregarBancoImagens();
+}
+
+// ── Banco de imagens da organização — visão de moderação (Gestão / Gestão Clínica) ──
+async function carregarBancoImagensOrg() {
+  const grid = document.getElementById('org-banco-imagens-grid');
+  if (!grid) return;
+  if (!window._organizacaoId) { grid.innerHTML = '<p style="color:var(--gr400);font-size:13px">Sua conta ainda não está vinculada a uma organização.</p>'; return; }
+  const { data } = await db.from('banco_imagens_atividades').select('*').eq('organizacao_id', window._organizacaoId).order('created_at', { ascending: false });
+  const lista = data || [];
+  if (!lista.length) { grid.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhuma imagem própria cadastrada ainda.</p>'; return; }
+  grid.innerHTML = lista.map(img => `
+    <div class="item-card">
+      <img src="${img.url}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">
+      <div class="ic-tags">${(img.tags||[]).map(t=>`<span class="ic-tag">${t}</span>`).join('')}${img.compartilhada ? '<span class="ic-tag" style="background:#DBEAFE;color:#1D4ED8">🌐 comunidade</span>' : ''}</div>
+      <button class="btn-danger" style="margin-top:8px" onclick="excluirImagemBancoOrg('${img.id}')">Excluir</button>
+    </div>
+  `).join('');
+}
+
+async function excluirImagemBancoOrg(id) {
+  if (!confirm('Excluir esta imagem do banco da sua organização?')) return;
+  const { error } = await db.from('banco_imagens_atividades').delete().eq('id', id);
+  if (error) return toast('Erro: ' + error.message, 'error');
+  carregarBancoImagensOrg();
 }
 
 // ══ MÓDULO: COMUNICAÇÃO ESCOLA ↔ CLÍNICA ═══════════════════════
@@ -9647,6 +9671,12 @@ function renderPagesGestao() {
     </div>
     <span id="logo-status" style="display:none">PNG, JPG ou SVG · máx. 2MB</span>
 
+    <div class="fcard" style="margin-top:16px;margin-bottom:20px">
+      <div class="fcard-title">🖼️ Banco de Imagens da Organização</div>
+      <p class="page-sub" style="margin:0 0 12px">Imagens enviadas pelos profissionais direto no fluxo de Nova Adaptação. Aqui você só visualiza e modera — pode remover imagens inadequadas.</p>
+      <div class="cards-grid" id="org-banco-imagens-grid" style="margin-top:16px"></div>
+    </div>
+
     <!-- Stats clicáveis -->
     <div class="stats-grid" id="stats-grid" style="margin-bottom:16px">
       <div class="stat-card" style="cursor:pointer" onclick="showPage('gestao-alunos')">
@@ -11449,10 +11479,54 @@ function renderizarPainelImagens() {
         <button class="btn-sm" onclick="buscarImagemItem(${i})">Buscar</button>
         <button class="btn-danger" onclick="removerItemImagem(${i})">Remover</button>
       </div>
-      <div id="ai-resultados-${i}" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      <div id="ai-resultados-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px dashed var(--gr200)">
+        <input type="file" id="ai-upload-${i}" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="enviarImagemBancoItem(${i}, this)">
+        <button class="btn-sm-ghost" style="font-size:12px" onclick="document.getElementById('ai-upload-${i}').click()">📤 Não achou? Envie uma imagem</button>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gr500);cursor:pointer">
+          <input type="checkbox" id="ai-compartilhar-${i}">
+          Compartilhar com a comunidade Pluramente
+          <span class="chip-wrap" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--gr200);color:var(--gr600);font-size:10px;font-weight:700;cursor:help">?
+            <span class="chip-tooltip">Se marcar, essa imagem também fica disponível para outras escolas e clínicas que usam a Pluramente, não só a sua. Se deixar desmarcado, ela fica visível apenas para a sua organização.</span>
+          </span>
+        </label>
+      </div>
     </div>
   `).join('');
   window._imgItens.forEach((_, i) => renderResultadosItem(i));
+}
+
+async function enviarImagemBancoItem(i, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!window._organizacaoId) { toast('Sua conta ainda não está vinculada a uma organização.', 'error'); input.value = ''; return; }
+  if (file.size > 3 * 1024 * 1024) { toast('Imagem deve ter no máximo 3MB.', 'error'); input.value = ''; return; }
+  const item = window._imgItens[i];
+  const termo = item.termo?.trim().toLowerCase();
+  if (!termo) { toast('Preencha o nome do item antes de enviar a imagem.', 'error'); input.value = ''; return; }
+  const compartilhada = document.getElementById(`ai-compartilhar-${i}`)?.checked || false;
+
+  toast('Enviando imagem…', 'success');
+  try {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `banco/org_${window._organizacaoId}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error: errUpload } = await db.storage
+      .from('imagens-atividades')
+      .upload(path, file, { upsert: false, contentType: file.type });
+    if (errUpload) throw errUpload;
+
+    const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
+    const { error: errInsert } = await db.from('banco_imagens_atividades').insert({ url: urlData.publicUrl, tags: [termo], organizacao_id: window._organizacaoId, compartilhada });
+    if (errInsert) throw errInsert;
+
+    item.urlEscolhida = urlData.publicUrl;
+    item.resultados = [urlData.publicUrl];
+    toast('Imagem enviada e já selecionada para este item!', 'success');
+    renderResultadosItem(i);
+  } catch(e) {
+    toast('Erro ao enviar imagem: ' + e.message, 'error');
+  }
+  input.value = '';
 }
 
 function renderResultadosItem(i) {
@@ -11471,7 +11545,11 @@ async function buscarImagemItem(i) {
   try {
     let urls = [];
     if (item.fonte === 'proprio') {
-      const { data } = await db.from('banco_imagens_atividades').select('url,tags').contains('tags', [item.termo.trim().toLowerCase()]);
+      let q = db.from('banco_imagens_atividades').select('url,tags').contains('tags', [item.termo.trim().toLowerCase()]);
+      q = window._organizacaoId
+        ? q.or(`organizacao_id.is.null,organizacao_id.eq.${window._organizacaoId},compartilhada.eq.true`)
+        : q.or(`organizacao_id.is.null,compartilhada.eq.true`);
+      const { data } = await q;
       urls = (data||[]).map(d => d.url);
     } else {
       const r = await fetch(`${PIXABAY_PROXY}?q=${encodeURIComponent(item.termo.trim())}&image_type=illustration`, {
