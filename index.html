@@ -11253,6 +11253,7 @@ Nome: _______________ | Data: ___/___/___
 [linhas de resposta: _________________________________]
 [espaco de desenho: inclua [ESPACO PARA DESENHO] SOMENTE se a atividade original pede para desenhar, colorir ou criar algo visual]
 - NUNCA crie grades, tabelas ou colunas feitas de caracteres de texto (traços, barras verticais, pipes) para representar posicionamento de material concreto (barras de contas, fichas, blocos) — papel impresso nao tem espaco fisico real para isso.
+- NUNCA tente desenhar um diagrama, esquema ou ilustracao usando caracteres de texto (barras verticais |, barras invertidas \, tracos, espacos para simular posicao, emojis em sequencia formando uma figura). Fonte de PDF nao e monoespacada, esse tipo de "desenho com texto" sempre sai desalinhado e ilegivel. Se o conteudo original tem um diagrama assim (ex: partes de uma planta desenhadas com emoji e barras), NAO reproduza o desenho — em vez disso, liste cada parte como um item de texto simples com seu marcador [IMAGEM: nome-da-parte], no formato "NOME DA PARTE [IMAGEM: nome] -> definicao curta" (max 6 palavras na definicao, pra caber ao lado da imagem).
 - Se a atividade original pede manipular material concreto sobre numeros, REFORMULE para o aluno REGISTRAR o resultado por escrito (ex: "Depois de contar com o Material Dourado, escreva o numero que voce formou: ___"), deixando a manipulacao fisica como instrucao separada para o professor/AT conduzir oralmente, nao como grade no papel.
 
 ---
@@ -12887,9 +12888,13 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const restante = limpa.slice(cursor).trim();
       if (restante) itens[itens.length - 1].rotulo = (itens[itens.length - 1].rotulo + ' ' + restante).trim();
 
-      const imgSize = 22;
+      const imgSize = 20;
       const celulaW = maxW / itens.length;
-      const altCelula = imgSize + altLinha + 4;
+      itens.forEach(item => { item.linhasRotulo = item.rotulo ? doc.splitTextToSize(item.rotulo, celulaW - 4) : []; });
+      const maxLinhasRotulo = Math.max(0, ...itens.map(it => it.linhasRotulo.length));
+      const altTexto = maxLinhasRotulo * altLinha;
+      const altCelula = altTexto + imgSize + 6;
+
       if (y + altCelula > H - rodapeH) {
         adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
         doc.addPage();
@@ -12897,13 +12902,13 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       }
       itens.forEach((item, idx) => {
         const x = ml + idx * celulaW;
-        if (item.rotulo) doc.text(item.rotulo, x, y);
+        item.linhasRotulo.forEach((l, li) => doc.text(l, x, y + li * altLinha));
         const b64 = opts.imagensPorItem && opts.imagensPorItem[item.nome];
         if (b64) {
           try {
             const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
             const largura = Math.min(imgSize, celulaW - 4);
-            doc.addImage(b64, formato, x, y + 3, largura, largura);
+            doc.addImage(b64, formato, x, y + altTexto + 2, largura, largura);
           } catch(e) {}
         }
       });
