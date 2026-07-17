@@ -4739,6 +4739,36 @@ async function adicionarImagemBanco() {
   carregarBancoImagens();
 }
 
+async function enviarImagemBanco(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { toast('Imagem deve ter no máximo 3MB.', 'error'); input.value = ''; return; }
+  const tagsRaw = document.getElementById('bi-tags-upload')?.value.trim();
+  if (!tagsRaw) { toast('Informe ao menos uma tag antes de escolher o arquivo.', 'error'); input.value = ''; return; }
+  const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+
+  toast('Enviando imagem…', 'success');
+  try {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `banco/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error: errUpload } = await db.storage
+      .from('imagens-atividades')
+      .upload(path, file, { upsert: false, contentType: file.type });
+    if (errUpload) throw errUpload;
+
+    const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
+    const { error: errInsert } = await db.from('banco_imagens_atividades').insert({ url: urlData.publicUrl, tags });
+    if (errInsert) throw errInsert;
+
+    toast('Imagem enviada e adicionada ao banco!', 'success');
+    document.getElementById('bi-tags-upload').value = '';
+    carregarBancoImagens();
+  } catch(e) {
+    toast('Erro ao enviar imagem: ' + e.message, 'error');
+  }
+  input.value = '';
+}
+
 async function excluirImagemBanco(id) {
   if (!confirm('Excluir esta imagem do banco?')) return;
   const { error } = await db.from('banco_imagens_atividades').delete().eq('id', id);
@@ -5885,12 +5915,25 @@ function renderPagesDeveloper() {
 
     <div class="fcard" style="margin-top:28px">
       <div class="fcard-title">🖼️ Banco de Imagens para Atividades</div>
-      <p class="page-sub" style="margin:0 0 12px">Imagens usadas na opção "Banco próprio" da Adaptação de Atividades. Cole a URL de uma imagem já hospedada em algum lugar (ex: Imgur, link público do Drive) e as tags de busca.</p>
-      <div class="frow">
-        <div><label class="flabel" for="bi-url">URL da imagem</label><input type="text" id="bi-url" class="finput" placeholder="https://..."></div>
-        <div><label class="flabel" for="bi-tags">Tags (separadas por vírgula)</label><input type="text" id="bi-tags" class="finput" placeholder="cavalo, animal, fazenda"></div>
+      <p class="page-sub" style="margin:0 0 12px">Imagens usadas na opção "Banco próprio" da Adaptação de Atividades.</p>
+
+      <div style="border:1px solid var(--gr200);border-radius:10px;padding:12px;margin-bottom:14px">
+        <div class="flabel" style="margin-bottom:8px">Enviar arquivo (recomendado — fica hospedado na própria plataforma)</div>
+        <div class="frow">
+          <div><label class="flabel" for="bi-tags-upload">Tags (separadas por vírgula)</label><input type="text" id="bi-tags-upload" class="finput" placeholder="cavalo, animal, fazenda"></div>
+          <div><label class="flabel" for="bi-file">Arquivo (PNG/JPG, máx. 3MB)</label><input type="file" id="bi-file" class="finput" accept="image/png,image/jpeg,image/webp" onchange="enviarImagemBanco(this)"></div>
+        </div>
       </div>
-      <button class="btn-sm" style="margin-top:8px" onclick="adicionarImagemBanco()">+ Adicionar ao banco</button>
+
+      <div style="border:1px solid var(--gr200);border-radius:10px;padding:12px;margin-bottom:14px">
+        <div class="flabel" style="margin-bottom:8px">Ou colar link de imagem já hospedada em outro lugar</div>
+        <div class="frow">
+          <div><label class="flabel" for="bi-url">URL da imagem</label><input type="text" id="bi-url" class="finput" placeholder="https://..."></div>
+          <div><label class="flabel" for="bi-tags">Tags (separadas por vírgula)</label><input type="text" id="bi-tags" class="finput" placeholder="cavalo, animal, fazenda"></div>
+        </div>
+        <button class="btn-sm" style="margin-top:8px" onclick="adicionarImagemBanco()">+ Adicionar por link</button>
+      </div>
+
       <div class="cards-grid" id="dev-banco-imagens-grid" style="margin-top:16px"></div>
     </div>
   </div>
