@@ -11363,6 +11363,18 @@ NAO FAZER: [1-2 proibições críticas]` : 'NÃO gere o guia do professor nem ne
     document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+    const avisos = [];
+    if (incluiGuia && !/\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i.test(texto)) {
+      avisos.push('o Guia do Professor não parece ter sido gerado');
+    }
+    if (/\[(IMAGEM|CAIXA|LINHA NUMERICA)[^\]]*$/im.test(texto)) {
+      avisos.push('a resposta pode ter sido cortada no meio (marcador incompleto)');
+    }
+    if (/\|.+\|.+\|/.test(texto)) {
+      avisos.push('a resposta parece conter uma tabela em formato markdown, que não renderiza no PDF');
+    }
+    if (avisos.length) toast('Atenção: ' + avisos.join('; ') + '. Revise antes de baixar o PDF.', 'error');
   } catch(e) {
     console.error(e);
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
