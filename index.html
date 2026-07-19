@@ -11337,6 +11337,10 @@ APLICACAO:
 2. [passo curto]
 3. [passo curto]
 
+SCRIPT DO MEDIADOR (2-3 frases curtas e prontas que o profissional pode falar durante a aplicação, específicas para este aluno e esta atividade, nunca genéricas):
+- "[frase 1]"
+- "[frase 2]"
+
 INDICADORES DE OBSERVACAO DURANTE A ATIVIDADE:
 - Inicia a tarefa sem ajuda?
 - Mantém atenção por quanto tempo?
@@ -13117,7 +13121,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       }
       const linha = linhasGuia[i];
       const linhaT = linha.trim();
-      const campoRotulo = /^(PERFIL|OBJETIVO PEDAGOGICO|HABILIDADE\/BNCC|BARREIRAS IDENTIFICADAS|ADAPTACOES REALIZADAS|PRINCIPIOS UTILIZADOS|MATERIAIS|TEMPO|APLICACAO|INDICADORES DE OBSERVACAO[^:]*|SINAIS DE SOBRECARGA|AVALIACAO|RETIRADA GRADUAL DOS APOIOS|GENERALIZACAO[^:]*)\s*:/i;
+      const campoRotulo = /^(PERFIL|OBJETIVO PEDAGOGICO|HABILIDADE\/BNCC|BARREIRAS IDENTIFICADAS|ADAPTACOES REALIZADAS|PRINCIPIOS UTILIZADOS|MATERIAIS|TEMPO|APLICACAO|SCRIPT DO MEDIADOR[^:]*|INDICADORES DE OBSERVACAO[^:]*|SINAIS DE SOBRECARGA|AVALIACAO|RETIRADA GRADUAL DOS APOIOS|GENERALIZACAO[^:]*)\s*:/i;
       const isNaoFazer = /^NAO FAZER\s*:/i.test(linhaT);
       const isH = campoRotulo.test(linhaT) && !isNaoFazer;
       const isSep = /^-{3,}$/.test(linhaT) || linhaT === '';
