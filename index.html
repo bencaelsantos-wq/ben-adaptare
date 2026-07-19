@@ -12997,6 +12997,48 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     }
   }
 
+  // ── REDE DE SEGURANÇA: imagens escolhidas que a IA não marcou no texto ──
+  const marcadoresUsados = new Set((folhaSemTitulo.match(/\[IMAGEM:\s*([^\]]+)\]/gi) || []).map(m => m.replace(/\[IMAGEM:\s*/i,'').replace(/\]$/,'').trim().toLowerCase()));
+  const itensImagemSemMarcador = opts.imagensPorItem ? Object.keys(opts.imagensPorItem).filter(nome => !marcadoresUsados.has(nome)) : [];
+  if (itensImagemSemMarcador.length) {
+    if (y + 30 > H - rodapeH) {
+      adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+      doc.addPage();
+      y = 16;
+    } else {
+      y += 6;
+    }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(fontSize);
+    doc.setTextColor(30, 58, 138);
+    doc.text('Apoio visual', ml, y);
+    y += altLinha + 2;
+    const imgSizeFallback = 22;
+    const celulaWFallback = maxW / Math.min(itensImagemSemMarcador.length, 4);
+    let colIdx = 0;
+    itensImagemSemMarcador.forEach(nome => {
+      if (colIdx >= 4) { colIdx = 0; y += imgSizeFallback + altLinha + 4; }
+      if (y + imgSizeFallback + altLinha + 4 > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 16;
+        colIdx = 0;
+      }
+      const x = ml + colIdx * celulaWFallback;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      doc.text(sanitizarTexto(nome), x, y);
+      try {
+        const b64 = opts.imagensPorItem[nome];
+        const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+        doc.addImage(b64, formato, x, y + 3, imgSizeFallback, imgSizeFallback);
+      } catch(e) {}
+      colIdx++;
+    });
+    y += imgSizeFallback + altLinha + 4;
+  }
+
   adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
   // ── GUIA DO PROFESSOR (nova página) ──────────────────────
   if (guia && opts.guiaProf !== null) {
