@@ -11677,11 +11677,25 @@ function desenharChecklistRegistro(doc, x, y, maxX, opcoes) {
 }
 
 function desenharEscala0a4Registro(doc, x, y, label, maxX) {
+  const m = label.match(/^(.*?)\s*(\([^)]*\))\s*$/);
+  const titulo = m ? m[1] : label;
+  const explicacao = m ? m[2] : '';
+
   doc.setFont('helvetica','bold');
   doc.setFontSize(9.5);
   doc.setTextColor(30,58,138);
-  doc.text(label, x, y);
-  let cx = x + doc.getTextWidth(label) + 8;
+  doc.text(titulo, x, y);
+  let cx = x + doc.getTextWidth(titulo);
+
+  if (explicacao) {
+    doc.setFont('helvetica','italic');
+    doc.setFontSize(7.5);
+    doc.setTextColor(120,120,120);
+    doc.text(' ' + explicacao, cx, y);
+    cx += doc.getTextWidth(' ' + explicacao);
+  }
+  cx += 8;
+
   doc.setFont('helvetica','normal');
   doc.setFontSize(8.5);
   doc.setTextColor(25,25,25);
