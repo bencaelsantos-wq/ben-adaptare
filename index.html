@@ -5527,7 +5527,7 @@ async function carregarDashboardClinica() {
   el('dash-cli-rel','…'); el('dash-cli-planos','…');
   try {
     const [{ data: perfis },{ data: obj },{ data: rel },{ data: planos }] = await Promise.all([
-      db.from('perfis_clinicos').select('id,nome,diagnostico').eq('user_id',user.id).order('nome'),
+      db.from('perfis_clinicos').select('*').eq('user_id',user.id).order('nome'),
       db.from('objetivos_terapeuticos').select('id',{count:'exact'}).eq('user_id',user.id),
       db.from('relatorios').select('id,aluno_nome,created_at').eq('user_id',user.id).order('created_at',{ascending:false}),
       db.from('devolutivas').select('id',{count:'exact'}).eq('usuario_id',user.id)
@@ -5538,9 +5538,7 @@ async function carregarDashboardClinica() {
     window.clinicaPerfis=perfis||[];
     window.clinicaRelatorios=rel||[];
 
-    const listaA=document.getElementById('dash-cli-alunos-lista');
-    if(listaA){ const sl=(perfis||[]).slice(0,4);
-      listaA.innerHTML=sl.length?sl.map(x=>'<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">'+(x.nome||'Aluno')+'<span style="float:right;font-size:11px;color:var(--gr300)">'+(x.diagnostico||'')+'</span></div>').join(''):'<span style="color:var(--gr300)">Nenhum perfil cadastrado ainda.</span>'; }
+    renderizarAlunosDashboardClinica(window.clinicaPerfis);
 
     const listaR=document.getElementById('dash-cli-rel-lista');
     if(listaR){ const sl=(rel||[]).slice(0,4);
@@ -5553,6 +5551,27 @@ async function carregarDashboardClinica() {
       if(np&&nr) s.push('✅ Você tem perfis e demandas. Use o Plano de Intervenção para estratégias integradas.');
       acoes.innerHTML=s.length?s.map(x=>'<div style="margin-bottom:4px">'+x+'</div>').join(''):'✅ Tudo em dia!'; }
   } catch(e){ console.error('carregarDashboardClinica:',e); }
+}
+
+function renderizarAlunosDashboardClinica(lista) {
+  const listaA = document.getElementById('dash-cli-alunos-lista');
+  const totalEl = document.getElementById('dash-cli-alunos-total');
+  if (!listaA) return;
+  const sl = (lista||[]).slice(0, 8);
+  if (totalEl) totalEl.textContent = (lista||[]).length ? `${sl.length} de ${lista.length}` : '';
+  listaA.innerHTML = sl.length ? sl.map(x => `
+    <div onclick='abrirPerfilClinico(${JSON.stringify(x).replace(/'/g,"&#39;")})' style="padding:8px 0;border-bottom:1px solid var(--gr100);cursor:pointer">
+      <div style="font-weight:600;color:var(--gr700)">${x.nome || 'Aluno'}</div>
+      ${x.diagnostico ? `<div style="font-size:11.5px;color:var(--gr400);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.diagnostico}</div>` : ''}
+    </div>
+  `).join('') : '<span style="color:var(--gr300)">Nenhum perfil cadastrado ainda.</span>';
+}
+
+function filtrarAlunosDashboardClinica() {
+  const q = document.getElementById('dash-cli-alunos-q')?.value.trim().toLowerCase() || '';
+  const todos = window.clinicaPerfis || [];
+  const filtrados = q ? todos.filter(x => (x.nome||'').toLowerCase().includes(q) || (x.diagnostico||'').toLowerCase().includes(q)) : todos;
+  renderizarAlunosDashboardClinica(filtrados);
 }
 
 async function carregarDashboardAT() {
@@ -10443,8 +10462,13 @@ function renderPagesClinica() {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">
       <div class="fcard">
-        <div class="fcard-title"> Alunos em acompanhamento</div>
-        <div id="dash-cli-alunos-lista" style="font-size:13px;color:var(--gr500)">Carregando…</div>
+        <div class="fcard-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span> Alunos em acompanhamento</span>
+          <span id="dash-cli-alunos-total" style="font-size:11px;font-weight:600;color:var(--gr400)"></span>
+        </div>
+        <input type="text" id="dash-cli-alunos-q" class="finput" placeholder="Buscar por nome ou diagnóstico…" style="margin:8px 0" oninput="filtrarAlunosDashboardClinica()">
+        <div id="dash-cli-alunos-lista" style="font-size:13px;color:var(--gr500);max-height:280px;overflow-y:auto">Carregando…</div>
+        <div style="text-align:right;margin-top:8px"><a href="javascript:void(0)" onclick="showPage('clinica-perfil')" style="font-size:12px;color:var(--roxo,#7C3AED);font-weight:600">Ver todos →</a></div>
       </div>
       <div class="fcard">
         <div class="fcard-title"> Últimas demandas da escola</div>
