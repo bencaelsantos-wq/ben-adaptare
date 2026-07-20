@@ -5560,9 +5560,9 @@ function renderizarAlunosDashboardClinica(lista) {
   const sl = (lista||[]).slice(0, 8);
   if (totalEl) totalEl.textContent = (lista||[]).length ? `${sl.length} de ${lista.length}` : '';
   listaA.innerHTML = sl.length ? sl.map(x => `
-    <div onclick='abrirPerfilClinico(${JSON.stringify(x).replace(/'/g,"&#39;")})' style="padding:8px 0;border-bottom:1px solid var(--gr100);cursor:pointer">
+    <div onclick='abrirPerfilClinico(${JSON.stringify(x).replace(/'/g,"&#39;")})' style="padding:8px 0;border-bottom:1px solid var(--gr100);cursor:pointer;width:100%;min-width:0;box-sizing:border-box">
       <div style="font-weight:600;color:var(--gr700)">${x.nome || 'Aluno'}</div>
-      ${x.diagnostico ? `<div style="font-size:11.5px;color:var(--gr400);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.diagnostico}</div>` : ''}
+      ${x.diagnostico ? `<div style="font-size:11.5px;color:var(--gr400);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">${x.diagnostico}</div>` : ''}
     </div>
   `).join('') : '<span style="color:var(--gr300)">Nenhum perfil cadastrado ainda.</span>';
 }
@@ -10460,14 +10460,14 @@ function renderPagesClinica() {
       <div class="stat-card"><div class="stat-num" id="dash-cli-rel" style="background:linear-gradient(135deg,#0891B2,#38BDF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="stat-label">Relatórios da escola</div></div>
       <div class="stat-card"><div class="stat-num" id="dash-cli-planos" style="background:linear-gradient(135deg,#059669,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="stat-label">Planos gerados</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">
-      <div class="fcard">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;min-width:0">
+      <div class="fcard" style="min-width:0;overflow:hidden">
         <div class="fcard-title" style="display:flex;justify-content:space-between;align-items:center">
           <span> Alunos em acompanhamento</span>
           <span id="dash-cli-alunos-total" style="font-size:11px;font-weight:600;color:var(--gr400)"></span>
         </div>
-        <input type="text" id="dash-cli-alunos-q" class="finput" placeholder="Buscar por nome ou diagnóstico…" style="margin:8px 0" oninput="filtrarAlunosDashboardClinica()">
-        <div id="dash-cli-alunos-lista" style="font-size:13px;color:var(--gr500);max-height:280px;overflow-y:auto">Carregando…</div>
+        <input type="text" id="dash-cli-alunos-q" class="finput" placeholder="Buscar por nome ou diagnóstico…" style="margin:8px 0;width:100%;box-sizing:border-box" oninput="filtrarAlunosDashboardClinica()">
+        <div id="dash-cli-alunos-lista" style="font-size:13px;color:var(--gr500);max-height:280px;overflow-y:auto;min-width:0">Carregando…</div>
         <div style="text-align:right;margin-top:8px"><a href="javascript:void(0)" onclick="showPage('clinica-perfil')" style="font-size:12px;color:var(--roxo,#7C3AED);font-weight:600">Ver todos →</a></div>
       </div>
       <div class="fcard">
