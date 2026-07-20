@@ -13143,7 +13143,8 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       .replace(/---USO EXCLUSIVO DO PROFESSOR---/gi, '')
       .trim();
 
-    const fontSizeGuia = 12;
+    const fontSizeGuiaMap = { pequeno: 10, medio: 12, grande: 14, extragrande: 16 };
+    const fontSizeGuia = fontSizeGuiaMap[opts.fonteGuia] || 12;
     const altLinha = 6.2;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fontSizeGuia);
