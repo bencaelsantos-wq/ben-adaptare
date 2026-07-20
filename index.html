@@ -11260,6 +11260,7 @@ REGRAS UNIVERSAIS DE APOIO (valem para qualquer tipo de exercício):
 - Apoio visual deve ter FUNÇÃO, nunca ser decorativo. Nunca adicione imagem/ícone só para ilustrar o tema (ex: frutas soltas no fim da folha sem relação com o cálculo). Se usar apoio visual, ele precisa representar diretamente a quantidade ou a estrutura do problema (ex: marcadores repetidos representando unidades a contar, ícone ao lado de cada personagem/quantidade de um problema).
 - Quando o diagnóstico indicar memória operacional ou função executiva comprometida, ofereça retirada gradual de apoio dentro da própria atividade quando possível: um primeiro exercício com o passo a passo decomposto e visível, um exercício seguinte do mesmo tipo com menos apoio, e um último exercício só com a operação — replicando a mesma lógica pedagógica com autonomia crescente, não simplesmente repetindo o mesmo nível de apoio em todos os itens.
 - Quando o perfil informado (diagnóstico, observações clínicas ou contexto adicional) indicar ansiedade, baixa tolerância à frustração ou dificuldade de autorregulação, insira uma pista breve de regulação emocional entre os blocos de exercício (ex: "Respire fundo. Vamos para o próximo." ou "Você já fez uma parte! Continue no seu tempo."). Máximo 1 frase curta por transição de bloco, nunca a cada linha — isso é apoio funcional, não enchimento.
+- Quando o perfil indicar que a expressão ORAL é uma habilidade preservada/forte e a escrita é uma barreira real (ex: dislexia, disgrafia, dificuldade motora fina), e a folha do aluno tiver alguma questão dissertativa ou de resposta aberta, inclua no Guia do Professor (seção APLICACAO ou uma observação curta) a sugestão explícita de aceitar resposta oral como alternativa equivalente à escrita para essa questão — sem alterar a questão na folha do aluno, é uma orientação de aplicação para o profissional.
 
 Use esse raciocínio para fundamentar a folha do aluno e o guia do professor abaixo — mas NUNCA imprima esta análise na resposta, ela é só para orientar sua decisão.
 
@@ -11687,7 +11688,7 @@ function desenharEscala0a4Registro(doc, x, y, label, maxX) {
   for (let n = 0; n <= 4; n++) {
     doc.setDrawColor(60,60,60);
     doc.circle(cx, y - 1.2, 3, 'S');
-    doc.text(String(n), cx - 1.2, y);
+    doc.text(String(n), cx, y - 1.2, { align: 'center', baseline: 'middle' });
     cx += 9;
   }
   return y + 8;
