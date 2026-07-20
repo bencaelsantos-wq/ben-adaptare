@@ -15613,13 +15613,36 @@ OBJETIVOS TERAPÊUTICOS:
 - Comportamental: ${obj?.comportamental||'Não definido'}
 - Acadêmico: ${obj?.academico||'Não definido'}
 
-Responda APENAS em JSON válido, sem markdown, neste formato exato:
-{"escola":"estratégias pedagógicas detalhadas para professores","at":"roteiro prático detalhado para o acompanhante terapêutico","clinica":"estratégias terapêuticas e recomendações clínicas","indicadores":"indicadores observáveis de evolução por área"}`;
+Responda EXATAMENTE neste formato de texto simples, sem markdown, sem JSON, usando estes marcadores literais para separar cada seção:
+
+***ESCOLA***
+[estratégias pedagógicas detalhadas para professores]
+
+***AT***
+[roteiro prático detalhado para o acompanhante terapêutico]
+
+***CLINICA***
+[estratégias terapêuticas e recomendações clínicas]
+
+***INDICADORES***
+[indicadores observáveis de evolução por área]`;
 
   try {
-    const txt  = await chamarClaude({ prompt, maxTokens: 2000, modulo: 'plano_intervencao' });
-    const clean = txt.replace(/```json|```/g, '').trim();
-    planoGerado = JSON.parse(clean);
+    const txt = await chamarClaude({ prompt, maxTokens: 2000, modulo: 'plano_intervencao' });
+    const extrair = (secao, proxima) => {
+      const re = new RegExp('\\*{0,3}\\s*' + secao + '\\s*\\*{0,3}([\\s\\S]*?)(?=\\*{0,3}\\s*' + (proxima || '$') + '\\s*\\*{0,3}|$)', 'i');
+      const m = txt.match(re);
+      return m ? m[1].trim() : '';
+    };
+    planoGerado = {
+      escola: extrair('ESCOLA', 'AT'),
+      at: extrair('AT', 'CLINICA'),
+      clinica: extrair('CLINICA', 'INDICADORES'),
+      indicadores: extrair('INDICADORES')
+    };
+    if (!planoGerado.escola && !planoGerado.at && !planoGerado.clinica && !planoGerado.indicadores) {
+      throw new Error('Não foi possível interpretar a resposta da IA. Tente gerar novamente.');
+    }
     document.getElementById('plano-escola').textContent      = planoGerado.escola || '—';
     document.getElementById('plano-at').textContent          = planoGerado.at     || '—';
     document.getElementById('plano-clinica').textContent     = planoGerado.clinica || '—';
