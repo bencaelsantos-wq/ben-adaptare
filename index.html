@@ -12859,7 +12859,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   // Separar folha do aluno do guia do professor
   const sepIdx = opts.conteudo.indexOf('---USO EXCLUSIVO DO PROFESSOR---');
   const folha = sepIdx >= 0 ? opts.conteudo.substring(0, sepIdx).trim() : opts.conteudo;
-  const guia = sepIdx >= 0 ? opts.conteudo.substring(sepIdx + 35).trim() : null;
+  const guia = sepIdx >= 0 ? opts.conteudo.substring(sepIdx + '---USO EXCLUSIVO DO PROFESSOR---'.length).trim() : null;
 
   // Remover marcadores de PARTE 1
   const folhaLimpa = folha
@@ -13120,21 +13120,21 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
 
     // Dados do aluno no guia
     doc.setFillColor(240, 244, 255);
-    doc.roundedRect(ml, y, W - ml - mr, 14, 1.5, 1.5, 'F');
+    doc.roundedRect(ml, y, W - ml - mr, 16, 1.5, 1.5, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
+    doc.setFontSize(10.5);
     doc.setTextColor(50, 70, 140);
-    doc.text('ALUNO:', ml + 3, y + 6);
+    doc.text('ALUNO:', ml + 3, y + 7);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(20, 20, 60);
-    doc.text(opts.aluno, ml + 18, y + 6);
+    doc.text(opts.aluno, ml + 22, y + 7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(50, 70, 140);
-    doc.text('MATÉRIA:', W / 2, y + 6);
+    doc.text('MATÉRIA:', W / 2, y + 7);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(20, 20, 60);
-    doc.text(sanitizarTexto((opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/)[0]), W / 2 + 20, y + 6);
-    y += 20;
+    doc.text(sanitizarTexto((opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/)[0]), W / 2 + 24, y + 7);
+    y += 22;
 
     // Conteúdo do guia
     const guiaLimpo = guia
