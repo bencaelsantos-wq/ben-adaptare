@@ -11336,7 +11336,7 @@ Avalie a atividade que você está prestes a entregar contra esta escala. Se qua
 
 ${incluiGuia ? `***GUIA_PROFESSOR***
 
-Guia do professor — análise pedagógica fundamentada, curta e escaneável.
+Guia do professor — CURTO e escaneável, feito pra ser lido em menos de 1 minuto por alguém sem tempo. Regra geral de todo o guia: frases curtas, direto ao ponto, NUNCA parágrafo longo em nenhum campo abaixo — se uma explicação passar de 1 frase, corte.
 
 PERFIL: [1 linha — diagnóstico + barreira principal removida]
 
@@ -11344,16 +11344,16 @@ OBJETIVO PEDAGOGICO: [1 linha — habilidade desenvolvida]
 
 HABILIDADE/BNCC: [código e descrição quando aplicável e você tiver certeza do código correto; senão omitir esta linha — nunca invente um código]
 
-BARREIRAS IDENTIFICADAS (até 3 — liste APENAS barreiras realmente sustentadas pelos dados fornecidos acima; se houver evidência clara para só 1 ou 2, liste só essas, NUNCA invente uma terceira para completar a lista):
+BARREIRAS IDENTIFICADAS (até 3 — liste APENAS barreiras realmente sustentadas pelos dados fornecidos acima; se houver evidência clara para só 1 ou 2, liste só essas, NUNCA invente uma terceira para completar a lista; cada barreira em no máximo 8 palavras):
 - [barreira 1]
 - [barreira 2]
 - [barreira 3]
 
-ADAPTACOES REALIZADAS (até 4 — liste cada adaptação seguida da justificativa, NUNCA em formato de tabela; se só há base real para menos de 4, liste menos, NUNCA invente para completar):
-- Adaptação: [o que foi feito] — Justificativa: [por que foi feito, com base em qual princípio]
-- Adaptação: [o que foi feito] — Justificativa: [por que foi feito, com base em qual princípio]
-- Adaptação: [o que foi feito] — Justificativa: [por que foi feito, com base em qual princípio]
-- Adaptação: [o que foi feito] — Justificativa: [por que foi feito, com base em qual princípio]
+ADAPTACOES REALIZADAS (até 4 — liste cada adaptação seguida da justificativa, NUNCA em formato de tabela; se só há base real para menos de 4, liste menos, NUNCA invente para completar. CADA justificativa tem no máximo 12 palavras, UMA frase curta, nunca um parágrafo explicativo):
+- Adaptação: [o que foi feito, máx 10 palavras] — Justificativa: [por que, máx 12 palavras]
+- Adaptação: [o que foi feito, máx 10 palavras] — Justificativa: [por que, máx 12 palavras]
+- Adaptação: [o que foi feito, máx 10 palavras] — Justificativa: [por que, máx 12 palavras]
+- Adaptação: [o que foi feito, máx 10 palavras] — Justificativa: [por que, máx 12 palavras]
 
 PRINCIPIOS UTILIZADOS (selecione só os aplicados nesta atividade): UDL — múltiplas formas de acesso; Organização visual; Redução da carga cognitiva; Autorregulação; Comunicação alternativa; Autonomia; Flexibilização curricular.
 
@@ -11378,11 +11378,11 @@ SINAIS DE SOBRECARGA (intervir rápido se aparecerem): agitação ou dispersão,
 
 AVALIACAO: [2 critérios observáveis]
 
-RETIRADA GRADUAL DOS APOIOS: [como aumentar a autonomia do aluno nas próximas atividades]
+RETIRADA GRADUAL DOS APOIOS: [1 frase curta, máx 15 palavras — como aumentar a autonomia nas próximas atividades]
 
-GENERALIZACAO (max 2 linhas): [como estimular essa habilidade fora da atividade — sala, casa, recreio, rotina, jogos]
+GENERALIZACAO (1 linha, máx 15 palavras): [como estimular essa habilidade fora da atividade — sala, casa, recreio, rotina, jogos]
 
-NAO FAZER: [1-2 proibições críticas]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
+NAO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
 
   try {
     const textoBruto = await chamarClaude({ prompt, maxTokens: incluiGuia ? 2800 : 1200, modulo: 'adaptacao' });
@@ -11400,7 +11400,7 @@ NAO FAZER: [1-2 proibições críticas]` : 'NÃO gere o guia do professor nem ne
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
 
     const avisos = [];
-    if (incluiGuia && !/\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i.test(texto)) {
+     if (incluiGuia && !/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i.test(texto)) {
       avisos.push('o Guia do Professor não parece ter sido gerado');
     }
     if (/\[(IMAGEM|CAIXA|LINHA NUMERICA)[^\]]*$/im.test(texto)) {
@@ -11424,7 +11424,7 @@ NAO FAZER: [1-2 proibições críticas]` : 'NÃO gere o guia do professor nem ne
 async function downloadAdaptacaoPDF() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
 
-  const separador = /\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i;
+  const separador = /\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i;
   const partes = ultimaAdapt.split(separador);
   const folhaAluno = partes[0].trim();
   const guiaProf = partes[1] ? partes[1].trim() : null;
@@ -11507,7 +11507,7 @@ function extrairItensParaIlustrar(texto) {
 
 function detectarItensImagem() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
-  const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA\s*(?:DO\s+)?PROFESSOR\s*\*{0,3}/i)[0];
+  const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i)[0];
   const termos = extrairItensParaIlustrar(folhaAluno);
   window._imgItens = termos.length
     ? termos.map(t => ({ termo: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
@@ -12886,7 +12886,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   const maxW = W - ml - mr;
   const rodapeH = 20;
 
-  const fontSizeMap = { pequeno: 8, medio: 9.5, grande: 12, extragrande: 15 };
+  const fontSizeMap = { pequeno: 9, medio: 11, grande: 13, extragrande: 16 };
   const lineHeightMap = { compacto: 4.5, normal: 5.2, amplo: 7 };
   const fontSize = fontSizeMap[opts.fonteTamanho] || 9.5;
   const altLinhaCustom = lineHeightMap[opts.espacamento] || 5.2;
