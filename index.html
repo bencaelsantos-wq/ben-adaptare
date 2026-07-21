@@ -7796,7 +7796,7 @@ ${blocoPerguntas}
 Gere a proposta pedagógica completa seguindo o formato de saída do seu papel.`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 6000, modulo: 'analise-comportamental' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 6000, modulo: 'apoio-pedagogico' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     const alunoId = document.getElementById('ap-aluno-sel')?.value || null;
     window._ultimoApoioPedagogico = { texto, aluno: d.alunoNome };
