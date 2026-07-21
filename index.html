@@ -4272,6 +4272,9 @@ function renderNavClinica() {
     <div class="nav-item clinic-item" id="nav-clinica-plano" onclick="showPage('clinica-plano')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Plano de Intervenção
     </div>
+    <div class="nav-item clinic-item" id="nav-clinica-materiais" onclick="showPage('clinica-materiais')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Materiais Terapêuticos
+    </div>
     <div class="nav-item clinic-item" id="nav-clinica-pdi" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('PDI')" : "showPage('pdi')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -10667,6 +10670,42 @@ function renderPagesClinica() {
     <button class="btn-sm" id="btn-gerar-plano" onclick="gerarPlanoIntervencao()" style="display:none;margin-top:12px"> Gerar Plano com a Lou</button>
   </div>
 
+  <div id="page-clinica-materiais" class="page">
+    <h1 class="page-title">Materiais Terapêuticos</h1>
+    <p class="page-sub">Gere materiais de apoio para uso em sessão — agenda visual, cartões de comunicação e histórias sociais, a partir do perfil e dos objetivos terapêuticos do paciente.</p>
+    <div class="frow" style="margin-bottom:14px">
+      <div><label class="flabel" for="mat-terapeutico-aluno-sel">Paciente</label><select class="fselect" id="mat-terapeutico-aluno-sel" style="max-width:320px"><option value="">Selecione um paciente</option></select></div>
+      <div><label class="flabel" for="mat-tipo">Tipo de material</label><select class="fselect" id="mat-tipo" style="max-width:260px">
+        <option value="agenda_visual">Agenda Visual / Rotina</option>
+        <option value="cartao_comunicacao">Cartão de Comunicação</option>
+        <option value="historia_social">História Social</option>
+      </select></div>
+    </div>
+    <div class="fblock" style="margin-bottom:14px">
+      <label class="flabel" for="mat-contexto">Situação, rotina ou palavras a trabalhar</label>
+      <textarea id="mat-contexto" class="ftarea" placeholder="Ex: rotina de escovar os dentes antes de dormir; ou: palavras para pedir água, banheiro, ajuda; ou: primeira ida ao dentista"></textarea>
+    </div>
+    <button class="btn-gerar" id="btn-gerar-material" onclick="gerarMaterialTerapeutico()">⭐ Gerar com a Lou</button>
+
+    <div class="result-card" id="material-result-card">
+      <div class="result-header">
+        <div class="result-title">Material gerado pela IA</div>
+      </div>
+      <div class="result-text" id="material-result-text"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="baixarMaterialTerapeuticoPDF()">Baixar PDF</button>
+        <button class="btn-copy" onclick="detectarImagensMaterial()">🖼️ Detectar imagens do material</button>
+      </div>
+    </div>
+
+    <div class="fcard" id="ap-img-painel" style="display:none;margin-top:16px">
+      <div class="fcard-title">Imagens do material</div>
+      <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF.</p>
+      <div id="ap-img-itens"></div>
+      <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
+    </div>
+  </div>
+
   <div id="page-clinica-monitoramento" class="page">
     <h1 class="page-title">Monitoramento de Evolução</h1>
     <p class="page-sub">Registre a evolução do aluno em cada objetivo semana a semana.</p>
@@ -15343,7 +15382,7 @@ async function carregarAlunosClinica() {
 function popularSelectsClinica() {
   const opts = '<option value="">Selecione um aluno</option>' +
     perfisClinicaList.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
-  ['obj-aluno-sel','plano-aluno-sel','mon-aluno-sel'].forEach(id => {
+  ['obj-aluno-sel','plano-aluno-sel','mon-aluno-sel','mat-terapeutico-aluno-sel'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
   });
@@ -15655,6 +15694,219 @@ Responda EXATAMENTE neste formato de texto simples, sem markdown, sem JSON, usan
     toast('Plano gerado com sucesso!', 'success');
   } catch(e) { toast('Erro ao gerar plano: ' + e.message, 'error'); }
   btnGerar.textContent = '⭐ Gerar Plano com a Lou'; btnGerar.disabled = false;
+}
+
+// ── MATERIAIS TERAPÊUTICOS (uso em sessão) ──────────────────────
+let ultimoMaterialTerapeutico = null;
+
+async function gerarMaterialTerapeutico() {
+  const id = document.getElementById('mat-terapeutico-aluno-sel')?.value;
+  const p = perfisClinicaList.find(x => x.id === id);
+  if (!p) return toast('Selecione um paciente.', 'error');
+  const tipo = document.getElementById('mat-tipo')?.value;
+  const contexto = document.getElementById('mat-contexto')?.value?.trim();
+  if (!contexto) return toast('Descreva a situação, rotina ou palavras a trabalhar.', 'error');
+
+  const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
+  const btn = document.getElementById('btn-gerar-material');
+  btn.textContent = '⏳ Gerando com a Lou…'; btn.disabled = true;
+
+  const perfilTexto = `PACIENTE: ${p.nome} | ${p.idade||''}
+DIAGNÓSTICO: ${p.diagnostico||'Não informado'}
+COMUNICAÇÃO: ${p.comunicacao||'—'}
+REGULAÇÃO EMOCIONAL: ${p.regulacao||'—'}
+SENSÓRIO: ${p.sensorio||'—'}
+FUNÇÕES PRESERVADAS: ${p.preservadas||'—'}
+FUNÇÕES COMPROMETIDAS: ${p.comprometidas||'—'}
+OBJETIVOS TERAPÊUTICOS: ${[obj?.cognitivo,obj?.comunicacao,obj?.social,obj?.comportamental].filter(Boolean).join(' | ') || 'Não definidos'}`;
+
+  let prompt;
+  if (tipo === 'historia_social') {
+    prompt = `Você é especialista em histórias sociais (modelo Carol Gray simplificado) para crianças com necessidades específicas de desenvolvimento.
+${perfilTexto}
+
+SITUAÇÃO A TRABALHAR: ${contexto}
+
+Escreva uma história social curta sobre essa situação: o que acontece → como a pessoa pode se sentir/pensar → o que fazer → o que esperar depois. Linguagem simples, tom acolhedor, nunca infantilizado além do necessário pela idade. Linguagem clara e ATUAL, nunca palavras arcaicas ou em desuso.
+Quando um objeto, lugar, pessoa ou ação concreta puder ser representada visualmente, insira o marcador [IMAGEM: nome-do-item] logo após o texto (minúsculo, sem acento, máx 1 por conceito).
+Máximo 180 palavras. NUNCA use emojis. NUNCA use tabela markdown.
+
+FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes:
+
+Nome: _______________ | Data: ___/___/___
+
+[TÍTULO curto e acolhedor]
+
+---
+
+[parágrafo 1 — o que acontece]
+
+---
+
+[parágrafo 2 — como posso me sentir/pensar]
+
+---
+
+[parágrafo 3 — o que fazer]
+
+---
+
+[parágrafo 4 — o que esperar depois]`;
+  } else {
+    const tipoLabel = tipo === 'agenda_visual' ? 'uma AGENDA VISUAL/ROTINA em passos sequenciais' : 'um conjunto de CARTÕES DE COMUNICAÇÃO (estilo PECS simplificado)';
+    prompt = `Você é especialista em comunicação alternativa e organização visual para crianças com necessidades específicas de desenvolvimento.
+${perfilTexto}
+
+CONTEXTO: ${contexto}
+
+Gere ${tipoLabel}, baseado no contexto acima e nos objetivos terapêuticos do paciente.
+Cada item tem um nome de imagem simples (minúsculo, sem acento) e um texto curto (máx 4 palavras para cartão de comunicação, máx 8 palavras para passo de agenda).
+Gere entre 4 e 8 itens, na ordem em que devem ser usados/apresentados. NUNCA invente item que não faça sentido pro contexto informado. Linguagem clara e ATUAL, nunca palavras arcaicas.
+
+FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes:
+
+TITULO: [título curto do material]
+
+CARTAO: [nome-imagem] | [texto curto]
+CARTAO: [nome-imagem] | [texto curto]
+CARTAO: [nome-imagem] | [texto curto]
+CARTAO: [nome-imagem] | [texto curto]`;
+  }
+
+  try {
+    const txt = await chamarClaude({ prompt, maxTokens: 1400, modulo: 'material_terapeutico' });
+    ultimoMaterialTerapeutico = { tipo, texto: txt.trim(), paciente: p, contexto };
+    document.getElementById('material-result-text').textContent = txt.trim();
+    document.getElementById('material-result-card').classList.add('show');
+    document.getElementById('ap-img-painel').style.display = 'none';
+    toast('Material gerado com sucesso!', 'success');
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  }
+  btn.textContent = '⭐ Gerar com a Lou'; btn.disabled = false;
+}
+
+function detectarImagensMaterial() {
+  if (!ultimoMaterialTerapeutico) return toast('Gere um material primeiro.', 'error');
+  let termos = [];
+  if (ultimoMaterialTerapeutico.tipo === 'historia_social') {
+    termos = extrairItensParaIlustrar(ultimoMaterialTerapeutico.texto);
+  } else {
+    termos = [...ultimoMaterialTerapeutico.texto.matchAll(/^CARTAO:\s*([^|]+)\|/gim)].map(m => m[1].trim().toLowerCase());
+  }
+  window._imgItens = termos.length
+    ? termos.map(t => ({ termo: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
+    : [{ termo: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
+  if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
+  document.getElementById('ap-img-painel').style.display = '';
+  renderizarPainelImagens();
+  document.getElementById('ap-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+async function baixarMaterialTerapeuticoPDF() {
+  if (!ultimoMaterialTerapeutico) return toast('Gere um material primeiro.', 'error');
+  const { tipo, texto, paciente } = ultimoMaterialTerapeutico;
+
+  const itensComImagem = (window._imgItens||[]).filter(i => i.urlEscolhida);
+  const imagensPorItem = {};
+  if (itensComImagem.length) {
+    toast('Montando PDF…', 'success');
+    for (const item of itensComImagem) {
+      try { imagensPorItem[item.termo.trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida); }
+      catch(e) { console.warn('Falha ao carregar imagem de', item.termo, e); }
+    }
+  }
+
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+
+  if (tipo === 'historia_social') {
+    gerarPDFDocumento({
+      tipo: 'MATERIAL TERAPÊUTICO',
+      titulo: 'História Social',
+      subtitulo: 'Material Terapêutico',
+      aluno: paciente.nome,
+      professor: profNome,
+      conteudo: texto,
+      nomeArquivo: 'Historia_Social_' + paciente.nome.replace(/\s+/g,'_'),
+      isAtividade: true,
+      guiaProf: null,
+      fonteTamanho: 'medio',
+      espacamento: 'normal',
+      fonteTipo: 'sans',
+      imagensPorItem
+    });
+    return;
+  }
+
+  const cards = [...texto.matchAll(/^CARTAO:\s*([^|]+)\|\s*(.+)$/gim)].map(m => ({ nome: m[1].trim().toLowerCase(), texto: m[2].trim() }));
+  if (!cards.length) return toast('Não foi possível interpretar os cartões gerados. Tente gerar novamente.', 'error');
+  const tituloMatch = texto.match(/^TITULO:\s*(.+)$/im);
+  const titulo = tituloMatch ? tituloMatch[1].trim() : (tipo === 'agenda_visual' ? 'Agenda Visual' : 'Cartões de Comunicação');
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  gerarPDFCartoesTerapeuticos(doc, { titulo, paciente: paciente.nome, cards, imagensPorItem }, 210, 297, 18, 18);
+  doc.save((tipo === 'agenda_visual' ? 'Agenda_Visual_' : 'Cartoes_Comunicacao_') + paciente.nome.replace(/\s+/g,'_') + '.pdf');
+  toast('PDF gerado com sucesso!', 'success');
+}
+
+function gerarPDFCartoesTerapeuticos(doc, opts, W, H, ml, mr) {
+  let y = 0;
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, 0, W, 18, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(sanitizarTexto(opts.titulo.toUpperCase()), W / 2, 11, { align: 'center' });
+  y = 26;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.text('Paciente: ' + sanitizarTexto(opts.paciente), ml, y);
+  y += 10;
+
+  const cols = 3;
+  const gap = 6;
+  const cardW = (W - ml - mr - gap * (cols - 1)) / cols;
+  const cardH = cardW + 14;
+  let col = 0;
+
+  opts.cards.forEach((card) => {
+    if (col === 0 && y + cardH > H - 15) {
+      adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+      doc.addPage();
+      y = 20;
+    }
+    const x = ml + col * (cardW + gap);
+    const imgSize = cardW - 10;
+
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x, y, cardW, cardH, 2, 2, 'S');
+
+    const b64 = opts.imagensPorItem && opts.imagensPorItem[card.nome];
+    if (b64) {
+      try {
+        const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+        doc.addImage(b64, formato, x + 5, y + 5, imgSize, imgSize);
+      } catch(e) {}
+    } else {
+      doc.setDrawColor(210, 210, 210);
+      doc.roundedRect(x + 5, y + 5, imgSize, imgSize, 2, 2, 'S');
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(25, 25, 25);
+    const linhasTexto = doc.splitTextToSize(sanitizarTexto(card.texto), cardW - 6);
+    linhasTexto.slice(0, 2).forEach((l, li) => doc.text(l, x + cardW / 2, y + imgSize + 12 + li * 4.5, { align: 'center' }));
+
+    col++;
+    if (col >= cols) { col = 0; y += cardH + gap; }
+  });
+
+  adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
 }
 
 async function enviarRelatorioEscola() {
