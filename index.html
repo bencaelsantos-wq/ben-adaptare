@@ -4744,33 +4744,51 @@ async function adicionarImagemBanco() {
   carregarBancoImagens();
 }
 
+function nomeArquivoParaTag(nomeArquivo) {
+  return (nomeArquivo.split('.').slice(0, -1).join('.') || nomeArquivo)
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ')
+    .replace(/[^\w\sà-úÀ-Ú]/g, '')
+    .trim();
+}
+
 async function enviarImagemBanco(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 3 * 1024 * 1024) { toast('Imagem deve ter no máximo 3MB.', 'error'); input.value = ''; return; }
+  const files = [...input.files];
+  if (!files.length) return;
   const tagsRaw = document.getElementById('bi-tags-upload')?.value.trim();
-  if (!tagsRaw) { toast('Informe ao menos uma tag antes de escolher o arquivo.', 'error'); input.value = ''; return; }
-  const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-
-  toast('Enviando imagem…', 'success');
-  try {
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const path = `banco/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-    const { error: errUpload } = await db.storage
-      .from('imagens-atividades')
-      .upload(path, file, { upsert: false, contentType: file.type });
-    if (errUpload) throw errUpload;
-
-    const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
-    const { error: errInsert } = await db.from('banco_imagens_atividades').insert({ url: urlData.publicUrl, tags });
-    if (errInsert) throw errInsert;
-
-    toast('Imagem enviada e adicionada ao banco!', 'success');
-    document.getElementById('bi-tags-upload').value = '';
-    carregarBancoImagens();
-  } catch(e) {
-    toast('Erro ao enviar imagem: ' + e.message, 'error');
+  const tagsComuns = tagsRaw ? tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
+  if (!tagsComuns.length && files.length === 1) {
+    toast('Informe ao menos uma tag, ou envie sem tag comum (usaremos o nome do arquivo como tag).', 'error');
   }
+
+  let sucesso = 0, erro = 0;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (file.size > 3 * 1024 * 1024) { toast(`"${file.name}" ultrapassa 3MB, pulando.`, 'error'); erro++; continue; }
+    if (files.length > 1) toast(`Enviando ${i + 1} de ${files.length}…`, 'success');
+    const tagArquivo = nomeArquivoParaTag(file.name);
+    const tags = [...new Set([...tagsComuns, tagArquivo].filter(Boolean))];
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `banco/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const { error: errUpload } = await db.storage
+        .from('imagens-atividades')
+        .upload(path, file, { upsert: false, contentType: file.type });
+      if (errUpload) throw errUpload;
+
+      const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
+      const { error: errInsert } = await db.from('banco_imagens_atividades').insert({ url: urlData.publicUrl, tags });
+      if (errInsert) throw errInsert;
+      sucesso++;
+    } catch(e) {
+      console.warn('Erro ao enviar', file.name, e);
+      erro++;
+    }
+  }
+
+  toast(`${sucesso} imagem(ns) enviada(s) com sucesso${erro ? `, ${erro} com erro` : ''}.`, erro ? 'error' : 'success');
+  document.getElementById('bi-tags-upload').value = '';
+  carregarBancoImagens();
   input.value = '';
 }
 
@@ -5972,9 +5990,10 @@ function renderPagesDeveloper() {
       <div style="border:1px solid var(--gr200);border-radius:10px;padding:12px;margin-bottom:14px">
         <div class="flabel" style="margin-bottom:8px">Enviar arquivo (recomendado — fica hospedado na própria plataforma)</div>
         <div class="frow">
-          <div><label class="flabel" for="bi-tags-upload">Tags (separadas por vírgula)</label><input type="text" id="bi-tags-upload" class="finput" placeholder="cavalo, animal, fazenda"></div>
-          <div><label class="flabel" for="bi-file">Arquivo (PNG/JPG, máx. 3MB)</label><input type="file" id="bi-file" class="finput" accept="image/png,image/jpeg,image/webp" onchange="enviarImagemBanco(this)"></div>
+          <div><label class="flabel" for="bi-tags-upload">Tags comuns a todas as imagens (opcional, separadas por vírgula)</label><input type="text" id="bi-tags-upload" class="finput" placeholder="animal, fazenda"></div>
+          <div><label class="flabel" for="bi-file">Arquivos (PNG/JPG, máx. 3MB cada — pode selecionar vários)</label><input type="file" id="bi-file" class="finput" accept="image/png,image/jpeg,image/webp" multiple onchange="enviarImagemBanco(this)"></div>
         </div>
+        <p class="page-sub" style="margin:6px 0 0;font-size:11.5px">O nome de cada arquivo vira uma tag automática (ex: "cavalo.png" → tag "cavalo"), além das tags comuns preenchidas acima.</p>
       </div>
 
       <div style="border:1px solid var(--gr200);border-radius:10px;padding:12px;margin-bottom:14px">
