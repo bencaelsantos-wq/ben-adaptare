@@ -10698,10 +10698,10 @@ function renderPagesClinica() {
       </div>
     </div>
 
-    <div class="fcard" id="ap-img-painel" style="display:none;margin-top:16px">
+    <div class="fcard" id="mat-img-painel" style="display:none;margin-top:16px">
       <div class="fcard-title">Imagens do material</div>
       <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF.</p>
-      <div id="ap-img-itens"></div>
+      <div id="mat-img-itens"></div>
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
   </div>
@@ -11530,6 +11530,9 @@ async function downloadAdaptacaoPDF() {
 }
 
 // ── IMAGENS DA ATIVIDADE (banco próprio + banco gratuito) ────────────
+window._imgListaId = 'ap-img-itens';
+window._imgPrefixo = 'ai';
+
 function extrairItensParaIlustrar(texto) {
   const marcadores = [...texto.matchAll(/\[IMAGEM:\s*([^\]]+)\]/gi)].map(m => m[1].trim().toLowerCase());
   if (marcadores.length) return [...new Set(marcadores)];
@@ -11565,6 +11568,8 @@ function extrairItensParaIlustrar(texto) {
 
 function detectarItensImagem() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
+  window._imgListaId = 'ap-img-itens';
+  window._imgPrefixo = 'ai';
   const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i)[0];
   const termos = extrairItensParaIlustrar(folhaAluno);
   window._imgItens = termos.length
@@ -11577,7 +11582,8 @@ function detectarItensImagem() {
 }
 
 function renderizarPainelImagens() {
-  const cont = document.getElementById('ap-img-itens');
+  const cont = document.getElementById(window._imgListaId);
+  const px = window._imgPrefixo;
   cont.innerHTML = window._imgItens.map((item, i) => `
     <div style="border:1px solid var(--gr200);border-radius:10px;padding:10px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
@@ -11589,12 +11595,12 @@ function renderizarPainelImagens() {
         <button class="btn-sm" onclick="buscarImagemItem(${i})">Buscar</button>
         <button class="btn-danger" onclick="removerItemImagem(${i})">Remover</button>
       </div>
-      <div id="ai-resultados-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
+      <div id="${px}-resultados-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px dashed var(--gr200)">
-        <input type="file" id="ai-upload-${i}" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="enviarImagemBancoItem(${i}, this)">
-        <button class="btn-sm-ghost" style="font-size:12px" onclick="document.getElementById('ai-upload-${i}').click()">📤 Não achou? Envie uma imagem</button>
+        <input type="file" id="${px}-upload-${i}" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="enviarImagemBancoItem(${i}, this)">
+        <button class="btn-sm-ghost" style="font-size:12px" onclick="document.getElementById('${px}-upload-${i}').click()">📤 Não achou? Envie uma imagem</button>
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gr500);cursor:pointer">
-          <input type="checkbox" id="ai-compartilhar-${i}">
+          <input type="checkbox" id="${px}-compartilhar-${i}">
           Compartilhar com a comunidade Pluramente
           <span class="chip-wrap" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--gr200);color:var(--gr600);font-size:10px;font-weight:700;cursor:help">?
             <span class="chip-tooltip">Se marcar, essa imagem também fica disponível para outras escolas e clínicas que usam a Pluramente, não só a sua. Se deixar desmarcado, ela fica visível apenas para a sua organização.</span>
@@ -11614,7 +11620,7 @@ async function enviarImagemBancoItem(i, input) {
   const item = window._imgItens[i];
   const termo = item.termo?.trim().toLowerCase();
   if (!termo) { toast('Preencha o nome do item antes de enviar a imagem.', 'error'); input.value = ''; return; }
-  const compartilhada = document.getElementById(`ai-compartilhar-${i}`)?.checked || false;
+  const compartilhada = document.getElementById(`${window._imgPrefixo}-compartilhar-${i}`)?.checked || false;
 
   toast('Enviando imagem…', 'success');
   try {
@@ -11641,7 +11647,7 @@ async function enviarImagemBancoItem(i, input) {
 
 function renderResultadosItem(i) {
   const item = window._imgItens[i];
-  const box = document.getElementById('ai-resultados-'+i);
+  const box = document.getElementById(window._imgPrefixo + '-resultados-' + i);
   if (!box) return;
   if (!item.resultados.length) { box.innerHTML = ''; return; }
   box.innerHTML = item.resultados.map(u => `<img src="${u}" onclick="escolherImagemItem(${i},'${u.replace(/'/g,"&#39;")}')" style="width:70px;height:70px;object-fit:cover;border-radius:6px;cursor:pointer;border:3px solid ${item.urlEscolhida===u?'#2563EB':'transparent'}">`).join('');
@@ -11650,7 +11656,7 @@ function renderResultadosItem(i) {
 async function buscarImagemItem(i) {
   const item = window._imgItens[i];
   if (!item.termo.trim()) return toast('Digite o item a buscar.', 'error');
-  const box = document.getElementById('ai-resultados-'+i);
+  const box = document.getElementById(window._imgPrefixo + '-resultados-' + i);
   box.innerHTML = '<span style="font-size:12px;color:var(--gr400)">Buscando…</span>';
   try {
     let urls = [];
@@ -15788,6 +15794,8 @@ CARTAO: [nome-imagem] | [texto curto]`;
 
 function detectarImagensMaterial() {
   if (!ultimoMaterialTerapeutico) return toast('Gere um material primeiro.', 'error');
+  window._imgListaId = 'mat-img-itens';
+  window._imgPrefixo = 'mi';
   let termos = [];
   if (ultimoMaterialTerapeutico.tipo === 'historia_social') {
     termos = extrairItensParaIlustrar(ultimoMaterialTerapeutico.texto);
@@ -15798,9 +15806,9 @@ function detectarImagensMaterial() {
     ? termos.map(t => ({ termo: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
     : [{ termo: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
   if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
-  document.getElementById('ap-img-painel').style.display = '';
+  document.getElementById('mat-img-painel').style.display = '';
   renderizarPainelImagens();
-  document.getElementById('ap-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  document.getElementById('mat-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
 async function baixarMaterialTerapeuticoPDF() {
