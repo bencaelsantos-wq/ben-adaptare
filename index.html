@@ -3890,11 +3890,11 @@ async function lerPerfilDobanco() {
     if (!data) {
       const roleParaUsar = userRole || user.user_metadata?.role || 'professor';
       let subroleParaUsar = user.user_metadata?.subrole || '';
-      let orgId = null;
+      let orgId = user.user_metadata?.organizacao_id || null;
       try {
         const { data: conviteRow } = await db.from('convites').select('convidado_por, sub_papel').eq('email', user.email).order('created_at', { ascending:false }).limit(1).maybeSingle();
         if (!subroleParaUsar) subroleParaUsar = conviteRow?.sub_papel || '';
-        if (conviteRow?.convidado_por) {
+        if (!orgId && conviteRow?.convidado_por) {
           const { data: inviterProfile } = await db.from('profiles').select('organizacao_id').eq('id', conviteRow.convidado_por).maybeSingle();
           orgId = inviterProfile?.organizacao_id || null;
         }
@@ -8144,7 +8144,7 @@ async function salvarProfissionalClinica() {
     const _convResp = await fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/convidar-usuario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token },
-      body: JSON.stringify({ email, nome, role: 'clinica', sub_papel: especialidade, redirect_to: window.location.href })
+      body: JSON.stringify({ email, nome, role: 'clinica', subrole: especialidade, redirect_to: window.location.href })
     });
     if (!_convResp.ok) { const _e = await _convResp.json().catch(()=>({})); throw new Error('Erro ao enviar convite: ' + (_e.error || _convResp.status)); }
 
@@ -16790,6 +16790,8 @@ function dpToggleSubrole() {
   const role = document.getElementById('dp-inv-role')?.value;
   const wrap = document.getElementById('dp-inv-subrole-wrap');
   if (wrap) wrap.style.display = role === 'clinica' ? 'block' : 'none';
+  const orgWrap = document.getElementById('dp-inv-org-wrap');
+  if (orgWrap) orgWrap.style.display = role === 'gestao-clinica' ? 'block' : 'none';
 }
 
 async function dpEnviarConvite() {
@@ -16797,14 +16799,16 @@ async function dpEnviarConvite() {
   const nome    = document.getElementById('dp-inv-nome')?.value?.trim();
   const role    = document.getElementById('dp-inv-role')?.value;
   const subrole = role === 'clinica' ? (document.getElementById('dp-inv-subrole')?.value || '') : '';
+  const nome_organizacao = role === 'gestao-clinica' ? (document.getElementById('dp-inv-org-nome')?.value?.trim() || '') : '';
   const btn   = document.getElementById('dp-inv-btn');
   const msg   = document.getElementById('dp-inv-msg');
   if (!email) { msg.textContent='Informe o e-mail.'; msg.style.color='#DC2626'; return; }
+  if (role === 'gestao-clinica' && !nome_organizacao) { msg.textContent='Informe o nome da clínica.'; msg.style.color='#DC2626'; return; }
   btn.disabled=true; btn.textContent='Enviando…';
   try {
     const res = await fetch(SB_URL+'/functions/v1/convidar-usuario', {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
-      body: JSON.stringify({email, role, subrole, nome})
+      body: JSON.stringify({email, role, subrole, nome, nome_organizacao})
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Erro desconhecido');
@@ -18894,6 +18898,9 @@ function iniciarCena3(){var reportText='🏆 CONQUISTAS DO MÊS\\n\\nLucas compl
               <option value="psicomotricista">Psicomotricidade</option>
               <option value="adaptacao">Adaptação de Atividades</option>
             </select>
+          </div>
+          <div id="dp-inv-org-wrap" style="display:none;margin-bottom:20px"><label style="font-size:12px;color:#6B7280;display:block;margin-bottom:4px;">Nome da clínica *</label>
+            <input type="text" id="dp-inv-org-nome" style="width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;box-sizing:border-box;" placeholder="Ex: Clínica Viver Bem">
           </div>
           <button id="dp-inv-btn" onclick="dpEnviarConvite()" style="background:#2563EB;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Enviar convite</button>
           <div id="dp-inv-msg" style="margin-top:12px;font-size:13px;"></div>
