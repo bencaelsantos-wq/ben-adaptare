@@ -10699,6 +10699,11 @@ function renderPagesClinica() {
         <option value="cartao_comunicacao">Cartão de Comunicação</option>
         <option value="historia_social">História Social</option>
       </select></div>
+      <div><label class="flabel" for="mat-porfolha">Cards por folha</label><select class="fselect" id="mat-porfolha" style="max-width:160px">
+        <option value="4">4 por folha</option>
+        <option value="6" selected>6 por folha</option>
+        <option value="8">8 por folha</option>
+      </select></div>
     </div>
     <div class="fblock" style="margin-bottom:14px">
       <label class="flabel" for="mat-contexto">Situação, rotina ou palavras a trabalhar</label>
@@ -15873,7 +15878,8 @@ async function baixarMaterialTerapeuticoPDF() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  gerarPDFCartoesTerapeuticos(doc, { titulo, paciente: paciente.nome, cards, imagensPorItem }, 210, 297, 18, 18);
+  const porFolha = parseInt(document.getElementById('mat-porfolha')?.value, 10) || 6;
+  gerarPDFCartoesTerapeuticos(doc, { titulo, paciente: paciente.nome, cards, imagensPorItem, porFolha }, 210, 297, 18, 18);
   doc.save((tipo === 'agenda_visual' ? 'Agenda_Visual_' : 'Cartoes_Comunicacao_') + paciente.nome.replace(/\s+/g,'_') + '.pdf');
   toast('PDF gerado com sucesso!', 'success');
 }
@@ -15894,44 +15900,49 @@ function gerarPDFCartoesTerapeuticos(doc, opts, W, H, ml, mr) {
   doc.text('Paciente: ' + sanitizarTexto(opts.paciente), ml, y);
   y += 10;
 
-  const cols = 3;
+  const porFolha = [4, 6, 8].includes(opts.porFolha) ? opts.porFolha : 6;
+  const cols = porFolha / 2;
   const gap = 6;
   const cardW = (W - ml - mr - gap * (cols - 1)) / cols;
   const cardH = cardW + 14;
-  let col = 0;
+  let col = 0, linha = 0;
+  const yTopoPagina = y;
 
-  opts.cards.forEach((card) => {
-    if (col === 0 && y + cardH > H - 15) {
+  opts.cards.forEach((card, idx) => {
+    if (idx > 0 && idx % porFolha === 0) {
       adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
       doc.addPage();
-      y = 20;
+      y = yTopoPagina;
+      col = 0; linha = 0;
     }
     const x = ml + col * (cardW + gap);
-    const imgSize = cardW - 10;
+    const cardY = yTopoPagina + linha * (cardH + gap);
+    const imgSize = Math.min(cardW - 10, cardH - 20);
 
     doc.setDrawColor(180, 180, 180);
     doc.setLineWidth(0.3);
-    doc.roundedRect(x, y, cardW, cardH, 2, 2, 'S');
+    doc.roundedRect(x, cardY, cardW, cardH, 2, 2, 'S');
 
     const b64 = opts.imagensPorItem && opts.imagensPorItem[card.nome];
+    const imgX = x + (cardW - imgSize) / 2;
     if (b64) {
       try {
         const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-        doc.addImage(b64, formato, x + 5, y + 5, imgSize, imgSize);
+        doc.addImage(b64, formato, imgX, cardY + 5, imgSize, imgSize);
       } catch(e) {}
     } else {
       doc.setDrawColor(210, 210, 210);
-      doc.roundedRect(x + 5, y + 5, imgSize, imgSize, 2, 2, 'S');
+      doc.roundedRect(imgX, cardY + 5, imgSize, imgSize, 2, 2, 'S');
     }
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(25, 25, 25);
-    const linhasTexto = doc.splitTextToSize(sanitizarTexto(card.texto), cardW - 6);
-    linhasTexto.slice(0, 2).forEach((l, li) => doc.text(l, x + cardW / 2, y + imgSize + 12 + li * 4.5, { align: 'center' }));
+    const linhasTexto = doc.splitTextToSize(sanitizarTexto(card.texto).toUpperCase(), cardW - 6);
+    linhasTexto.slice(0, 2).forEach((l, li) => doc.text(l, x + cardW / 2, cardY + imgSize + 12 + li * 4.5, { align: 'center' }));
 
     col++;
-    if (col >= cols) { col = 0; y += cardH + gap; }
+    if (col >= cols) { col = 0; linha++; }
   });
 
   adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
