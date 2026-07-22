@@ -15803,7 +15803,8 @@ CARTAO: [nome-imagem] | [texto curto]`;
     ultimoMaterialTerapeutico = { tipo, texto: txt.trim(), paciente: p, contexto };
     document.getElementById('material-result-text').textContent = txt.trim();
     document.getElementById('material-result-card').classList.add('show');
-    document.getElementById('ap-img-painel').style.display = 'none';
+    const painelImgAntigo = document.getElementById('mat-img-painel');
+    if (painelImgAntigo) painelImgAntigo.style.display = 'none';
     toast('Material gerado com sucesso!', 'success');
   } catch(e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
