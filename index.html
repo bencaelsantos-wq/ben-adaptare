@@ -11523,7 +11523,7 @@ async function downloadAdaptacaoPDF() {
     toast('Montando PDF com imagens…', 'success');
     for (const item of itensComImagem) {
       try {
-        imagensPorItem[item.termo.trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida);
+        imagensPorItem[(item.chave ?? item.termo).trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida);
       } catch(e) {
         console.warn('Falha ao carregar imagem de', item.termo, e);
       }
@@ -11592,8 +11592,8 @@ function detectarItensImagem() {
   const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i)[0];
   const termos = extrairItensParaIlustrar(folhaAluno);
   window._imgItens = termos.length
-    ? termos.map(t => ({ termo: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
-    : [{ termo: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
+    ? termos.map(t => ({ termo: t, chave: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
+    : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
   if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
   document.getElementById('ap-img-painel').style.display = '';
   renderizarPainelImagens();
@@ -11713,7 +11713,7 @@ function removerItemImagem(i) {
 
 function adicionarItemImagemManual() {
   if (!window._imgItens) window._imgItens = [];
-  window._imgItens.push({ termo:'', fonte:'proprio', resultados:[], urlEscolhida:null });
+  window._imgItens.push({ termo:'', chave:'', fonte:'proprio', resultados:[], urlEscolhida:null });
   renderizarPainelImagens();
 }
 
@@ -15823,8 +15823,8 @@ function detectarImagensMaterial() {
     termos = [...ultimoMaterialTerapeutico.texto.matchAll(/^CARTAO:\s*([^|]+)\|/gim)].map(m => m[1].trim().toLowerCase());
   }
   window._imgItens = termos.length
-    ? termos.map(t => ({ termo: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
-    : [{ termo: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
+    ? termos.map(t => ({ termo: t, chave: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
+    : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
   if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
   document.getElementById('mat-img-painel').style.display = '';
   renderizarPainelImagens();
@@ -15840,7 +15840,7 @@ async function baixarMaterialTerapeuticoPDF() {
   if (itensComImagem.length) {
     toast('Montando PDF…', 'success');
     for (const item of itensComImagem) {
-      try { imagensPorItem[item.termo.trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida); }
+      try { imagensPorItem[(item.chave ?? item.termo).trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida); }
       catch(e) { console.warn('Falha ao carregar imagem de', item.termo, e); }
     }
   }
