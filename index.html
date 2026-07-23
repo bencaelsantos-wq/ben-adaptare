@@ -10882,18 +10882,32 @@ function renderPagesAT() {
         <div><label class="flabel" for="diat-data-ini">De</label><input type="date" class="finput" id="diat-data-ini" style="max-width:170px"></div>
         <div><label class="flabel" for="diat-data-fim">Até</label><input type="date" class="finput" id="diat-data-fim" style="max-width:170px"></div>
       </div>
-      <button class="btn-gerar" id="diat-btn-gerar" onclick="gerarRelatorioRotinaAT()">⭐ Gerar 3 relatórios com a IA</button>
+      <div style="margin-bottom:12px">
+        <label class="flabel">Quais relatórios gerar</label>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <label style="font-size:13px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="diat-chk-escola" checked>Escola</label>
+          <label style="font-size:13px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="diat-chk-familia" checked>Família</label>
+          <label style="font-size:13px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="diat-chk-clinica" checked>Clínica/Terapeuta</label>
+        </div>
+      </div>
+      <button class="btn-gerar" id="diat-btn-gerar" onclick="gerarRelatorioRotinaAT()">⭐ Gerar relatório(s) com a IA</button>
       <p style="font-size:11px;color:var(--gr500);margin-top:8px">Até 5 fotos do período são enviadas para análise da IA (as mais recentes, se houver mais).</p>
     </div>
 
     <div class="result-card" id="diat-result-card">
-      <div class="fcard-title">Relatório para a Escola</div>
-      <textarea class="ftarea" id="diat-texto-escola" style="min-height:140px"></textarea>
-      <div class="fcard-title" style="margin-top:14px">Relatório para a Família</div>
-      <textarea class="ftarea" id="diat-texto-familia" style="min-height:140px"></textarea>
-      <div class="fcard-title" style="margin-top:14px">Relatório para a Clínica/Terapeuta</div>
-      <textarea class="ftarea" id="diat-texto-clinica" style="min-height:140px"></textarea>
-      <button class="btn-gerar" style="margin-top:14px" onclick="baixarRelatorioRotinaATPDF()">📄 Baixar PDF (3 relatórios)</button>
+      <div id="diat-bloco-escola">
+        <div class="fcard-title">Relatório para a Escola</div>
+        <textarea class="ftarea" id="diat-texto-escola" style="min-height:140px"></textarea>
+      </div>
+      <div id="diat-bloco-familia">
+        <div class="fcard-title" style="margin-top:14px">Relatório para a Família</div>
+        <textarea class="ftarea" id="diat-texto-familia" style="min-height:140px"></textarea>
+      </div>
+      <div id="diat-bloco-clinica">
+        <div class="fcard-title" style="margin-top:14px">Relatório para a Clínica/Terapeuta</div>
+        <textarea class="ftarea" id="diat-texto-clinica" style="min-height:140px"></textarea>
+      </div>
+      <button class="btn-gerar" style="margin-top:14px" onclick="baixarRelatorioRotinaATPDF()">📄 Baixar PDF</button>
     </div>
   </div>`;
   carregarAlunosAT();
@@ -15803,6 +15817,11 @@ async function gerarRelatorioRotinaAT() {
   if (!perfilId) return toast('Selecione o aluno.', 'error');
   if (!dataIni || !dataFim) return toast('Selecione o período (de/até).', 'error');
 
+  const querEscola = document.getElementById('diat-chk-escola')?.checked;
+  const querFamilia = document.getElementById('diat-chk-familia')?.checked;
+  const querClinica = document.getElementById('diat-chk-clinica')?.checked;
+  if (!querEscola && !querFamilia && !querClinica) return toast('Selecione ao menos um destinatário.', 'error');
+
   const perfil = (perfisATList||[]).find(p => p.id === perfilId);
   const btn = document.getElementById('diat-btn-gerar');
   btn.disabled = true; btn.textContent = '⏳ Gerando...';
@@ -15812,7 +15831,7 @@ async function gerarRelatorioRotinaAT() {
       .gte('data', dataIni).lte('data', dataFim)
       .order('data', { ascending: true });
     if (error) throw error;
-    if (!(registros||[]).length) { toast('Nenhum registro encontrado nesse período.', 'error'); btn.disabled=false; btn.textContent='⭐ Gerar 3 relatórios com a IA'; return; }
+    if (!(registros||[]).length) { toast('Nenhum registro encontrado nesse período.', 'error'); btn.disabled=false; btn.textContent='⭐ Gerar relatório(s) com a IA'; return; }
 
     const textoConsolidado = registros.map(r => `[${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}] ${r.texto}`).join('\n\n');
 
@@ -15823,6 +15842,11 @@ async function gerarRelatorioRotinaAT() {
       try { imagensBase64.push(await imagemUrlParaBase64(f.url)); } catch(e) {}
     }
 
+    const blocosPedidos = [];
+    if (querEscola) blocosPedidos.push('RELATORIO_ESCOLA:\n[foco pedagógico e comportamental — o que a escola precisa saber para apoiar o aluno]');
+    if (querFamilia) blocosPedidos.push('RELATORIO_FAMILIA:\n[linguagem acessível, afetiva e acolhedora, pouco técnica — o que a família precisa saber sobre a rotina e evolução do filho]');
+    if (querClinica) blocosPedidos.push('RELATORIO_CLINICA:\n[foco técnico — observações objetivas relevantes para o terapeuta/clínica que acompanha o caso]');
+
     const prompt = `Você é uma equipe interdisciplinar (acompanhamento terapêutico, pedagogia e terapia) analisando registros de rotina de uma criança/adolescente com necessidades educacionais especiais, feitos por um Acompanhante Terapêutico (AT) entre ${new Date(dataIni+'T00:00:00').toLocaleDateString('pt-BR')} e ${new Date(dataFim+'T00:00:00').toLocaleDateString('pt-BR')}.
 
 PACIENTE: ${perfil?.nome || ''}
@@ -15832,16 +15856,9 @@ REGISTROS DO PERÍODO (feitos pelo AT, dia a dia):
 ${textoConsolidado}
 ${imagensBase64.length ? '\n(Foram anexadas fotos do período — considere o que está visível nelas como contexto adicional, sem descrevê-las literalmente no texto final.)' : ''}
 
-Gere 3 relatórios distintos, sintetizando TODO o período acima (não apenas o último dia). Linguagem clara e ATUAL, nunca palavras arcaicas. Cada um em no máximo 180 palavras. Use EXATAMENTE este formato, com os marcadores literais:
+Gere ${blocosPedidos.length} relatório(s) distinto(s), sintetizando TODO o período acima (não apenas o último dia). Cada relatório deve ter o TOM E O OLHAR adequados a quem vai lê-lo — isso é o mais importante, não é o mesmo texto repetido. Linguagem clara e ATUAL, nunca palavras arcaicas. Cada um em no máximo 180 palavras. Use EXATAMENTE este formato, com os marcadores literais:
 
-RELATORIO_ESCOLA:
-[foco pedagógico e comportamental — o que a escola precisa saber para apoiar o aluno]
-
-RELATORIO_FAMILIA:
-[linguagem acessível e acolhedora — o que a família precisa saber sobre a rotina e evolução do filho]
-
-RELATORIO_CLINICA:
-[foco técnico — observações objetivas relevantes para o terapeuta/clínica que acompanha o caso]`;
+${blocosPedidos.join('\n\n')}`;
 
     const txt = await chamarClaude({ prompt, maxTokens: 1800, modulo: 'diario_at', imagensBase64 });
 
@@ -15850,20 +15867,28 @@ RELATORIO_CLINICA:
       const m = txt.match(re);
       return m ? m[1].trim() : '';
     };
-    const escola = pegar('RELATORIO_ESCOLA', 'RELATORIO_FAMILIA');
-    const familia = pegar('RELATORIO_FAMILIA', 'RELATORIO_CLINICA');
-    const clinica = pegar('RELATORIO_CLINICA', null);
+    const ordemMarcadores = [];
+    if (querEscola) ordemMarcadores.push('RELATORIO_ESCOLA');
+    if (querFamilia) ordemMarcadores.push('RELATORIO_FAMILIA');
+    if (querClinica) ordemMarcadores.push('RELATORIO_CLINICA');
 
-    document.getElementById('diat-texto-escola').value = escola || txt;
+    const escola = querEscola ? pegar('RELATORIO_ESCOLA', ordemMarcadores[ordemMarcadores.indexOf('RELATORIO_ESCOLA')+1]) : '';
+    const familia = querFamilia ? pegar('RELATORIO_FAMILIA', ordemMarcadores[ordemMarcadores.indexOf('RELATORIO_FAMILIA')+1]) : '';
+    const clinica = querClinica ? pegar('RELATORIO_CLINICA', ordemMarcadores[ordemMarcadores.indexOf('RELATORIO_CLINICA')+1]) : '';
+
+    document.getElementById('diat-texto-escola').value = escola;
     document.getElementById('diat-texto-familia').value = familia;
     document.getElementById('diat-texto-clinica').value = clinica;
+    document.getElementById('diat-bloco-escola').style.display = querEscola ? '' : 'none';
+    document.getElementById('diat-bloco-familia').style.display = querFamilia ? '' : 'none';
+    document.getElementById('diat-bloco-clinica').style.display = querClinica ? '' : 'none';
     document.getElementById('diat-result-card').classList.add('show');
-    ultimoRelatorioRotinaAT = { paciente: perfil?.nome || '', dataIni, dataFim };
+    ultimoRelatorioRotinaAT = { paciente: perfil?.nome || '', dataIni, dataFim, selecionados: { querEscola, querFamilia, querClinica } };
     toast('Relatórios gerados com sucesso!', 'success');
   } catch (e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
   }
-  btn.disabled = false; btn.textContent = '⭐ Gerar 3 relatórios com a IA';
+  btn.disabled = false; btn.textContent = '⭐ Gerar relatório(s) com a IA';
 }
 
 function baixarRelatorioRotinaATPDF() {
@@ -15871,11 +15896,14 @@ function baixarRelatorioRotinaATPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W = 210, H = 297, ml = 18, mr = 18;
-  const secoes = [
-    { titulo: 'RELATÓRIO PARA A ESCOLA', texto: document.getElementById('diat-texto-escola').value },
-    { titulo: 'RELATÓRIO PARA A FAMÍLIA', texto: document.getElementById('diat-texto-familia').value },
-    { titulo: 'RELATÓRIO PARA A CLÍNICA/TERAPEUTA', texto: document.getElementById('diat-texto-clinica').value },
+  const sel = ultimoRelatorioRotinaAT.selecionados || { querEscola:true, querFamilia:true, querClinica:true };
+  const secoesTodas = [
+    { titulo: 'RELATÓRIO PARA A ESCOLA', texto: document.getElementById('diat-texto-escola').value, incluir: sel.querEscola },
+    { titulo: 'RELATÓRIO PARA A FAMÍLIA', texto: document.getElementById('diat-texto-familia').value, incluir: sel.querFamilia },
+    { titulo: 'RELATÓRIO PARA A CLÍNICA/TERAPEUTA', texto: document.getElementById('diat-texto-clinica').value, incluir: sel.querClinica },
   ];
+  const secoes = secoesTodas.filter(s => s.incluir);
+  if (!secoes.length) return toast('Nenhum relatório selecionado para baixar.', 'error');
   const periodo = `${new Date(ultimoRelatorioRotinaAT.dataIni+'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(ultimoRelatorioRotinaAT.dataFim+'T00:00:00').toLocaleDateString('pt-BR')}`;
 
   secoes.forEach((sec, i) => {
