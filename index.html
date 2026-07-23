@@ -16601,10 +16601,10 @@ OBJETIVOS: ${obj ? Object.entries({cognitivo:obj.cognitivo,comunicação:obj.com
 
 Responda APENAS em JSON válido, sem markdown, neste formato:
 {"situacoes":[{"situacao":"nome da situação","dificuldade":"o que pode acontecer","objetivo":"meta para esta situação","fazer":"lista de o que fazer separada por \\n","evitar":"lista do que evitar separada por \\n"}]}
-Gere entre 4 e 6 situações do cotidiano escolar.`;
+Gere entre 3 e 4 situações do cotidiano escolar. Seja direto e conciso em cada campo — isso é prioridade sobre a quantidade de situações.`;
 
   try {
-    const txt = (await chamarClaude({ prompt, maxTokens: 2000, modulo: 'roteiro_at' })).replace(/```json|```/g,'').trim();
+    const txt = (await chamarClaude({ prompt, maxTokens: 3200, modulo: 'roteiro_at' })).replace(/```json|```/g,'').trim();
     const parsed = JSON.parse(txt);
     if (iaDiv) iaDiv.innerHTML = `
       <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">⭐ Roteiro gerado pela IA</h3>
