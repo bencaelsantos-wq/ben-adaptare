@@ -3862,10 +3862,11 @@ async function lerPerfilDobanco() {
     window._organizacaoId = data?.organizacao_id || null;
 
     if (data?.organizacao_id) {
-      const { data: org } = await db.from('organizacoes').select('plano, addon_analise, addon_laudos, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url').eq('id', data.organizacao_id).maybeSingle();
+      const { data: org } = await db.from('organizacoes').select('plano, addon_analise, addon_laudos, addon_diario_at, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url').eq('id', data.organizacao_id).maybeSingle();
       window._planoAtivo = org?.plano || 'acolhe';
       window._addonAnalise = !!(org?.addon_analise || data?.addon_analise);
       window._addonLaudos = !!(org?.addon_laudos || data?.addon_laudos);
+      window._addonDiarioAT = !!(org?.addon_diario_at || data?.addon_diario_at);
       window._extraProfessores = org?.extra_professores || 0;
       window._extraAlunos = org?.extra_alunos || 0;
       window._extraIaPacotes = org?.extra_ia_pacotes || 0;
@@ -3875,6 +3876,7 @@ async function lerPerfilDobanco() {
       window._planoAtivo = data?.plano || 'acolhe';
       window._addonAnalise = !!data?.addon_analise;
       window._addonLaudos = !!data?.addon_laudos;
+      window._addonDiarioAT = !!data?.addon_diario_at;
       window._extraProfessores = data?.extra_professores || 0;
       window._extraAlunos = data?.extra_alunos || 0;
       window._extraIaPacotes = data?.extra_ia_pacotes || 0;
@@ -4326,9 +4328,9 @@ function renderNavAT() {
     <div class="nav-item at-item" id="nav-at-relatorios" onclick="showPage('at-relatorios')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios Recebidos<span class="notif-badge" id="badge-at-rel" style="display:none"></span>
     </div>
-    <div class="nav-item at-item" id="nav-at-diario" onclick="showPage('at-diario');carregarAlunosAT()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 3h10v14l-5-3-5 3V3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Diário de Acompanhamento
-    </div>
+      + (u.addon_analise ? (isClinicaCtx ? 197 : 167) : 0)
+      + (u.addon_laudos ? (isClinicaCtx ? 177 : 127) : 0)
+      + (u.addon_diario_at ? 97 : 0);
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item at-item" id="nav-colaboracao-at" onclick="abrirColaboracao()" style="font-weight:600">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional
@@ -4442,6 +4444,17 @@ function renderPagesGestaoClinica() {
     </div>
     <div class="cards-grid" id="gc-prof-grid">
       <div class="empty"><div class="empty-icon">👨‍⚕️</div><div class="empty-text">Nenhum profissional cadastrado.</div></div>
+    </div>
+
+    <div class="fcard" style="margin-top:20px">
+      <div class="fcard-title">Vincular Acompanhante Terapêutico (AT) a paciente</div>
+      <p style="font-size:12px;color:var(--gr500);margin-bottom:10px">O AT só enxerga e gera relatórios dos pacientes vinculados a ele aqui.</p>
+      <div class="frow" style="margin-bottom:10px">
+        <div><label class="flabel" for="vat-at-sel">AT</label><select class="fselect" id="vat-at-sel" style="max-width:260px"><option value="">Selecione um AT</option></select></div>
+        <div><label class="flabel" for="vat-paciente-sel">Paciente</label><select class="fselect" id="vat-paciente-sel" style="max-width:260px"><option value="">Selecione um paciente</option></select></div>
+      </div>
+      <button class="btn-sm" onclick="vincularATPaciente()">Vincular</button>
+      <div id="gc-vinculos-at-lista" style="margin-top:16px"></div>
     </div>
   </div>
 
@@ -4682,6 +4695,46 @@ async function excluirPerfilClinicaGestao(id, nome) {
   if (error) return toast('Erro ao excluir: ' + error.message, 'error');
   toast('Perfil excluído.', 'success');
   carregarPerfisGestaoClinica();
+}
+
+async function carregarVinculosATGestao() {
+  const selAT = document.getElementById('vat-at-sel');
+  const selPaciente = document.getElementById('vat-paciente-sel');
+  if (selAT) {
+    const { data: ats } = await db.from('profiles').select('id, nome, email').eq('role', 'at').order('nome');
+    selAT.innerHTML = '<option value="">Selecione um AT</option>' + (ats||[]).map(a => `<option value="${a.id}">${a.nome || a.email}</option>`).join('');
+  }
+  if (selPaciente) {
+    selPaciente.innerHTML = '<option value="">Selecione um paciente</option>' + (perfisClinicaList||[]).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+  }
+  const cont = document.getElementById('gc-vinculos-at-lista');
+  if (!cont) return;
+  const { data: vinculos } = await db.from('atendimentos_at').select('*, perfis_clinicos(nome), profiles!atendimentos_at_at_user_id_fkey(nome,email)').eq('ativo', true).order('created_at', { ascending: false });
+  if (!(vinculos||[]).length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum vínculo cadastrado ainda.</p>'; return; }
+  cont.innerHTML = '<div style="font-size:12px;font-weight:600;color:var(--gr500);margin-bottom:6px">Vínculos ativos</div>' + vinculos.map(v => `
+    <div style="border:1px solid var(--gr100);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;display:flex;justify-content:space-between;align-items:center">
+      <span><b>${v.profiles?.nome || v.profiles?.email || 'AT'}</b> → ${v.perfis_clinicos?.nome || 'paciente'}</span>
+      <button class="btn-danger" style="font-size:11px;padding:2px 8px" onclick="desvincularATPaciente('${v.id}')">Desvincular</button>
+    </div>`).join('');
+}
+
+async function vincularATPaciente() {
+  const atId = document.getElementById('vat-at-sel')?.value;
+  const perfilId = document.getElementById('vat-paciente-sel')?.value;
+  if (!atId) return toast('Selecione o AT.', 'error');
+  if (!perfilId) return toast('Selecione o paciente.', 'error');
+  const { error } = await db.from('atendimentos_at').insert({ perfil_id: perfilId, at_user_id: atId, vinculado_por: user.id });
+  if (error) return toast('Erro ao vincular: ' + error.message, 'error');
+  toast('Vínculo criado!', 'success');
+  carregarVinculosATGestao();
+}
+
+async function desvincularATPaciente(id) {
+  if (!confirm('Remover este vínculo?')) return;
+  const { error } = await db.from('atendimentos_at').update({ ativo: false }).eq('id', id);
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Vínculo removido.', 'success');
+  carregarVinculosATGestao();
 }
 
 async function carregarProfissionaisClinica() {
@@ -5965,7 +6018,7 @@ function renderPagesDeveloper() {
       </select>
     </div>
     <div id="dev-usuarios-lista" style="overflow-x:auto">
-      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Ativo</th><th>Plano</th><th>Análise</th><th>Laudos</th><th>Prof.+</th><th>Alunos+</th><th>IA+</th><th>Total/mês</th></tr></thead>
+      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Ativo</th><th>Plano</th><th>Análise</th><th>Laudos</th><th>Diário AT</th><th>Prof.+</th><th>Alunos+</th><th>IA+</th><th>Total/mês</th></tr></thead>
       <tbody id="dev-usuarios-tbody"></tbody></table>
     </div>
   </div>
@@ -6250,7 +6303,7 @@ async function carregarDashboardDev() {
 
 async function carregarUsuariosDev() {
   try {
-    const { data } = await db.from('profiles').select('id,email,role,ativo,created_at,plano,addon_analise,addon_laudos,extra_professores,extra_alunos,extra_ia_pacotes').order('created_at',{ascending:false});
+    const { data } = await db.from('profiles').select('id,email,role,ativo,created_at,plano,addon_analise,addon_laudos,addon_diario_at,extra_professores,extra_alunos,extra_ia_pacotes').order('created_at',{ascending:false});
     window._devUsuarios = data || [];
     filtrarUsuariosDev();
   } catch(e) { toast('Erro ao carregar usuários: '+e.message,'error'); }
@@ -6295,12 +6348,15 @@ function filtrarUsuariosDev() {
       <td style="text-align:center">
         <input type="checkbox" ${u.addon_laudos?'checked':''} onchange="atualizarAddonLaudos('${u.id}', this.checked)" title="Add-on Linha do Tempo de Laudos">
       </td>
+      <td style="text-align:center">
+        <input type="checkbox" ${u.addon_diario_at?'checked':''} onchange="atualizarAddonDiarioAT('${u.id}', this.checked)" title="Add-on Diário de Acompanhamento (AT)">
+      </td>
       <td><input type="number" min="0" value="${u.extra_professores||0}" style="width:38px;font-size:12px;padding:2px 3px" onchange="atualizarExtra('${u.id}','extra_professores',this.value)"></td>
       <td><input type="number" min="0" value="${u.extra_alunos||0}" style="width:38px;font-size:12px;padding:2px 3px" onchange="atualizarExtra('${u.id}','extra_alunos',this.value)"></td>
       <td><input type="number" min="0" value="${u.extra_ia_pacotes||0}" style="width:38px;font-size:12px;padding:2px 3px" onchange="atualizarExtra('${u.id}','extra_ia_pacotes',this.value)"></td>
       <td style="font-weight:700;color:#1E3A8A">R$${totalMes}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="11" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
+  }).join('') || '<tr><td colspan="12" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
 }
 
 async function atualizarPlanoUsuario(id, novoPlano) {
@@ -6324,6 +6380,14 @@ async function atualizarAddonLaudos(id, ativo) {
   if (error) return toast('Erro ao atualizar add-on: ' + error.message, 'error');
   const u = (window._devUsuarios||[]).find(x => x.id === id);
   if (u) u.addon_laudos = ativo;
+  toast('Add-on atualizado!', 'success');
+}
+
+async function atualizarAddonDiarioAT(id, ativo) {
+  const { error } = await db.from('profiles').update({ addon_diario_at: ativo }).eq('id', id);
+  if (error) return toast('Erro ao atualizar add-on: ' + error.message, 'error');
+  const u = (window._devUsuarios||[]).find(x => x.id === id);
+  if (u) u.addon_diario_at = ativo;
   toast('Add-on atualizado!', 'success');
 }
 
@@ -8146,6 +8210,16 @@ async function salvarProfissionalClinica() {
   if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) return toast('E-mail inválido.', 'error');
   if (!lgpdValidar('prof-clinica')) return;
 
+  const { count: countClinica } = await db.from('profissionais_clinica').select('*', { count:'exact', head:true }).eq('user_id', user.id);
+  const { count: countAT } = await db.from('profiles').select('*', { count:'exact', head:true }).eq('organizacao_id', window._organizacaoId).eq('role', 'at');
+  const limite = limitesAtuais().professores;
+  if (limite !== Infinity && ((countClinica||0) + (countAT||0)) >= limite) {
+    return toast(`Limite de ${limite} profissionais do seu plano atingido. Fale com o suporte para aumentar sua capacidade.`, 'error');
+  }
+
+  const ehAT = especialidade === 'at';
+  const roleParaEnviar = ehAT ? 'at' : 'clinica';
+
   const btn = document.querySelector('#modal-cad-prof-clinica .btn-sm');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Criando acesso…'; }
 
@@ -8156,35 +8230,37 @@ async function salvarProfissionalClinica() {
     const _convResp = await fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/convidar-usuario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token },
-      body: JSON.stringify({ email, nome, role: 'clinica', subrole: especialidade, redirect_to: window.location.href })
+      body: JSON.stringify({ email, nome, role: roleParaEnviar, subrole: ehAT ? '' : especialidade, redirect_to: window.location.href })
     });
     if (!_convResp.ok) { const _e = await _convResp.json().catch(()=>({})); throw new Error('Erro ao enviar convite: ' + (_e.error || _convResp.status)); }
 
     // 2. Registrar convite na tabela convites
     await db.from('convites').insert({
-      email, papel: 'clinica', sub_papel: especialidade,
+      email, papel: roleParaEnviar, sub_papel: ehAT ? '' : especialidade,
       convidado_por: user.id,
       instituicao_nome: document.getElementById('cpc-vinculo')?.value || null,
       status: 'pendente'
     });
 
-    // 3. Salvar na tabela profissionais_clinica
-    const payload = {
-      user_id:     user.id,
-      nome,
-      email,
-      telefone:    document.getElementById('cpc-tel').value.trim()      || null,
-      registro:    document.getElementById('cpc-registro').value.trim() || null,
-      vinculo:     document.getElementById('cpc-vinculo').value          || null,
-      especialidade,
-      observacoes: document.getElementById('cpc-obs').value.trim()      || null,
-      created_at:  new Date().toISOString(),
-    };
-    await db.from('profissionais_clinica').insert(payload);
+    // 3. Salvar na tabela profissionais_clinica (não se aplica a AT — ele não usa esse cadastro)
+    if (!ehAT) {
+      const payload = {
+        user_id:     user.id,
+        nome,
+        email,
+        telefone:    document.getElementById('cpc-tel').value.trim()      || null,
+        registro:    document.getElementById('cpc-registro').value.trim() || null,
+        vinculo:     document.getElementById('cpc-vinculo').value          || null,
+        especialidade,
+        observacoes: document.getElementById('cpc-obs').value.trim()      || null,
+        created_at:  new Date().toISOString(),
+      };
+      await db.from('profissionais_clinica').insert(payload);
+    }
 
     fecharModal('modal-cad-prof-clinica');
     lgpdResetarModal('prof-clinica','btn-salvar-prof-clinica');
-    toast(`✅ Convite enviado para ${email}. O profissional receberá um e-mail para ativar a conta.`, 'success');
+    toast(`✅ Convite enviado para ${email}. ${ehAT ? 'O AT' : 'O profissional'} receberá um e-mail para ativar a conta.`, 'success');
 
     // Recarregar lista
     if (typeof carregarProfissionaisClinica === 'function') carregarProfissionaisClinica();
@@ -8294,7 +8370,7 @@ function showPage(id) {
   if (id === 'clinica-relatorios') carregarRelatoriosClinica();
   if (id === 'at-relatorios') carregarRelatoriosAT();
   if (id === 'gc-perfis') carregarPerfisGestaoClinica();
-  if (id === 'gc-profissionais') carregarProfissionaisClinica();
+  if (id === 'gc-profissionais') { carregarProfissionaisClinica(); carregarVinculosATGestao(); }
   if (id === 'dev-conteudo') carregarBancoImagens();
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'guia-gestao') renderGuiaGestao();
@@ -16319,8 +16395,8 @@ async function carregarRelatoriosClinica() {
 // ── AT ────────────────────────────────────────────────────────
 let perfisATList = [];
 async function carregarAlunosAT() {
-  const { data } = await db.from('perfis_clinicos').select('*').order('nome');
-  perfisATList = data || [];
+  const { data: vinculos } = await db.from('atendimentos_at').select('perfis_clinicos(*)').eq('at_user_id', user.id).eq('ativo', true);
+  perfisATList = (vinculos || []).map(v => v.perfis_clinicos).filter(Boolean).sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
   const opcoes = '<option value="">Selecione um aluno</option>' + perfisATList.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
   const sel = document.getElementById('at-aluno-sel');
   if (sel) sel.innerHTML = opcoes;
