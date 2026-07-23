@@ -10909,6 +10909,11 @@ function renderPagesAT() {
       </div>
       <button class="btn-gerar" style="margin-top:14px" onclick="baixarRelatorioRotinaATPDF()">📄 Baixar PDF</button>
     </div>
+
+    <div class="fcard" style="margin-top:16px">
+      <div class="fcard-title">Relatórios já gerados</div>
+      <div id="diat-historico-relatorios"><p style="font-size:12px;color:var(--gr500)">Selecione um aluno para ver o histórico.</p></div>
+    </div>
   </div>`;
   carregarAlunosAT();
 }
@@ -15884,7 +15889,13 @@ ${blocosPedidos.join('\n\n')}`;
     document.getElementById('diat-bloco-clinica').style.display = querClinica ? '' : 'none';
     document.getElementById('diat-result-card').classList.add('show');
     ultimoRelatorioRotinaAT = { paciente: perfil?.nome || '', dataIni, dataFim, selecionados: { querEscola, querFamilia, querClinica } };
-    toast('Relatórios gerados com sucesso!', 'success');
+
+    await db.from('relatorios_rotina_at').insert({
+      perfil_id: perfilId, at_user_id: user.id, data_ini: dataIni, data_fim: dataFim,
+      texto_escola: escola || null, texto_familia: familia || null, texto_clinica: clinica || null
+    });
+    carregarHistoricoRelatoriosRotinaAT();
+    toast('Relatórios gerados e salvos com sucesso!', 'success');
   } catch (e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
   }
@@ -15919,17 +15930,67 @@ function baixarRelatorioRotinaATPDF() {
     doc.text('Paciente: ' + sanitizarTexto(ultimoRelatorioRotinaAT.paciente), ml, y);
     y += 6;
     doc.text('Período: ' + periodo, ml, y);
+    y += 6;
+    const nomeAT = window._profNomeDB || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+    doc.text('Acompanhante Terapêutico (AT): ' + sanitizarTexto(nomeAT), ml, y);
     y += 12;
     doc.setTextColor(25,25,25); doc.setFontSize(10.5);
     const linhas = doc.splitTextToSize(sanitizarTexto(sec.texto || '(sem conteúdo)'), W - ml - mr);
+    let ultimaLinhaY = y;
     linhas.forEach(l => {
       if (y > H - 20) { adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages()); doc.addPage(); y = 20; }
       doc.text(l, ml, y); y += 6;
+      ultimaLinhaY = y;
     });
+    let yAssinatura = ultimaLinhaY + 20;
+    if (yAssinatura > H - 30) { adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages()); doc.addPage(); yAssinatura = 40; }
+    doc.setDrawColor(120,120,120); doc.setLineWidth(0.3);
+    doc.line(ml, yAssinatura, ml + 80, yAssinatura);
+    doc.setFontSize(8.5); doc.setTextColor(90,90,90);
+    doc.text('Assinatura do AT (' + sanitizarTexto(nomeAT) + ')', ml, yAssinatura + 5);
+    doc.line(W - mr - 60, yAssinatura, W - mr, yAssinatura);
+    doc.text('Data: ____/____/______', W - mr - 60, yAssinatura + 5);
     adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
   });
 
   doc.save('Diario_Acompanhamento_' + ultimoRelatorioRotinaAT.paciente.replace(/\s+/g,'_') + '.pdf');
+}
+
+async function carregarHistoricoRelatoriosRotinaAT() {
+  const perfilId = document.getElementById('diat-aluno-sel')?.value;
+  const cont = document.getElementById('diat-historico-relatorios');
+  if (!cont) return;
+  if (!perfilId) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Selecione um aluno para ver o histórico.</p>'; return; }
+  const { data } = await db.from('relatorios_rotina_at').select('*').eq('perfil_id', perfilId).order('created_at', { ascending: false }).limit(20);
+  window._historicoRelatoriosRotinaAT = data || [];
+  if (!(data||[]).length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum relatório gerado ainda para este aluno.</p>'; return; }
+  cont.innerHTML = data.map(r => `
+    <div style="border:1px solid var(--gr100);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <b>${new Date(r.data_ini+'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(r.data_fim+'T00:00:00').toLocaleDateString('pt-BR')}</b>
+        <div style="color:var(--gr500);font-size:11px">Gerado em ${new Date(r.created_at).toLocaleDateString('pt-BR')} às ${new Date(r.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <button class="btn-sm" style="font-size:11px;padding:2px 8px" onclick="reabrirRelatorioRotinaAT('${r.id}')">Abrir</button>
+    </div>`).join('');
+}
+
+function reabrirRelatorioRotinaAT(id) {
+  const r = (window._historicoRelatoriosRotinaAT||[]).find(x => x.id === id);
+  if (!r) return;
+  const perfil = (perfisATList||[]).find(p => p.id === r.perfil_id);
+  document.getElementById('diat-texto-escola').value = r.texto_escola || '';
+  document.getElementById('diat-texto-familia').value = r.texto_familia || '';
+  document.getElementById('diat-texto-clinica').value = r.texto_clinica || '';
+  document.getElementById('diat-bloco-escola').style.display = r.texto_escola ? '' : 'none';
+  document.getElementById('diat-bloco-familia').style.display = r.texto_familia ? '' : 'none';
+  document.getElementById('diat-bloco-clinica').style.display = r.texto_clinica ? '' : 'none';
+  document.getElementById('diat-result-card').classList.add('show');
+  ultimoRelatorioRotinaAT = {
+    paciente: perfil?.nome || '', dataIni: r.data_ini, dataFim: r.data_fim,
+    selecionados: { querEscola: !!r.texto_escola, querFamilia: !!r.texto_familia, querClinica: !!r.texto_clinica }
+  };
+  document.getElementById('diat-result-card').scrollIntoView({ behavior:'smooth', block:'center' });
+  toast('Relatório carregado.', 'success');
 }
 
 async function gerarMaterialTerapeutico() {
@@ -16264,7 +16325,7 @@ async function carregarAlunosAT() {
   const sel = document.getElementById('at-aluno-sel');
   if (sel) sel.innerHTML = opcoes;
   const selDiario = document.getElementById('diat-aluno-sel');
-  if (selDiario) { selDiario.innerHTML = opcoes; selDiario.onchange = carregarRegistrosRotinaAT; }
+  if (selDiario) { selDiario.innerHTML = opcoes; selDiario.onchange = () => { carregarRegistrosRotinaAT(); carregarHistoricoRelatoriosRotinaAT(); }; }
   const inpData = document.getElementById('diat-data');
   if (inpData && !inpData.value) inpData.value = new Date().toISOString().slice(0,10);
 }
@@ -16292,6 +16353,9 @@ function comprimirImagem(file, maxDim = 1024, qualidade = 0.75) {
   });
 }
 
+let _editandoRegistroRotinaId = null;
+let _registrosRotinaATCache = [];
+
 async function salvarRegistroRotinaAT() {
   const perfilId = document.getElementById('diat-aluno-sel')?.value;
   const data = document.getElementById('diat-data')?.value;
@@ -16302,45 +16366,83 @@ async function salvarRegistroRotinaAT() {
   if (!texto) return toast('Descreva o que aconteceu.', 'error');
 
   const btn = document.getElementById('diat-btn-salvar');
-  btn.disabled = true; btn.textContent = '⏳ Salvando...';
+  btn.disabled = true; btn.textContent = _editandoRegistroRotinaId ? '⏳ Atualizando...' : '⏳ Salvando...';
   try {
-    const arquivos = [...(inputFotos?.files || [])].slice(0, 5);
-    const fotos = [];
-    for (const file of arquivos) {
-      const base64 = await comprimirImagem(file);
-      const path = `at_${user.id}/${perfilId}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
-      const blob = await (await fetch(base64)).blob();
-      const { error: upErr } = await db.storage.from('fotos-rotina-at').upload(path, blob, { contentType: 'image/jpeg' });
-      if (upErr) throw upErr;
-      const { data: urlData } = db.storage.from('fotos-rotina-at').getPublicUrl(path);
-      fotos.push(urlData.publicUrl);
+    if (_editandoRegistroRotinaId) {
+      const { error } = await db.from('registros_rotina_at')
+        .update({ data, texto })
+        .eq('id', _editandoRegistroRotinaId);
+      if (error) throw error;
+      toast('Registro atualizado!', 'success');
+      cancelarEdicaoRegistroRotinaAT();
+    } else {
+      const arquivos = [...(inputFotos?.files || [])].slice(0, 5);
+      const fotos = [];
+      for (const file of arquivos) {
+        const base64 = await comprimirImagem(file);
+        const path = `at_${user.id}/${perfilId}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
+        const blob = await (await fetch(base64)).blob();
+        const { error: upErr } = await db.storage.from('fotos-rotina-at').upload(path, blob, { contentType: 'image/jpeg' });
+        if (upErr) throw upErr;
+        const { data: urlData } = db.storage.from('fotos-rotina-at').getPublicUrl(path);
+        fotos.push(urlData.publicUrl);
+      }
+      const { error } = await db.from('registros_rotina_at').insert({
+        perfil_id: perfilId, at_user_id: user.id, data, texto, fotos
+      });
+      if (error) throw error;
+      toast('Registro salvo!', 'success');
+      document.getElementById('diat-texto').value = '';
+      if (inputFotos) inputFotos.value = '';
     }
-    const { error } = await db.from('registros_rotina_at').insert({
-      perfil_id: perfilId, at_user_id: user.id, data, texto, fotos
-    });
-    if (error) throw error;
-    toast('Registro salvo!', 'success');
-    document.getElementById('diat-texto').value = '';
-    if (inputFotos) inputFotos.value = '';
     carregarRegistrosRotinaAT();
   } catch (e) {
     toast('Erro ao salvar: ' + e.message, 'error');
   }
-  btn.disabled = false; btn.textContent = '💾 Salvar registro';
+  btn.disabled = false; btn.textContent = _editandoRegistroRotinaId ? '✏️ Atualizar registro' : '💾 Salvar registro';
+}
+
+function editarRegistroRotinaAT(id) {
+  const r = _registrosRotinaATCache.find(x => x.id === id);
+  if (!r) return;
+  const criadoHoje = new Date(r.created_at).toDateString() === new Date().toDateString();
+  if (!criadoHoje) return toast('Só é possível editar um registro no mesmo dia em que foi criado.', 'error');
+  document.getElementById('diat-data').value = r.data;
+  document.getElementById('diat-texto').value = r.texto;
+  _editandoRegistroRotinaId = id;
+  const btn = document.getElementById('diat-btn-salvar');
+  btn.textContent = '✏️ Atualizar registro';
+  document.getElementById('diat-texto').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+function cancelarEdicaoRegistroRotinaAT() {
+  _editandoRegistroRotinaId = null;
+  const btn = document.getElementById('diat-btn-salvar');
+  if (btn) btn.textContent = '💾 Salvar registro';
+  document.getElementById('diat-texto').value = '';
+  const inputFotos = document.getElementById('diat-fotos');
+  if (inputFotos) inputFotos.value = '';
 }
 
 async function carregarRegistrosRotinaAT() {
   const perfilId = document.getElementById('diat-aluno-sel')?.value;
   const cont = document.getElementById('diat-lista-registros');
   if (!cont) return;
-  if (!perfilId) { cont.innerHTML = ''; return; }
+  if (!perfilId) { cont.innerHTML = ''; _registrosRotinaATCache = []; return; }
   const { data } = await db.from('registros_rotina_at').select('*').eq('perfil_id', perfilId).order('data', { ascending: false }).limit(20);
-  if (!(data||[]).length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum registro ainda para este aluno.</p>'; return; }
-  cont.innerHTML = '<div style="font-size:12px;font-weight:600;color:var(--gr500);margin-bottom:6px">Últimos registros</div>' + data.map(r => `
+  _registrosRotinaATCache = data || [];
+  if (!_registrosRotinaATCache.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum registro ainda para este aluno.</p>'; return; }
+  cont.innerHTML = '<div style="font-size:12px;font-weight:600;color:var(--gr500);margin-bottom:6px">Últimos registros</div>' + _registrosRotinaATCache.map(r => {
+    const editavel = new Date(r.created_at).toDateString() === new Date().toDateString();
+    return `
     <div style="border:1px solid var(--gr100);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12.5px">
-      <b>${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</b> ${r.fotos?.length ? '📷' : ''}
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</b> ${r.fotos?.length ? '📷' : ''}
+        ${editavel ? `<button class="btn-sm" onclick="editarRegistroRotinaAT('${r.id}')" style="font-size:11px;padding:2px 8px">Editar</button>` : ''}
+      </div>
       <div style="color:var(--gr600);margin-top:2px">${sanitizarTexto(r.texto).slice(0,160)}${r.texto.length>160?'…':''}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function verificarNotificacoesAT() {
