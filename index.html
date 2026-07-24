@@ -4757,6 +4757,7 @@ async function carregarProfissionaisClinica() {
       </div>
       <div class="prof-info-row"><span class="prof-badge mat">🩺 ${especialidadeLabel}</span></div>
       <div class="prof-card-actions">
+        <button class="btn-sm" onclick="verPacientesDoProfissional('${p.id}','${(p.nome||'').replace(/'/g,"&#39;")}')">Ver pacientes</button>
         <button class="btn-danger" onclick="excluirProfissional('${p.id}','${(p.nome||'').replace(/'/g,"&#39;")}')">Excluir</button>
       </div>
     </div>`;
@@ -4769,6 +4770,22 @@ async function excluirProfissional(id, nome) {
   if (error) return toast('Erro: ' + error.message, 'error');
   toast('Profissional excluído.', 'success');
   carregarProfissionaisClinica();
+}
+
+async function verPacientesDoProfissional(profId, nome) {
+  const { data, error } = await db.from('perfis_clinicos').select('id, nome').contains('profissionais_ids', [profId]).order('nome');
+  if (error) return toast('Erro: ' + error.message, 'error');
+  const lista = data && data.length
+    ? '<ul style="margin:8px 0 0;padding-left:18px">' + data.map(p => `<li>${p.nome}</li>`).join('') + '</ul>'
+    : '<p style="color:var(--gr500);margin-top:8px">Nenhum paciente vinculado a este profissional ainda.</p>';
+  const modalConteudo = document.getElementById('ger-modal-conteudo');
+  const modal = document.getElementById('ger-modal');
+  if (modalConteudo && modal) {
+    modalConteudo.innerHTML = `<h3 style="font-size:15px;font-weight:600;margin-bottom:4px">Pacientes atendidos por ${nome}</h3>${lista}`;
+    modal.style.display = 'block';
+  } else {
+    alert(`Pacientes atendidos por ${nome}:\n\n` + (data && data.length ? data.map(p => '- ' + p.nome).join('\n') : 'Nenhum ainda.'));
+  }
 }
 
 async function carregarBancoImagens() {
@@ -15673,12 +15690,13 @@ async function abrirModalCadClinica(p) {
     document.getElementById('cc-comprometidas').value= p.comprometidas || '';
     document.getElementById('cc-comportamento').value= p.comportamento || '';
   }
-  window._cadProfissionaisIds = [];
+  window._cadProfissionaisIds = (p && p.profissionais_ids) ? [...p.profissionais_ids] : [];
   const selProf = document.getElementById('cad-profissionais-sel');
   const tagProf = document.getElementById('cad-profissionais-tags');
   if (selProf) selProf.value = '';
   if (tagProf) tagProf.innerHTML = '';
   await popularDropdownProfissionaisCad();
+  renderProfissionaisTagsCad();
   lgpdResetarModal('clinica','btn-salvar-clinica');
   abrirModal('modal-cad-clinica');
 }
@@ -15729,12 +15747,12 @@ async function salvarPerfilClinico() {
     preservadas:   document.getElementById('cc-preservadas').value.trim() || null,
     comprometidas: document.getElementById('cc-comprometidas').value.trim() || null,
     comportamento: document.getElementById('cc-comportamento').value.trim() || null,
+    profissionais_ids: window._cadProfissionaisIds?.length ? [...window._cadProfissionaisIds] : [],
   };
   let error;
   if (perfilClinicaSel) {
     ({ error } = await db.from('perfis_clinicos').update(payload).eq('id', perfilClinicaSel.id));
   } else {
-    payload.profissionais_ids = window._cadProfissionaisIds?.length ? [...window._cadProfissionaisIds] : [];
     ({ error } = await db.from('perfis_clinicos').insert(payload));
   }
   if (error) return toast('Erro: ' + error.message, 'error');
