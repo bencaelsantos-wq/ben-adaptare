@@ -10872,6 +10872,12 @@ function renderPagesClinica() {
         <button class="btn-copy" onclick="baixarPraticaGuiadaPDF()">Baixar PDF (aluno + gabarito)</button>
         <button class="btn-copy" onclick="detectarImagensPraticaGuiada()">🖼️ Detectar imagens das alternativas</button>
       </div>
+      <div id="pg-registro-bloco" style="margin-top:18px;display:none">
+        <div class="clinic-card-title" style="margin-bottom:8px">Registrar aplicação</div>
+        <p class="page-sub" style="margin:0 0 10px">Depois de aplicar com o paciente, marque abaixo se ele acertou ou errou cada pergunta. Isso vira automaticamente um registro no Monitoramento do paciente.</p>
+        <div id="pg-registro-perguntas"></div>
+        <button class="btn-sm" style="margin-top:10px" onclick="salvarRegistroPraticaGuiada()">Salvar registro</button>
+      </div>
     </div>
 
     <div class="fcard" id="pg-img-painel" style="display:none;margin-top:16px">
@@ -16155,6 +16161,36 @@ function atualizarDicaMaterial() {
 }
 
 let ultimaPraticaGuiada = null;
+let respostasPraticaGuiada = {};
+
+function selRegistroPraticaGuiada(btn, idx, val) {
+  const group = btn.closest('.mon-btn-group');
+  group.querySelectorAll('.mon-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  respostasPraticaGuiada[idx] = val;
+}
+
+async function salvarRegistroPraticaGuiada() {
+  if (!ultimaPraticaGuiada) return toast('Gere uma atividade primeiro.', 'error');
+  const total = ultimaPraticaGuiada.perguntas.length;
+  const respondidas = Object.keys(respostasPraticaGuiada).length;
+  if (respondidas < total) return toast('Marque acertou/errou em todas as perguntas antes de salvar.', 'error');
+
+  const acertos = Object.values(respostasPraticaGuiada).filter(v => v === 'certo').length;
+  const pct = acertos / total;
+  const resultado = pct >= 0.7 ? 'ok' : pct >= 0.4 ? 'parcial' : 'nao';
+  const { area, paciente, titulo } = ultimaPraticaGuiada;
+
+  const { error } = await db.from('monitoramentos').insert({
+    perfil_id: paciente.id, user_id: user.id,
+    resultados: { [area]: resultado },
+    observacoes: `Prática Guiada — ${titulo}: ${acertos}/${total} corretas`,
+    created_at: new Date().toISOString()
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast(`Registro salvo! ${acertos}/${total} corretas.`, 'success');
+  document.getElementById('pg-registro-bloco').style.display = 'none';
+}
 const LABELS_AREA = { cognitivo: 'Cognitivo', comunicacao: 'Comunicação', social: 'Social', comportamental: 'Comportamental', academico: 'Acadêmico' };
 
 async function gerarPraticaGuiada() {
@@ -16215,6 +16251,16 @@ CORRETA: [A, B ou C]`;
         ${q.alternativas.map(a => `<div style="font-size:13px;color:${a.letra===q.correta?'var(--gr800)':'var(--gr500)'};margin-bottom:2px">${a.letra}) ${a.texto}${a.letra===q.correta?' ✓':''}</div>`).join('')}
       </div>`).join('');
     document.getElementById('pg-result-card').classList.add('show');
+    respostasPraticaGuiada = {};
+    document.getElementById('pg-registro-perguntas').innerHTML = perguntas.map((q, i) => `
+      <div style="margin-bottom:10px">
+        <div style="font-size:12.5px;color:var(--gr600);margin-bottom:5px">${i+1}. ${q.pergunta}</div>
+        <div class="mon-btn-group">
+          <button class="mon-btn ok" onclick="selRegistroPraticaGuiada(this,${i},'certo')" data-idx="${i}" data-val="certo">✔ Acertou</button>
+          <button class="mon-btn nao" onclick="selRegistroPraticaGuiada(this,${i},'errado')" data-idx="${i}" data-val="errado">✗ Errou</button>
+        </div>
+      </div>`).join('');
+    document.getElementById('pg-registro-bloco').style.display = '';
     toast('Atividade gerada com sucesso!', 'success');
   } catch(e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
