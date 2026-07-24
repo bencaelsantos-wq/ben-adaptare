@@ -4671,6 +4671,7 @@ async function carregarPerfisGestaoClinica() {
     const grid = document.getElementById('gc-perfis-grid');
     if (!grid) return;
     const lista = data || [];
+    perfisClinicaList = lista;
     if (!lista.length) {
       grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🧠</div><div class="empty-text">Nenhum perfil cadastrado.</div></div>`;
       return;
