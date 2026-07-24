@@ -3853,7 +3853,7 @@ function orcamentoBaseAtual() {
 async function lerPerfilDobanco() {
   try {
     const { data, error } = await db.from('profiles')
-      .select('role, subrole, nome, ativo, plano, organizacao_id, addon_analise, addon_laudos, extra_professores, extra_alunos, extra_ia_pacotes')
+      .select('role, subrole, nome, ativo, plano, organizacao_id, addon_analise, addon_laudos, addon_diario_at, extra_professores, extra_alunos, extra_ia_pacotes')
       .eq('id', user.id)
       .maybeSingle();
 
