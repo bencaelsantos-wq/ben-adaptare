@@ -16272,8 +16272,9 @@ function detectarImagensPraticaGuiada() {
   if (!ultimaPraticaGuiada) return toast('Gere uma atividade primeiro.', 'error');
   window._imgListaId = 'pg-img-itens';
   window._imgPrefixo = 'pg';
-  const termos = [];
-  ultimaPraticaGuiada.perguntas.forEach(q => q.alternativas.forEach(a => { if (a.imagem) termos.push(a.imagem); }));
+  const termosSet = new Set();
+  ultimaPraticaGuiada.perguntas.forEach(q => q.alternativas.forEach(a => { if (a.imagem) termosSet.add(a.imagem); }));
+  const termos = [...termosSet];
   window._imgItens = termos.length
     ? termos.map(t => ({ termo: t, chave: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
     : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
