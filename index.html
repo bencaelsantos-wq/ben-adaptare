@@ -10800,7 +10800,7 @@ function renderPagesClinica() {
     <p class="page-sub">Gere materiais de apoio para uso em sessão — agenda visual, cartões de comunicação e histórias sociais, a partir do perfil e dos objetivos terapêuticos do paciente.</p>
     <div class="frow" style="margin-bottom:14px">
       <div><label class="flabel" for="mat-terapeutico-aluno-sel">Paciente</label><select class="fselect" id="mat-terapeutico-aluno-sel" style="max-width:320px"><option value="">Selecione um paciente</option></select></div>
-      <div><label class="flabel" for="mat-tipo">Tipo de material</label><select class="fselect" id="mat-tipo" style="max-width:260px">
+      <div><label class="flabel" for="mat-tipo">Tipo de material</label><select class="fselect" id="mat-tipo" style="max-width:260px" onchange="atualizarDicaMaterial()">
         <option value="agenda_visual">Agenda Visual / Rotina</option>
         <option value="cartao_comunicacao">Cartão de Comunicação</option>
         <option value="historia_social">História Social</option>
@@ -10817,6 +10817,7 @@ function renderPagesClinica() {
     </div>
     <div class="fblock" style="margin-bottom:14px">
       <label class="flabel" for="mat-contexto">Situação, rotina ou palavras a trabalhar</label>
+      <div id="mat-dica-tipo" style="font-size:12px;color:var(--gr500);margin-bottom:6px"><strong>Agenda Visual / Rotina:</strong> descreva a rotina a organizar em passos (ex: "rotina de escovar os dentes antes de dormir").</div>
       <textarea id="mat-contexto" class="ftarea" placeholder="Ex: rotina de escovar os dentes antes de dormir; ou: palavras para pedir água, banheiro, ajuda; ou: primeira ida ao dentista"></textarea>
     </div>
     <button class="btn-gerar" id="btn-gerar-material" onclick="gerarMaterialTerapeutico()">⭐ Gerar com a Lou</button>
@@ -16090,6 +16091,26 @@ function reabrirRelatorioRotinaAT(id) {
   };
   document.getElementById('diat-result-card').scrollIntoView({ behavior:'smooth', block:'center' });
   toast('Relatório carregado.', 'success');
+}
+
+const DICAS_MATERIAL = {
+  agenda_visual: { label: 'Agenda Visual / Rotina', desc: 'descreva a rotina a organizar em passos', ex: 'rotina de escovar os dentes antes de dormir' },
+  cartao_comunicacao: { label: 'Cartão de Comunicação', desc: 'liste as palavras/necessidades que o paciente precisa comunicar', ex: 'palavras para pedir água, banheiro, ajuda' },
+  historia_social: { label: 'História Social', desc: 'descreva a situação social a ser explicada/preparada', ex: 'primeira ida ao dentista' },
+  integracao_sensorial: { label: 'Integração Sensorial', desc: 'descreva o objetivo sensorial ou a atividade a estruturar', ex: 'atividades táteis para reduzir busca sensorial antes da aula' },
+  escala_autorregulacao: { label: 'Escala de Autorregulação', desc: 'descreva o contexto em que o paciente precisa reconhecer/comunicar seu estado emocional', ex: 'identificar níveis de frustração durante atividades escolares' },
+  economia_fichas: { label: 'Economia de Fichas', desc: 'descreva o comportamento/rotina que deseja reforçar', ex: 'permanecer sentado durante a atividade de escrita' },
+  ficha_articulacao: { label: 'Ficha de Articulação', desc: 'informe o fonema/som-alvo a treinar', ex: 'fonema /R/, ou troca de S por T no início da palavra' },
+};
+
+function atualizarDicaMaterial() {
+  const tipo = document.getElementById('mat-tipo')?.value;
+  const dica = DICAS_MATERIAL[tipo];
+  const el = document.getElementById('mat-dica-tipo');
+  const contexto = document.getElementById('mat-contexto');
+  if (!dica || !el) return;
+  el.innerHTML = `<strong>${dica.label}:</strong> ${dica.desc} (ex: "${dica.ex}").`;
+  if (contexto) contexto.placeholder = 'Ex: ' + dica.ex;
 }
 
 async function gerarMaterialTerapeutico() {
