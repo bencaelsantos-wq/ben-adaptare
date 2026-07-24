@@ -10847,7 +10847,28 @@ function renderPagesClinica() {
   <div id="page-clinica-pratica-guiada" class="page">
     <h1 class="page-title">Prática Guiada</h1>
     <p class="page-sub">Gere uma atividade de múltipla escolha a partir do perfil e dos objetivos terapêuticos do paciente, aplique com ele e registre o resultado em 1 clique — o desempenho entra automaticamente no histórico de Monitoramento do paciente, sem precisar preencher nada manualmente depois.</p>
-    <div class="empty"><div class="empty-icon">🧩</div><div class="empty-text">Em construção — em breve você poderá gerar, aplicar e registrar atividades por aqui.</div></div>
+    <div class="frow" style="margin-bottom:14px">
+      <div><label class="flabel" for="pg-aluno-sel">Paciente</label><select class="fselect" id="pg-aluno-sel" style="max-width:320px"><option value="">Selecione um paciente</option></select></div>
+      <div><label class="flabel" for="pg-area-sel">Objetivo terapêutico trabalhado</label><select class="fselect" id="pg-area-sel" style="max-width:220px">
+        <option value="cognitivo">Cognitivo</option>
+        <option value="comunicacao">Comunicação</option>
+        <option value="social">Social</option>
+        <option value="comportamental">Comportamental</option>
+        <option value="academico">Acadêmico</option>
+      </select></div>
+    </div>
+    <div class="fblock" style="margin-bottom:14px">
+      <label class="flabel" for="pg-contexto">Contexto ou conteúdo a trabalhar (opcional)</label>
+      <textarea id="pg-contexto" class="ftarea" placeholder="Ex: reconhecimento de emoções em situações escolares; ou: continhas de adição até 10"></textarea>
+    </div>
+    <button class="btn-gerar" id="btn-gerar-pratica" onclick="gerarPraticaGuiada()">⭐ Gerar com a Lou</button>
+
+    <div class="result-card" id="pg-result-card">
+      <div class="result-header">
+        <div class="result-title">Atividade gerada pela IA</div>
+      </div>
+      <div id="pg-result-lista"></div>
+    </div>
   </div>
 
   <div id="page-clinica-monitoramento" class="page">
@@ -15594,7 +15615,7 @@ async function carregarAlunosClinica() {
 function popularSelectsClinica() {
   const opts = '<option value="">Selecione um aluno</option>' +
     perfisClinicaList.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
-  ['obj-aluno-sel','plano-aluno-sel','mon-aluno-sel','mat-terapeutico-aluno-sel'].forEach(id => {
+  ['obj-aluno-sel','plano-aluno-sel','mon-aluno-sel','mat-terapeutico-aluno-sel','pg-aluno-sel'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
   });
@@ -16120,6 +16141,74 @@ function atualizarDicaMaterial() {
   if (!dica || !el) return;
   el.innerHTML = `<strong>${dica.label}:</strong> ${dica.desc} (ex: "${dica.ex}").`;
   if (contexto) contexto.placeholder = 'Ex: ' + dica.ex;
+}
+
+let ultimaPraticaGuiada = null;
+const LABELS_AREA = { cognitivo: 'Cognitivo', comunicacao: 'Comunicação', social: 'Social', comportamental: 'Comportamental', academico: 'Acadêmico' };
+
+async function gerarPraticaGuiada() {
+  const id = document.getElementById('pg-aluno-sel')?.value;
+  const p = perfisClinicaList.find(x => x.id === id);
+  if (!p) return toast('Selecione um paciente.', 'error');
+  const area = document.getElementById('pg-area-sel')?.value;
+  const contexto = document.getElementById('pg-contexto')?.value?.trim();
+
+  const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
+  const objTexto = obj?.[area] || '';
+  const btn = document.getElementById('btn-gerar-pratica');
+  btn.textContent = '⏳ Gerando com a Lou…'; btn.disabled = true;
+
+  const prompt = `Você é especialista em atividades terapêuticas de múltipla escolha para crianças com necessidades específicas de desenvolvimento.
+
+PACIENTE: ${p.nome} | ${p.idade||''}
+DIAGNÓSTICO: ${p.diagnostico||'Não informado'}
+COMUNICAÇÃO: ${p.comunicacao||'—'}
+FUNÇÕES PRESERVADAS: ${p.preservadas||'—'}
+FUNÇÕES COMPROMETIDAS: ${p.comprometidas||'—'}
+
+OBJETIVO TERAPÊUTICO (${LABELS_AREA[area]}): ${objTexto || 'Não definido — use o perfil geral do paciente'}
+${contexto ? `CONTEXTO/CONTEÚDO A TRABALHAR: ${contexto}` : ''}
+
+Gere 5 perguntas de múltipla escolha trabalhando o objetivo acima, com dificuldade adequada ao perfil do paciente. Cada pergunta tem 3 alternativas, sendo só 1 correta. Cada alternativa pode ter um nome de imagem simples (minúsculo, sem acento) quando fizer sentido representar visualmente. Linguagem clara, ATUAL, nunca infantilizada além do necessário.
+
+FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes, repetindo o bloco para as 5 perguntas:
+
+TITULO: [título curto da atividade]
+
+PERGUNTA 1: [texto da pergunta]
+ALT: A | [nome-imagem ou vazio] | [texto da alternativa]
+ALT: B | [nome-imagem ou vazio] | [texto da alternativa]
+ALT: C | [nome-imagem ou vazio] | [texto da alternativa]
+CORRETA: [A, B ou C]
+
+PERGUNTA 2: [texto da pergunta]
+ALT: A | [nome-imagem ou vazio] | [texto da alternativa]
+ALT: B | [nome-imagem ou vazio] | [texto da alternativa]
+ALT: C | [nome-imagem ou vazio] | [texto da alternativa]
+CORRETA: [A, B ou C]`;
+
+  try {
+    const txt = await chamarClaude({ prompt, maxTokens: 1600, modulo: 'pratica_guiada' });
+    const tituloMatch = txt.match(/^TITULO:\s*(.+)$/im);
+    const blocos = [...txt.matchAll(/PERGUNTA\s*\d+:\s*(.+?)\n((?:ALT:.*\n?){3})CORRETA:\s*([ABC])/gim)];
+    const perguntas = blocos.map(b => {
+      const pergunta = b[1].trim();
+      const alternativas = [...b[2].matchAll(/ALT:\s*([ABC])\s*\|\s*([^|]*)\|\s*(.+)/gi)].map(a => ({ letra: a[1].trim(), imagem: a[2].trim().toLowerCase(), texto: a[3].trim() }));
+      return { pergunta, alternativas, correta: b[3].trim().toUpperCase() };
+    });
+    if (!perguntas.length) { toast('Não foi possível interpretar a atividade gerada. Tente novamente.', 'error'); btn.textContent = '⭐ Gerar com a Lou'; btn.disabled = false; return; }
+    ultimaPraticaGuiada = { titulo: tituloMatch ? tituloMatch[1].trim() : 'Atividade de Múltipla Escolha', perguntas, paciente: p, area };
+    document.getElementById('pg-result-lista').innerHTML = perguntas.map((q, i) => `
+      <div class="clinic-card" style="margin-bottom:10px">
+        <div style="font-weight:600;margin-bottom:6px">${i+1}. ${q.pergunta}</div>
+        ${q.alternativas.map(a => `<div style="font-size:13px;color:${a.letra===q.correta?'var(--gr800)':'var(--gr500)'};margin-bottom:2px">${a.letra}) ${a.texto}${a.letra===q.correta?' ✓':''}</div>`).join('')}
+      </div>`).join('');
+    document.getElementById('pg-result-card').classList.add('show');
+    toast('Atividade gerada com sucesso!', 'success');
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  }
+  btn.textContent = '⭐ Gerar com a Lou'; btn.disabled = false;
 }
 
 async function gerarMaterialTerapeutico() {
