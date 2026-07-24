@@ -4277,6 +4277,9 @@ function renderNavClinica() {
     <div class="nav-item clinic-item" id="nav-clinica-materiais" onclick="showPage('clinica-materiais')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Materiais Terapêuticos
     </div>
+    <div class="nav-item clinic-item" id="nav-clinica-pratica-guiada" onclick="showPage('clinica-pratica-guiada')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 10l1.5 1.5L13 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Prática Guiada
+    </div>
     <div class="nav-item clinic-item" id="nav-clinica-pdi" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('PDI')" : "showPage('pdi')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -10839,6 +10842,12 @@ function renderPagesClinica() {
       <div id="mat-img-itens"></div>
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
+  </div>
+
+  <div id="page-clinica-pratica-guiada" class="page">
+    <h1 class="page-title">Prática Guiada</h1>
+    <p class="page-sub">Gere uma atividade de múltipla escolha a partir do perfil e dos objetivos terapêuticos do paciente, aplique com ele e registre o resultado em 1 clique — o desempenho entra automaticamente no histórico de Monitoramento do paciente, sem precisar preencher nada manualmente depois.</p>
+    <div class="empty"><div class="empty-icon">🧩</div><div class="empty-text">Em construção — em breve você poderá gerar, aplicar e registrar atividades por aqui.</div></div>
   </div>
 
   <div id="page-clinica-monitoramento" class="page">
