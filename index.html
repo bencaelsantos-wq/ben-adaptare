@@ -10804,6 +10804,10 @@ function renderPagesClinica() {
         <option value="agenda_visual">Agenda Visual / Rotina</option>
         <option value="cartao_comunicacao">Cartão de Comunicação</option>
         <option value="historia_social">História Social</option>
+        <option value="integracao_sensorial">Integração Sensorial</option>
+        <option value="escala_autorregulacao">Escala de Autorregulação</option>
+        <option value="economia_fichas">Economia de Fichas</option>
+        <option value="ficha_articulacao">Ficha de Articulação</option>
       </select></div>
       <div><label class="flabel" for="mat-porfolha">Cards por folha</label><select class="fselect" id="mat-porfolha" style="max-width:160px">
         <option value="4">4 por folha</option>
@@ -16141,15 +16145,86 @@ Nome: _______________ | Data: ___/___/___
 ---
 
 [parágrafo 4 — o que esperar depois]`;
+  } else if (tipo === 'escala_autorregulacao') {
+    prompt = `Você é especialista em autorregulação emocional (modelo de escalas visuais, ex: Zonas de Regulação) para crianças com necessidades específicas de desenvolvimento.
+${perfilTexto}
+
+CONTEXTO: ${contexto}
+
+Gere uma ESCALA DE AUTORREGULAÇÃO com 5 níveis, do mais calmo/regulado (nível 1) ao mais desregulado/intenso (nível 5). Cada nível tem: um nome de imagem simples (minúsculo, sem acento) representando a expressão/estado, e um texto curto (máx 6 palavras) descrevendo como a pessoa está se sentindo naquele nível. Linguagem clara, ATUAL, nunca infantilizada além do necessário, nunca palavras arcaicas.
+
+FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes:
+
+TITULO: [título curto do material]
+
+NIVEL: 1 | [nome-imagem] | [texto curto]
+NIVEL: 2 | [nome-imagem] | [texto curto]
+NIVEL: 3 | [nome-imagem] | [texto curto]
+NIVEL: 4 | [nome-imagem] | [texto curto]
+NIVEL: 5 | [nome-imagem] | [texto curto]`;
+  } else if (tipo === 'economia_fichas') {
+    prompt = `Você é especialista em análise do comportamento aplicada (economia de fichas / token economy) para crianças com necessidades específicas de desenvolvimento.
+${perfilTexto}
+
+CONTEXTO: ${contexto}
+
+Gere um QUADRO DE ECONOMIA DE FICHAS com base no contexto e nos objetivos terapêuticos: defina a META (comportamento/rotina a ser reforçado), a RECOMPENSA (algo alcançável e motivador para o perfil do paciente) e o número de FICHAS necessárias para alcançar a recompensa (entre 5 e 10). Linguagem clara, ATUAL, objetiva.
+
+FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes:
+
+TITULO: [título curto do material]
+
+META: [comportamento/rotina a reforçar, em 1 frase curta]
+RECOMPENSA: [recompensa combinada, em 1 frase curta]
+FICHAS: [número entre 5 e 10]`;
+  } else if (tipo === 'ficha_articulacao') {
+    prompt = `Você é fonoaudiólogo especialista em treino articulatório para crianças com necessidades específicas de desenvolvimento.
+${perfilTexto}
+
+FONEMA(S)/SOM(S) A TRABALHAR: ${contexto}
+
+Gere uma FICHA DE ARTICULAÇÃO com palavras-alvo organizadas por posição do fonema na palavra (início, meio, fim), 4 palavras por posição. Use apenas palavras reais, do vocabulário cotidiano de uma criança, condizentes com a idade do paciente. Não invente palavras.
+
+FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes:
+
+Nome: _______________ | Data: ___/___/___
+
+[TÍTULO curto, ex: Ficha de Articulação — Fonema /R/]
+
+---
+
+INÍCIO DA PALAVRA
+- [palavra 1]
+- [palavra 2]
+- [palavra 3]
+- [palavra 4]
+
+---
+
+MEIO DA PALAVRA
+- [palavra 1]
+- [palavra 2]
+- [palavra 3]
+- [palavra 4]
+
+---
+
+FIM DA PALAVRA
+- [palavra 1]
+- [palavra 2]
+- [palavra 3]
+- [palavra 4]`;
   } else {
-    const tipoLabel = tipo === 'agenda_visual' ? 'uma AGENDA VISUAL/ROTINA em passos sequenciais' : 'um conjunto de CARTÕES DE COMUNICAÇÃO (estilo PECS simplificado)';
+    const tipoLabel = tipo === 'agenda_visual' ? 'uma AGENDA VISUAL/ROTINA em passos sequenciais'
+      : tipo === 'integracao_sensorial' ? 'uma SEQUÊNCIA DE ATIVIDADES DE INTEGRAÇÃO SENSORIAL (tátil, proprioceptiva e/ou vestibular), em passos sequenciais'
+      : 'um conjunto de CARTÕES DE COMUNICAÇÃO (estilo PECS simplificado)';
     prompt = `Você é especialista em comunicação alternativa e organização visual para crianças com necessidades específicas de desenvolvimento.
 ${perfilTexto}
 
 CONTEXTO: ${contexto}
 
 Gere ${tipoLabel}, baseado no contexto acima e nos objetivos terapêuticos do paciente.
-Cada item tem um nome de imagem simples (minúsculo, sem acento) e um texto curto (máx 4 palavras para cartão de comunicação, máx 8 palavras para passo de agenda).
+Cada item tem um nome de imagem simples (minúsculo, sem acento) e um texto curto (máx 4 palavras para cartão de comunicação, máx 8 palavras para passo de agenda/atividade sensorial).
 Gere entre 4 e 8 itens, na ordem em que devem ser usados/apresentados. NUNCA invente item que não faça sentido pro contexto informado. Linguagem clara e ATUAL, nunca palavras arcaicas.
 
 FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes:
@@ -16178,11 +16253,16 @@ CARTAO: [nome-imagem] | [texto curto]`;
 
 function detectarImagensMaterial() {
   if (!ultimoMaterialTerapeutico) return toast('Gere um material primeiro.', 'error');
+  if (ultimoMaterialTerapeutico.tipo === 'economia_fichas' || ultimoMaterialTerapeutico.tipo === 'ficha_articulacao') {
+    return toast('Este tipo de material não usa imagens.', 'success');
+  }
   window._imgListaId = 'mat-img-itens';
   window._imgPrefixo = 'mi';
   let termos = [];
   if (ultimoMaterialTerapeutico.tipo === 'historia_social') {
     termos = extrairItensParaIlustrar(ultimoMaterialTerapeutico.texto);
+  } else if (ultimoMaterialTerapeutico.tipo === 'escala_autorregulacao') {
+    termos = [...ultimoMaterialTerapeutico.texto.matchAll(/^NIVEL:\s*\d+\s*\|\s*([^|]+)\|/gim)].map(m => m[1].trim().toLowerCase());
   } else {
     termos = [...ultimoMaterialTerapeutico.texto.matchAll(/^CARTAO:\s*([^|]+)\|/gim)].map(m => m[1].trim().toLowerCase());
   }
@@ -16211,15 +16291,15 @@ async function baixarMaterialTerapeuticoPDF() {
 
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
 
-  if (tipo === 'historia_social') {
+  if (tipo === 'historia_social' || tipo === 'ficha_articulacao') {
     gerarPDFDocumento({
       tipo: 'MATERIAL TERAPÊUTICO',
-      titulo: 'História Social',
+      titulo: tipo === 'historia_social' ? 'História Social' : 'Ficha de Articulação',
       subtitulo: 'Material Terapêutico',
       aluno: paciente.nome,
       professor: profNome,
       conteudo: texto,
-      nomeArquivo: 'Historia_Social_' + paciente.nome.replace(/\s+/g,'_'),
+      nomeArquivo: (tipo === 'historia_social' ? 'Historia_Social_' : 'Ficha_Articulacao_') + paciente.nome.replace(/\s+/g,'_'),
       isAtividade: true,
       guiaProf: null,
       fonteTamanho: 'medio',
@@ -16230,16 +16310,43 @@ async function baixarMaterialTerapeuticoPDF() {
     return;
   }
 
+  const tituloMatch = texto.match(/^TITULO:\s*(.+)$/im);
+
+  if (tipo === 'escala_autorregulacao') {
+    const niveis = [...texto.matchAll(/^NIVEL:\s*(\d+)\s*\|\s*([^|]+)\|\s*(.+)$/gim)].map(m => ({ n: m[1].trim(), nome: m[2].trim().toLowerCase(), texto: m[3].trim() }));
+    if (!niveis.length) return toast('Não foi possível interpretar a escala gerada. Tente gerar novamente.', 'error');
+    const titulo = tituloMatch ? tituloMatch[1].trim() : 'Escala de Autorregulação';
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    gerarPDFEscalaAutorregulacao(doc, { titulo, paciente: paciente.nome, niveis, imagensPorItem }, 210, 297, 18, 18);
+    doc.save('Escala_Autorregulacao_' + paciente.nome.replace(/\s+/g,'_') + '.pdf');
+    toast('PDF gerado com sucesso!', 'success');
+    return;
+  }
+
+  if (tipo === 'economia_fichas') {
+    const meta = texto.match(/^META:\s*(.+)$/im)?.[1]?.trim() || '';
+    const recompensa = texto.match(/^RECOMPENSA:\s*(.+)$/im)?.[1]?.trim() || '';
+    const numFichas = parseInt(texto.match(/^FICHAS:\s*(\d+)/im)?.[1], 10) || 8;
+    const titulo = tituloMatch ? tituloMatch[1].trim() : 'Economia de Fichas';
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    gerarPDFEconomiaFichas(doc, { titulo, paciente: paciente.nome, meta, recompensa, numFichas }, 210, 297, 18, 18);
+    doc.save('Economia_Fichas_' + paciente.nome.replace(/\s+/g,'_') + '.pdf');
+    toast('PDF gerado com sucesso!', 'success');
+    return;
+  }
+
   const cards = [...texto.matchAll(/^CARTAO:\s*([^|]+)\|\s*(.+)$/gim)].map(m => ({ nome: m[1].trim().toLowerCase(), texto: m[2].trim() }));
   if (!cards.length) return toast('Não foi possível interpretar os cartões gerados. Tente gerar novamente.', 'error');
-  const tituloMatch = texto.match(/^TITULO:\s*(.+)$/im);
-  const titulo = tituloMatch ? tituloMatch[1].trim() : (tipo === 'agenda_visual' ? 'Agenda Visual' : 'Cartões de Comunicação');
+  const titulo = tituloMatch ? tituloMatch[1].trim() : (tipo === 'agenda_visual' ? 'Agenda Visual' : tipo === 'integracao_sensorial' ? 'Integração Sensorial' : 'Cartões de Comunicação');
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const porFolha = parseInt(document.getElementById('mat-porfolha')?.value, 10) || 6;
   gerarPDFCartoesTerapeuticos(doc, { titulo, paciente: paciente.nome, cards, imagensPorItem, porFolha }, 210, 297, 18, 18);
-  doc.save((tipo === 'agenda_visual' ? 'Agenda_Visual_' : 'Cartoes_Comunicacao_') + paciente.nome.replace(/\s+/g,'_') + '.pdf');
+  const prefixoArquivo = tipo === 'agenda_visual' ? 'Agenda_Visual_' : tipo === 'integracao_sensorial' ? 'Integracao_Sensorial_' : 'Cartoes_Comunicacao_';
+  doc.save(prefixoArquivo + paciente.nome.replace(/\s+/g,'_') + '.pdf');
   toast('PDF gerado com sucesso!', 'success');
 }
 
@@ -16305,6 +16412,106 @@ function gerarPDFCartoesTerapeuticos(doc, opts, W, H, ml, mr) {
   });
 
   adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+}
+
+function gerarPDFEscalaAutorregulacao(doc, opts, W, H, ml, mr) {
+  const CORES = ['#065F46', '#16A34A', '#D97706', '#EA580C', '#DC2626'];
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, 0, W, 18, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(sanitizarTexto(opts.titulo.toUpperCase()), W / 2, 11, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.text('Paciente: ' + sanitizarTexto(opts.paciente), ml, 26);
+
+  const areaTopo = 34;
+  const areaAltura = H - areaTopo - 20;
+  const rowH = areaAltura / opts.niveis.length;
+  const imgSize = Math.min(24, rowH - 12);
+
+  opts.niveis.forEach((nivel, idx) => {
+    const y = areaTopo + idx * rowH;
+    const cor = CORES[idx] || '#374151';
+    const [r,g,b] = [parseInt(cor.slice(1,3),16), parseInt(cor.slice(3,5),16), parseInt(cor.slice(5,7),16)];
+    doc.setFillColor(r, g, b);
+    doc.roundedRect(ml, y, 14, rowH - 6, 2, 2, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text(nivel.n, ml + 7, y + (rowH - 6) / 2 + 4, { align: 'center' });
+
+    const b64 = opts.imagensPorItem && opts.imagensPorItem[nivel.nome];
+    const imgX = ml + 20;
+    if (b64) {
+      try {
+        const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+        doc.addImage(b64, formato, imgX, y + 3, imgSize, imgSize);
+      } catch(e) {}
+    } else {
+      doc.setDrawColor(210,210,210);
+      doc.roundedRect(imgX, y + 3, imgSize, imgSize, 2, 2, 'S');
+    }
+
+    doc.setTextColor(25,25,25);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    const linhas = doc.splitTextToSize(sanitizarTexto(nivel.texto).toUpperCase(), W - ml - mr - 20 - imgSize - 8);
+    linhas.slice(0,2).forEach((l, li) => doc.text(l, imgX + imgSize + 6, y + (rowH - 6) / 2 - 2 + li * 5, { align: 'left' }));
+  });
+
+  adicionarRodapePagina(doc, W, H, ml, mr, 1);
+}
+
+function gerarPDFEconomiaFichas(doc, opts, W, H, ml, mr) {
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, 0, W, 18, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(sanitizarTexto(opts.titulo.toUpperCase()), W / 2, 11, { align: 'center' });
+
+  let y = 30;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.text('Paciente: ' + sanitizarTexto(opts.paciente), ml, y);
+  y += 12;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(25,25,25);
+  doc.text('META:', ml, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(doc.splitTextToSize(sanitizarTexto(opts.meta), W - ml - mr - 22), ml + 22, y);
+  y += 14;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('RECOMPENSA:', ml, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(doc.splitTextToSize(sanitizarTexto(opts.recompensa), W - ml - mr - 38), ml + 38, y);
+  y += 20;
+
+  const cols = 5;
+  const gap = 6;
+  const box = (W - ml - mr - gap * (cols - 1)) / cols;
+  let col = 0;
+  for (let i = 0; i < opts.numFichas; i++) {
+    const x = ml + col * (box + gap);
+    doc.setDrawColor(150,150,150);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(x, y, box, box, 3, 3, 'S');
+    doc.setFontSize(8);
+    doc.setTextColor(160,160,160);
+    doc.text(String(i+1), x + box/2, y + box/2 + 2.5, { align: 'center' });
+    col++;
+    if (col >= cols) { col = 0; y += box + gap; }
+  }
+
+  adicionarRodapePagina(doc, W, H, ml, mr, 1);
 }
 
 async function enviarRelatorioEscola() {
