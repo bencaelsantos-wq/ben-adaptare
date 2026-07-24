@@ -8392,6 +8392,7 @@ function showPage(id) {
   if (id === 'at-relatorios') carregarRelatoriosAT();
   if (id === 'gc-perfis') carregarPerfisGestaoClinica();
   if (id === 'gc-profissionais') { carregarProfissionaisClinica(); carregarVinculosATGestao(); }
+  if (id === 'clinica-pratica-guiada') carregarPendentesPraticaGuiada();
   if (id === 'dev-conteudo') carregarBancoImagens();
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'guia-gestao') renderGuiaGestao();
@@ -10847,6 +10848,13 @@ function renderPagesClinica() {
   <div id="page-clinica-pratica-guiada" class="page">
     <h1 class="page-title">Prática Guiada</h1>
     <p class="page-sub">Gere uma atividade de múltipla escolha a partir do perfil e dos objetivos terapêuticos do paciente, aplique com ele e registre o resultado em 1 clique — o desempenho entra automaticamente no histórico de Monitoramento do paciente, sem precisar preencher nada manualmente depois.</p>
+
+    <div class="fcard" id="pg-pendentes-painel" style="margin-bottom:16px;display:none">
+      <div class="fcard-title">Atividades pendentes de registro</div>
+      <p class="page-sub" style="margin:0 0 10px">Geradas mas ainda não aplicadas/registradas — fica reservado no perfil do paciente até você voltar e marcar o resultado.</p>
+      <div id="pg-pendentes-lista"></div>
+    </div>
+
     <div class="frow" style="margin-bottom:14px">
       <div><label class="flabel" for="pg-aluno-sel">Paciente</label><select class="fselect" id="pg-aluno-sel" style="max-width:320px"><option value="">Selecione um paciente</option></select></div>
       <div><label class="flabel" for="pg-area-sel">Objetivo terapêutico trabalhado</label><select class="fselect" id="pg-area-sel" style="max-width:220px">
@@ -16163,6 +16171,48 @@ function atualizarDicaMaterial() {
 let ultimaPraticaGuiada = null;
 let respostasPraticaGuiada = {};
 
+async function carregarPendentesPraticaGuiada() {
+  const painel = document.getElementById('pg-pendentes-painel');
+  const lista = document.getElementById('pg-pendentes-lista');
+  if (!painel || !lista) return;
+  const { data } = await db.from('praticas_guiadas').select('id, titulo, area, criado_em, perfis_clinicos(nome)').eq('status', 'pendente').order('criado_em', { ascending: false });
+  if (!data || !data.length) { painel.style.display = 'none'; return; }
+  painel.style.display = '';
+  lista.innerHTML = data.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
+      <div>
+        <div style="font-weight:600;font-size:13px">${r.titulo}</div>
+        <div style="font-size:11.5px;color:var(--gr500)">${r.perfis_clinicos?.nome||''} · ${LABELS_AREA[r.area]||r.area} · ${new Date(r.criado_em).toLocaleDateString('pt-BR')}</div>
+      </div>
+      <button class="btn-sm" onclick="reabrirPraticaGuiada('${r.id}')">Abrir para registrar</button>
+    </div>`).join('');
+}
+
+async function reabrirPraticaGuiada(id) {
+  const { data, error } = await db.from('praticas_guiadas').select('*, perfis_clinicos(*)').eq('id', id).single();
+  if (error || !data) return toast('Não foi possível abrir essa atividade.', 'error');
+  ultimaPraticaGuiada = { id: data.id, titulo: data.titulo, perguntas: data.perguntas, paciente: data.perfis_clinicos, area: data.area };
+  const perguntas = data.perguntas;
+  document.getElementById('pg-result-lista').innerHTML = perguntas.map((q, i) => `
+    <div class="clinic-card" style="margin-bottom:10px">
+      <div style="font-weight:600;margin-bottom:6px">${i+1}. ${q.pergunta}</div>
+      ${q.alternativas.map(a => `<div style="font-size:13px;color:${a.letra===q.correta?'var(--gr800)':'var(--gr500)'};margin-bottom:2px">${a.letra}) ${a.texto}${a.letra===q.correta?' ✓':''}</div>`).join('')}
+    </div>`).join('');
+  document.getElementById('pg-result-card').classList.add('show');
+  respostasPraticaGuiada = {};
+  document.getElementById('pg-registro-perguntas').innerHTML = perguntas.map((q, i) => `
+    <div style="margin-bottom:10px">
+      <div style="font-size:12.5px;color:var(--gr600);margin-bottom:5px">${i+1}. ${q.pergunta}</div>
+      <div class="mon-btn-group">
+        <button class="mon-btn ok" onclick="selRegistroPraticaGuiada(this,${i},'certo')" data-idx="${i}" data-val="certo">✔ Acertou</button>
+        <button class="mon-btn nao" onclick="selRegistroPraticaGuiada(this,${i},'errado')" data-idx="${i}" data-val="errado">✗ Errou</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('pg-registro-bloco').style.display = '';
+  toast('Atividade aberta — marque acertou/errou e salve. Para o PDF com imagens, gere uma nova (as imagens não ficam salvas nesta atividade reaberta).', 'success');
+  document.getElementById('pg-result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
 function selRegistroPraticaGuiada(btn, idx, val) {
   const group = btn.closest('.mon-btn-group');
   group.querySelectorAll('.mon-btn').forEach(b => b.classList.remove('sel'));
@@ -16179,7 +16229,14 @@ async function salvarRegistroPraticaGuiada() {
   const acertos = Object.values(respostasPraticaGuiada).filter(v => v === 'certo').length;
   const pct = acertos / total;
   const resultado = pct >= 0.7 ? 'ok' : pct >= 0.4 ? 'parcial' : 'nao';
-  const { area, paciente, titulo } = ultimaPraticaGuiada;
+  const { area, paciente, titulo, id } = ultimaPraticaGuiada;
+
+  if (id) {
+    await db.from('praticas_guiadas').update({
+      status: 'registrado', respostas: respostasPraticaGuiada, registrado_em: new Date().toISOString()
+    }).eq('id', id);
+    carregarPendentesPraticaGuiada();
+  }
 
   const { error } = await db.from('monitoramentos').insert({
     perfil_id: paciente.id, user_id: user.id,
@@ -16244,7 +16301,13 @@ CORRETA: [A, B ou C]`;
       return { pergunta, alternativas, correta: b[3].trim().toUpperCase() };
     });
     if (!perguntas.length) { toast('Não foi possível interpretar a atividade gerada. Tente novamente.', 'error'); btn.textContent = '⭐ Gerar com a Lou'; btn.disabled = false; return; }
-    ultimaPraticaGuiada = { titulo: tituloMatch ? tituloMatch[1].trim() : 'Atividade de Múltipla Escolha', perguntas, paciente: p, area };
+    const tituloFinal = tituloMatch ? tituloMatch[1].trim() : 'Atividade de Múltipla Escolha';
+    const { data: registroSalvo, error: erroSalvar } = await db.from('praticas_guiadas').insert({
+      perfil_id: p.id, user_id: user.id, titulo: tituloFinal, area, perguntas, status: 'pendente'
+    }).select('id').single();
+    if (erroSalvar) console.warn('Não foi possível reservar a atividade no perfil do paciente:', erroSalvar.message);
+    ultimaPraticaGuiada = { id: registroSalvo?.id || null, titulo: tituloFinal, perguntas, paciente: p, area };
+    carregarPendentesPraticaGuiada();
     document.getElementById('pg-result-lista').innerHTML = perguntas.map((q, i) => `
       <div class="clinic-card" style="margin-bottom:10px">
         <div style="font-weight:600;margin-bottom:6px">${i+1}. ${q.pergunta}</div>
