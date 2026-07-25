@@ -16657,15 +16657,20 @@ async function baixarMaterialTerapeuticoPDF() {
   if (!ultimoMaterialTerapeutico) return toast('Gere um material primeiro.', 'error');
   const { tipo, texto, paciente } = ultimoMaterialTerapeutico;
 
-  const itensComImagem = (window._imgItens||[]).filter(i => i.urlEscolhida);
+  const todosItens = window._imgItens || [];
+  const itensComImagem = todosItens.filter(i => i.urlEscolhida);
+  const semEscolha = todosItens.filter(i => !i.urlEscolhida).map(i => i.termo);
   const imagensPorItem = {};
+  const falhas = [];
   if (itensComImagem.length) {
     toast('Montando PDF…', 'success');
     for (const item of itensComImagem) {
       try { imagensPorItem[(item.chave ?? item.termo).trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida); }
-      catch(e) { console.warn('Falha ao carregar imagem de', item.termo, e); }
+      catch(e) { console.warn('Falha ao carregar imagem de', item.termo, e); falhas.push(item.termo); }
     }
   }
+  if (semEscolha.length) toast(`Sem imagem escolhida para: ${semEscolha.join(', ')} — vão sair sem imagem no PDF.`, 'error');
+  if (falhas.length) toast(`Falha ao carregar a imagem de: ${falhas.join(', ')} — o link pode estar quebrado. Vão sair sem imagem no PDF.`, 'error');
 
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
 
