@@ -6,6 +6,7 @@
 <title>Pluramente · Plataforma de Integração Clínica-Pedagógica</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -16930,6 +16931,10 @@ async function carregarMonitoramento() {
   const labels = { cognitivo:'🧠 Cognitivo', comunicacao:'🗣️ Comunicação', social:'👥 Social', comportamental:'💢 Comportamental', academico:'📚 Acadêmico' };
   body.innerHTML = `
     <div class="clinic-card" style="margin-bottom:16px">
+      <div class="clinic-card-title">📈 Evolução</div>
+      ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para montar o gráfico — o gráfico aparece a partir do 2º registro.</div></div>' : '<canvas id="mon-grafico" height="90"></canvas>'}
+    </div>
+    <div class="clinic-card" style="margin-bottom:16px">
       <div class="clinic-card-title">📅 Novo Registro — ${new Date().toLocaleDateString('pt-BR')}</div>
       ${areas.filter(a => obj[a]).map(a => `
         <div style="margin-bottom:12px">
@@ -16953,6 +16958,32 @@ async function carregarMonitoramento() {
           </div>
           ${r.observacoes ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px">${r.observacoes}</div>` : ''}
         </div>`).join('')}` : ''}`;
+  if ((regs||[]).length >= 2) renderizarGraficoMonitoramento(regs, areas, obj, labels);
+}
+
+let _chartMonitoramento = null;
+function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
+  const canvas = document.getElementById('mon-grafico');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
+  const VALOR = { ok: 100, parcial: 50, nao: 0 };
+  const ordenados = [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  const dataLabels = ordenados.map(r => new Date(r.created_at).toLocaleDateString('pt-BR'));
+  const datasets = areas.filter(a => obj[a]).map(a => ({
+    label: labels[a].replace(/^\S+\s/, ''),
+    data: ordenados.map(r => r.resultados && r.resultados[a] !== undefined ? VALOR[r.resultados[a]] : null),
+    borderColor: CORES[a], backgroundColor: CORES[a],
+    spanGaps: true, tension: 0.3, pointRadius: 4,
+  }));
+  if (_chartMonitoramento) _chartMonitoramento.destroy();
+  _chartMonitoramento = new Chart(canvas, {
+    type: 'line',
+    data: { labels: dataLabels, datasets },
+    options: {
+      scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } },
+      plugins: { legend: { position: 'bottom' } },
+    },
+  });
 }
 
 let monResultados = {};
