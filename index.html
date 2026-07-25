@@ -16355,13 +16355,15 @@ function detectarImagensPraticaGuiada() {
   if (!ultimaPraticaGuiada) return toast('Gere uma atividade primeiro.', 'error');
   window._imgListaId = 'pg-img-itens';
   window._imgPrefixo = 'pg';
-  const termosSet = new Set();
-  ultimaPraticaGuiada.perguntas.forEach(q => q.alternativas.forEach(a => { if (a.imagem) termosSet.add(a.imagem); }));
-  const termos = [...termosSet];
-  window._imgItens = termos.length
-    ? termos.map(t => ({ termo: t, chave: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
+  const itens = ultimaPraticaGuiada.perguntas.map((q, i) => ({
+    termo: q.imagemPergunta || `pergunta ${i+1}`,
+    chave: `pgq${i}`,
+    fonte: 'proprio', resultados: [], urlEscolhida: null
+  }));
+  window._imgItens = itens.length
+    ? itens
     : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
-  if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
+  toast('Cada pergunta precisa da sua PRÓPRIA imagem — nunca reaproveite a mesma foto entre perguntas diferentes.', 'success');
   document.getElementById('pg-img-painel').style.display = '';
   renderizarPainelImagens();
   document.getElementById('pg-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -16406,29 +16408,30 @@ async function baixarPraticaGuiadaPDF() {
     doc.setTextColor(25,25,25);
     const linhasPergunta = doc.splitTextToSize(sanitizarTexto(`${qi+1}. ${q.pergunta}`), W - ml - mr);
     linhasPergunta.forEach(l => { doc.text(l, ml, y); y += 7; });
-    y += 8;
+    y += 4;
+
+    const b64Pergunta = imagensPorItem[`pgq${qi}`];
+    if (b64Pergunta) {
+      try {
+        const formato = b64Pergunta.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+        doc.addImage(b64Pergunta, formato, ml, y, 40, 40);
+        y += 46;
+      } catch(e) {}
+    }
+    y += 4;
 
     q.alternativas.forEach(a => {
       const boxH = 26;
       doc.setDrawColor(180,180,180);
       doc.setLineWidth(0.3);
       doc.roundedRect(ml, y, W - ml - mr, boxH, 2, 2, 'S');
-      const b64 = imagensPorItem[a.imagem];
-      let textX = ml + 10;
-      if (b64) {
-        try {
-          const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-          doc.addImage(b64, formato, ml + 6, y + 3, boxH - 6, boxH - 6);
-          textX = ml + boxH + 4;
-        } catch(e) {}
-      }
       doc.setFont('helvetica','bold');
       doc.setFontSize(11);
       doc.setTextColor(25,25,25);
-      doc.text(a.letra + ')', textX, y + boxH/2 + 1.5);
+      doc.text(a.letra + ')', ml + 10, y + boxH/2 + 1.5);
       doc.setFont('helvetica','normal');
-      const linhasAlt = doc.splitTextToSize(sanitizarTexto(a.texto).toUpperCase(), W - ml - mr - (textX - ml) - 16);
-      doc.text(linhasAlt.slice(0,2), textX + 10, y + boxH/2 - (linhasAlt.length>1?3:0) + 1.5);
+      const linhasAlt = doc.splitTextToSize(sanitizarTexto(a.texto).toUpperCase(), W - ml - mr - 26);
+      doc.text(linhasAlt.slice(0,2), ml + 20, y + boxH/2 - (linhasAlt.length>1?3:0) + 1.5);
       y += boxH + 6;
     });
 
