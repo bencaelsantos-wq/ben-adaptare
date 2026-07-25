@@ -16979,7 +16979,9 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   const VALOR = { ok: 100, parcial: 50, nao: 0 };
   const ordenados = [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
   const dataLabels = ordenados.map(r => new Date(r.created_at).toLocaleDateString('pt-BR'));
-  const datasets = areas.filter(a => obj[a]).map(a => ({
+  const areasComDados = new Set();
+  ordenados.forEach(r => Object.keys(r.resultados||{}).forEach(k => areasComDados.add(k)));
+  const datasets = areas.filter(a => areasComDados.has(a)).map(a => ({
     label: labels[a].replace(/^\S+\s/, ''),
     data: ordenados.map(r => r.resultados && r.resultados[a] !== undefined ? VALOR[r.resultados[a]] : null),
     borderColor: CORES[a], backgroundColor: CORES[a],
