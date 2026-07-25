@@ -16301,13 +16301,24 @@ CORRETA: [A, B ou C]`;
   try {
     const txt = await chamarClaude({ prompt, maxTokens: 1600, modulo: 'pratica_guiada' });
     const tituloMatch = txt.match(/^TITULO:\s*(.+)$/im);
-    const blocos = [...txt.matchAll(/PERGUNTA\s*\d+:\s*(.+?)\n((?:ALT:.*\n?){3})CORRETA:\s*([ABC])/gim)];
-    const perguntas = blocos.map(b => {
+    const blocosBrutos = [...txt.matchAll(/PERGUNTA\s*\d+:\s*(.+?)\s*\n+([\s\S]*?)CORRETA:\s*([ABC])/gim)];
+    const perguntas = blocosBrutos.map(b => {
       const pergunta = b[1].trim();
-      const alternativas = [...b[2].matchAll(/ALT:\s*([ABC])\s*\|\s*([^|]*)\|\s*(.+)/gi)].map(a => ({ letra: a[1].trim(), imagem: a[2].trim().toLowerCase(), texto: a[3].trim() }));
-      return { pergunta, alternativas, correta: b[3].trim().toUpperCase() };
-    });
-    if (!perguntas.length) { toast('Não foi possível interpretar a atividade gerada. Tente novamente.', 'error'); btn.textContent = '⭐ Gerar com a Lou'; btn.disabled = false; return; }
+      const corpo = b[2];
+      const imgMatch = corpo.match(/IMG_PERGUNTA:\s*(.*)/i);
+      const imagemPergunta = (imgMatch ? imgMatch[1] : '').trim().toLowerCase();
+      let alternativas = [...corpo.matchAll(/ALT:?\s*([ABC])\s*\|\s*(?:([^|\n]*)\|\s*)?(.+)/gi)]
+        .map(a => ({ letra: a[1].trim().toUpperCase(), imagem: (a[2]||'').trim().toLowerCase(), texto: a[3].trim() }));
+      if (alternativas.length < 3) {
+        alternativas = [...corpo.matchAll(/^\s*(?:ALT\s*)?([ABC])[\)\.:]\s*(.+)$/gim)]
+          .map(a => ({ letra: a[1].trim().toUpperCase(), imagem: '', texto: a[2].trim() }));
+      }
+      return { pergunta, imagemPergunta, alternativas, correta: b[3].trim().toUpperCase() };
+    }).filter(q => q.alternativas.length >= 3);
+    if (!perguntas.length) {
+      console.warn('Prática Guiada — resposta da IA não interpretada:', txt);
+      toast('Não foi possível interpretar a atividade gerada. Tente novamente.', 'error'); btn.textContent = '⭐ Gerar com a Lou'; btn.disabled = false; return;
+    }
     const semImagem = perguntas.filter(q => !q.imagemPergunta).length;
     if (semImagem) toast(`Atenção: ${semImagem} de ${perguntas.length} perguntas vieram sem imagem — reveja antes de aplicar ou gere novamente.`, 'error');
     const tituloFinal = tituloMatch ? tituloMatch[1].trim() : 'Atividade de Múltipla Escolha';
