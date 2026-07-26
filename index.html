@@ -10834,6 +10834,7 @@ function renderPagesClinica() {
       <div class="result-text" id="material-result-text"></div>
       <div class="result-actions">
         <button class="btn-copy" onclick="baixarMaterialTerapeuticoPDF()">Baixar PDF</button>
+        <button class="btn-copy" onclick="baixarFolhaRegistro(ultimoMaterialTerapeutico?.paciente?.nome, 'Material Terapêutico')">📋 Folha de Registro</button>
         <button class="btn-copy" onclick="detectarImagensMaterial()">🖼️ Detectar imagens do material</button>
       </div>
     </div>
@@ -10879,6 +10880,7 @@ function renderPagesClinica() {
       <div id="pg-result-lista"></div>
       <div class="result-actions">
         <button class="btn-copy" onclick="baixarPraticaGuiadaPDF()">Baixar PDF (aluno + gabarito)</button>
+        <button class="btn-copy" onclick="baixarFolhaRegistro(ultimaPraticaGuiada?.paciente?.nome, ultimaPraticaGuiada?.titulo)">📋 Folha de Registro</button>
         <button class="btn-copy" onclick="detectarImagensPraticaGuiada()">🖼️ Detectar imagens das alternativas</button>
       </div>
       <div id="pg-registro-bloco" style="margin-top:18px;display:none">
@@ -12143,7 +12145,7 @@ function desenharEscala0a4Registro(doc, x, y, label, maxX) {
   return y + 8;
 }
 
-function baixarFolhaRegistro() {
+function baixarFolhaRegistro(alunoOverride, nomeAtividadeOverride) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W = 210, H = 297, ml = 18, mr = 18;
@@ -12268,7 +12270,7 @@ function baixarFolhaRegistro() {
 
   adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
 
-  doc.save('Folha_Registro_' + (dadosUltima?.aluno||'aluno').replace(/\s+/g,'_') + '.pdf');
+  doc.save('Folha_Registro_' + (aluno||'aluno').replace(/\s+/g,'_') + '.pdf');
   toast('PDF gerado com sucesso!', 'success');
 }
 
