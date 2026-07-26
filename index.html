@@ -6438,7 +6438,10 @@ function filtrarUsuariosDev() {
       <td style="text-align:center">${(u.qtd_profissionais_clinicos||0) + (u.qtd_at||0) + (u.qtd_professores||0)}</td>
       <td style="text-align:center">${u.desconto_percentual||0}%</td>
       <td style="font-weight:700;color:#1E3A8A">R$${total.toFixed(0)}</td>
-      <td><button class="btn-sm" onclick="abrirModalAddonsDev('${u.id}')">Editar</button></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn-sm" onclick="abrirModalAddonsDev('${u.id}')">Editar</button>
+        <button class="btn-danger" onclick="excluirUsuarioDev('${u.id}','${(u.email||'').replace(/'/g,"&#39;")}')">Excluir</button>
+      </td>
     </tr>`;
   }).join('') || '<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
 }
@@ -6528,6 +6531,15 @@ async function salvarAddonsDev() {
   fecharModalAddonsDev();
   filtrarUsuariosDev();
   toast(window._damOrgId ? 'Add-ons da organização atualizados!' : 'Add-ons atualizados!', 'success');
+}
+
+async function excluirUsuarioDev(id, email) {
+  if (!confirm(`Excluir o perfil de "${email}"?\n\nIsso apaga só o registro em profiles (dados de plano/add-ons/nome) — NÃO apaga o login em si (auth.users), então a pessoa ainda consegue entrar, mas o perfil será recriado do zero na próxima vez que ela logar. Se essa é uma conta em uso ativo, prefira usar "Editar" em vez de excluir.\n\nConfirma a exclusão?`)) return;
+  const { error } = await db.from('profiles').delete().eq('id', id);
+  if (error) return toast('Erro ao excluir: ' + error.message, 'error');
+  window._devUsuarios = (window._devUsuarios||[]).filter(u => u.id !== id);
+  filtrarUsuariosDev();
+  toast('Perfil excluído.', 'success');
 }
 
 async function carregarConteudoDev() {
