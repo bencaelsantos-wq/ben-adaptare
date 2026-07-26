@@ -6412,7 +6412,7 @@ function calcularTotalMes(u) {
 
 async function carregarUsuariosDev() {
   try {
-    const { data } = await db.from('profiles').select(`id,email,role,ativo,created_at,observacoes_negociacao,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`).order('created_at',{ascending:false});
+    const { data } = await db.from('profiles').select(`id,email,role,ativo,created_at,organizacao_id,observacoes_negociacao,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`).order('created_at',{ascending:false});
     window._devUsuarios = data || [];
     filtrarUsuariosDev();
   } catch(e) { toast('Erro ao carregar usuários: '+e.message,'error'); }
@@ -6447,21 +6447,34 @@ function checkboxAddon(u, chave) {
   return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]} <span style="color:#9CA3AF">(R$${PRECOS_ADDON[chave]})</span></label>`;
 }
 
-function abrirModalAddonsDev(id) {
+async function abrirModalAddonsDev(id) {
   const u = (window._devUsuarios||[]).find(x => x.id === id);
   if (!u) return;
   window._damUserId = id;
-  document.getElementById('dam-email').textContent = u.email || '';
-  document.getElementById('dam-grupo-clinica').innerHTML = GRUPOS_ADDON.clinica.map(a => checkboxAddon(u, a)).join('');
-  document.getElementById('dam-grupo-escola').innerHTML = GRUPOS_ADDON.escola.map(a => checkboxAddon(u, a)).join('');
-  document.getElementById('dam-grupo-compartilhado').innerHTML = GRUPOS_ADDON.compartilhado.map(a => checkboxAddon(u, a)).join('');
-  document.getElementById('dam-qtd-pacientes').value = u.qtd_pacientes || 0;
-  document.getElementById('dam-qtd-profissionais').value = u.qtd_profissionais_clinicos || 0;
-  document.getElementById('dam-qtd-at').value = u.qtd_at || 0;
-  document.getElementById('dam-qtd-alunos').value = u.qtd_alunos || 0;
-  document.getElementById('dam-qtd-professores').value = u.qtd_professores || 0;
-  document.getElementById('dam-desconto').value = u.desconto_percentual || 0;
-  document.getElementById('dam-observacoes').value = u.observacoes_negociacao || '';
+  window._damOrgId = null;
+
+  let fonte = u;
+  let avisoOrg = '';
+  if (u.organizacao_id) {
+    const { data: org } = await db.from('organizacoes').select(`id,nome,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT},observacoes_negociacao`).eq('id', u.organizacao_id).maybeSingle();
+    if (org) {
+      fonte = org;
+      window._damOrgId = org.id;
+      avisoOrg = ` <span style="font-size:11px;font-weight:400;color:#B45309">(vale para toda a organização: ${org.nome||'sem nome'})</span>`;
+    }
+  }
+
+  document.getElementById('dam-email').innerHTML = (u.email || '') + avisoOrg;
+  document.getElementById('dam-grupo-clinica').innerHTML = GRUPOS_ADDON.clinica.map(a => checkboxAddon(fonte, a)).join('');
+  document.getElementById('dam-grupo-escola').innerHTML = GRUPOS_ADDON.escola.map(a => checkboxAddon(fonte, a)).join('');
+  document.getElementById('dam-grupo-compartilhado').innerHTML = GRUPOS_ADDON.compartilhado.map(a => checkboxAddon(fonte, a)).join('');
+  document.getElementById('dam-qtd-pacientes').value = fonte.qtd_pacientes || 0;
+  document.getElementById('dam-qtd-profissionais').value = fonte.qtd_profissionais_clinicos || 0;
+  document.getElementById('dam-qtd-at').value = fonte.qtd_at || 0;
+  document.getElementById('dam-qtd-alunos').value = fonte.qtd_alunos || 0;
+  document.getElementById('dam-qtd-professores').value = fonte.qtd_professores || 0;
+  document.getElementById('dam-desconto').value = fonte.desconto_percentual || 0;
+  document.getElementById('dam-observacoes').value = fonte.observacoes_negociacao || '';
   ['dam-qtd-pacientes','dam-qtd-profissionais','dam-qtd-at','dam-qtd-alunos','dam-qtd-professores','dam-desconto'].forEach(id2 => {
     document.getElementById(id2).oninput = recalcularModalAddonsDev;
   });
@@ -6506,13 +6519,15 @@ async function salvarAddonsDev() {
   payload.desconto_percentual = parseFloat(document.getElementById('dam-desconto').value) || 0;
   payload.observacoes_negociacao = document.getElementById('dam-observacoes').value.trim();
 
-  const { error } = await db.from('profiles').update(payload).eq('id', id);
+  const tabela = window._damOrgId ? 'organizacoes' : 'profiles';
+  const alvo = window._damOrgId || id;
+  const { error } = await db.from(tabela).update(payload).eq('id', alvo);
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
   const u = (window._devUsuarios||[]).find(x => x.id === id);
   if (u) Object.assign(u, payload);
   fecharModalAddonsDev();
   filtrarUsuariosDev();
-  toast('Add-ons atualizados!', 'success');
+  toast(window._damOrgId ? 'Add-ons da organização atualizados!' : 'Add-ons atualizados!', 'success');
 }
 
 async function carregarConteudoDev() {
