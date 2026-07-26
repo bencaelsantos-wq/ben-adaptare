@@ -11069,6 +11069,124 @@ function renderPagesAT() {
       <div class="fcard-title">Relatórios já gerados</div>
       <div id="diat-historico-relatorios"><p style="font-size:12px;color:var(--gr500)">Selecione um aluno para ver o histórico.</p></div>
     </div>
+  </div>
+
+  <div id="page-ponte-diario" class="page">
+    <div class="bridge-hero">
+      <h2> Diário do Aluno — Linha do Tempo Compartilhada</h2>
+      <p>Registro cronológico unificado entre escola, clínica e AT. Todos veem o mesmo histórico — cada um contribui com sua perspectiva.</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+       <label class="flabel" for="diario-aluno-sel">Aluno</label>
+        <select id="diario-aluno-sel" class="fselect" onchange="carregarDiario()">
+          <option value="">Selecione um aluno</option>
+        </select>
+      </div>
+      <div>
+        <label class="flabel" for="diario-filtro-origem">Filtrar por origem</label>
+        <select id="diario-filtro-origem" class="fselect" onchange="filtrarDiario()">
+          <option value="">Todos</option>
+          <option value="escola"> Escola</option>
+          <option value="clinica"> Clínica</option>
+          <option value="at"> AT</option>
+          <option value="professor"> Professor</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Novo registro -->
+    <div class="fcard" id="diario-form-card" style="display:none">
+      <div class="fcard-title">Nova entrada no diário</div>
+      <div class="frow">
+        <div>
+          <label class="flabel" for="diario-tipo">Tipo de registro</label>
+          <select id="diario-tipo" class="fselect">
+            <option value="observacao"> Observação do dia</option>
+            <option value="evolucao"> Evolução percebida</option>
+            <option value="alerta"> Alerta / ponto de atenção</option>
+            <option value="conquista"> Conquista / marco</option>
+            <option value="estrategia"> Estratégia que funcionou</option>
+            <option value="comunicado"> Comunicado para equipe</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel" for="diario-area">Área relacionada</label>
+          <select id="diario-area" class="fselect">
+            <option value="">Geral</option>
+            <option>Comunicação</option>
+            <option>Acadêmica / Pedagógica</option>
+            <option>Comportamento / Regulação</option>
+            <option>Social</option>
+            <option>Sensorial / Motor</option>
+            <option>Autonomia</option>
+            <option>Saúde / Medicação</option>
+          </select>
+        </div>
+      </div>
+      <div class="fblock">
+        <label class="flabel" for="diario-texto">Registro *</label>
+        <textarea id="diario-texto" class="ftarea sm" placeholder="Descreva a observação, evolução ou comunicado. Seja específico — o que aconteceu, quando, como, qual foi a reação do aluno…"></textarea>
+      </div>
+      <div class="fblock">
+        <label class="flabel" id="label-diario-visivel-at">Visível para (quem poderá ver este registro)</label>
+        <div class="chips-group" id="diario-visivel-chips" aria-labelledby="label-diario-visivel-at" role="group"style="gap:6px">
+          <button class="chip active" data-dest="escola"> Escola</button>
+          <button class="chip active" data-dest="clinica"> Clínica</button>
+          <button class="chip active" data-dest="at"> AT</button>
+          <button class="chip active" data-dest="familia"> Família</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-sm" onclick="salvarEntradaDiario()">Salvar registro</button>
+        <button class="btn-sm-ghost" onclick="document.getElementById('diario-form-card').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div id="diario-count" style="font-size:13px;color:var(--gr400)"></div>
+      <button class="btn-sm" id="btn-nova-entrada" onclick="mostrarFormDiario()" disabled>+ Nova entrada</button>
+    </div>
+    <div id="diario-timeline">
+      <div class="empty"><div class="empty-icon">📓</div><div class="empty-text">Selecione um aluno para ver o diário compartilhado.</div></div>
+    </div>
+  </div>
+
+  <div id="page-ponte-objetivos" class="page">
+    <div class="bridge-hero">
+      <h2> Objetivos Convergentes</h2>
+      <p>Escola e clínica trabalham para o mesmo aluno — mas raramente com os mesmos objetivos documentados. Esta tela alinha metas pedagógicas e terapêuticas em um plano convergente.</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <label class="flabel" for="conv-aluno-sel">Aluno</label>
+        <select id="conv-aluno-sel" class="fselect" onchange="carregarObjetivosConvergentes()">
+          <option value="">Selecione um aluno</option>
+        </select>
+      </div>
+      <button class="btn-sm" id="btn-gerar-convergencia" disabled onclick="gerarConvergencia()">
+         Gerar plano convergente com a Lou
+      </button>
+    </div>
+    <div id="conv-body">
+      <div class="empty"><div class="empty-icon"></div><div class="empty-text">Selecione um aluno para ver e alinhar os objetivos de escola e clínica.</div></div>
+    </div>
+    <!-- Resultado IA -->
+    <div id="conv-result" style="display:none;margin-top:16px">
+      <div style="font-size:14px;font-weight:700;color:var(--gr800);margin-bottom:12px"> Pontos de convergência identificados pela IA</div>
+      <div id="conv-convergencias"></div>
+      <div style="margin-top:14px">
+        <div style="font-size:14px;font-weight:700;color:var(--gr800);margin-bottom:10px"> Recomendações de alinhamento</div>
+        <div id="conv-recomendacoes" class="result-text" style="background:#fff;border-radius:var(--rsm);padding:14px;font-size:13.5px;color:var(--gr600);line-height:1.8;border:1px solid var(--gr200)"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-sm" onclick="salvarConvergencia()">Salvar alinhamento</button>
+        <button class="btn-copy" onclick="copiarConvergencia()">Copiar tudo</button>
+      </div>
+    </div>
+    <div class="gen-box" id="gen-conv-box" style="background:var(--bridge-light);border-color:var(--bridge-mid)">
+      <div class="spin" style="border-top-color:var(--bridge)"></div><span>IA identificando convergências…</span>
+    </div>
   </div>`;
   carregarAlunosAT();
 }
@@ -18364,6 +18482,7 @@ function popularSelectsPonte(){
   const todosAlunos = [
     ...(alunosCad||[]).map(a=>({id:'escola_'+a.id,nome:a.nome,tipo:'escola'})),
     ...(perfisClinicaList||[]).map(p=>({id:'clinica_'+p.id,nome:p.nome,tipo:'clinica'})),
+    ...(perfisATList||[]).map(p=>({id:'clinica_'+p.id,nome:p.nome,tipo:'clinica'})),
   ];
   // Deduplicar por nome (aluno que existe nos dois lados)
   const vistos = new Set();
