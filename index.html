@@ -3838,10 +3838,12 @@ const PRECO_PACOTE_IA = 30;
 const ORCAMENTO_POR_PACOTE_IA = 10;
 
 function limitesAtuais() {
-  const base = LIMITES_PLANO[window._planoAtivo] || LIMITES_PLANO.semente;
   return {
-    alunos: base.alunos === Infinity ? Infinity : base.alunos + (window._extraAlunos||0),
-    professores: base.professores === Infinity ? Infinity : base.professores + (window._extraProfessores||0)
+    alunos: window._qtd?.alunos || 0,
+    professores: window._qtd?.professores || 0,
+    profissionaisClinicos: window._qtd?.profissionaisClinicos || 0,
+    at: window._qtd?.at || 0,
+    pacientes: window._qtd?.pacientes || 0,
   };
 }
 
@@ -8353,9 +8355,9 @@ async function salvarProfissionalClinica() {
 
   const { count: countClinica } = await db.from('profissionais_clinica').select('*', { count:'exact', head:true }).eq('user_id', user.id);
   const { count: countAT } = await db.from('profiles').select('*', { count:'exact', head:true }).eq('organizacao_id', window._organizacaoId).eq('role', 'at');
-  const limite = limitesAtuais().professores;
-  if (limite !== Infinity && ((countClinica||0) + (countAT||0)) >= limite) {
-    return toast(`Limite de ${limite} profissionais do seu plano atingido. Fale com o suporte para aumentar sua capacidade.`, 'error');
+  const limite = limitesAtuais().profissionaisClinicos + limitesAtuais().at;
+  if ((countClinica||0) + (countAT||0) >= limite) {
+    return toast(`Limite de ${limite} profissionais/AT contratados atingido. Fale com o suporte para contratar mais.`, 'error');
   }
 
   const ehAT = especialidade === 'at';
@@ -14325,8 +14327,8 @@ async function salvarAluno() {
   if (!_editAlunoId) {
     const { count } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     const limite = limitesAtuais().alunos;
-    if (limite !== Infinity && (count||0) >= limite) {
-      return toast(`Limite de ${limite} alunos do seu plano atingido. Fale com o suporte para aumentar sua capacidade.`, 'error');
+    if ((count||0) >= limite) {
+      return toast(`Limite de ${limite} alunos contratados atingido. Fale com o suporte para contratar mais.`, 'error');
     }
   }
 
@@ -15779,8 +15781,8 @@ async function salvarProfessor() {
   if (!profEditId) {
     const { count } = await db.from('professores').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     const limite = limitesAtuais().professores;
-    if (limite !== Infinity && (count||0) >= limite) {
-      return toast(`Limite de ${limite} professores do seu plano atingido. Fale com o suporte para aumentar sua capacidade.`, 'error');
+    if ((count||0) >= limite) {
+      return toast(`Limite de ${limite} professores contratados atingido. Fale com o suporte para contratar mais.`, 'error');
     }
   }
 
