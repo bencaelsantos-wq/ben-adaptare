@@ -6059,8 +6059,43 @@ function renderPagesDeveloper() {
       </select>
     </div>
     <div id="dev-usuarios-lista" style="overflow-x:auto">
-      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Ativo</th><th>Plano</th><th>Análise</th><th>Laudos</th><th>Diário AT</th><th>Prof.+</th><th>Alunos+</th><th>IA+</th><th>Total/mês</th></tr></thead>
+      <table class="dev-table"><thead><tr><th>E-mail</th><th>Papel</th><th>Ativo</th><th>Pacientes/Alunos</th><th>Profissionais</th><th>Desconto %</th><th>Total/mês</th><th>Add-ons</th></tr></thead>
       <tbody id="dev-usuarios-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <div id="dev-modal-addons" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:26px;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)">
+      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700;color:#1E293B">Add-ons — <span id="dam-email"></span></h2>
+      <p style="margin:0 0 16px;font-size:12.5px;color:#64748B">Marque os módulos contratados. Perfil Clínico / Meus Alunos são pré-requisitos gratuitos, sempre liberados.</p>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7C3AED;margin:10px 0 6px">Clínica</div>
+      <div id="dam-grupo-clinica" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:12px"></div>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#059669;margin:10px 0 6px">Educacional</div>
+      <div id="dam-grupo-escola" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:12px"></div>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#0891B2;margin:10px 0 6px">Compartilhados (Clínica + Escola)</div>
+      <div id="dam-grupo-compartilhado" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:16px"></div>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#4B5563;margin:10px 0 6px">Quantidade contratada</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div><label style="font-size:12px;color:#4B5563">Pacientes</label><input type="number" min="0" id="dam-qtd-pacientes" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
+        <div><label style="font-size:12px;color:#4B5563">Profissionais clínicos</label><input type="number" min="0" id="dam-qtd-profissionais" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
+        <div><label style="font-size:12px;color:#4B5563">AT (Acompanhantes Terapêuticos)</label><input type="number" min="0" id="dam-qtd-at" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
+        <div><label style="font-size:12px;color:#4B5563">Alunos</label><input type="number" min="0" id="dam-qtd-alunos" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
+        <div><label style="font-size:12px;color:#4B5563">Professores</label><input type="number" min="0" id="dam-qtd-professores" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
+        <div><label style="font-size:12px;color:#4B5563">Desconto (%)</label><input type="number" min="0" max="100" id="dam-desconto" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
+      </div>
+
+      <div style="background:#F5F7FA;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px">
+        Subtotal: <strong id="dam-subtotal">R$0</strong> — Desconto: <strong id="dam-desconto-valor">R$0</strong> — <span style="font-size:15px;font-weight:700;color:#1E3A8A">Total: <span id="dam-total">R$0</span>/mês</span>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button class="btn-sm" style="flex:1" onclick="fecharModalAddonsDev()">Cancelar</button>
+        <button class="btn-primary" style="flex:1" onclick="salvarAddonsDev()">Salvar</button>
+      </div>
     </div>
   </div>
 
@@ -6342,9 +6377,37 @@ async function carregarDashboardDev() {
   await carregarConteudoDev();
 }
 
+const PRECOS_ADDON = {
+  objetivos_terapeuticos: 47, plano_intervencao: 127, materiais_terapeuticos: 147, pratica_guiada: 167,
+  pdi: 127, monitoramento: 197, devolutiva: 97, relatorios_escola: 67,
+  nova_adaptacao: 147, estudo_caso: 47, pei: 127, plano_aee: 107, apoio_pedagogico: 167,
+  colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 127, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 47, glossario: 47
+};
+const ADDON_LABELS = {
+  objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
+  pdi:'PDI', monitoramento:'Monitoramento', devolutiva:'Devolutiva Clínica', relatorios_escola:'Relatórios da Escola',
+  nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico',
+  colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
+  analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico'
+};
+const GRUPOS_ADDON = {
+  clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico'],
+  compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
+};
+const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
+
+function calcularTotalMes(u) {
+  const subtotalAddons = ADDONS_LISTA.reduce((soma, a) => soma + (u[`addon_${a}`] ? (PRECOS_ADDON[a]||0) : 0), 0);
+  const subtotalQtd = Object.keys(PRECOS_QTD).reduce((soma, campo) => soma + (u[campo]||0) * PRECOS_QTD[campo], 0);
+  const subtotal = subtotalAddons + subtotalQtd;
+  const desconto = subtotal * ((u.desconto_percentual||0) / 100);
+  return { subtotal, desconto, total: subtotal - desconto };
+}
+
 async function carregarUsuariosDev() {
   try {
-    const { data } = await db.from('profiles').select('id,email,role,ativo,created_at,plano,addon_analise,addon_laudos,addon_diario_at,extra_professores,extra_alunos,extra_ia_pacotes').order('created_at',{ascending:false});
+    const { data } = await db.from('profiles').select(`id,email,role,ativo,created_at,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`).order('created_at',{ascending:false});
     window._devUsuarios = data || [];
     filtrarUsuariosDev();
   } catch(e) { toast('Erro ao carregar usuários: '+e.message,'error'); }
@@ -6361,85 +6424,88 @@ function filtrarUsuariosDev() {
   const tbody = document.getElementById('dev-usuarios-tbody');
   if (!tbody) return;
   tbody.innerHTML = lista.map(u => {
-    const PRECO_PLANO = { semente:97, acolhe:197, integra:297, singular:447, rede:0 };
-    const isClinicaCtx = u.role === 'clinica' || u.role === 'gestao-clinica';
-    const precoBase = PRECO_PLANO[u.plano] || PRECO_PLANO.acolhe;
-    const totalMes = precoBase
-      + (u.extra_professores||0) * 20
-      + (u.extra_alunos||0) * 5
-      + (u.extra_ia_pacotes||0) * 30
-      + (u.addon_analise ? (isClinicaCtx ? 197 : 167) : 0)
-      + (u.addon_laudos ? (isClinicaCtx ? 177 : 127) : 0);
+    const { total } = calcularTotalMes(u);
     return `<tr>
       <td>${u.email||'—'}</td>
       <td><span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:${cores[u.role]||'#9CA3AF'}20;color:${cores[u.role]||'#9CA3AF'}">${u.role||'—'}</span></td>
       <td>${u.ativo ? '✅' : '⛔'}</td>
-      <td>
-        <select style="font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--gr200)" onchange="atualizarPlanoUsuario('${u.id}', this.value)">
-          <option value="semente" ${u.plano==='semente'?'selected':''}>Semente</option>
-          <option value="acolhe" ${u.plano==='acolhe'||!u.plano?'selected':''}>Acolhe</option>
-          <option value="integra" ${u.plano==='integra'?'selected':''}>Integra</option>
-          <option value="singular" ${u.plano==='singular'?'selected':''}>Singular</option>
-          <option value="rede" ${u.plano==='rede'?'selected':''}>Rede</option>
-        </select>
-      </td>
-      <td style="text-align:center">
-        <input type="checkbox" ${u.addon_analise?'checked':''} onchange="atualizarAddonAnalise('${u.id}', this.checked)" title="Add-on Análise e Estratégias">
-      </td>
-      <td style="text-align:center">
-        <input type="checkbox" ${u.addon_laudos?'checked':''} onchange="atualizarAddonLaudos('${u.id}', this.checked)" title="Add-on Linha do Tempo de Laudos">
-      </td>
-      <td style="text-align:center">
-        <input type="checkbox" ${u.addon_diario_at?'checked':''} onchange="atualizarAddonDiarioAT('${u.id}', this.checked)" title="Add-on Diário de Acompanhamento (AT)">
-      </td>
-      <td><input type="number" min="0" value="${u.extra_professores||0}" style="width:38px;font-size:12px;padding:2px 3px" onchange="atualizarExtra('${u.id}','extra_professores',this.value)"></td>
-      <td><input type="number" min="0" value="${u.extra_alunos||0}" style="width:38px;font-size:12px;padding:2px 3px" onchange="atualizarExtra('${u.id}','extra_alunos',this.value)"></td>
-      <td><input type="number" min="0" value="${u.extra_ia_pacotes||0}" style="width:38px;font-size:12px;padding:2px 3px" onchange="atualizarExtra('${u.id}','extra_ia_pacotes',this.value)"></td>
-      <td style="font-weight:700;color:#1E3A8A">R$${totalMes}</td>
+      <td style="text-align:center">${(u.qtd_pacientes||0) + (u.qtd_alunos||0)}</td>
+      <td style="text-align:center">${(u.qtd_profissionais_clinicos||0) + (u.qtd_at||0) + (u.qtd_professores||0)}</td>
+      <td style="text-align:center">${u.desconto_percentual||0}%</td>
+      <td style="font-weight:700;color:#1E3A8A">R$${total.toFixed(0)}</td>
+      <td><button class="btn-sm" onclick="abrirModalAddonsDev('${u.id}')">Editar</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="12" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
 }
 
-async function atualizarPlanoUsuario(id, novoPlano) {
-  const { error } = await db.from('profiles').update({ plano: novoPlano }).eq('id', id);
-  if (error) return toast('Erro ao atualizar plano: ' + error.message, 'error');
-  const u = (window._devUsuarios||[]).find(x => x.id === id);
-  if (u) u.plano = novoPlano;
-  toast('Plano atualizado!', 'success');
+function checkboxAddon(u, chave) {
+  return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]} <span style="color:#9CA3AF">(R$${PRECOS_ADDON[chave]})</span></label>`;
 }
 
-async function atualizarAddonAnalise(id, ativo) {
-  const { error } = await db.from('profiles').update({ addon_analise: ativo }).eq('id', id);
-  if (error) return toast('Erro ao atualizar add-on: ' + error.message, 'error');
+function abrirModalAddonsDev(id) {
   const u = (window._devUsuarios||[]).find(x => x.id === id);
-  if (u) u.addon_analise = ativo;
-  toast('Add-on atualizado!', 'success');
+  if (!u) return;
+  window._damUserId = id;
+  document.getElementById('dam-email').textContent = u.email || '';
+  document.getElementById('dam-grupo-clinica').innerHTML = GRUPOS_ADDON.clinica.map(a => checkboxAddon(u, a)).join('');
+  document.getElementById('dam-grupo-escola').innerHTML = GRUPOS_ADDON.escola.map(a => checkboxAddon(u, a)).join('');
+  document.getElementById('dam-grupo-compartilhado').innerHTML = GRUPOS_ADDON.compartilhado.map(a => checkboxAddon(u, a)).join('');
+  document.getElementById('dam-qtd-pacientes').value = u.qtd_pacientes || 0;
+  document.getElementById('dam-qtd-profissionais').value = u.qtd_profissionais_clinicos || 0;
+  document.getElementById('dam-qtd-at').value = u.qtd_at || 0;
+  document.getElementById('dam-qtd-alunos').value = u.qtd_alunos || 0;
+  document.getElementById('dam-qtd-professores').value = u.qtd_professores || 0;
+  document.getElementById('dam-desconto').value = u.desconto_percentual || 0;
+  ['dam-qtd-pacientes','dam-qtd-profissionais','dam-qtd-at','dam-qtd-alunos','dam-qtd-professores','dam-desconto'].forEach(id2 => {
+    document.getElementById(id2).oninput = recalcularModalAddonsDev;
+  });
+  recalcularModalAddonsDev();
+  document.getElementById('dev-modal-addons').style.display = 'flex';
 }
 
-async function atualizarAddonLaudos(id, ativo) {
-  const { error } = await db.from('profiles').update({ addon_laudos: ativo }).eq('id', id);
-  if (error) return toast('Erro ao atualizar add-on: ' + error.message, 'error');
-  const u = (window._devUsuarios||[]).find(x => x.id === id);
-  if (u) u.addon_laudos = ativo;
-  toast('Add-on atualizado!', 'success');
+function fecharModalAddonsDev() {
+  document.getElementById('dev-modal-addons').style.display = 'none';
 }
 
-async function atualizarAddonDiarioAT(id, ativo) {
-  const { error } = await db.from('profiles').update({ addon_diario_at: ativo }).eq('id', id);
-  if (error) return toast('Erro ao atualizar add-on: ' + error.message, 'error');
-  const u = (window._devUsuarios||[]).find(x => x.id === id);
-  if (u) u.addon_diario_at = ativo;
-  toast('Add-on atualizado!', 'success');
+function recalcularModalAddonsDev() {
+  const checks = document.querySelectorAll('#dev-modal-addons input[type="checkbox"][data-addon]');
+  let subtotalAddons = 0;
+  checks.forEach(c => { if (c.checked) subtotalAddons += PRECOS_ADDON[c.dataset.addon] || 0; });
+  const qtdPacientes = parseInt(document.getElementById('dam-qtd-pacientes').value, 10) || 0;
+  const qtdProfissionais = parseInt(document.getElementById('dam-qtd-profissionais').value, 10) || 0;
+  const qtdAt = parseInt(document.getElementById('dam-qtd-at').value, 10) || 0;
+  const qtdAlunos = parseInt(document.getElementById('dam-qtd-alunos').value, 10) || 0;
+  const qtdProfessores = parseInt(document.getElementById('dam-qtd-professores').value, 10) || 0;
+  const desconto = parseFloat(document.getElementById('dam-desconto').value) || 0;
+  const subtotalQtd = qtdPacientes*8 + qtdProfissionais*25 + qtdAt*25 + qtdAlunos*8 + qtdProfessores*25;
+  const subtotal = subtotalAddons + subtotalQtd;
+  const valorDesconto = subtotal * (desconto/100);
+  document.getElementById('dam-subtotal').textContent = 'R$' + subtotal.toFixed(0);
+  document.getElementById('dam-desconto-valor').textContent = 'R$' + valorDesconto.toFixed(0);
+  document.getElementById('dam-total').textContent = 'R$' + (subtotal - valorDesconto).toFixed(0);
 }
 
-async function atualizarExtra(id, campo, valor) {
-  const num = Math.max(0, parseInt(valor, 10) || 0);
-  const { error } = await db.from('profiles').update({ [campo]: num }).eq('id', id);
-  if (error) return toast('Erro ao atualizar: ' + error.message, 'error');
+async function salvarAddonsDev() {
+  const id = window._damUserId;
+  if (!id) return;
+  const payload = {};
+  document.querySelectorAll('#dev-modal-addons input[type="checkbox"][data-addon]').forEach(c => {
+    payload[`addon_${c.dataset.addon}`] = c.checked;
+  });
+  payload.qtd_pacientes = parseInt(document.getElementById('dam-qtd-pacientes').value, 10) || 0;
+  payload.qtd_profissionais_clinicos = parseInt(document.getElementById('dam-qtd-profissionais').value, 10) || 0;
+  payload.qtd_at = parseInt(document.getElementById('dam-qtd-at').value, 10) || 0;
+  payload.qtd_alunos = parseInt(document.getElementById('dam-qtd-alunos').value, 10) || 0;
+  payload.qtd_professores = parseInt(document.getElementById('dam-qtd-professores').value, 10) || 0;
+  payload.desconto_percentual = parseFloat(document.getElementById('dam-desconto').value) || 0;
+
+  const { error } = await db.from('profiles').update(payload).eq('id', id);
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
   const u = (window._devUsuarios||[]).find(x => x.id === id);
-  if (u) u[campo] = num;
+  if (u) Object.assign(u, payload);
+  fecharModalAddonsDev();
   filtrarUsuariosDev();
-  toast('Atualizado!', 'success');
+  toast('Add-ons atualizados!', 'success');
 }
 
 async function carregarConteudoDev() {
