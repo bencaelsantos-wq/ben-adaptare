@@ -3851,10 +3851,15 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee'];
+const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
+const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
+function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
+
 async function lerPerfilDobanco() {
   try {
     const { data, error } = await db.from('profiles')
-      .select('role, subrole, nome, ativo, plano, organizacao_id, addon_analise, addon_laudos, addon_diario_at, extra_professores, extra_alunos, extra_ia_pacotes')
+      .select(`role, subrole, nome, ativo, plano, organizacao_id, extra_professores, extra_alunos, extra_ia_pacotes, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`)
       .eq('id', user.id)
       .maybeSingle();
 
@@ -3863,11 +3868,18 @@ async function lerPerfilDobanco() {
     window._organizacaoId = data?.organizacao_id || null;
 
     if (data?.organizacao_id) {
-      const { data: org } = await db.from('organizacoes').select('plano, addon_analise, addon_laudos, addon_diario_at, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url').eq('id', data.organizacao_id).maybeSingle();
+      const { data: org } = await db.from('organizacoes').select(`plano, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
       window._planoAtivo = org?.plano || 'acolhe';
-      window._addonAnalise = !!(org?.addon_analise || data?.addon_analise);
-      window._addonLaudos = !!(org?.addon_laudos || data?.addon_laudos);
-      window._addonDiarioAT = !!(org?.addon_diario_at || data?.addon_diario_at);
+      window._addons = {};
+      ADDONS_LISTA.forEach(a => { window._addons[a] = !!(org?.[`addon_${a}`] || data?.[`addon_${a}`]); });
+      window._addonAnalise = window._addons.analise;
+      window._addonLaudos = window._addons.laudos;
+      window._addonDiarioAT = window._addons.diario_at;
+      window._qtd = {
+        pacientes: org?.qtd_pacientes || 0, profissionaisClinicos: org?.qtd_profissionais_clinicos || 0,
+        at: org?.qtd_at || 0, alunos: org?.qtd_alunos || 0, professores: org?.qtd_professores || 0
+      };
+      window._descontoPercentual = org?.desconto_percentual || 0;
       window._extraProfessores = org?.extra_professores || 0;
       window._extraAlunos = org?.extra_alunos || 0;
       window._extraIaPacotes = org?.extra_ia_pacotes || 0;
@@ -3875,9 +3887,16 @@ async function lerPerfilDobanco() {
       window._logoEscolaUrl = org?.logo_url || null;
     } else {
       window._planoAtivo = data?.plano || 'acolhe';
-      window._addonAnalise = !!data?.addon_analise;
-      window._addonLaudos = !!data?.addon_laudos;
-      window._addonDiarioAT = !!data?.addon_diario_at;
+      window._addons = {};
+      ADDONS_LISTA.forEach(a => { window._addons[a] = !!data?.[`addon_${a}`]; });
+      window._addonAnalise = window._addons.analise;
+      window._addonLaudos = window._addons.laudos;
+      window._addonDiarioAT = window._addons.diario_at;
+      window._qtd = {
+        pacientes: data?.qtd_pacientes || 0, profissionaisClinicos: data?.qtd_profissionais_clinicos || 0,
+        at: data?.qtd_at || 0, alunos: data?.qtd_alunos || 0, professores: data?.qtd_professores || 0
+      };
+      window._descontoPercentual = data?.desconto_percentual || 0;
       window._extraProfessores = data?.extra_professores || 0;
       window._extraAlunos = data?.extra_alunos || 0;
       window._extraIaPacotes = data?.extra_ia_pacotes || 0;
