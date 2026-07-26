@@ -4050,7 +4050,7 @@ async function renderizarWidgetConsumoIA() {
   try {
     const baseOrc = await verificarOrcamentoIA('geral');
     const pctBase = baseOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((baseOrc.gastoBRL / baseOrc.limiteBRL) * 100));
-    let html = `<div style="font-weight:700;color:#1E3A8A;margin-bottom:2px;font-size:10px">Plano ${(window._planoAtivo||'acolhe').toUpperCase()}</div>`;
+    let html = `<div style="font-weight:700;color:#1E3A8A;margin-bottom:2px;font-size:10px">Uso de IA</div>`;
     if (baseOrc.limiteBRL !== Infinity) {
       html += barraConsumoIA('Ferramentas pedagógicas', pctBase);
     }
@@ -4241,10 +4241,10 @@ function renderNavCoordenacao() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações
     </div>
     <div class="nav-item gestao-item" id="nav-apoio-coord" onclick="abrirApoioPedagogico()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Apoio Pedagógico<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Apoio Pedagógico${!temAddon('apoio_pedagogico') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item gestao-item" id="nav-laudos-coord" onclick="abrirLinhaDoTempoLaudos()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos${!temAddon('laudos') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item gestao-item" id="nav-colaboracao-coord" onclick="navBloqueado()" style="font-weight:600;opacity:.5;cursor:not-allowed">
@@ -4306,10 +4306,10 @@ function renderNavClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI${!temAddon('pdi') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-analise-comp-clinica" onclick="abrirAnaliseComportamental()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias${!temAddon('analise') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-laudos-clinica" onclick="abrirLinhaDoTempoLaudos()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos${!temAddon('laudos') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-clinica-monitoramento" onclick="${!temAddon('monitoramento') ? "acessarRecursoPremium('Monitoramento')" : "showPage('clinica-monitoramento')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Monitoramento${!temAddon('monitoramento') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -4390,10 +4390,10 @@ function renderNavGestaoClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 9h9M3 13h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="15" cy="13" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M13.5 13h3M15 11.5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Demandas das escolas
     </div>
     <div class="nav-item clinic-item" id="nav-analise-comp-gc" onclick="abrirAnaliseComportamental()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias${!temAddon('analise') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-laudos-gc" onclick="abrirLinhaDoTempoLaudos()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos${!temAddon('laudos') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item clinic-item" id="nav-colaboracao-gc" onclick="abrirColaboracao()" style="font-weight:600">
