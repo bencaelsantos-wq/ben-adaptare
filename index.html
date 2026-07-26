@@ -16541,8 +16541,12 @@ async function baixarPraticaGuiadaPDF() {
     if (b64Pergunta) {
       try {
         const formato = b64Pergunta.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-        doc.addImage(b64Pergunta, formato, ml, y, 40, 40);
-        y += 46;
+        const propsImg = doc.getImageProperties(b64Pergunta);
+        const maxW = 70, maxH = 45;
+        let imgW = maxW, imgH = maxW * (propsImg.height / propsImg.width);
+        if (imgH > maxH) { imgH = maxH; imgW = maxH * (propsImg.width / propsImg.height); }
+        doc.addImage(b64Pergunta, formato, ml, y, imgW, imgH);
+        y += imgH + 6;
       } catch(e) {}
     }
     y += 4;
