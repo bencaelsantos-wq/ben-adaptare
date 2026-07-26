@@ -3851,7 +3851,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4052,12 +4052,12 @@ async function renderizarWidgetConsumoIA() {
     if (baseOrc.limiteBRL !== Infinity) {
       html += barraConsumoIA('Ferramentas pedagógicas', pctBase);
     }
-    if (window._addonAnalise || window._planoAtivo === 'singular') {
+    if (temAddon('analise')) {
       const analiseOrc = await verificarOrcamentoIA('analise-comportamental');
       const pctAnalise = analiseOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((analiseOrc.gastoBRL / analiseOrc.limiteBRL) * 100));
       html += barraConsumoIA('Análise e Estratégias', pctAnalise);
     }
-    if (window._addonLaudos || window._planoAtivo === 'singular') {
+    if (temAddon('laudos')) {
       const laudosOrc = await verificarOrcamentoIA('linha-tempo-laudos');
       const pctLaudos = laudosOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((laudosOrc.gastoBRL / laudosOrc.limiteBRL) * 100));
       html += barraConsumoIA('Linha do Tempo de Laudos', pctLaudos);
@@ -4088,45 +4088,45 @@ function renderNavProfessor() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Dashboard
     </div>
     <div class="nav-section">Pedagógico</div>
-    <div class="nav-item" id="nav-nova" onclick="showPage('nova')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova adaptação
+    <div class="nav-item" id="nav-nova" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('nova')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova adaptação${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-historico" onclick="showPage('historico')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico
+    <div class="nav-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('historico')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-estudo-caso" onclick="showPage('estudo-caso');carregarEstudosCaso()">
-       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso
+    <div class="nav-item" id="nav-estudo-caso" onclick="${!temAddon('estudo_caso') ? "acessarRecursoPremium('Estudo de Caso')" : "showPage('estudo-caso');carregarEstudosCaso()"}">
+       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso${!temAddon('estudo_caso') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-pei" onclick="showPage('pei')">
-       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Elaborar PEI
+    <div class="nav-item" id="nav-pei" onclick="${!temAddon('pei') ? "acessarRecursoPremium('Elaborar PEI')" : "showPage('pei')"}">
+       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Elaborar PEI${!temAddon('pei') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-plano-aee" onclick="showPage('plano-aee')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="14" cy="6" r="2.5" fill="#7C3AED" stroke="none"/><path d="M14 5v2M13 6h2" stroke="white" stroke-width="1.1" stroke-linecap="round"/></svg>Plano de AEE
+    <div class="nav-item" id="nav-plano-aee" onclick="${!temAddon('plano_aee') ? "acessarRecursoPremium('Plano de AEE')" : "showPage('plano-aee')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="14" cy="6" r="2.5" fill="#7C3AED" stroke="none"/><path d="M14 5v2M13 6h2" stroke="white" stroke-width="1.1" stroke-linecap="round"/></svg>Plano de AEE${!temAddon('plano_aee') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-pdi-prof" onclick="showPage('pdi')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI
+    <div class="nav-item" id="nav-pdi-prof" onclick="${!temAddon('pdi') ? "acessarRecursoPremium('PDI')" : "showPage('pdi')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI${!temAddon('pdi') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item" id="nav-apoio-prof" onclick="abrirApoioPedagogico()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Apoio Pedagógico<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Apoio Pedagógico${!temAddon('apoio_pedagogico') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item" id="nav-laudos-prof" onclick="abrirLinhaDoTempoLaudos()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos${!temAddon('laudos') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Escola ↔ Clínica</div>
 
-    <div class="nav-item" id="nav-colaboracao-prof" onclick="abrirColaboracao()" class="nav-item nav-item-purple" id="nav-colaboracao-prof">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional
+    <div class="nav-item" id="nav-colaboracao-prof" onclick="${!temAddon('colaboracao') ? "acessarRecursoPremium('Colaboração Multiprofissional')" : "abrirColaboracao()"}" class="nav-item nav-item-purple" id="nav-colaboracao-prof">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional${!temAddon('colaboracao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-ponte-diario" onclick="showPage('ponte-diario')" class="nav-item nav-item-teal">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno
+    <div class="nav-item" id="nav-ponte-diario" onclick="${!temAddon('diario_aluno') ? "acessarRecursoPremium('Diário do Aluno')" : "showPage('ponte-diario')"}" class="nav-item nav-item-teal">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno${!temAddon('diario_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-ponte-glossario" onclick="showPage('ponte-glossario')" class="nav-item nav-item-teal">      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M12 4v4h4M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Glossário Clínico
+    <div class="nav-item" id="nav-ponte-glossario" onclick="${!temAddon('glossario') ? "acessarRecursoPremium('Glossário Clínico')" : "showPage('ponte-glossario')"}" class="nav-item nav-item-teal">      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M12 4v4h4M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Glossário Clínico${!temAddon('glossario') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-ponte-tradutor" onclick="showPage('ponte-tradutor')" class="nav-item nav-item-teal">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 5h4M5 8h3M13 6c0 2-1.5 3.5-3 4M13 6c1 2 2.5 3.5 4 4M10 14l2 4M10 14l-2 4M10 14V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Tradutor de Linguagem
+    <div class="nav-item" id="nav-ponte-tradutor" onclick="${!temAddon('tradutor') ? "acessarRecursoPremium('Tradutor de Linguagem')" : "showPage('ponte-tradutor')"}" class="nav-item nav-item-teal">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 5h4M5 8h3M13 6c0 2-1.5 3.5-3 4M13 6c1 2 2.5 3.5 4 4M10 14l2 4M10 14l-2 4M10 14V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Tradutor de Linguagem${!temAddon('tradutor') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-ponte-objetivos" onclick="showPage('ponte-objetivos')" class="nav-item nav-item-teal">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes
+    <div class="nav-item" id="nav-ponte-objetivos" onclick="${!temAddon('objetivos_convergentes') ? "acessarRecursoPremium('Objetivos Convergentes')" : "showPage('ponte-objetivos')"}" class="nav-item nav-item-teal">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes${!temAddon('objetivos_convergentes') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Alunos</div>
     <div class="nav-item" id="nav-alunos" onclick="showPage('alunos')">
@@ -4288,20 +4288,20 @@ function renderNavClinica() {
     <div class="nav-item clinic-item" id="nav-clinica-perfil" onclick="showPage('clinica-perfil')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfil Clínico
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-objetivos" onclick="showPage('clinica-objetivos')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Objetivos Terapêuticos
+    <div class="nav-item clinic-item" id="nav-clinica-objetivos" onclick="${!temAddon('objetivos_terapeuticos') ? "acessarRecursoPremium('Objetivos Terapêuticos')" : "showPage('clinica-objetivos')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Objetivos Terapêuticos${!temAddon('objetivos_terapeuticos') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-plano" onclick="showPage('clinica-plano')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Plano de Intervenção
+    <div class="nav-item clinic-item" id="nav-clinica-plano" onclick="${!temAddon('plano_intervencao') ? "acessarRecursoPremium('Plano de Intervenção')" : "showPage('clinica-plano')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Plano de Intervenção${!temAddon('plano_intervencao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-materiais" onclick="showPage('clinica-materiais')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Materiais Terapêuticos
+    <div class="nav-item clinic-item" id="nav-clinica-materiais" onclick="${!temAddon('materiais_terapeuticos') ? "acessarRecursoPremium('Materiais Terapêuticos')" : "showPage('clinica-materiais')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Materiais Terapêuticos${!temAddon('materiais_terapeuticos') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-pratica-guiada" onclick="showPage('clinica-pratica-guiada')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 10l1.5 1.5L13 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Prática Guiada
+    <div class="nav-item clinic-item" id="nav-clinica-pratica-guiada" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Prática Guiada')" : "showPage('clinica-pratica-guiada')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 10l1.5 1.5L13 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Prática Guiada${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-pdi" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('PDI')" : "showPage('pdi')"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-clinica-pdi" onclick="${!temAddon('pdi') ? "acessarRecursoPremium('PDI')" : "showPage('pdi')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI${!temAddon('pdi') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-analise-comp-clinica" onclick="abrirAnaliseComportamental()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
@@ -4309,31 +4309,31 @@ function renderNavClinica() {
     <div class="nav-item clinic-item" id="nav-laudos-clinica" onclick="abrirLinhaDoTempoLaudos()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos<span style="margin-left:auto;font-size:9px;font-weight:700;color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:999px">SINGULAR</span>
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-monitoramento" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Monitoramento')" : "showPage('clinica-monitoramento')"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Monitoramento${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-clinica-monitoramento" onclick="${!temAddon('monitoramento') ? "acessarRecursoPremium('Monitoramento')" : "showPage('clinica-monitoramento')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Monitoramento${!temAddon('monitoramento') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-devolutiva" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Devolutiva Clínica')" : "showPage('clinica-devolutiva');carregarDevolutivasClinica()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Devolutiva Clínica${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-clinica-devolutiva" onclick="${!temAddon('devolutiva') ? "acessarRecursoPremium('Devolutiva Clínica')" : "showPage('clinica-devolutiva');carregarDevolutivasClinica()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Devolutiva Clínica${!temAddon('devolutiva') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Relatórios</div>
-    <div class="nav-item clinic-item" id="nav-clinica-relatorios" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Relatórios da Escola')" : "showPage('clinica-relatorios')"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M8 4v12M4 8h4M4 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios da Escola${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-clinica-relatorios" onclick="${!temAddon('relatorios_escola') ? "acessarRecursoPremium('Relatórios da Escola')" : "showPage('clinica-relatorios')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M8 4v12M4 8h4M4 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios da Escola${!temAddon('relatorios_escola') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-solicitacoes" onclick="showPage('clinica-solicitacoes');carregarSolicitacoes('clinica')">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M14 15h2M15 14v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>🔗 Solicitações Externas<span class="notif-badge" id="badge-sol-gestao" style="display:none"></span>
+    <div class="nav-item clinic-item" id="nav-clinica-solicitacoes" onclick="${!temAddon('solicitacoes') ? "acessarRecursoPremium('Solicitações Externas')" : "showPage('clinica-solicitacoes');carregarSolicitacoes('clinica')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M14 15h2M15 14v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>🔗 Solicitações Externas${!temAddon('solicitacoes') ? '<span class="nav-lock">🔒</span>' : ''}<span class="notif-badge" id="badge-sol-gestao" style="display:none"></span>
     </div>
     <div class="nav-section">Escola ↔ Clínica</div>
-    <div class="nav-item clinic-item" id="nav-colaboracao-cli" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Colaboração Multiprofissional')" : "abrirColaboracao()"}" style="font-weight:600">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-colaboracao-cli" onclick="${!temAddon('colaboracao') ? "acessarRecursoPremium('Colaboração Multiprofissional')" : "abrirColaboracao()"}" style="font-weight:600">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional${!temAddon('colaboracao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-ponte-diario" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Diário do Aluno')" : "showPage('ponte-diario')"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-ponte-diario" onclick="${!temAddon('diario_aluno') ? "acessarRecursoPremium('Diário do Aluno')" : "showPage('ponte-diario')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno${!temAddon('diario_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-ponte-tradutor" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Tradutor de Linguagem')" : "showPage('ponte-tradutor')"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 5h4M5 8h3M13 6c0 2-1.5 3.5-3 4M13 6c1 2 2.5 3.5 4 4M10 14l2 4M10 14l-2 4M10 14V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Tradutor de Linguagem${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-ponte-tradutor" onclick="${!temAddon('tradutor') ? "acessarRecursoPremium('Tradutor de Linguagem')" : "showPage('ponte-tradutor')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 5h4M5 8h3M13 6c0 2-1.5 3.5-3 4M13 6c1 2 2.5 3.5 4 4M10 14l2 4M10 14l-2 4M10 14V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Tradutor de Linguagem${!temAddon('tradutor') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-ponte-objetivos" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Objetivos Convergentes')" : "showPage('ponte-objetivos')"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-ponte-objetivos" onclick="${!temAddon('objetivos_convergentes') ? "acessarRecursoPremium('Objetivos Convergentes')" : "showPage('ponte-objetivos')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes${!temAddon('objetivos_convergentes') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>`;
   renderPagesClinica();
 }
@@ -4355,14 +4355,14 @@ function renderNavAT() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 3h10v14l-5-3-5 3V3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Diário de Acompanhamento${!window._addonDiarioAT ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Escola ↔ Clínica</div>
-    <div class="nav-item at-item" id="nav-colaboracao-at" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Colaboração Multiprofissional')" : "abrirColaboracao()"}" style="font-weight:600">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item at-item" id="nav-colaboracao-at" onclick="${!temAddon('colaboracao') ? "acessarRecursoPremium('Colaboração Multiprofissional')" : "abrirColaboracao()"}" style="font-weight:600">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional${!temAddon('colaboracao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item at-item" id="nav-ponte-diario" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Diário do Aluno')" : "showPage('ponte-diario')"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item at-item" id="nav-ponte-diario" onclick="${!temAddon('diario_aluno') ? "acessarRecursoPremium('Diário do Aluno')" : "showPage('ponte-diario')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="15" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Diário do Aluno${!temAddon('diario_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item at-item" id="nav-ponte-objetivos" onclick="${window._planoAtivo === 'acolhe' ? "acessarRecursoPremium('Objetivos Convergentes')" : "showPage('ponte-objetivos')"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes${window._planoAtivo === 'acolhe' ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item at-item" id="nav-ponte-objetivos" onclick="${!temAddon('objetivos_convergentes') ? "acessarRecursoPremium('Objetivos Convergentes')" : "showPage('ponte-objetivos')"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg>Objetivos Convergentes${!temAddon('objetivos_convergentes') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>`;
   renderPagesAT();
 }
@@ -5363,7 +5363,7 @@ function filtrarGRel() {
 
 
 function acessarRecursoPremium(nome) {
-  toast('🔒 ' + nome + ' não está incluído no plano Acolhe. Fale com a gente para desbloquear no upgrade.', 'error');
+  toast('🔒 ' + nome + ' não está contratado como add-on. Fale com a gente para adicionar.', 'error');
 }
 
 // ── COLABORAÇÃO MULTIPROFISSIONAL — página global ─────────────
@@ -7477,8 +7477,8 @@ function confirmarCienciaIA() {
 
 // ── ANÁLISE E ESTRATÉGIAS (equipe clínica — plano Singular) ───────────────────
 function abrirAnaliseComportamental() {
-  if (window._planoAtivo !== 'singular' && !window._addonAnalise) {
-    return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
+  if (!temAddon('analise')) {
+    return acessarRecursoPremium('Análise e Estratégias');
   }
   verificarCienciaIA(() => {
     showPage('analise-comp');
@@ -7492,8 +7492,8 @@ function abrirAnaliseComportamental() {
 }
 
 function abrirLinhaDoTempoLaudos() {
-  if (window._planoAtivo !== 'singular' && !window._addonLaudos) {
-    return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
+  if (!temAddon('laudos')) {
+    return acessarRecursoPremium('Linha do Tempo de Laudos');
   }
   showPage('linha-laudos');
   const sel = document.getElementById('lt-aluno-sel');
@@ -7734,8 +7734,8 @@ function baixarPDFAnaliseComp() {
 
 // ── APOIO PEDAGÓGICO (equipe pedagógica — plano Singular) ───────────────
 function abrirApoioPedagogico() {
-  if (window._planoAtivo !== 'singular' && !window._addonAnalise) {
-    return toast('Ferramenta exclusiva do plano Singular. Fale com o suporte para fazer upgrade.', 'error');
+  if (!temAddon('apoio_pedagogico')) {
+    return acessarRecursoPremium('Apoio Pedagógico');
   }
   verificarCienciaIA(() => {
     showPage('apoio-pedagogico');
@@ -13952,7 +13952,7 @@ async function abrirPerfilAluno(a) {
       ? (adapts||[]).map(ad => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${ad.materia||'Sem matéria'}</span><span style="font-size:11px;color:var(--gr400)">${(ad.created_at||'').slice(0,10)}</span></div>`).join('')
       : '<span style="color:var(--gr400)">Nenhuma adaptação ainda</span>';
 
-    if (window._planoAtivo === 'singular' || window._addonAnalise) {
+    if (temAddon('analise')) {
       analiseWrap.style.display = 'block';
       const { data: analises } = await db.from('analises_comportamentais')
         .select('id,resultado,created_at')
@@ -13965,7 +13965,7 @@ async function abrirPerfilAluno(a) {
 
     const laudosWrap = document.getElementById('perfil-aluno-laudos-wrap');
     const laudosElP = document.getElementById('perfil-aluno-laudos');
-    if (window._planoAtivo === 'singular' || window._addonLaudos) {
+    if (temAddon('laudos')) {
       laudosWrap.style.display = 'block';
       const { data: linhasTempo } = await db.from('linhas_tempo_laudos')
         .select('id,resultado,created_at')
