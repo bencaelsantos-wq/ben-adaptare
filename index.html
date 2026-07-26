@@ -12170,11 +12170,12 @@ function baixarFolhaRegistro(alunoOverride, nomeAtividadeOverride) {
   y = 26;
 
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
-  const nomeAtividade = (dadosUltima?.tipoAtiv || dadosUltima?.materia || '').replace(/\b\w/g, c => c.toUpperCase());
+  const aluno = alunoOverride || dadosUltima?.aluno;
+  const nomeAtividade = nomeAtividadeOverride || (dadosUltima?.tipoAtiv || dadosUltima?.materia || '').replace(/\b\w/g, c => c.toUpperCase());
 
   doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
   doc.text('IDENTIFICAÇÃO', ml, y); y += 7;
-  y = linhaCampoRegistro(doc, ml, y, 'Aluno', dadosUltima?.aluno, maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Aluno', aluno, maxX);
   y = linhaCampoRegistro(doc, ml, y, 'Data', '', maxX);
   y = linhaCampoRegistro(doc, ml, y, 'Profissional', profNome, maxX);
   y = linhaCampoRegistro(doc, ml, y, 'Área de atuação', '', maxX);
