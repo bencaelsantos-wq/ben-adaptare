@@ -16395,12 +16395,12 @@ FUNÇÕES COMPROMETIDAS: ${p.comprometidas||'—'}
 OBJETIVO TERAPÊUTICO (${LABELS_AREA[area]}): ${objTexto || 'Não definido — use o perfil geral do paciente'}
 ${contexto ? `CONTEXTO/CONTEÚDO A TRABALHAR: ${contexto}` : ''}
 
-Gere 5 perguntas de múltipla escolha do tipo CONTAGEM/QUANTIDADE, trabalhando o objetivo acima, com dificuldade adequada ao perfil do paciente. Cada pergunta pede pra contar uma quantidade de algo (objetos, estrelas, blocos etc.) mostrada em UMA imagem, e as 3 alternativas são números diferentes.
+Gere 5 perguntas de múltipla escolha trabalhando o objetivo e o contexto acima, com dificuldade adequada ao perfil do paciente. Cada pergunta mostra UMA imagem no enunciado (o estímulo a ser observado/contado/lido/reconhecido) e pede pra escolher a alternativa certa entre 3 opções.
 
 REGRAS OBRIGATÓRIAS, sem exceção:
-- TODA pergunta tem OBRIGATORIAMENTE um IMG_PERGUNTA preenchido — nunca deixe vazio. É uma imagem mostrando a quantidade de objetos a ser contada (nome simples, minúsculo, sem acento, ex: "5estrelas").
-- As 3 alternativas são SEMPRE só números (ex: "5"), NUNCA um algarismo estilizado/desenhado, NUNCA com palavra junto (nunca "8 cubos", só "8").
-- As alternativas NUNCA têm imagem própria — o campo de imagem de cada ALT fica SEMPRE vazio. A imagem existe só uma vez, no IMG_PERGUNTA.
+- TODA pergunta tem OBRIGATORIAMENTE um IMG_PERGUNTA preenchido — nunca deixe vazio. É a imagem do estímulo (nome simples, minúsculo, sem acento, ex: "5estrelas", "palavra-sapato", "carinha-triste").
+- As 3 alternativas são SEMPRE só texto curto (um número, uma palavra, ou uma frase curta — o que fizer sentido pro contexto pedido), NUNCA uma imagem, NUNCA um desenho do próprio conteúdo da alternativa.
+- As alternativas NUNCA têm imagem própria — o campo de imagem de cada ALT fica SEMPRE vazio. A imagem existe só uma vez, no IMG_PERGUNTA, e deve representar o MESMO estímulo em todas as 5 perguntas (ex: sempre contagem, ou sempre leitura de palavra — não misture tipos diferentes de pergunta na mesma atividade).
 
 FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes, repetindo o bloco para as 5 perguntas:
 
@@ -16408,16 +16408,16 @@ TITULO: [título curto da atividade]
 
 PERGUNTA 1: [texto da pergunta]
 IMG_PERGUNTA: [nome-imagem — nunca vazio]
-ALT: A | | [número]
-ALT: B | | [número]
-ALT: C | | [número]
+ALT: A | | [texto curto]
+ALT: B | | [texto curto]
+ALT: C | | [texto curto]
 CORRETA: [A, B ou C]
 
 PERGUNTA 2: [texto da pergunta]
 IMG_PERGUNTA: [nome-imagem — nunca vazio]
-ALT: A | | [número]
-ALT: B | | [número]
-ALT: C | | [número]
+ALT: A | | [texto curto]
+ALT: B | | [texto curto]
+ALT: C | | [texto curto]
 CORRETA: [A, B ou C]`;
 
   try {
