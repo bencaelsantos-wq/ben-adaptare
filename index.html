@@ -17070,6 +17070,24 @@ async function carregarMonitoramento() {
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para montar o gráfico — o gráfico aparece a partir do 2º registro.</div></div>' : '<canvas id="mon-grafico" height="90"></canvas>'}
     </div>
     <div class="clinic-card" style="margin-bottom:16px">
+      <div class="clinic-card-title">📝 Relatório de Evolução</div>
+      <p class="page-sub" style="margin:0 0 10px">Gera um texto interpretando a evolução registrada — datas, mudanças percebidas e pontos de atenção por objetivo.</p>
+      ${(regs||[]).length < 2
+        ? '<div class="empty" style="padding:16px"><div class="empty-text">Precisa de pelo menos 2 registros para gerar o relatório.</div></div>'
+        : `<button class="btn-gerar" id="btn-gerar-evolucao" onclick="gerarRelatorioEvolucao('${id}')">⭐ Gerar relatório de evolução com a Lou</button>`}
+      <div class="result-card" id="evo-result-card" style="margin-top:14px">
+        <div class="result-header"><div class="result-title">Relatório gerado pela IA</div></div>
+        <textarea class="ftarea" id="evo-texto" style="min-height:220px"></textarea>
+        <div class="result-actions">
+          <button class="btn-copy" onclick="baixarRelatorioEvolucaoPDF('${id}')">Baixar PDF</button>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <div class="fcard-title" style="font-size:13px">Relatórios já gerados</div>
+        <div id="evo-historico"></div>
+      </div>
+    </div>
+    <div class="clinic-card" style="margin-bottom:16px">
       <div class="clinic-card-title">📅 Novo Registro — ${new Date().toLocaleDateString('pt-BR')}</div>
       ${areas.filter(a => obj[a]).map(a => `
         <div style="margin-bottom:12px">
@@ -17094,6 +17112,7 @@ async function carregarMonitoramento() {
           ${r.observacoes ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px">${r.observacoes}</div>` : ''}
         </div>`).join('')}` : ''}`;
   if ((regs||[]).length >= 2) renderizarGraficoMonitoramento(regs, areas, obj, labels);
+  if ((regs||[]).length >= 2) carregarHistoricoEvolucao(id);
 }
 
 let _chartMonitoramento = null;
@@ -17121,6 +17140,84 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
       plugins: { legend: { position: 'bottom' } },
     },
   });
+}
+
+async function gerarRelatorioEvolucao(perfilId) {
+  const paciente = perfisClinicaList.find(p => p.id === perfilId);
+  if (!paciente) return toast('Paciente não encontrado.', 'error');
+  const btn = document.getElementById('btn-gerar-evolucao');
+  btn.textContent = '⏳ Gerando com a Lou…'; btn.disabled = true;
+
+  const { data: regs } = await db.from('monitoramentos').select('*').eq('perfil_id', perfilId).order('created_at', { ascending: true });
+  const labels = { cognitivo:'Cognitivo', comunicacao:'Comunicação', social:'Social', comportamental:'Comportamental', academico:'Acadêmico' };
+  const linhas = (regs||[]).map(r => {
+    const data = new Date(r.created_at).toLocaleDateString('pt-BR');
+    const resultadosTxt = Object.entries(r.resultados||{}).map(([k,v]) => `${labels[k]||k}: ${v}`).join(', ');
+    return `- ${data} — ${resultadosTxt}${r.observacoes ? ' | Obs: ' + r.observacoes : ''}`;
+  }).join('\n');
+
+  const prompt = `Você é especialista em acompanhamento terapêutico, escrevendo um relatório de evolução para o prontuário de um paciente.
+
+PACIENTE: ${paciente.nome}
+DIAGNÓSTICO: ${paciente.diagnostico||'Não informado'}
+
+REGISTROS DE MONITORAMENTO (do mais antigo ao mais recente, "ok"=conseguiu, "parcial"=parcialmente, "nao"=não conseguiu):
+${linhas}
+
+Escreva um RELATÓRIO DE EVOLUÇÃO em texto corrido, organizado por objetivo/área trabalhada, citando datas concretas dos registros. Para cada área com dados, descreva a evolução ao longo do período (ex: "entre 10/07 e 24/07, a área Cognitiva evoluiu de desempenho parcial para consistente em 4 de 5 registros"), aponte estagnações ou pioras se houver, e finalize com uma síntese geral e recomendações objetivas. Linguagem técnica adequada a registro clínico, sem jargão desnecessário, sem enrolação. NUNCA use emojis. NUNCA use tabela markdown.
+
+FORMATO: comece com "Período do relatório: [data do primeiro registro] a [data do último registro]", depois o corpo do relatório.`;
+
+  try {
+    const txt = await chamarClaude({ prompt, maxTokens: 1400, modulo: 'relatorio_evolucao' });
+    document.getElementById('evo-texto').value = txt.trim();
+    document.getElementById('evo-result-card').classList.add('show');
+    await db.from('relatorios').insert({
+      user_id: user.id, origem: 'clinica', destino: 'evolucao',
+      aluno_nome: paciente.nome, titulo: `Relatório de Evolução — ${paciente.nome} — ${new Date().toLocaleDateString('pt-BR')}`,
+      conteudo: txt.trim(), created_at: new Date().toISOString()
+    });
+    carregarHistoricoEvolucao(perfilId);
+    toast('Relatório gerado e salvo com sucesso!', 'success');
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  }
+  btn.textContent = '⭐ Gerar relatório de evolução com a Lou'; btn.disabled = false;
+}
+
+function baixarRelatorioEvolucaoPDF(perfilId) {
+  const paciente = perfisClinicaList.find(p => p.id === perfilId);
+  const texto = document.getElementById('evo-texto')?.value?.trim();
+  if (!texto) return toast('Gere o relatório primeiro.', 'error');
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+  gerarPDFDocumento({
+    tipo: 'RELATÓRIO DE EVOLUÇÃO', titulo: 'Relatório de Evolução', subtitulo: 'Monitoramento',
+    aluno: paciente?.nome||'', professor: profNome, conteudo: texto,
+    nomeArquivo: 'Relatorio_Evolucao_' + (paciente?.nome||'paciente').replace(/\s+/g,'_'),
+    isAtividade: true, guiaProf: null, fonteTamanho: 'medio', espacamento: 'normal', fonteTipo: 'sans', imagensPorItem: {}
+  });
+}
+
+async function carregarHistoricoEvolucao(perfilId) {
+  const cont = document.getElementById('evo-historico');
+  if (!cont) return;
+  const paciente = perfisClinicaList.find(p => p.id === perfilId);
+  if (!paciente) return;
+  const { data } = await db.from('relatorios').select('id, titulo, created_at, conteudo').eq('destino', 'evolucao').eq('aluno_nome', paciente.nome).order('created_at', { ascending: false });
+  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum relatório gerado ainda.</p>'; return; }
+  cont.innerHTML = data.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
+      <div style="font-size:12.5px">${r.titulo}</div>
+      <button class="btn-sm" onclick="reabrirRelatorioEvolucao('${r.id}')">Abrir</button>
+    </div>`).join('');
+}
+
+async function reabrirRelatorioEvolucao(id) {
+  const { data, error } = await db.from('relatorios').select('*').eq('id', id).single();
+  if (error || !data) return toast('Não foi possível abrir esse relatório.', 'error');
+  document.getElementById('evo-texto').value = data.conteudo;
+  document.getElementById('evo-result-card').classList.add('show');
+  document.getElementById('evo-result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
 let monResultados = {};
