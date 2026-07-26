@@ -6092,6 +6092,11 @@ function renderPagesDeveloper() {
         Subtotal: <strong id="dam-subtotal">R$0</strong> — Desconto: <strong id="dam-desconto-valor">R$0</strong> — <span style="font-size:15px;font-weight:700;color:#1E3A8A">Total: <span id="dam-total">R$0</span>/mês</span>
       </div>
 
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;color:#4B5563;display:block;margin-bottom:4px">Observações da negociação</label>
+        <textarea id="dam-observacoes" placeholder="Ex: fechou com desconto de 10% por 6 meses, condição combinada em ligação no dia..." style="width:100%;min-height:70px;padding:8px;border:1px solid #D1D5DB;border-radius:6px;font-family:inherit;font-size:13px"></textarea>
+      </div>
+
       <div style="display:flex;gap:10px">
         <button class="btn-sm" style="flex:1" onclick="fecharModalAddonsDev()">Cancelar</button>
         <button class="btn-primary" style="flex:1" onclick="salvarAddonsDev()">Salvar</button>
@@ -6407,7 +6412,7 @@ function calcularTotalMes(u) {
 
 async function carregarUsuariosDev() {
   try {
-    const { data } = await db.from('profiles').select(`id,email,role,ativo,created_at,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`).order('created_at',{ascending:false});
+    const { data } = await db.from('profiles').select(`id,email,role,ativo,created_at,observacoes_negociacao,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`).order('created_at',{ascending:false});
     window._devUsuarios = data || [];
     filtrarUsuariosDev();
   } catch(e) { toast('Erro ao carregar usuários: '+e.message,'error'); }
@@ -6456,6 +6461,7 @@ function abrirModalAddonsDev(id) {
   document.getElementById('dam-qtd-alunos').value = u.qtd_alunos || 0;
   document.getElementById('dam-qtd-professores').value = u.qtd_professores || 0;
   document.getElementById('dam-desconto').value = u.desconto_percentual || 0;
+  document.getElementById('dam-observacoes').value = u.observacoes_negociacao || '';
   ['dam-qtd-pacientes','dam-qtd-profissionais','dam-qtd-at','dam-qtd-alunos','dam-qtd-professores','dam-desconto'].forEach(id2 => {
     document.getElementById(id2).oninput = recalcularModalAddonsDev;
   });
@@ -6498,6 +6504,7 @@ async function salvarAddonsDev() {
   payload.qtd_alunos = parseInt(document.getElementById('dam-qtd-alunos').value, 10) || 0;
   payload.qtd_professores = parseInt(document.getElementById('dam-qtd-professores').value, 10) || 0;
   payload.desconto_percentual = parseFloat(document.getElementById('dam-desconto').value) || 0;
+  payload.observacoes_negociacao = document.getElementById('dam-observacoes').value.trim();
 
   const { error } = await db.from('profiles').update(payload).eq('id', id);
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
