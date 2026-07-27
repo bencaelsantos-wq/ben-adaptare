@@ -3766,21 +3766,53 @@ function fecharModalConvidar() {
   const m = document.getElementById('modal-convidar'); if (m) m.style.display = 'none';
 }
 
+const PAPEIS_VALIDOS_CONVITE = ['clinica','gestao-clinica','at','professor','gestao','coordenacao','familia'];
+const LABELS_PAPEL_CONVITE = { clinica:'Clínica (especialista)', 'gestao-clinica':'Gestão Clínica', at:'AT (Apoio)', professor:'Professor', gestao:'Gestão Escolar', coordenacao:'Coordenação Pedagógica', familia:'Família' };
+function opcoesPapelOrgHtml(selecionado) {
+  return PAPEIS_VALIDOS_CONVITE.map(p => `<option value="${p}" ${p===selecionado?'selected':''}>${LABELS_PAPEL_CONVITE[p]}</option>`).join('');
+}
+function adicionarLinhaEmailOrg(papelPadrao) {
+  const lista = document.getElementById('novaorg-outros-lista');
+  if (!lista) return;
+  const linha = document.createElement('div');
+  linha.className = 'novaorg-linha-email';
+  linha.style = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+  linha.innerHTML = `
+    <input type="email" class="novaorg-outro-email" placeholder="email@exemplo.com" style="flex:2;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:14px;font-family:inherit">
+    <select class="novaorg-outro-papel" style="flex:1;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:14px;font-family:inherit;background:#fff">${opcoesPapelOrgHtml(papelPadrao || 'clinica')}</select>
+    <button type="button" class="btn-sm" onclick="this.closest('.novaorg-linha-email').remove()" style="padding:9px 12px">✕</button>
+  `;
+  lista.appendChild(linha);
+}
+function ajustarQtdLinhasEmailOrg() {
+  const qtd = Math.max(1, parseInt(document.getElementById('novaorg-qtd-acessos')?.value, 10) || 1);
+  const lista = document.getElementById('novaorg-outros-lista');
+  if (!lista) return;
+  const linhas = lista.querySelectorAll('.novaorg-linha-email');
+  if (linhas.length < qtd) {
+    for (let i = linhas.length; i < qtd; i++) adicionarLinhaEmailOrg();
+  } else if (linhas.length > qtd) {
+    for (let i = linhas.length - 1; i >= qtd; i--) linhas[i].remove();
+  }
+}
 function abrirModalNovaOrg() {
   const m = document.getElementById('modal-nova-org');
   if (m) {
     m.style.display = 'flex';
     ['novaorg-nome','novaorg-razao','novaorg-cnpj','novaorg-endereco','novaorg-cidade','novaorg-estado','novaorg-cep',
      'novaorg-fin-nome','novaorg-fin-email','novaorg-fin-fone','novaorg-obs-cadastro',
-     'novaorg-email','novaorg-nome-pessoa','novaorg-outros'].forEach(id2 => { const el = document.getElementById(id2); if (el) el.value = ''; });
+     'novaorg-email','novaorg-nome-pessoa'].forEach(id2 => { const el = document.getElementById(id2); if (el) el.value = ''; });
     document.getElementById('novaorg-pagamento').value = '';
+    document.getElementById('novaorg-qtd-acessos').value = '1';
     document.getElementById('novaorg-msg').textContent = '';
+    const lista = document.getElementById('novaorg-outros-lista');
+    if (lista) lista.innerHTML = '';
+    adicionarLinhaEmailOrg();
   }
 }
 function fecharModalNovaOrg() {
   const m = document.getElementById('modal-nova-org'); if (m) m.style.display = 'none';
 }
-const PAPEIS_VALIDOS_CONVITE = ['clinica','gestao-clinica','at','professor','gestao','coordenacao','familia'];
 async function convidarParaOrganizacao(email, papel, nome, orgId, nomeOrg) {
   const res = await fetch(SB_URL + '/functions/v1/convidar-usuario', {
     method: 'POST',
@@ -3803,17 +3835,23 @@ async function criarOrganizacaoEConvidarMestre() {
   const email = document.getElementById('novaorg-email')?.value?.trim();
   const nomePessoa = document.getElementById('novaorg-nome-pessoa')?.value?.trim();
   const papel = document.getElementById('novaorg-papel')?.value;
-  const outrosTexto = document.getElementById('novaorg-outros')?.value?.trim();
   const btn = document.getElementById('novaorg-btn');
   const msg = document.getElementById('novaorg-msg');
   if (!nomeOrg) { msg.textContent = 'Informe o nome da organização.'; msg.style.color = '#DC2626'; return; }
   if (!email) { msg.textContent = 'Informe o e-mail do perfil mestre.'; msg.style.color = '#DC2626'; return; }
 
-  const outros = (outrosTexto || '').split('\n').map(l => l.trim()).filter(Boolean).map(linha => {
-    const [em, pp] = linha.split(';').map(s => s?.trim());
-    const papelFinal = PAPEIS_VALIDOS_CONVITE.includes(pp) ? pp : 'clinica';
-    return { email: em, papel: papelFinal };
-  }).filter(o => /^[^@]+@[^@]+\.[^@]+$/.test(o.email || ''));
+  const linhasEmail = Array.from(document.querySelectorAll('#novaorg-outros-lista .novaorg-linha-email'));
+  const outrosBrutos = linhasEmail.map(linha => ({
+    email: linha.querySelector('.novaorg-outro-email')?.value?.trim() || '',
+    papel: linha.querySelector('.novaorg-outro-papel')?.value || 'clinica',
+  }));
+  const outros = outrosBrutos.filter(o => /^[^@]+@[^@]+\.[^@]+$/.test(o.email));
+
+  if (!linhasEmail.length || outros.length !== linhasEmail.length) {
+    msg.textContent = `Preencha todos os ${linhasEmail.length} e-mail(s) de acesso contratados — nenhum pode ficar em branco ou inválido.`;
+    msg.style.color = '#DC2626';
+    return;
+  }
 
   btn.disabled = true; btn.textContent = 'Criando…';
   try {
@@ -6161,9 +6199,13 @@ function renderPagesDeveloper() {
           </select>
         </div>
         <div class="fg">
-          <label>Demais e-mails a vincular (opcional)</label>
-          <textarea id="novaorg-outros" rows="4" placeholder="um por linha, formato: email;papel&#10;ex: joao@clinica.com;clinica&#10;maria@clinica.com;at" style="width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
-          <p style="margin:4px 0 0;font-size:11.5px;color:#94A3B8">Papéis aceitos: clinica, gestao-clinica, at, professor, gestao, coordenacao. Se não informar o papel, usa "clinica".</p>
+          <label>Quantidade de acessos contratados (além do mestre)</label>
+          <input type="number" id="novaorg-qtd-acessos" min="1" value="1" oninput="ajustarQtdLinhasEmailOrg()">
+          <p style="margin:4px 0 0;font-size:11.5px;color:#94A3B8">Ex: clínica contratou 5 acessos → 5 e-mails obrigatórios abaixo. Sem o e-mail preenchido, aquele acesso não recebe o convite.</p>
+        </div>
+        <div class="fg">
+          <label>E-mails a vincular (todos obrigatórios)</label>
+          <div id="novaorg-outros-lista"></div>
         </div>
         <div style="display:flex;gap:10px;margin-top:8px">
           <button class="btn-sm" style="flex:1" onclick="fecharModalNovaOrg()">Cancelar</button>
