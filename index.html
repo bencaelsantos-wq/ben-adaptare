@@ -6414,8 +6414,13 @@ function calcularTotalMes(u) {
 
 async function carregarUsuariosDev() {
   try {
-    const { data } = await db.from('profiles').select(`id,email,role,ativo,created_at,organizacao_id,observacoes_negociacao,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`).order('created_at',{ascending:false});
+    const [{ data }, { data: orgs }] = await Promise.all([
+      db.from('profiles').select(`id,email,role,ativo,created_at,organizacao_id,observacoes_negociacao,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`).order('created_at',{ascending:false}),
+      db.from('organizacoes').select(`id,nome,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`),
+    ]);
     window._devUsuarios = data || [];
+    window._devOrgs = {};
+    (orgs || []).forEach(o => { window._devOrgs[o.id] = o; });
     filtrarUsuariosDev();
   } catch(e) { toast('Erro ao carregar usuários: '+e.message,'error'); }
 }
@@ -6430,22 +6435,45 @@ function filtrarUsuariosDev() {
   const cores = { professor:'#059669', gestao:'#1A56DB', clinica:'#7C3AED', 'gestao-clinica':'#B45309', at:'#0891B2', developer:'#F59E0B' };
   const tbody = document.getElementById('dev-usuarios-tbody');
   if (!tbody) return;
-  tbody.innerHTML = lista.map(u => {
+
+  const semOrg = lista.filter(u => !u.organizacao_id);
+  const comOrgPorId = {};
+  lista.filter(u => u.organizacao_id).forEach(u => {
+    (comOrgPorId[u.organizacao_id] = comOrgPorId[u.organizacao_id] || []).push(u);
+  });
+
+  const linhaUsuario = (u, dentroDeOrg) => {
     const { total } = calcularTotalMes(u);
-    return `<tr>
-      <td>${u.email||'—'}</td>
+    return `<tr${dentroDeOrg ? ' style="background:#F9FAFB"' : ''}>
+      <td>${dentroDeOrg ? '&nbsp;&nbsp;↳ ' : ''}${u.email||'—'}</td>
       <td><span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:${cores[u.role]||'#9CA3AF'}20;color:${cores[u.role]||'#9CA3AF'}">${u.role||'—'}</span></td>
       <td>${u.ativo ? '✅' : '⛔'}</td>
-      <td style="text-align:center">${(u.qtd_pacientes||0) + (u.qtd_alunos||0)}</td>
-      <td style="text-align:center">${(u.qtd_profissionais_clinicos||0) + (u.qtd_at||0) + (u.qtd_professores||0)}</td>
-      <td style="text-align:center">${u.desconto_percentual||0}%</td>
-      <td style="font-weight:700;color:#1E3A8A">R$${total.toFixed(0)}</td>
+      <td style="text-align:center">${dentroDeOrg ? '—' : (u.qtd_pacientes||0) + (u.qtd_alunos||0)}</td>
+      <td style="text-align:center">${dentroDeOrg ? '—' : (u.qtd_profissionais_clinicos||0) + (u.qtd_at||0) + (u.qtd_professores||0)}</td>
+      <td style="text-align:center">${dentroDeOrg ? '—' : (u.desconto_percentual||0) + '%'}</td>
+      <td style="font-weight:${dentroDeOrg?400:700};color:${dentroDeOrg?'#9CA3AF':'#1E3A8A'}">${dentroDeOrg ? 'incluso na org.' : 'R$'+total.toFixed(0)}</td>
       <td style="display:flex;gap:6px">
         <button class="btn-sm" onclick="abrirModalAddonsDev('${u.id}')">Editar</button>
         <button class="btn-danger" onclick="excluirUsuarioDev('${u.id}','${(u.email||'').replace(/'/g,"&#39;")}')">Excluir</button>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
+  };
+
+  const linhaOrg = (orgId, membros) => {
+    const org = window._devOrgs?.[orgId];
+    if (!org) return membros.map(u => linhaUsuario(u, false)).join('');
+    const { total } = calcularTotalMes(org);
+    return `<tr style="background:#EFF6FF">
+      <td colspan="6"><strong>🏢 ${org.nome || 'Organização sem nome'}</strong></td>
+      <td style="font-weight:700;color:#1E3A8A">R$${total.toFixed(0)}</td>
+      <td></td>
+    </tr>` + membros.map(u => linhaUsuario(u, true)).join('');
+  };
+
+  tbody.innerHTML = [
+    ...Object.keys(comOrgPorId).map(orgId => linhaOrg(orgId, comOrgPorId[orgId])),
+    ...semOrg.map(u => linhaUsuario(u, false)),
+  ].join('') || '<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
 }
 
 function checkboxAddon(u, chave) {
