@@ -3784,8 +3784,16 @@ function adicionarLinhaEmailOrg(papelPadrao) {
   `;
   lista.appendChild(linha);
 }
+function qtdEmailsNecessariosOrg() {
+  const prof = parseInt(document.getElementById('novaorg-qtd-profissionais')?.value, 10) || 0;
+  const at = parseInt(document.getElementById('novaorg-qtd-at')?.value, 10) || 0;
+  const professores = parseInt(document.getElementById('novaorg-qtd-professores')?.value, 10) || 0;
+  return prof + at + professores;
+}
 function ajustarQtdLinhasEmailOrg() {
-  const qtd = Math.max(1, parseInt(document.getElementById('novaorg-qtd-acessos')?.value, 10) || 1);
+  const qtd = qtdEmailsNecessariosOrg();
+  const info = document.getElementById('novaorg-qtd-emails-info');
+  if (info) info.textContent = `${qtd} e-mail(s) de acesso necessário(s) (profissionais clínicos + AT + professores)`;
   const lista = document.getElementById('novaorg-outros-lista');
   if (!lista) return;
   const linhas = lista.querySelectorAll('.novaorg-linha-email');
@@ -3803,11 +3811,11 @@ function abrirModalNovaOrg() {
      'novaorg-fin-nome','novaorg-fin-email','novaorg-fin-fone','novaorg-obs-cadastro',
      'novaorg-email','novaorg-nome-pessoa'].forEach(id2 => { const el = document.getElementById(id2); if (el) el.value = ''; });
     document.getElementById('novaorg-pagamento').value = '';
-    document.getElementById('novaorg-qtd-acessos').value = '1';
+    ['novaorg-qtd-pacientes','novaorg-qtd-alunos','novaorg-qtd-profissionais','novaorg-qtd-at','novaorg-qtd-professores'].forEach(id2 => { const el = document.getElementById(id2); if (el) el.value = '0'; });
     document.getElementById('novaorg-msg').textContent = '';
     const lista = document.getElementById('novaorg-outros-lista');
     if (lista) lista.innerHTML = '';
-    adicionarLinhaEmailOrg();
+    ajustarQtdLinhasEmailOrg();
   }
 }
 function fecharModalNovaOrg() {
@@ -3847,7 +3855,7 @@ async function criarOrganizacaoEConvidarMestre() {
   }));
   const outros = outrosBrutos.filter(o => /^[^@]+@[^@]+\.[^@]+$/.test(o.email));
 
-  if (!linhasEmail.length || outros.length !== linhasEmail.length) {
+  if (outros.length !== linhasEmail.length) {
     msg.textContent = `Preencha todos os ${linhasEmail.length} e-mail(s) de acesso contratados — nenhum pode ficar em branco ou inválido.`;
     msg.style.color = '#DC2626';
     return;
@@ -3868,6 +3876,11 @@ async function criarOrganizacaoEConvidarMestre() {
       contato_financeiro_fone: document.getElementById('novaorg-fin-fone')?.value?.trim() || null,
       forma_pagamento: document.getElementById('novaorg-pagamento')?.value || null,
       observacoes_cadastro: document.getElementById('novaorg-obs-cadastro')?.value?.trim() || null,
+      qtd_pacientes: parseInt(document.getElementById('novaorg-qtd-pacientes')?.value, 10) || 0,
+      qtd_alunos: parseInt(document.getElementById('novaorg-qtd-alunos')?.value, 10) || 0,
+      qtd_profissionais_clinicos: parseInt(document.getElementById('novaorg-qtd-profissionais')?.value, 10) || 0,
+      qtd_at: parseInt(document.getElementById('novaorg-qtd-at')?.value, 10) || 0,
+      qtd_professores: parseInt(document.getElementById('novaorg-qtd-professores')?.value, 10) || 0,
     };
     const { data: org, error: errOrg } = await db.from('organizacoes').insert(payloadOrg).select('id').single();
     if (errOrg) throw new Error('Erro ao criar organização: ' + errOrg.message);
@@ -6198,12 +6211,21 @@ function renderPagesDeveloper() {
             <option value="gestao">Gestão Escolar</option>
           </select>
         </div>
-        <div class="fg">
-          <label>Quantidade de acessos contratados (além do mestre)</label>
-          <input type="number" id="novaorg-qtd-acessos" min="1" value="1" oninput="ajustarQtdLinhasEmailOrg()">
-          <p style="margin:4px 0 0;font-size:11.5px;color:#94A3B8">Ex: clínica contratou 5 acessos → 5 e-mails obrigatórios abaixo. Sem o e-mail preenchido, aquele acesso não recebe o convite.</p>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#1E3A8A;margin:14px 0 8px">Quantidades contratadas</div>
+        <p style="margin:0 0 10px;font-size:11.5px;color:#94A3B8">Isso já define o limite de cadastro da organização — sem isso, ela não consegue cadastrar pacientes/alunos/equipe.</p>
+        <div style="display:flex;gap:10px">
+          <div class="fg" style="flex:1"><label>Pacientes</label><input type="number" id="novaorg-qtd-pacientes" min="0" value="0" oninput="ajustarQtdLinhasEmailOrg()"></div>
+          <div class="fg" style="flex:1"><label>Alunos</label><input type="number" id="novaorg-qtd-alunos" min="0" value="0" oninput="ajustarQtdLinhasEmailOrg()"></div>
         </div>
+        <div style="display:flex;gap:10px">
+          <div class="fg" style="flex:1"><label>Profissionais clínicos</label><input type="number" id="novaorg-qtd-profissionais" min="0" value="0" oninput="ajustarQtdLinhasEmailOrg()"></div>
+          <div class="fg" style="flex:1"><label>AT</label><input type="number" id="novaorg-qtd-at" min="0" value="0" oninput="ajustarQtdLinhasEmailOrg()"></div>
+          <div class="fg" style="flex:1"><label>Professores</label><input type="number" id="novaorg-qtd-professores" min="0" value="0" oninput="ajustarQtdLinhasEmailOrg()"></div>
+        </div>
+
         <div class="fg">
+          <p id="novaorg-qtd-emails-info" style="margin:0 0 8px;font-size:12.5px;font-weight:600;color:#1E3A8A">0 e-mail(s) de acesso necessário(s) (profissionais clínicos + AT + professores)</p>
           <label>E-mails a vincular (todos obrigatórios)</label>
           <div id="novaorg-outros-lista"></div>
         </div>
