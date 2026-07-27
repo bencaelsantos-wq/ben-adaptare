@@ -3765,6 +3765,58 @@ function abrirModalConvidar() {
 function fecharModalConvidar() {
   const m = document.getElementById('modal-convidar'); if (m) m.style.display = 'none';
 }
+
+function abrirModalNovaOrg() {
+  const m = document.getElementById('modal-nova-org');
+  if (m) {
+    m.style.display = 'flex';
+    document.getElementById('novaorg-nome').value = '';
+    document.getElementById('novaorg-email').value = '';
+    document.getElementById('novaorg-nome-pessoa').value = '';
+    document.getElementById('novaorg-msg').textContent = '';
+  }
+}
+function fecharModalNovaOrg() {
+  const m = document.getElementById('modal-nova-org'); if (m) m.style.display = 'none';
+}
+async function criarOrganizacaoEConvidarMestre() {
+  const nomeOrg = document.getElementById('novaorg-nome')?.value?.trim();
+  const email = document.getElementById('novaorg-email')?.value?.trim();
+  const nomePessoa = document.getElementById('novaorg-nome-pessoa')?.value?.trim();
+  const papel = document.getElementById('novaorg-papel')?.value;
+  const btn = document.getElementById('novaorg-btn');
+  const msg = document.getElementById('novaorg-msg');
+  if (!nomeOrg) { msg.textContent = 'Informe o nome da organização.'; msg.style.color = '#DC2626'; return; }
+  if (!email) { msg.textContent = 'Informe o e-mail do perfil mestre.'; msg.style.color = '#DC2626'; return; }
+  btn.disabled = true; btn.textContent = 'Criando…';
+  try {
+    const { data: org, error: errOrg } = await db.from('organizacoes').insert({ nome: nomeOrg }).select('id').single();
+    if (errOrg) throw new Error('Erro ao criar organização: ' + errOrg.message);
+
+    const res = await fetch(SB_URL + '/functions/v1/convidar-usuario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ email, role: papel, nome: nomePessoa })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao enviar convite');
+
+    await db.from('convites').insert({
+      email, papel, sub_papel: '',
+      convidado_por: user.id,
+      organizacao_id: org.id,
+      instituicao_nome: nomeOrg,
+      status: 'pendente'
+    });
+
+    msg.textContent = 'Organização criada e convite enviado!';
+    msg.style.color = '#16A34A';
+    setTimeout(() => { fecharModalNovaOrg(); carregarUsuariosDev(); }, 2000);
+  } catch (e) {
+    msg.textContent = 'Erro: ' + e.message;
+    msg.style.color = '#DC2626';
+  } finally { btn.disabled = false; btn.textContent = 'Criar organização e convidar'; }
+}
 async function enviarConvite() {
   const email = document.getElementById('inv-email')?.value?.trim();
   const nome = document.getElementById('inv-nome')?.value?.trim();
@@ -3916,9 +3968,11 @@ async function lerPerfilDobanco() {
       let subroleParaUsar = user.user_metadata?.subrole || '';
       let orgId = user.user_metadata?.organizacao_id || null;
       try {
-        const { data: conviteRow } = await db.from('convites').select('convidado_por, sub_papel').eq('email', user.email).order('criado_em', { ascending:false }).limit(1).maybeSingle();
+        const { data: conviteRow } = await db.from('convites').select('convidado_por, sub_papel, organizacao_id').eq('email', user.email).order('criado_em', { ascending:false }).limit(1).maybeSingle();
         if (!subroleParaUsar) subroleParaUsar = conviteRow?.sub_papel || '';
-        if (!orgId && conviteRow?.convidado_por) {
+        if (!orgId && conviteRow?.organizacao_id) {
+          orgId = conviteRow.organizacao_id;
+        } else if (!orgId && conviteRow?.convidado_por) {
           const { data: inviterProfile } = await db.from('profiles').select('organizacao_id').eq('id', conviteRow.convidado_por).maybeSingle();
           orgId = inviterProfile?.organizacao_id || null;
         }
@@ -6016,8 +6070,32 @@ function renderPagesDeveloper() {
     <div class="section-header">
       <div><h1 class="page-title">Usuários</h1><p class="page-sub" style="margin-bottom:0">Todos os usuários registrados na plataforma.</p></div>
       <div style="display:flex;gap:8px">
+        <button class="btn-primary" onclick="abrirModalNovaOrg()">+ Nova organização</button>
         <button class="btn-primary" onclick="abrirModalConvidar()">+ Convidar usuário</button>
         <button class="btn-sm" onclick="carregarUsuariosDev()">↺ Atualizar</button>
+      </div>
+    </div>
+
+    <!-- Modal nova organização -->
+    <div id="modal-nova-org" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:440px;box-shadow:0 8px 40px rgba(0,0,0,.18)">
+        <h2 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1E293B">Nova organização</h2>
+        <p style="margin:0 0 20px;font-size:13px;color:#64748B">Cria a organização e já convida o perfil mestre, vinculado automaticamente a ela.</p>
+        <div class="fg"><label>Nome da organização</label><input type="text" id="novaorg-nome" placeholder="Ex: Clínica Exemplo"></div>
+        <div class="fg"><label>E-mail do perfil mestre</label><input type="email" id="novaorg-email" placeholder="mestre@email.com"></div>
+        <div class="fg"><label>Nome do perfil mestre (opcional)</label><input type="text" id="novaorg-nome-pessoa" placeholder="Nome completo"></div>
+        <div class="fg">
+          <label>Papel do perfil mestre</label>
+          <select id="novaorg-papel" style="width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+            <option value="gestao-clinica">Gestão Clínica</option>
+            <option value="gestao">Gestão Escolar</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn-sm" style="flex:1" onclick="fecharModalNovaOrg()">Cancelar</button>
+          <button class="btn-primary" style="flex:1" id="novaorg-btn" onclick="criarOrganizacaoEConvidarMestre()">Criar organização e convidar</button>
+        </div>
+        <div id="novaorg-msg" style="margin-top:12px;font-size:13px;text-align:center"></div>
       </div>
     </div>
 
