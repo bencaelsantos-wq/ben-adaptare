@@ -3907,6 +3907,50 @@ async function criarOrganizacaoEConvidarMestre() {
     msg.style.color = '#DC2626';
   } finally { btn.disabled = false; btn.textContent = 'Criar organização e convidar'; }
 }
+
+const CAMPO_QTD_POR_PAPEL = { clinica: 'qtd_profissionais_clinicos', at: 'qtd_at', professor: 'qtd_professores' };
+function abrirModalAddAcessoOrg(orgId, orgNome) {
+  window._aaoOrgId = orgId;
+  document.getElementById('aao-org-nome').textContent = orgNome || 'sem nome';
+  document.getElementById('aao-email').value = '';
+  document.getElementById('aao-nome').value = '';
+  document.getElementById('aao-papel').value = 'clinica';
+  document.getElementById('aao-msg').textContent = '';
+  document.getElementById('modal-add-acesso-org').style.display = 'flex';
+}
+function fecharModalAddAcessoOrg() {
+  document.getElementById('modal-add-acesso-org').style.display = 'none';
+}
+async function salvarAddAcessoOrg() {
+  const orgId = window._aaoOrgId;
+  const email = document.getElementById('aao-email')?.value?.trim();
+  const nome = document.getElementById('aao-nome')?.value?.trim();
+  const papel = document.getElementById('aao-papel')?.value;
+  const btn = document.getElementById('aao-btn');
+  const msg = document.getElementById('aao-msg');
+  if (!orgId) return;
+  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email || '')) { msg.textContent = 'Informe um e-mail válido.'; msg.style.color = '#DC2626'; return; }
+
+  btn.disabled = true; btn.textContent = 'Convidando…';
+  try {
+    const orgNome = document.getElementById('aao-org-nome')?.textContent || '';
+    await convidarParaOrganizacao(email, papel, nome, orgId, orgNome);
+
+    const campoQtd = CAMPO_QTD_POR_PAPEL[papel];
+    if (campoQtd) {
+      const { data: org } = await db.from('organizacoes').select(campoQtd).eq('id', orgId).maybeSingle();
+      const atual = org?.[campoQtd] || 0;
+      await db.from('organizacoes').update({ [campoQtd]: atual + 1 }).eq('id', orgId);
+    }
+
+    msg.textContent = 'Convite enviado e vinculado à organização!';
+    msg.style.color = '#16A34A';
+    setTimeout(() => { fecharModalAddAcessoOrg(); carregarUsuariosDev(); }, 2000);
+  } catch (e) {
+    msg.textContent = 'Erro: ' + e.message;
+    msg.style.color = '#DC2626';
+  } finally { btn.disabled = false; btn.textContent = 'Convidar e vincular'; }
+}
 async function enviarConvite() {
   const email = document.getElementById('inv-email')?.value?.trim();
   const nome = document.getElementById('inv-nome')?.value?.trim();
@@ -6322,6 +6366,33 @@ function renderPagesDeveloper() {
     </div>
   </div>
 
+  <!-- Modal adicionar acesso a organização existente -->
+  <div id="modal-add-acesso-org" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.18)">
+      <h2 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1E293B">Adicionar acesso — <span id="aao-org-nome"></span></h2>
+      <p style="margin:0 0 20px;font-size:13px;color:#64748B">Convida a pessoa e já soma +1 na quantidade contratada do papel escolhido.</p>
+      <div class="fg"><label>E-mail</label><input type="email" id="aao-email" placeholder="usuario@email.com"></div>
+      <div class="fg"><label>Nome (opcional)</label><input type="text" id="aao-nome" placeholder="Nome completo"></div>
+      <div class="fg">
+        <label>Papel</label>
+        <select id="aao-papel" style="width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+          <option value="clinica">Clínica (especialista)</option>
+          <option value="at">AT (Apoio)</option>
+          <option value="professor">Professor</option>
+          <option value="gestao-clinica">Gestão Clínica</option>
+          <option value="gestao">Gestão Escolar</option>
+          <option value="coordenacao">Coordenação Pedagógica</option>
+        </select>
+        <p style="margin:4px 0 0;font-size:11.5px;color:#94A3B8">Clínica/AT/Professor somam automaticamente na quantidade contratada. Gestão/Coordenação não somam (são perfis administrativos).</p>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn-sm" style="flex:1" onclick="fecharModalAddAcessoOrg()">Cancelar</button>
+        <button class="btn-primary" style="flex:1" id="aao-btn" onclick="salvarAddAcessoOrg()">Convidar e vincular</button>
+      </div>
+      <div id="aao-msg" style="margin-top:12px;font-size:13px;text-align:center"></div>
+    </div>
+  </div>
+
   <!-- LOGS DE ACESSO -->
   <div id="page-dev-acessos" class="page">
     <h1 class="page-title">Logs de Acesso</h1>
@@ -6683,7 +6754,7 @@ function filtrarUsuariosDev() {
     return `<tr style="background:#EFF6FF">
       <td colspan="6"><strong>🏢 ${org.nome || 'Organização sem nome'}</strong></td>
       <td style="font-weight:700;color:#1E3A8A">R$${total.toFixed(0)}</td>
-      <td></td>
+      <td><button class="btn-sm" onclick="abrirModalAddAcessoOrg('${orgId}','${(org.nome||'').replace(/'/g,"&#39;")}')">+ Adicionar acesso</button></td>
     </tr>` + ordenados.map((u, i) => linhaUsuario(u, true, i===0 && u.role==='gestao-clinica')).join('');
   };
 
