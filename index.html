@@ -3773,45 +3773,70 @@ function abrirModalNovaOrg() {
     document.getElementById('novaorg-nome').value = '';
     document.getElementById('novaorg-email').value = '';
     document.getElementById('novaorg-nome-pessoa').value = '';
+    document.getElementById('novaorg-outros').value = '';
     document.getElementById('novaorg-msg').textContent = '';
   }
 }
 function fecharModalNovaOrg() {
   const m = document.getElementById('modal-nova-org'); if (m) m.style.display = 'none';
 }
+const PAPEIS_VALIDOS_CONVITE = ['clinica','gestao-clinica','at','professor','gestao','coordenacao','familia'];
+async function convidarParaOrganizacao(email, papel, nome, orgId, nomeOrg) {
+  const res = await fetch(SB_URL + '/functions/v1/convidar-usuario', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+    body: JSON.stringify({ email, role: papel, nome })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`${email}: ` + (data.error || 'erro ao enviar convite'));
+
+  await db.from('convites').insert({
+    email, papel, sub_papel: '',
+    convidado_por: user.id,
+    organizacao_id: orgId,
+    instituicao_nome: nomeOrg,
+    status: 'pendente'
+  });
+}
 async function criarOrganizacaoEConvidarMestre() {
   const nomeOrg = document.getElementById('novaorg-nome')?.value?.trim();
   const email = document.getElementById('novaorg-email')?.value?.trim();
   const nomePessoa = document.getElementById('novaorg-nome-pessoa')?.value?.trim();
   const papel = document.getElementById('novaorg-papel')?.value;
+  const outrosTexto = document.getElementById('novaorg-outros')?.value?.trim();
   const btn = document.getElementById('novaorg-btn');
   const msg = document.getElementById('novaorg-msg');
   if (!nomeOrg) { msg.textContent = 'Informe o nome da organização.'; msg.style.color = '#DC2626'; return; }
   if (!email) { msg.textContent = 'Informe o e-mail do perfil mestre.'; msg.style.color = '#DC2626'; return; }
+
+  const outros = (outrosTexto || '').split('\n').map(l => l.trim()).filter(Boolean).map(linha => {
+    const [em, pp] = linha.split(';').map(s => s?.trim());
+    const papelFinal = PAPEIS_VALIDOS_CONVITE.includes(pp) ? pp : 'clinica';
+    return { email: em, papel: papelFinal };
+  }).filter(o => /^[^@]+@[^@]+\.[^@]+$/.test(o.email || ''));
+
   btn.disabled = true; btn.textContent = 'Criando…';
   try {
     const { data: org, error: errOrg } = await db.from('organizacoes').insert({ nome: nomeOrg }).select('id').single();
     if (errOrg) throw new Error('Erro ao criar organização: ' + errOrg.message);
 
-    const res = await fetch(SB_URL + '/functions/v1/convidar-usuario', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
-      body: JSON.stringify({ email, role: papel, nome: nomePessoa })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erro ao enviar convite');
+    const erros = [];
+    try { await convidarParaOrganizacao(email, papel, nomePessoa, org.id, nomeOrg); }
+    catch (e) { erros.push(e.message); }
 
-    await db.from('convites').insert({
-      email, papel, sub_papel: '',
-      convidado_por: user.id,
-      organizacao_id: org.id,
-      instituicao_nome: nomeOrg,
-      status: 'pendente'
-    });
+    for (const o of outros) {
+      try { await convidarParaOrganizacao(o.email, o.papel, '', org.id, nomeOrg); }
+      catch (e) { erros.push(e.message); }
+    }
 
-    msg.textContent = 'Organização criada e convite enviado!';
-    msg.style.color = '#16A34A';
-    setTimeout(() => { fecharModalNovaOrg(); carregarUsuariosDev(); }, 2000);
+    if (erros.length) {
+      msg.textContent = `Organização criada. Alguns convites falharam: ${erros.join(' | ')}`;
+      msg.style.color = '#DC2626';
+    } else {
+      msg.textContent = `Organização criada e ${1 + outros.length} convite(s) enviado(s)!`;
+      msg.style.color = '#16A34A';
+      setTimeout(() => { fecharModalNovaOrg(); carregarUsuariosDev(); }, 2200);
+    }
   } catch (e) {
     msg.textContent = 'Erro: ' + e.message;
     msg.style.color = '#DC2626';
@@ -6090,6 +6115,11 @@ function renderPagesDeveloper() {
             <option value="gestao-clinica">Gestão Clínica</option>
             <option value="gestao">Gestão Escolar</option>
           </select>
+        </div>
+        <div class="fg">
+          <label>Demais e-mails a vincular (opcional)</label>
+          <textarea id="novaorg-outros" rows="4" placeholder="um por linha, formato: email;papel&#10;ex: joao@clinica.com;clinica&#10;maria@clinica.com;at" style="width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
+          <p style="margin:4px 0 0;font-size:11.5px;color:#94A3B8">Papéis aceitos: clinica, gestao-clinica, at, professor, gestao, coordenacao. Se não informar o papel, usa "clinica".</p>
         </div>
         <div style="display:flex;gap:10px;margin-top:8px">
           <button class="btn-sm" style="flex:1" onclick="fecharModalNovaOrg()">Cancelar</button>
