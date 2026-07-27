@@ -4056,7 +4056,13 @@ async function lerPerfilDobanco() {
     window._organizacaoId = data?.organizacao_id || null;
 
     if (data?.organizacao_id) {
-      const { data: org } = await db.from('organizacoes').select(`plano, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
+      const { data: org } = await db.from('organizacoes').select(`plano, ativo, motivo_pausa, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
+      if (org && org.ativo === false) {
+        await db.auth.signOut();
+        user = null;
+        showErr('⛔ O acesso da sua organização está pausado. ' + (org.motivo_pausa ? org.motivo_pausa : 'Entre em contato com o administrador.'));
+        throw new Error('Organização pausada');
+      }
       window._planoAtivo = org?.plano || 'acolhe';
       window._addons = {};
       ADDONS_LISTA.forEach(a => { window._addons[a] = !!(org?.[`addon_${a}`] || data?.[`addon_${a}`]); });
@@ -6703,7 +6709,7 @@ async function carregarUsuariosDev() {
   try {
     const [{ data }, { data: orgs }] = await Promise.all([
       db.from('profiles').select(`id,email,role,ativo,created_at,organizacao_id,observacoes_negociacao,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`).order('created_at',{ascending:false}),
-      db.from('organizacoes').select(`id,nome,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`),
+      db.from('organizacoes').select(`id,nome,ativo,motivo_pausa,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT}`),
     ]);
     window._devUsuarios = data || [];
     window._devOrgs = {};
@@ -6751,10 +6757,15 @@ function filtrarUsuariosDev() {
     const ordenados = [...membros].sort((a, b) => (b.role==='gestao-clinica'?1:0) - (a.role==='gestao-clinica'?1:0));
     if (!org) return ordenados.map(u => linhaUsuario(u, false)).join('');
     const { total } = calcularTotalMes(org);
-    return `<tr style="background:#EFF6FF">
-      <td colspan="6"><strong>🏢 ${org.nome || 'Organização sem nome'}</strong></td>
+    return `<tr style="background:${org.ativo===false?'#FEF2F2':'#EFF6FF'}">
+      <td colspan="6"><strong>🏢 ${org.nome || 'Organização sem nome'}</strong>${org.ativo===false ? ' <span style="display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:700;background:#FCA5A5;color:#7F1D1D;margin-left:6px">⏸ PAUSADA</span>' : ''}</td>
       <td style="font-weight:700;color:#1E3A8A">R$${total.toFixed(0)}</td>
-      <td><button class="btn-sm" onclick="abrirModalAddAcessoOrg('${orgId}','${(org.nome||'').replace(/'/g,"&#39;")}')">+ Adicionar acesso</button></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn-sm" onclick="abrirModalAddAcessoOrg('${orgId}','${(org.nome||'').replace(/'/g,"&#39;")}')">+ Adicionar acesso</button>
+        ${org.ativo===false
+          ? `<button class="btn-sm" onclick="reativarOrganizacaoDev('${orgId}')">▶ Reativar</button>`
+          : `<button class="btn-danger" onclick="pausarOrganizacaoDev('${orgId}','${(org.nome||'').replace(/'/g,"&#39;")}')">⏸ Pausar</button>`}
+      </td>
     </tr>` + ordenados.map((u, i) => linhaUsuario(u, true, i===0 && u.role==='gestao-clinica')).join('');
   };
 
@@ -6858,6 +6869,22 @@ async function excluirUsuarioDev(id, email) {
   window._devUsuarios = (window._devUsuarios||[]).filter(u => u.id !== id);
   filtrarUsuariosDev();
   toast('Perfil excluído.', 'success');
+}
+
+async function pausarOrganizacaoDev(orgId, orgNome) {
+  const motivo = prompt(`Pausar o acesso de "${orgNome}"?\n\nNinguém vinculado a essa organização (mestre + equipe) vai conseguir logar até você reativar. Os dados continuam salvos, nada é apagado.\n\nMotivo (opcional, aparece pra quem tentar logar):`);
+  if (motivo === null) return;
+  const { error } = await db.from('organizacoes').update({ ativo: false, motivo_pausa: motivo || null, pausado_em: new Date().toISOString() }).eq('id', orgId);
+  if (error) return toast('Erro ao pausar: ' + error.message, 'error');
+  toast('Organização pausada.', 'success');
+  carregarUsuariosDev();
+}
+async function reativarOrganizacaoDev(orgId) {
+  if (!confirm('Reativar o acesso desta organização? Todos os perfis vinculados voltam a conseguir logar normalmente.')) return;
+  const { error } = await db.from('organizacoes').update({ ativo: true, motivo_pausa: null }).eq('id', orgId);
+  if (error) return toast('Erro ao reativar: ' + error.message, 'error');
+  toast('Organização reativada.', 'success');
+  carregarUsuariosDev();
 }
 
 async function carregarConteudoDev() {
