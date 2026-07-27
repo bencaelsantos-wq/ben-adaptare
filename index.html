@@ -3770,10 +3770,10 @@ function abrirModalNovaOrg() {
   const m = document.getElementById('modal-nova-org');
   if (m) {
     m.style.display = 'flex';
-    document.getElementById('novaorg-nome').value = '';
-    document.getElementById('novaorg-email').value = '';
-    document.getElementById('novaorg-nome-pessoa').value = '';
-    document.getElementById('novaorg-outros').value = '';
+    ['novaorg-nome','novaorg-razao','novaorg-cnpj','novaorg-endereco','novaorg-cidade','novaorg-estado','novaorg-cep',
+     'novaorg-fin-nome','novaorg-fin-email','novaorg-fin-fone','novaorg-obs-cadastro',
+     'novaorg-email','novaorg-nome-pessoa','novaorg-outros'].forEach(id2 => { const el = document.getElementById(id2); if (el) el.value = ''; });
+    document.getElementById('novaorg-pagamento').value = '';
     document.getElementById('novaorg-msg').textContent = '';
   }
 }
@@ -3817,7 +3817,21 @@ async function criarOrganizacaoEConvidarMestre() {
 
   btn.disabled = true; btn.textContent = 'Criando…';
   try {
-    const { data: org, error: errOrg } = await db.from('organizacoes').insert({ nome: nomeOrg }).select('id').single();
+    const payloadOrg = {
+      nome: nomeOrg,
+      razao_social: document.getElementById('novaorg-razao')?.value?.trim() || null,
+      cnpj: document.getElementById('novaorg-cnpj')?.value?.trim() || null,
+      endereco: document.getElementById('novaorg-endereco')?.value?.trim() || null,
+      cidade: document.getElementById('novaorg-cidade')?.value?.trim() || null,
+      estado: document.getElementById('novaorg-estado')?.value?.trim()?.toUpperCase() || null,
+      cep: document.getElementById('novaorg-cep')?.value?.trim() || null,
+      contato_financeiro_nome: document.getElementById('novaorg-fin-nome')?.value?.trim() || null,
+      contato_financeiro_email: document.getElementById('novaorg-fin-email')?.value?.trim() || null,
+      contato_financeiro_fone: document.getElementById('novaorg-fin-fone')?.value?.trim() || null,
+      forma_pagamento: document.getElementById('novaorg-pagamento')?.value || null,
+      observacoes_cadastro: document.getElementById('novaorg-obs-cadastro')?.value?.trim() || null,
+    };
+    const { data: org, error: errOrg } = await db.from('organizacoes').insert(payloadOrg).select('id').single();
     if (errOrg) throw new Error('Erro ao criar organização: ' + errOrg.message);
 
     const erros = [];
@@ -6103,10 +6117,40 @@ function renderPagesDeveloper() {
 
     <!-- Modal nova organização -->
     <div id="modal-nova-org" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center">
-      <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:440px;box-shadow:0 8px 40px rgba(0,0,0,.18)">
+      <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.18)">
         <h2 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1E293B">Nova organização</h2>
-        <p style="margin:0 0 20px;font-size:13px;color:#64748B">Cria a organização e já convida o perfil mestre, vinculado automaticamente a ela.</p>
+        <p style="margin:0 0 20px;font-size:13px;color:#64748B">Cria a organização (com cadastro completo), convida o perfil mestre e já vincula os demais e-mails.</p>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#1E3A8A;margin:0 0 8px">Dados da organização</div>
         <div class="fg"><label>Nome da organização</label><input type="text" id="novaorg-nome" placeholder="Ex: Clínica Exemplo"></div>
+        <div class="fg"><label>Razão social</label><input type="text" id="novaorg-razao" placeholder="Razão social completa"></div>
+        <div class="fg"><label>CNPJ</label><input type="text" id="novaorg-cnpj" placeholder="00.000.000/0000-00"></div>
+        <div class="fg"><label>Endereço</label><input type="text" id="novaorg-endereco" placeholder="Rua, número, bairro"></div>
+        <div style="display:flex;gap:10px">
+          <div class="fg" style="flex:2"><label>Cidade</label><input type="text" id="novaorg-cidade" placeholder="Cidade"></div>
+          <div class="fg" style="flex:1"><label>Estado</label><input type="text" id="novaorg-estado" placeholder="UF" maxlength="2"></div>
+          <div class="fg" style="flex:1"><label>CEP</label><input type="text" id="novaorg-cep" placeholder="00000-000"></div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#1E3A8A;margin:14px 0 8px">Contato financeiro / cobrança</div>
+        <div class="fg"><label>Nome do contato financeiro</label><input type="text" id="novaorg-fin-nome" placeholder="Nome completo"></div>
+        <div style="display:flex;gap:10px">
+          <div class="fg" style="flex:1"><label>E-mail financeiro</label><input type="email" id="novaorg-fin-email" placeholder="financeiro@email.com"></div>
+          <div class="fg" style="flex:1"><label>Telefone financeiro</label><input type="text" id="novaorg-fin-fone" placeholder="(00) 00000-0000"></div>
+        </div>
+        <div class="fg">
+          <label>Forma de pagamento</label>
+          <select id="novaorg-pagamento" style="width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+            <option value="">Selecione…</option>
+            <option value="boleto">Boleto</option>
+            <option value="pix">Pix</option>
+            <option value="cartao">Cartão de crédito</option>
+            <option value="transferencia">Transferência</option>
+          </select>
+        </div>
+        <div class="fg"><label>Observações do cadastro</label><textarea id="novaorg-obs-cadastro" rows="2" style="width:100%;padding:9px 12px;border:1.5px solid var(--gr200);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea></div>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#1E3A8A;margin:14px 0 8px">Perfil mestre</div>
         <div class="fg"><label>E-mail do perfil mestre</label><input type="email" id="novaorg-email" placeholder="mestre@email.com"></div>
         <div class="fg"><label>Nome do perfil mestre (opcional)</label><input type="text" id="novaorg-nome-pessoa" placeholder="Nome completo"></div>
         <div class="fg">
