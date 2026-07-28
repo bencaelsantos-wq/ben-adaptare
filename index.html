@@ -8903,6 +8903,15 @@ function renderPages() {
         </div>
       </div>
       <div class="fblock"><label class="flabel" for="inp-tipo-livre">Ou descreva livremente o tipo de atividade</label><input type="text" id="inp-tipo-livre" class="finput" placeholder="Ex: Avaliação oral com apoio visual, atividade em dupla com mediação…"></div>
+      <div class="fblock">
+        <label class="flabel" for="inp-perfil-adaptacao">Perfil de adaptação <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label>
+        <select id="inp-perfil-adaptacao" class="fselect">
+          <option value="">Nenhum perfil específico</option>
+          <option value="pre-requisitos">Pré-requisitos (pareamento, letras, sílabas, vocabulário básico)</option>
+          <option value="curriculo-adaptado">Currículo Adaptado (mesmo tema da turma, texto reduzido)</option>
+          <option value="funcional-adaptativo">Funcional/Adaptativo — exceção para casos como DI moderada/severa (autonomia de vida, leitura funcional)</option>
+        </select>
+      </div>
     </div>
 
    <div class="fcard">
@@ -8917,6 +8926,14 @@ function renderPages() {
           <input type="file" id="inp-arquivo-adaptacao" accept=".pdf,.doc,.docx" style="display:none" onchange="processarArquivoAdaptacao(this)">
         </div>
         <div id="upload-status" style="display:none;font-size:12px;color:#2563EB;margin-bottom:6px;padding:6px 10px;background:#EEF2FF;border-radius:6px"></div>
+        <div id="upload-imagens-toggle" style="display:none;margin-bottom:10px;padding:10px 12px;background:#F8FAFF;border:1px solid #DBEAFE;border-radius:8px">
+          <div style="font-size:12.5px;font-weight:600;color:#1E3A8A;margin-bottom:6px">Esta atividade deve usar exatamente as mesmas imagens do material original?</div>
+          <div style="display:flex;gap:8px">
+            <button type="button" class="subrole-btn" id="btn-imgs-original-sim" onclick="definirUsoImagensOriginais(true)">Sim, reaproveitar</button>
+            <button type="button" class="subrole-btn" id="btn-imgs-original-nao" onclick="definirUsoImagensOriginais(false)">Não, é tema novo</button>
+          </div>
+          <div id="upload-imagens-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        </div>
                 <textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea>
       </div>
 
@@ -11698,12 +11715,19 @@ async function processarArquivoAdaptacao(input) {
   if (!file) return;
   const status = document.getElementById('upload-status');
   const campo = document.getElementById('inp-conteudo');
+  const toggleBox = document.getElementById('upload-imagens-toggle');
+  const preview = document.getElementById('upload-imagens-preview');
   status.style.display = 'block';
   status.textContent = 'Lendo arquivo…';
+  window._imagensPDFOriginal = [];
+  window._usarImagensOriginais = null;
+  if (toggleBox) toggleBox.style.display = 'none';
+  if (preview) preview.innerHTML = '';
   try {
     let texto = '';
     if (file.name.endsWith('.pdf')) {
       texto = await extrairTextoPDF(file);
+      try { window._imagensPDFOriginal = await extrairImagensPDF(file); } catch(e) { console.warn('Falha ao extrair imagens do PDF', e); }
     } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
       texto = await extrairTextoDOCX(file);
     } else {
@@ -11718,6 +11742,10 @@ async function processarArquivoAdaptacao(input) {
     status.style.background = '#F0FDF4';
     status.style.color = '#166534';
     status.textContent = 'Arquivo importado com sucesso. Revise o texto abaixo e clique em Gerar.';
+    if (window._imagensPDFOriginal.length && toggleBox) {
+      toggleBox.style.display = 'block';
+      preview.innerHTML = window._imagensPDFOriginal.map((src,i) => `<img src="${src}" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid #DBEAFE" alt="Página ${i+1} do material original">`).join('');
+    }
   } catch(e) {
     status.style.background = '#FEF2F2';
     status.style.color = '#991B1B';
@@ -11725,6 +11753,44 @@ async function processarArquivoAdaptacao(input) {
     console.error(e);
   }
   input.value = '';
+}
+
+function definirUsoImagensOriginais(usar) {
+  window._usarImagensOriginais = usar;
+  const btnSim = document.getElementById('btn-imgs-original-sim');
+  const btnNao = document.getElementById('btn-imgs-original-nao');
+  if (btnSim) btnSim.classList.toggle('active', usar === true);
+  if (btnNao) btnNao.classList.toggle('active', usar === false);
+  toast(usar ? 'A IA vai priorizar reaproveitar as imagens do material original.' : 'A IA vai manter só o mesmo tema, buscando novas imagens.', 'success');
+}
+
+async function extrairImagensPDF(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const typedArray = new Uint8Array(e.target.result);
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        if (!pdfjsLib) { resolve([]); return; }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+        const maxPaginas = Math.min(pdf.numPages, 5);
+        const imagens = [];
+        for (let i = 1; i <= maxPaginas; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1.4 });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+          imagens.push(canvas.toDataURL('image/jpeg', 0.85));
+        }
+        resolve(imagens);
+      } catch(err) { reject(err); }
+    };
+    reader.onerror = () => reject(new Error('Erro ao ler imagens do arquivo.'));
+    reader.readAsArrayBuffer(file);
+  });
 }
 
 async function extrairTextoPDF(file) {
@@ -11847,6 +11913,7 @@ async function gerar() {
 
   const materia      = document.getElementById('inp-materia')?.value;
   const tipoLivre    = document.getElementById('inp-tipo-livre')?.value.trim();
+  const perfilAdaptacao = document.getElementById('inp-perfil-adaptacao')?.value || '';
   const conteudo     = document.getElementById('inp-conteudo')?.value.trim();
   const tipoAtiv     = tipoLivre || tplSelecionado || 'atividade pedagógica';
   const usaPictograma = document.getElementById('inp-pictogramas')?.checked || false;
@@ -11913,6 +11980,18 @@ async function gerar() {
     tradicional: `METODO: Ensino tradicional estruturado. Atividade com instrução direta, exemplos antes dos exercícios, gabarito possível. Linguagem clara e objetiva.`,
     inclusivo: `METODO: Educação inclusiva baseada em evidências (DUA — Desenho Universal para Aprendizagem). Múltiplas formas de representação, engajamento e expressão. Barreiras removidas para o diagnóstico informado.`
   }[metodoDetectado];
+
+  const PERFIS_ADAPTACAO_TEXTOS = {
+    'pre-requisitos': `PERFIL DE ADAPTAÇÃO: Pré-requisitos. Foque em habilidades de base — pareamento, reconhecimento de letras, sílabas e vocabulário essencial. A atividade deve trabalhar o pré-requisito necessário para acessar o conteúdo da turma, não o conteúdo da turma em si. Priorize repetição estruturada e progressão muito gradual.`,
+    'curriculo-adaptado': `PERFIL DE ADAPTAÇÃO: Currículo Adaptado. Mantenha OBRIGATORIAMENTE o mesmo tema e assunto da atividade original da turma — o aluno precisa reconhecer que está estudando a mesma coisa que os colegas. Reduza a extensão do texto, simplifique o enunciado e use pictogramas/apoio visual sempre que possível. Nunca troque o tema por outro mais "fácil".`,
+    'funcional-adaptativo': `PERFIL DE ADAPTAÇÃO: Funcional/Adaptativo. ATENÇÃO — este perfil é EXCEÇÃO, usado apenas quando a equipe (escola + clínica) já decidiu, por avaliação prévia, que para ESTE aluno específico as habilidades acadêmicas da série não são a prioridade pedagógica no momento — situação comum em casos de Deficiência Intelectual moderada/severa ou quadros similares, onde o foco terapêutico-pedagógico é autonomia e participação na vida diária, não o currículo típico da idade/série. NUNCA escolha este enfoque por padrão ou por suposição do diagnóstico informado — ele só deve ser aplicado porque o profissional selecionou este perfil explicitamente, confiando que essa decisão já foi tomada pela equipe responsável pelo aluno. Priorize habilidades de vida prática e autonomia — leitura de rótulos, placas, sinalização de banheiro, lista de mercado, sequências de rotina. Use o tema da atividade original apenas como pretexto, se fizer sentido; o objetivo real é a aplicação funcional no dia a dia.`
+  };
+  const INSTRUCAO_PERFIL = PERFIS_ADAPTACAO_TEXTOS[perfilAdaptacao] || '';
+
+  const qtdImagensOriginais = (window._imagensPDFOriginal||[]).length;
+  const INSTRUCAO_IMAGENS_ORIGINAIS = (window._usarImagensOriginais === true && qtdImagensOriginais)
+    ? `IMAGENS DO MATERIAL ORIGINAL: o profissional enviou o material original e pediu para REAPROVEITAR as mesmas imagens (não gerar nem buscar outras). Há ${qtdImagensOriginais} imagem(ns) disponível(is), na ordem em que aparecem no documento original. Sempre que um item da adaptação precisar de apoio visual, use o marcador [IMAGEM: original-N], onde N é o número da imagem na ordem (ex: [IMAGEM: original-1] para a primeira). Use SOMENTE esses marcadores original-N para apoio visual nesta adaptação — não use nomes genéricos de objetos.`
+    : '';
 
   const MONTESSORI_SISTEMA = isMontessori ? `
 ══════════════════════════════════════════════════════════════
@@ -12111,6 +12190,10 @@ Use esse raciocínio para fundamentar a folha do aluno e o guia do professor aba
 Gere APENAS a folha do aluno, pronta para imprimir e entregar. Não use emojis — o PDF não suporta. Sem explicações pedagógicas na folha do aluno — isso vai só no guia do professor.
 
 ${INSTRUCAO_METODO}
+
+${INSTRUCAO_PERFIL}
+
+${INSTRUCAO_IMAGENS_ORIGINAIS}
 
 FORMATO OBRIGATORIO DA FOLHA DO ALUNO — siga exatamente:
 
@@ -12359,7 +12442,11 @@ function detectarItensImagem() {
   const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i)[0];
   const termos = extrairItensParaIlustrar(folhaAluno);
   window._imgItens = termos.length
-    ? termos.map(t => ({ termo: t, chave: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
+    ? termos.map(t => {
+        const m = /^original-(\d+)$/i.exec(t);
+        const imgOriginal = m && window._imagensPDFOriginal ? window._imagensPDFOriginal[parseInt(m[1],10)-1] : null;
+        return { termo: t, chave: t, fonte: imgOriginal ? 'original' : 'proprio', resultados: [], urlEscolhida: imgOriginal || null };
+      })
     : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
   if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
   document.getElementById('ap-img-painel').style.display = '';
