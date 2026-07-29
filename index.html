@@ -17829,6 +17829,11 @@ async function carregarMonitoramento() {
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para montar o gráfico — o gráfico aparece a partir do 2º registro.</div></div>' : '<canvas id="mon-grafico" height="90"></canvas>'}
     </div>
     <div class="clinic-card" style="margin-bottom:16px">
+      <div class="clinic-card-title">🧩 Autonomia ao longo do tempo</div>
+      <p class="page-sub" style="margin:0 0 10px">Combina os registros de Prática Guiada, Nova Adaptação e Materiais Terapêuticos — mostra se o paciente está precisando de menos ajuda com o tempo, mesmo quando o percentual de acerto se mantém parecido.</p>
+      <canvas id="mon-grafico-autonomia" height="90"></canvas>
+    </div>
+    <div class="clinic-card" style="margin-bottom:16px">
       <div class="clinic-card-title">📝 Relatório de Evolução</div>
       <p class="page-sub" style="margin:0 0 10px">Gera um texto interpretando a evolução registrada — datas, mudanças percebidas e pontos de atenção por objetivo.</p>
       ${(regs||[]).length < 2
@@ -17877,6 +17882,51 @@ async function carregarMonitoramento() {
       }).join('')}` : ''}`;
   if ((regs||[]).length >= 2) renderizarGraficoMonitoramento(regs, areas, obj, labels);
   if ((regs||[]).length >= 2) carregarHistoricoEvolucao(id);
+  renderizarGraficoAutonomia(regs);
+}
+
+function calcularScoreAutonomia(observacoes) {
+  const m = (observacoes||'').match(/Nível de ajuda:\s*([^|]+)/i);
+  if (!m) return null;
+  const texto = m[1].trim();
+  const ESCALA = { 'independente': 100, 'com pista verbal': 75, 'com apoio físico': 40, 'não conseguiu mesmo com ajuda': 0 };
+  const partesAgregadas = [...texto.matchAll(/(\d+)\s+([a-zçãáéíóúâêô\s]+?)(?:,|$)/gi)];
+  if (partesAgregadas.length) {
+    let somaPeso = 0, somaQtd = 0;
+    partesAgregadas.forEach(p => {
+      const qtd = parseInt(p[1], 10);
+      const valor = ESCALA[p[2].trim().toLowerCase()];
+      if (valor !== undefined) { somaPeso += valor * qtd; somaQtd += qtd; }
+    });
+    if (somaQtd) return somaPeso / somaQtd;
+  }
+  const direto = ESCALA[texto.toLowerCase()];
+  if (direto !== undefined) return direto;
+  const porQuestao = [...texto.matchAll(/Q\d+:\s*([a-zçãáéíóúâêô\s]+?)(?:,|$)/gi)];
+  if (porQuestao.length) {
+    const valores = porQuestao.map(p => ESCALA[p[1].trim().toLowerCase()]).filter(v => v !== undefined);
+    if (valores.length) return valores.reduce((a,b) => a+b, 0) / valores.length;
+  }
+  return null;
+}
+
+let _chartAutonomia = null;
+function renderizarGraficoAutonomia(regs) {
+  const canvas = document.getElementById('mon-grafico-autonomia');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const regsComAjuda = [...(regs||[])]
+    .filter(r => /^(Prática Guiada|Nova Adaptação|Material Terapêutico)/i.test(r.observacoes||''))
+    .map(r => ({ data: r.created_at, score: calcularScoreAutonomia(r.observacoes) }))
+    .filter(r => r.score !== null)
+    .sort((a,b) => new Date(a.data) - new Date(b.data));
+  if (regsComAjuda.length < 2) return;
+  const dataLabels = regsComAjuda.map(r => new Date(r.data).toLocaleDateString('pt-BR'));
+  if (_chartAutonomia) _chartAutonomia.destroy();
+  _chartAutonomia = new Chart(canvas, {
+    type: 'line',
+    data: { labels: dataLabels, datasets: [{ label: 'Autonomia (nível de ajuda)', data: regsComAjuda.map(r => r.score), borderColor: '#7C3AED', backgroundColor: '#7C3AED', tension: 0.3, pointRadius: 4, spanGaps: true }] },
+    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }, plugins: { legend: { position: 'bottom' } } }
+  });
 }
 
 let _chartMonitoramento = null;
