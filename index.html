@@ -11313,6 +11313,11 @@ function renderPagesClinica() {
         <option value="comportamental">Comportamental</option>
         <option value="academico">Acadêmico</option>
       </select></div>
+      <div><label class="flabel" for="pg-qtd-perguntas">Quantidade de perguntas</label><select class="fselect" id="pg-qtd-perguntas" style="max-width:120px">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+        <option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
+        <option value="9">9</option><option value="10">10</option>
+      </select></div>
     </div>
     <div class="fblock" style="margin-bottom:14px">
       <label class="flabel" for="pg-contexto">Contexto ou conteúdo a trabalhar (opcional)</label>
@@ -11332,8 +11337,23 @@ function renderPagesClinica() {
       </div>
       <div id="pg-registro-bloco" style="margin-top:18px;display:none">
         <div class="clinic-card-title" style="margin-bottom:8px">Registrar aplicação</div>
-        <p class="page-sub" style="margin:0 0 10px">Depois de aplicar com o paciente, marque abaixo se ele acertou ou errou cada pergunta. Isso vira automaticamente um registro no Monitoramento do paciente.</p>
+        <p class="page-sub" style="margin:0 0 10px">Depois de aplicar com o paciente, marque abaixo se ele acertou ou errou cada pergunta, o nível de ajuda que precisou e o tempo gasto. Isso vira automaticamente um registro no Monitoramento do paciente.</p>
         <div id="pg-registro-perguntas"></div>
+        <div class="fblock" style="margin-top:12px">
+          <label class="flabel">Como registrar o tempo de aplicação?</label>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button type="button" class="subrole-btn active" id="btn-tempo-total" onclick="definirModoTempoPratica('total')">Tempo total da atividade</button>
+            <button type="button" class="subrole-btn" id="btn-tempo-questao" onclick="definirModoTempoPratica('questao')">Tempo por pergunta</button>
+          </div>
+        </div>
+        <div class="fblock" id="pg-tempo-total-bloco">
+          <label class="flabel" for="pg-tempo-total">Tempo total de aplicação (minutos)</label>
+          <input type="number" min="0" id="pg-tempo-total" class="finput" style="max-width:120px" placeholder="Ex: 12">
+        </div>
+        <div class="fblock">
+          <label class="flabel" for="pg-obs-livre">Observações — dificuldades e avanços percebidos (opcional, entra no relatório)</label>
+          <textarea id="pg-obs-livre" class="ftarea" placeholder="Ex: Teve mais dificuldade nas perguntas com estímulo sonoro; avançou bem nas visuais…"></textarea>
+        </div>
         <button class="btn-sm" style="margin-top:10px" onclick="salvarRegistroPraticaGuiada()">Salvar registro</button>
       </div>
     </div>
@@ -16864,8 +16884,13 @@ async function reabrirPraticaGuiada(id) {
         <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'apoio-fisico')" data-idx="${i}" data-ajuda="apoio-fisico" style="font-size:11px">Com apoio físico</button>
         <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'nao-conseguiu')" data-idx="${i}" data-ajuda="nao-conseguiu" style="font-size:11px">Não conseguiu, mesmo com ajuda</button>
       </div>
+      <div id="pg-tempo-q-${i}" style="display:none;align-items:center;gap:4px;margin-top:6px">
+        <input type="number" min="0" class="finput" style="max-width:70px" id="pg-tempo-questao-${i}" placeholder="min">
+        <span style="font-size:11.5px;color:var(--gr400)">min</span>
+      </div>
     </div>`).join('');
   document.getElementById('pg-registro-bloco').style.display = '';
+  definirModoTempoPratica('total');
   toast('Atividade aberta — marque acertou/errou e salve. Para o PDF com imagens, gere uma nova (as imagens não ficam salvas nesta atividade reaberta).', 'success');
   document.getElementById('pg-result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
@@ -16884,6 +16909,17 @@ function selNivelAjudaPraticaGuiada(btn, idx, val) {
   nivelAjudaPraticaGuiada[idx] = val;
 }
 
+function definirModoTempoPratica(modo) {
+  window._modoTempoPratica = modo;
+  const btnTotal = document.getElementById('btn-tempo-total');
+  const btnQuestao = document.getElementById('btn-tempo-questao');
+  if (btnTotal) btnTotal.classList.toggle('active', modo === 'total');
+  if (btnQuestao) btnQuestao.classList.toggle('active', modo === 'questao');
+  const totalBloco = document.getElementById('pg-tempo-total-bloco');
+  if (totalBloco) totalBloco.style.display = modo === 'total' ? '' : 'none';
+  document.querySelectorAll('[id^="pg-tempo-q-"]').forEach(el => el.style.display = modo === 'questao' ? 'flex' : 'none');
+}
+
 async function salvarRegistroPraticaGuiada() {
   if (!ultimaPraticaGuiada) return toast('Gere uma atividade primeiro.', 'error');
   const total = ultimaPraticaGuiada.perguntas.length;
@@ -16900,6 +16936,20 @@ async function salvarRegistroPraticaGuiada() {
   Object.values(nivelAjudaPraticaGuiada).forEach(v => { contagemAjuda[v] = (contagemAjuda[v]||0) + 1; });
   const resumoAjuda = Object.entries(contagemAjuda).map(([k,v]) => `${v} ${LABELS_AJUDA[k]||k}`).join(', ');
 
+  const modoTempo = window._modoTempoPratica || 'total';
+  let tempoResumo = '';
+  if (modoTempo === 'total') {
+    const tempoTotal = document.getElementById('pg-tempo-total')?.value?.trim();
+    if (tempoTotal) tempoResumo = `Tempo total: ${tempoTotal}min`;
+  } else {
+    const temposPorQuestao = ultimaPraticaGuiada.perguntas.map((q, i) => {
+      const v = document.getElementById(`pg-tempo-questao-${i}`)?.value?.trim();
+      return v ? `Q${i+1}: ${v}min` : null;
+    }).filter(Boolean);
+    if (temposPorQuestao.length) tempoResumo = `Tempo por pergunta: ${temposPorQuestao.join(', ')}`;
+  }
+  const obsLivre = document.getElementById('pg-obs-livre')?.value?.trim();
+
   if (id) {
     await db.from('praticas_guiadas').update({
       status: 'registrado', respostas: respostasPraticaGuiada, registrado_em: new Date().toISOString()
@@ -16910,7 +16960,7 @@ async function salvarRegistroPraticaGuiada() {
   const { error } = await db.from('monitoramentos').insert({
     perfil_id: paciente.id, user_id: user.id,
     resultados: { [area]: resultado },
-    observacoes: `Prática Guiada — ${titulo}: ${acertos}/${total} corretas${resumoAjuda ? ` | Nível de ajuda: ${resumoAjuda}` : ''}`,
+    observacoes: `Prática Guiada — ${titulo}: ${acertos}/${total} corretas${resumoAjuda ? ` | Nível de ajuda: ${resumoAjuda}` : ''}${tempoResumo ? ` | ${tempoResumo}` : ''}${obsLivre ? ` | Observações: ${obsLivre}` : ''}`,
     created_at: new Date().toISOString()
   });
   if (error) return toast('Erro: ' + error.message, 'error');
@@ -16925,6 +16975,7 @@ async function gerarPraticaGuiada() {
   if (!p) return toast('Selecione um paciente.', 'error');
   const area = document.getElementById('pg-area-sel')?.value;
   const contexto = document.getElementById('pg-contexto')?.value?.trim();
+  const qtdPerguntas = parseInt(document.getElementById('pg-qtd-perguntas')?.value, 10) || 5;
 
   const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
   const objTexto = obj?.[area] || '';
@@ -16942,14 +16993,14 @@ FUNÇÕES COMPROMETIDAS: ${p.comprometidas||'—'}
 OBJETIVO TERAPÊUTICO (${LABELS_AREA[area]}): ${objTexto || 'Não definido — use o perfil geral do paciente'}
 ${contexto ? `CONTEXTO/CONTEÚDO A TRABALHAR: ${contexto}` : ''}
 
-Gere 5 perguntas de múltipla escolha trabalhando o objetivo e o contexto acima, com dificuldade adequada ao perfil do paciente. Cada pergunta mostra UMA imagem no enunciado (o estímulo a ser observado/contado/lido/reconhecido) e pede pra escolher a alternativa certa entre 3 opções.
+Gere EXATAMENTE ${qtdPerguntas} pergunta${qtdPerguntas>1?'s':''} de múltipla escolha trabalhando o objetivo e o contexto acima, com dificuldade adequada ao perfil do paciente. Cada pergunta mostra UMA imagem no enunciado (o estímulo a ser observado/contado/lido/reconhecido) e pede pra escolher a alternativa certa entre 3 opções.
 
 REGRAS OBRIGATÓRIAS, sem exceção:
 - TODA pergunta tem OBRIGATORIAMENTE um IMG_PERGUNTA preenchido — nunca deixe vazio. É a imagem do estímulo (nome simples, minúsculo, sem acento, ex: "5estrelas", "palavra-sapato", "carinha-triste").
 - As 3 alternativas são SEMPRE só texto curto (um número, uma palavra, ou uma frase curta — o que fizer sentido pro contexto pedido), NUNCA uma imagem, NUNCA um desenho do próprio conteúdo da alternativa.
 - As alternativas NUNCA têm imagem própria — o campo de imagem de cada ALT fica SEMPRE vazio. A imagem existe só uma vez, no IMG_PERGUNTA, e deve representar o MESMO estímulo em todas as 5 perguntas (ex: sempre contagem, ou sempre leitura de palavra — não misture tipos diferentes de pergunta na mesma atividade).
 
-FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes, repetindo o bloco para as 5 perguntas:
+FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes, repetindo o bloco para as ${qtdPerguntas} perguntas (nem uma a mais, nem uma a menos):
 
 TITULO: [título curto da atividade]
 
@@ -17004,6 +17055,7 @@ CORRETA: [A, B ou C]`;
       </div>`).join('');
     document.getElementById('pg-result-card').classList.add('show');
     respostasPraticaGuiada = {};
+    nivelAjudaPraticaGuiada = {};
     document.getElementById('pg-registro-perguntas').innerHTML = perguntas.map((q, i) => `
       <div style="margin-bottom:10px">
         <div style="font-size:12.5px;color:var(--gr600);margin-bottom:5px">${i+1}. ${q.pergunta}</div>
@@ -17011,8 +17063,19 @@ CORRETA: [A, B ou C]`;
           <button class="mon-btn ok" onclick="selRegistroPraticaGuiada(this,${i},'certo')" data-idx="${i}" data-val="certo">✔ Acertou</button>
           <button class="mon-btn nao" onclick="selRegistroPraticaGuiada(this,${i},'errado')" data-idx="${i}" data-val="errado">✗ Errou</button>
         </div>
+        <div class="mon-btn-group" style="margin-top:4px">
+          <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'independente')" data-idx="${i}" data-ajuda="independente" style="font-size:11px">Independente</button>
+          <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'pista-verbal')" data-idx="${i}" data-ajuda="pista-verbal" style="font-size:11px">Com pista verbal</button>
+          <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'apoio-fisico')" data-idx="${i}" data-ajuda="apoio-fisico" style="font-size:11px">Com apoio físico</button>
+          <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'nao-conseguiu')" data-idx="${i}" data-ajuda="nao-conseguiu" style="font-size:11px">Não conseguiu, mesmo com ajuda</button>
+        </div>
+        <div id="pg-tempo-q-${i}" style="display:none;align-items:center;gap:4px;margin-top:6px">
+          <input type="number" min="0" class="finput" style="max-width:70px" id="pg-tempo-questao-${i}" placeholder="min">
+          <span style="font-size:11.5px;color:var(--gr400)">min</span>
+        </div>
       </div>`).join('');
     document.getElementById('pg-registro-bloco').style.display = '';
+    definirModoTempoPratica('total');
     toast('Atividade gerada com sucesso!', 'success');
   } catch(e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
