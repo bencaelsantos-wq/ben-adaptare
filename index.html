@@ -16696,6 +16696,20 @@ Responda EXATAMENTE neste formato de texto simples, sem markdown, sem JSON, usan
 let ultimoMaterialTerapeutico = null;
 let ultimoRelatorioRotinaAT = null;
 
+async function baseDeFotoRotina(pathOuUrl) {
+  let path = pathOuUrl;
+  const marcador = '/fotos-rotina-at/';
+  if (pathOuUrl.includes(marcador)) path = pathOuUrl.split(marcador)[1].split('?')[0];
+  const { data, error } = await db.storage.from('fotos-rotina-at').download(path);
+  if (error || !data) throw error || new Error('Falha ao baixar foto.');
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(data);
+  });
+}
+
 async function imagemUrlParaBase64(url) {
   const resp = await fetch(url);
   const blob = await resp.blob();
@@ -16736,7 +16750,7 @@ async function gerarRelatorioRotinaAT() {
     const fotosEscolhidas = todasFotos.slice(-5);
     const imagensBase64 = [];
     for (const f of fotosEscolhidas) {
-      try { imagensBase64.push(await imagemUrlParaBase64(f.url)); } catch(e) {}
+      try { imagensBase64.push(await baseDeFotoRotina(f.url)); } catch(e) {}
     }
 
     const blocosPedidos = [];
@@ -18137,8 +18151,7 @@ async function salvarRegistroRotinaAT() {
         const blob = await (await fetch(base64)).blob();
         const { error: upErr } = await db.storage.from('fotos-rotina-at').upload(path, blob, { contentType: 'image/jpeg' });
         if (upErr) throw upErr;
-        const { data: urlData } = db.storage.from('fotos-rotina-at').getPublicUrl(path);
-        fotos.push(urlData.publicUrl);
+        fotos.push(path);
       }
       const { error } = await db.from('registros_rotina_at').insert({
         perfil_id: perfilId, at_user_id: user.id, data, texto, fotos
