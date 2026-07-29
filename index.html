@@ -12335,7 +12335,17 @@ NAO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : '
     if (idxNome > 0) texto = texto.slice(idxNome);
     ultimaAdapt = texto;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
-    const textoFinal = usaMaiusculas ? texto.toUpperCase() : texto;
+    let textoFinal = usaMaiusculas ? texto.toUpperCase() : texto;
+    if (window._usarImagensOriginais === true && (window._imagensPDFOriginal||[]).length) {
+      const marcadoresOriginais = window._imagensPDFOriginal.map((_,i) => `[IMAGEM: original-${i+1}]`).join(' ');
+      const rotuloRef = usaMaiusculas ? 'MATERIAL DE REFERÊNCIA VISUAL (MESMO MATERIAL DA TURMA):' : 'Material de referência visual (mesmo material da turma):';
+      const separadorGuia = /\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i;
+      if (separadorGuia.test(textoFinal)) {
+        textoFinal = textoFinal.replace(separadorGuia, `\n\n${rotuloRef}\n${marcadoresOriginais}\n\n$&`);
+      } else {
+        textoFinal += `\n\n${rotuloRef}\n${marcadoresOriginais}`;
+      }
+    }
     ultimaAdapt = textoFinal;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento };
     document.getElementById('result-text').textContent = textoFinal;
