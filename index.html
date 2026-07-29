@@ -11198,6 +11198,40 @@ function renderPagesClinica() {
 
         <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
       </div>
+      <div style="margin-top:18px;border-top:1px solid var(--gr100);padding-top:14px">
+        <div class="clinic-card-title" style="margin-bottom:8px">Registrar retorno</div>
+        <p class="page-sub" style="margin:0 0 10px">Depois de aplicar a atividade com o paciente, registre o resultado. Isso entra automaticamente no histórico de Monitoramento.</p>
+        <div class="mon-btn-group" id="ap-resultado-grupo">
+          <button class="mon-btn ok" onclick="selResultadoGenerico(this,'ap','ok')" data-val="ok">✔ Conseguiu sozinho</button>
+          <button class="mon-btn parcial" onclick="selResultadoGenerico(this,'ap','parcial')" data-val="parcial">⚠ Precisou de ajuda</button>
+          <button class="mon-btn nao" onclick="selResultadoGenerico(this,'ap','nao')" data-val="nao">✗ Não conseguiu</button>
+        </div>
+        <div class="mon-btn-group" style="margin-top:4px" id="ap-ajuda-grupo">
+          <button class="mon-btn" onclick="selAjudaGenerico(this,'ap','independente')" data-ajuda="independente" style="font-size:11px">Independente</button>
+          <button class="mon-btn" onclick="selAjudaGenerico(this,'ap','pista-verbal')" data-ajuda="pista-verbal" style="font-size:11px">Com pista verbal</button>
+          <button class="mon-btn" onclick="selAjudaGenerico(this,'ap','apoio-fisico')" data-ajuda="apoio-fisico" style="font-size:11px">Com apoio físico</button>
+          <button class="mon-btn" onclick="selAjudaGenerico(this,'ap','nao-conseguiu')" data-ajuda="nao-conseguiu" style="font-size:11px">Não conseguiu, mesmo com ajuda</button>
+        </div>
+        <div class="fblock" style="margin-top:10px">
+          <label class="flabel" for="ap-area-sel">Área trabalhada</label>
+          <select class="fselect" id="ap-area-sel" style="max-width:220px">
+            <option value="cognitivo">Cognitivo</option>
+            <option value="comunicacao">Comunicação</option>
+            <option value="social">Social</option>
+            <option value="comportamental">Comportamental</option>
+            <option value="academico" selected>Acadêmico</option>
+          </select>
+        </div>
+        <div class="fblock">
+          <label class="flabel" for="ap-tempo-total">Tempo total de aplicação (minutos)</label>
+          <input type="number" min="0" id="ap-tempo-total" class="finput" style="max-width:120px" placeholder="Ex: 15">
+        </div>
+        <div class="fblock">
+          <label class="flabel" for="ap-obs-livre">Observações (opcional)</label>
+          <textarea id="ap-obs-livre" class="ftarea" placeholder="Dificuldades e avanços percebidos…"></textarea>
+        </div>
+        <button class="btn-sm" onclick="salvarRegistroAdaptacao()">Salvar registro</button>
+      </div>
     </div>
 
     <div class="fcard" id="ap-img-painel" style="display:none;margin-top:16px">
@@ -11283,6 +11317,40 @@ function renderPagesClinica() {
         <button class="btn-copy" onclick="baixarMaterialTerapeuticoPDF()">Baixar PDF</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro(ultimoMaterialTerapeutico?.paciente?.nome, 'Material Terapêutico')">📋 Folha de Registro</button>
         <button class="btn-copy" onclick="detectarImagensMaterial()">🖼️ Detectar imagens do material</button>
+      </div>
+      <div style="margin-top:18px;border-top:1px solid var(--gr100);padding-top:14px">
+        <div class="clinic-card-title" style="margin-bottom:8px">Registrar retorno</div>
+        <p class="page-sub" style="margin:0 0 10px">Depois de aplicar o material com o paciente, registre o resultado. Isso entra automaticamente no histórico de Monitoramento.</p>
+        <div class="mon-btn-group" id="mat-resultado-grupo">
+          <button class="mon-btn ok" onclick="selResultadoGenerico(this,'mat','ok')" data-val="ok">✔ Conseguiu bem</button>
+          <button class="mon-btn parcial" onclick="selResultadoGenerico(this,'mat','parcial')" data-val="parcial">⚠ Parcial</button>
+          <button class="mon-btn nao" onclick="selResultadoGenerico(this,'mat','nao')" data-val="nao">✗ Não conseguiu</button>
+        </div>
+        <div class="mon-btn-group" style="margin-top:4px" id="mat-ajuda-grupo">
+          <button class="mon-btn" onclick="selAjudaGenerico(this,'mat','independente')" data-ajuda="independente" style="font-size:11px">Independente</button>
+          <button class="mon-btn" onclick="selAjudaGenerico(this,'mat','pista-verbal')" data-ajuda="pista-verbal" style="font-size:11px">Com pista verbal</button>
+          <button class="mon-btn" onclick="selAjudaGenerico(this,'mat','apoio-fisico')" data-ajuda="apoio-fisico" style="font-size:11px">Com apoio físico</button>
+          <button class="mon-btn" onclick="selAjudaGenerico(this,'mat','nao-conseguiu')" data-ajuda="nao-conseguiu" style="font-size:11px">Não conseguiu, mesmo com ajuda</button>
+        </div>
+        <div class="fblock" style="margin-top:10px">
+          <label class="flabel" for="mat-area-sel">Área trabalhada</label>
+          <select class="fselect" id="mat-area-sel" style="max-width:220px">
+            <option value="cognitivo">Cognitivo</option>
+            <option value="comunicacao">Comunicação</option>
+            <option value="social">Social</option>
+            <option value="comportamental">Comportamental</option>
+            <option value="academico">Acadêmico</option>
+          </select>
+        </div>
+        <div class="fblock">
+          <label class="flabel" for="mat-tempo-total">Tempo total de aplicação (minutos)</label>
+          <input type="number" min="0" id="mat-tempo-total" class="finput" style="max-width:120px" placeholder="Ex: 15">
+        </div>
+        <div class="fblock">
+          <label class="flabel" for="mat-obs-livre">Observações (opcional)</label>
+          <textarea id="mat-obs-livre" class="ftarea" placeholder="Dificuldades e avanços percebidos…"></textarea>
+        </div>
+        <button class="btn-sm" onclick="salvarRegistroMaterialTerapeutico()">Salvar registro</button>
       </div>
     </div>
 
@@ -17665,8 +17733,60 @@ function copiarPlano() {
 }
 
 // MONITORAMENTO
+let registroGenerico = {};
+function selResultadoGenerico(btn, prefixo, val) {
+  const group = document.getElementById(`${prefixo}-resultado-grupo`);
+  if (group) group.querySelectorAll('.mon-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  registroGenerico[prefixo + '_resultado'] = val;
+}
+function selAjudaGenerico(btn, prefixo, val) {
+  const group = document.getElementById(`${prefixo}-ajuda-grupo`);
+  if (group) group.querySelectorAll('.mon-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  registroGenerico[prefixo + '_ajuda'] = val;
+}
+const LABELS_AJUDA_GENERICO = { 'independente':'independente', 'pista-verbal':'com pista verbal', 'apoio-fisico':'com apoio físico', 'nao-conseguiu':'não conseguiu mesmo com ajuda' };
+
+async function salvarRegistroAdaptacao() {
+  if (!dadosUltima || !dadosUltima.alunoId) return toast('Gere uma adaptação primeiro.', 'error');
+  const resultado = registroGenerico['ap_resultado'];
+  if (!resultado) return toast('Marque o resultado antes de salvar.', 'error');
+  const area = document.getElementById('ap-area-sel')?.value || 'academico';
+  const ajuda = registroGenerico['ap_ajuda'];
+  const tempoTotal = document.getElementById('ap-tempo-total')?.value?.trim();
+  const obsLivre = document.getElementById('ap-obs-livre')?.value?.trim();
+  const { error } = await db.from('monitoramentos').insert({
+    perfil_id: dadosUltima.alunoId, user_id: user.id,
+    resultados: { [area]: resultado },
+    observacoes: `Nova Adaptação — ${dadosUltima.materia||''}${dadosUltima.tipoAtiv ? ' ('+dadosUltima.tipoAtiv+')' : ''}${ajuda ? ` | Nível de ajuda: ${LABELS_AJUDA_GENERICO[ajuda]||ajuda}` : ''}${tempoTotal ? ` | Tempo total: ${tempoTotal}min` : ''}${obsLivre ? ` | Observações: ${obsLivre}` : ''}`,
+    created_at: new Date().toISOString()
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Registro salvo!', 'success');
+}
+
+async function salvarRegistroMaterialTerapeutico() {
+  if (!ultimoMaterialTerapeutico) return toast('Gere um material primeiro.', 'error');
+  const resultado = registroGenerico['mat_resultado'];
+  if (!resultado) return toast('Marque o resultado antes de salvar.', 'error');
+  const area = document.getElementById('mat-area-sel')?.value;
+  const ajuda = registroGenerico['mat_ajuda'];
+  const tempoTotal = document.getElementById('mat-tempo-total')?.value?.trim();
+  const obsLivre = document.getElementById('mat-obs-livre')?.value?.trim();
+  const { paciente, tipo } = ultimoMaterialTerapeutico;
+  const { error } = await db.from('monitoramentos').insert({
+    perfil_id: paciente.id, user_id: user.id,
+    resultados: { [area]: resultado },
+    observacoes: `Material Terapêutico — ${tipo}${ajuda ? ` | Nível de ajuda: ${LABELS_AJUDA_GENERICO[ajuda]||ajuda}` : ''}${tempoTotal ? ` | Tempo total: ${tempoTotal}min` : ''}${obsLivre ? ` | Observações: ${obsLivre}` : ''}`,
+    created_at: new Date().toISOString()
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Registro salvo!', 'success');
+}
+
 function analisarProgressaoPraticaGuiada(regs) {
-  const regsPratica = (regs||[]).filter(r => /^Prática Guiada/i.test(r.observacoes||''));
+  const regsPratica = (regs||[]).filter(r => /^(Prática Guiada|Nova Adaptação|Material Terapêutico)/i.test(r.observacoes||''));
   const ultimos = regsPratica.slice(0, 3);
   if (ultimos.length < 3) return null;
   const pcts = ultimos.map(r => {
