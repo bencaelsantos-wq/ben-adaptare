@@ -16819,6 +16819,7 @@ function atualizarDicaMaterial() {
 
 let ultimaPraticaGuiada = null;
 let respostasPraticaGuiada = {};
+let nivelAjudaPraticaGuiada = {};
 
 async function carregarPendentesPraticaGuiada() {
   const painel = document.getElementById('pg-pendentes-painel');
@@ -16849,12 +16850,19 @@ async function reabrirPraticaGuiada(id) {
     </div>`).join('');
   document.getElementById('pg-result-card').classList.add('show');
   respostasPraticaGuiada = {};
+  nivelAjudaPraticaGuiada = {};
   document.getElementById('pg-registro-perguntas').innerHTML = perguntas.map((q, i) => `
     <div style="margin-bottom:10px">
       <div style="font-size:12.5px;color:var(--gr600);margin-bottom:5px">${i+1}. ${q.pergunta}</div>
       <div class="mon-btn-group">
         <button class="mon-btn ok" onclick="selRegistroPraticaGuiada(this,${i},'certo')" data-idx="${i}" data-val="certo">✔ Acertou</button>
         <button class="mon-btn nao" onclick="selRegistroPraticaGuiada(this,${i},'errado')" data-idx="${i}" data-val="errado">✗ Errou</button>
+      </div>
+      <div class="mon-btn-group" style="margin-top:4px">
+        <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'independente')" data-idx="${i}" data-ajuda="independente" style="font-size:11px">Independente</button>
+        <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'pista-verbal')" data-idx="${i}" data-ajuda="pista-verbal" style="font-size:11px">Com pista verbal</button>
+        <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'apoio-fisico')" data-idx="${i}" data-ajuda="apoio-fisico" style="font-size:11px">Com apoio físico</button>
+        <button class="mon-btn" onclick="selNivelAjudaPraticaGuiada(this,${i},'nao-conseguiu')" data-idx="${i}" data-ajuda="nao-conseguiu" style="font-size:11px">Não conseguiu, mesmo com ajuda</button>
       </div>
     </div>`).join('');
   document.getElementById('pg-registro-bloco').style.display = '';
@@ -16869,6 +16877,13 @@ function selRegistroPraticaGuiada(btn, idx, val) {
   respostasPraticaGuiada[idx] = val;
 }
 
+function selNivelAjudaPraticaGuiada(btn, idx, val) {
+  const group = btn.closest('.mon-btn-group');
+  group.querySelectorAll('.mon-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  nivelAjudaPraticaGuiada[idx] = val;
+}
+
 async function salvarRegistroPraticaGuiada() {
   if (!ultimaPraticaGuiada) return toast('Gere uma atividade primeiro.', 'error');
   const total = ultimaPraticaGuiada.perguntas.length;
@@ -16880,6 +16895,11 @@ async function salvarRegistroPraticaGuiada() {
   const resultado = pct >= 0.7 ? 'ok' : pct >= 0.4 ? 'parcial' : 'nao';
   const { area, paciente, titulo, id } = ultimaPraticaGuiada;
 
+  const LABELS_AJUDA = { 'independente': 'independente', 'pista-verbal': 'com pista verbal', 'apoio-fisico': 'com apoio físico', 'nao-conseguiu': 'não conseguiu mesmo com ajuda' };
+  const contagemAjuda = {};
+  Object.values(nivelAjudaPraticaGuiada).forEach(v => { contagemAjuda[v] = (contagemAjuda[v]||0) + 1; });
+  const resumoAjuda = Object.entries(contagemAjuda).map(([k,v]) => `${v} ${LABELS_AJUDA[k]||k}`).join(', ');
+
   if (id) {
     await db.from('praticas_guiadas').update({
       status: 'registrado', respostas: respostasPraticaGuiada, registrado_em: new Date().toISOString()
@@ -16890,7 +16910,7 @@ async function salvarRegistroPraticaGuiada() {
   const { error } = await db.from('monitoramentos').insert({
     perfil_id: paciente.id, user_id: user.id,
     resultados: { [area]: resultado },
-    observacoes: `Prática Guiada — ${titulo}: ${acertos}/${total} corretas`,
+    observacoes: `Prática Guiada — ${titulo}: ${acertos}/${total} corretas${resumoAjuda ? ` | Nível de ajuda: ${resumoAjuda}` : ''}`,
     created_at: new Date().toISOString()
   });
   if (error) return toast('Erro: ' + error.message, 'error');
