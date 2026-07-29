@@ -4172,7 +4172,7 @@ async function iniciarApp() {
     'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); carregarLogoEscola(); carregarBancoImagensOrg(); } },
     at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); carregarLogoEscola(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
-    coordenacao:     { label:' Coordenação',        cls:'gestao',   sidebarCls:'role-gestao',         nav: ()=>renderNavCoordenacao(),   after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); } },
+    coordenacao:     { label:' Coordenação',        cls:'professor',   sidebarCls:'role-professor',         nav: ()=>renderNavCoordenacaoPedagogica(),   after: ()=>{ carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); carregarAdaptacoes(); carregarPEIs(); showPage('coord-painel'); carregarPainelCoordenacao(); carregarLogoEscola(); } },
     familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); } },
   };
 
@@ -4293,6 +4293,45 @@ function renderNavProfessor() {
     </div>
     <div class="nav-item" id="nav-diversidade" onclick="showPage('diversidade')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3.5 4-3.5s3 1 3 1 1-1 3-1 4 1.5 4 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Diversidade & Inclusão
+    </div>`;
+  renderPages();
+}
+
+function renderNavCoordenacaoPedagogica() {
+  document.getElementById('sb-nav').innerHTML = `
+    <div class="nav-section">Visão Geral</div>
+    <div class="nav-item active" id="nav-coord-painel" onclick="showPage('coord-painel');carregarPainelCoordenacao()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Painel de Coordenação
+    </div>
+    <div class="nav-section">Pedagógico</div>
+    <div class="nav-item" id="nav-nova" onclick="showPage('nova')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova adaptação
+    </div>
+    <div class="nav-item" id="nav-historico" onclick="showPage('historico')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico
+    </div>
+    <div class="nav-item" id="nav-estudo-caso" onclick="showPage('estudo-caso');carregarEstudosCaso()">
+       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso
+    </div>
+    <div class="nav-item" id="nav-pei" onclick="showPage('pei')">
+       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Elaborar PEI
+    </div>
+    <div class="nav-item" id="nav-plano-aee" onclick="showPage('plano-aee')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="14" cy="6" r="2.5" fill="#7C3AED" stroke="none"/><path d="M14 5v2M13 6h2" stroke="white" stroke-width="1.1" stroke-linecap="round"/></svg>Plano de AEE
+    </div>
+    <div class="nav-item" id="nav-pdi-prof" onclick="showPage('pdi')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI
+    </div>
+    <div class="nav-item" id="nav-apoio-prof" onclick="abrirApoioPedagogico()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Apoio Pedagógico
+    </div>
+    <div class="nav-section">Alunos</div>
+    <div class="nav-item" id="nav-alunos" onclick="showPage('alunos')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M11 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Todos os Alunos
+    </div>
+    <div class="nav-section">Referência</div>
+    <div class="nav-item" id="nav-guia" onclick="showPage('guia')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 7v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Guia de Perfis
     </div>`;
   renderPages();
 }
@@ -5751,6 +5790,46 @@ function mudarTabGuiaEns(btn, tab) {
 }
 
 // ── DASHBOARDS POR PERFIL ────────────────────────────────────
+
+async function carregarPainelCoordenacao() {
+  const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  el('coord-total-alunos','…'); el('coord-peis-pendentes','…'); el('coord-adapt-atrasadas','…');
+  try {
+    const [{ data: alunos }, { data: peis }, { data: adapts }] = await Promise.all([
+      db.from('alunos').select('id,nome'),
+      db.from('peis').select('aluno_id'),
+      db.from('adaptacoes').select('aluno_id,created_at').order('created_at', { ascending: false })
+    ]);
+    const totalAlunos = (alunos||[]).length;
+    const idsComPEI = new Set((peis||[]).map(p => p.aluno_id).filter(Boolean));
+    const alunosSemPEI = (alunos||[]).filter(a => !idsComPEI.has(a.id));
+
+    const dataCorte = new Date(Date.now() - 10 * 86400000);
+    const ultimaAdaptPorAluno = {};
+    (adapts||[]).forEach(a => { if (a.aluno_id && !ultimaAdaptPorAluno[a.aluno_id]) ultimaAdaptPorAluno[a.aluno_id] = a.created_at; });
+    const alunosAtrasados = (alunos||[]).filter(a => {
+      const ultima = ultimaAdaptPorAluno[a.id];
+      return !ultima || new Date(ultima) < dataCorte;
+    });
+
+    el('coord-total-alunos', totalAlunos);
+    el('coord-peis-pendentes', alunosSemPEI.length);
+    el('coord-adapt-atrasadas', alunosAtrasados.length);
+
+    const listaPEI = document.getElementById('coord-lista-peis-pendentes');
+    if (listaPEI) listaPEI.innerHTML = alunosSemPEI.length
+      ? alunosSemPEI.slice(0,20).map(a => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${a.nome}</div>`).join('')
+      : '<span style="color:var(--gr300)">Nenhum aluno pendente — todos com PEI.</span>';
+
+    const listaAtrasadas = document.getElementById('coord-lista-adapt-atrasadas');
+    if (listaAtrasadas) listaAtrasadas.innerHTML = alunosAtrasados.length
+      ? alunosAtrasados.slice(0,20).map(a => {
+          const ultima = ultimaAdaptPorAluno[a.id];
+          return `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${a.nome}</span><span style="font-size:11px;color:var(--gr300)">${ultima ? 'Última: '+ultima.slice(0,10) : 'Nunca adaptado'}</span></div>`;
+        }).join('')
+      : '<span style="color:var(--gr300)">Nenhuma pendência — todos os alunos com adaptação recente.</span>';
+  } catch(e) { console.error(e); }
+}
 
 async function carregarDashboardProfessor() {
   atualizarBadgesDiario();
@@ -11238,6 +11317,26 @@ function renderPagesClinica() {
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
   </div>` : ''}
+
+  <div id="page-coord-painel" class="page">
+    <h1 class="page-title">Painel de Coordenação</h1>
+    <p class="page-sub">Visão pedagógica de toda a escola — sem poder de cadastro ou exclusão, que fica com a Gestão.</p>
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card"><div class="stat-num" id="coord-total-alunos">—</div><div class="stat-label">Total de alunos</div></div>
+      <div class="stat-card"><div class="stat-num" id="coord-peis-pendentes" style="color:#B91C1C">—</div><div class="stat-label">PEIs pendentes</div></div>
+      <div class="stat-card"><div class="stat-num" id="coord-adapt-atrasadas" style="color:#B91C1C">—</div><div class="stat-label">Adaptações atrasadas (+10 dias)</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+      <div class="fcard">
+        <div class="fcard-title">Alunos sem PEI cadastrado</div>
+        <div id="coord-lista-peis-pendentes" style="font-size:13px;color:var(--gr500)">Carregando…</div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-title">Alunos sem adaptação recente (10+ dias)</div>
+        <div id="coord-lista-adapt-atrasadas" style="font-size:13px;color:var(--gr500)">Carregando…</div>
+      </div>
+    </div>
+  </div>
 
   <div id="page-clinica-perfil" class="page">
     <div class="clinic-hero"><h2> Módulo Clínico — Perfil Funcional</h2><p>Construa o perfil funcional do aluno. Essas informações alimentam o plano de intervenção integrado e os relatórios para escola e AT.</p></div>
