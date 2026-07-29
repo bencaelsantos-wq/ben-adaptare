@@ -11106,6 +11106,15 @@ function renderPagesClinica() {
         </div>
       </div>
       <div class="fblock"><label class="flabel" for="inp-tipo-livre">Ou descreva livremente o tipo de atividade</label><input type="text" id="inp-tipo-livre" class="finput" placeholder="Ex: Avaliação oral com apoio visual, atividade em dupla com mediação…"></div>
+      <div class="fblock">
+        <label class="flabel" for="inp-perfil-adaptacao">Perfil de adaptação <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label>
+        <select id="inp-perfil-adaptacao" class="fselect">
+          <option value="">Nenhum perfil específico</option>
+          <option value="pre-requisitos">Pré-requisitos (pareamento, letras, sílabas, vocabulário básico)</option>
+          <option value="curriculo-adaptado">Currículo Adaptado (mesmo tema da turma, texto reduzido)</option>
+          <option value="funcional-adaptativo">Funcional/Adaptativo (autonomia de vida, leitura funcional)</option>
+        </select>
+      </div>
     </div>
 
    <div class="fcard">
@@ -11120,6 +11129,14 @@ function renderPagesClinica() {
           <input type="file" id="inp-arquivo-adaptacao" accept=".pdf,.doc,.docx" style="display:none" onchange="processarArquivoAdaptacao(this)">
         </div>
         <div id="upload-status" style="display:none;font-size:12px;color:#2563EB;margin-bottom:6px;padding:6px 10px;background:#EEF2FF;border-radius:6px"></div>
+        <div id="upload-imagens-toggle" style="display:none;margin-bottom:10px;padding:10px 12px;background:#F8FAFF;border:1px solid #DBEAFE;border-radius:8px">
+          <div style="font-size:12.5px;font-weight:600;color:#1E3A8A;margin-bottom:6px">Esta atividade deve usar exatamente as mesmas imagens do material original?</div>
+          <div style="display:flex;gap:8px">
+            <button type="button" class="subrole-btn" id="btn-imgs-original-sim" onclick="definirUsoImagensOriginais(true)">Sim, reaproveitar</button>
+            <button type="button" class="subrole-btn" id="btn-imgs-original-nao" onclick="definirUsoImagensOriginais(false)">Não, é tema novo</button>
+          </div>
+          <div id="upload-imagens-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        </div>
                 <textarea id="inp-conteudo" class="ftarea" placeholder="Ex: Leia o texto e responda:&#10;&#10;A fotossíntese é o processo pelo qual as plantas produzem seu próprio alimento…&#10;&#10;1) O que é fotossíntese?&#10;2) Quais são os ingredientes necessários?"></textarea>
       </div>
 
