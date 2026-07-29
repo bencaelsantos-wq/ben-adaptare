@@ -17665,6 +17665,28 @@ function copiarPlano() {
 }
 
 // MONITORAMENTO
+function analisarProgressaoPraticaGuiada(regs) {
+  const regsPratica = (regs||[]).filter(r => /^Prática Guiada/i.test(r.observacoes||''));
+  const ultimos = regsPratica.slice(0, 3);
+  if (ultimos.length < 3) return null;
+  const pcts = ultimos.map(r => {
+    const m = (r.observacoes||'').match(/(\d+)\/(\d+)\s*corretas/i);
+    return m ? parseInt(m[1],10) / parseInt(m[2],10) : null;
+  }).filter(v => v !== null);
+  if (!pcts.length) return null;
+  const media = pcts.reduce((a,b) => a+b, 0) / pcts.length;
+  const suporteAlto = ultimos.some(r => /não conseguiu mesmo com ajuda|com apoio físico/i.test(r.observacoes||''));
+  const soIndependente = ultimos.every(r => /independente/i.test(r.observacoes||'') && !/não conseguiu|apoio físico/i.test(r.observacoes||''));
+
+  if (media >= 0.8 && soIndependente) {
+    return { nivel: 'aumentar', cor: '#065F46', fundo: '#D1FAE5', titulo: 'Sugestão: aumentar a dificuldade', motivo: `Últimos ${ultimos.length} registros de Prática Guiada com ${Math.round(media*100)}% de acerto médio e ajuda predominantemente independente.` };
+  }
+  if (media < 0.4 || suporteAlto) {
+    return { nivel: 'reduzir', cor: '#7F1D1D', fundo: '#FEE2E2', titulo: 'Sugestão: reduzir a dificuldade / dar mais suporte', motivo: `Últimos registros de Prática Guiada com ${Math.round(media*100)}% de acerto médio e sinais de necessidade de apoio físico ou dificuldade mesmo com ajuda.` };
+  }
+  return { nivel: 'manter', cor: '#92400E', fundo: '#FEF3C7', titulo: 'Sugestão: manter o nível atual', motivo: `Resultados mistos nos últimos registros de Prática Guiada (${Math.round(media*100)}% de acerto médio) — ainda sem padrão claro de domínio.` };
+}
+
 async function carregarMonitoramento() {
   const id   = document.getElementById('mon-aluno-sel')?.value;
   const body = document.getElementById('mon-body');
@@ -17674,7 +17696,14 @@ async function carregarMonitoramento() {
   const { data: regs } = await db.from('monitoramentos').select('*').eq('perfil_id', id).order('created_at', { ascending: false });
   const areas = ['cognitivo','comunicacao','social','comportamental','academico'];
   const labels = { cognitivo:'🧠 Cognitivo', comunicacao:'🗣️ Comunicação', social:'👥 Social', comportamental:'💢 Comportamental', academico:'📚 Acadêmico' };
+  const sugestaoProgressao = analisarProgressaoPraticaGuiada(regs);
   body.innerHTML = `
+    ${sugestaoProgressao ? `
+    <div class="clinic-card" style="margin-bottom:16px;background:${sugestaoProgressao.fundo};border-color:${sugestaoProgressao.cor}">
+      <div class="clinic-card-title" style="color:${sugestaoProgressao.cor}">${sugestaoProgressao.titulo}</div>
+      <p style="font-size:13px;color:${sugestaoProgressao.cor};margin:4px 0 0">${sugestaoProgressao.motivo}</p>
+      <p style="font-size:11.5px;color:${sugestaoProgressao.cor};opacity:.8;margin:6px 0 0">Sugestão baseada nos últimos registros de Prática Guiada — a decisão final é sempre do profissional.</p>
+    </div>` : ''}
     <div class="clinic-card" style="margin-bottom:16px">
       <div class="clinic-card-title">📈 Evolução</div>
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para montar o gráfico — o gráfico aparece a partir do 2º registro.</div></div>' : '<canvas id="mon-grafico" height="90"></canvas>'}
