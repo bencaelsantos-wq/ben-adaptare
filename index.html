@@ -3778,14 +3778,6 @@ function fecharModalNovaOrg() {
   const m = document.getElementById('modal-nova-org'); if (m) m.style.display = 'none';
 }
 async function convidarParaOrganizacao(email, papel, nome, orgId, nomeOrg) {
-  const res = await fetch(SB_URL + '/functions/v1/convidar-usuario', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
-    body: JSON.stringify({ email, role: papel, nome })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`${email}: ` + (data.error || 'erro ao enviar convite'));
-
   await db.from('convites').insert({
     email, papel, sub_papel: '',
     convidado_por: user.id,
@@ -3793,6 +3785,14 @@ async function convidarParaOrganizacao(email, papel, nome, orgId, nomeOrg) {
     instituicao_nome: nomeOrg,
     status: 'pendente'
   });
+
+  const res = await fetch(SB_URL + '/functions/v1/convidar-usuario', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+    body: JSON.stringify({ email, role: papel, nome, organizacao_id: orgId })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`${email}: ` + (data.error || 'erro ao enviar convite'));
 }
 async function criarOrganizacaoEConvidarMestre() {
   const nomeOrg = document.getElementById('novaorg-nome')?.value?.trim();
