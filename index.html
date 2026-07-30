@@ -5857,7 +5857,29 @@ async function carregarEvolucaoAluno() {
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para o gráfico — aparece a partir do 2º registro.</div></div>' : '<canvas id="evol-grafico" height="90"></canvas>'}
     </div>
     <div class="clinic-card" style="margin-bottom:16px">
-      <div class="clinic-card-title">Novo registro — ${new Date().toLocaleDateString('pt-BR')}</div>
+      <div class="clinic-card-title">Relatório de Evolução Pedagógica</div>
+      <p class="page-sub" style="margin:0 0 10px">Gera um texto interpretando a evolução registrada — datas, mudanças percebidas e pontos de atenção por área.</p>
+      ${(regs||[]).length < 2
+        ? '<div class="empty" style="padding:16px"><div class="empty-text">Precisa de pelo menos 2 registros para gerar o relatório.</div></div>'
+        : `<button class="btn-gerar" id="btn-gerar-evolucao-ped" onclick="gerarRelatorioEvolucaoPedagogica('${id}')">⭐ Gerar relatório de evolução com a Lou</button>`}
+      <div class="result-card" id="evol-relatorio-card" style="margin-top:14px">
+        <div class="result-header"><div class="result-title">Relatório gerado pela IA</div></div>
+        <textarea class="ftarea" id="evol-relatorio-texto" style="min-height:220px"></textarea>
+        <div class="result-actions">
+          <button class="btn-copy" onclick="baixarRelatorioEvolucaoPedagogicaPDF('${id}')">Baixar PDF</button>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <div class="fcard-title" style="font-size:13px">Relatórios já gerados</div>
+        <div id="evol-relatorio-historico"></div>
+      </div>
+    </div>
+    <div class="clinic-card" style="margin-bottom:16px">
+      <div class="clinic-card-title">Novo registro</div>
+      <div class="fblock" style="margin-bottom:10px">
+        <label class="flabel" for="evol-data-registro">Data do registro</label>
+        <input type="date" id="evol-data-registro" class="finput" style="max-width:170px" value="${new Date().toISOString().slice(0,10)}">
+      </div>
       ${areas.map(a => `
         <div style="margin-bottom:10px">
           <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}</div>
@@ -5901,7 +5923,7 @@ async function salvarEvolucaoAluno(alunoId) {
     usuario_id: user.id,
     aluno_id: alunoId,
     aluno_nome: aluno?.nome || '',
-    data_registro: new Date().toISOString().slice(0,10),
+    data_registro: document.getElementById('evol-data-registro')?.value || new Date().toISOString().slice(0,10),
     destaque: document.getElementById('evol-destaque')?.value?.trim() || null,
     atencao: document.getElementById('evol-atencao')?.value?.trim() || null,
     estrategias: document.getElementById('evol-estrategias')?.value?.trim() || null,
