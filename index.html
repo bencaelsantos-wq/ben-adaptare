@@ -4166,13 +4166,13 @@ async function iniciarApp() {
   const sidebar = document.querySelector('.sidebar');
 
   const colorMap = {
-    professor:       { label:' Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos(); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
+    professor:       { label:' Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos().then(popularSelectEvolucaoAlunos); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
     gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); setTimeout(verificarOnboardingGestao, 800); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); carregarBancoImagensOrg(); } },
     clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); const btnNovoPerfilClinica = document.getElementById('btn-novo-perfil-clinica'); if (btnNovoPerfilClinica) btnNovoPerfilClinica.style.display = 'none'; } },
     'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); carregarLogoEscola(); carregarBancoImagensOrg(); } },
     at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); carregarLogoEscola(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
-    coordenacao:     { label:' Coordenação',        cls:'professor',   sidebarCls:'role-professor',         nav: ()=>renderNavCoordenacaoPedagogica(),   after: ()=>{ carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); carregarAdaptacoes(); carregarPEIs(); showPage('coord-painel'); carregarPainelCoordenacao(); carregarLogoEscola(); } },
+    coordenacao:     { label:' Coordenação',        cls:'professor',   sidebarCls:'role-professor',         nav: ()=>renderNavCoordenacaoPedagogica(),   after: ()=>{ carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); popularSelectEvolucaoAlunos(); }); carregarAdaptacoes(); carregarPEIs(); showPage('coord-painel'); carregarPainelCoordenacao(); carregarLogoEscola(); } },
     familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); } },
   };
 
@@ -4261,6 +4261,9 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-apoio-prof" onclick="abrirApoioPedagogico()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Apoio Pedagógico${!temAddon('apoio_pedagogico') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
+    <div class="nav-item" id="nav-evolucao-aluno" onclick="showPage('evolucao-aluno')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Evolução do Aluno
+    </div>
     <div class="nav-item" id="nav-laudos-prof" onclick="abrirLinhaDoTempoLaudos()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h8l4 4v8H4V4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h6M7 12h6M7 15h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Linha do Tempo de Laudos${!temAddon('laudos') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -4324,6 +4327,9 @@ function renderNavCoordenacaoPedagogica() {
     </div>
     <div class="nav-item" id="nav-apoio-prof" onclick="abrirApoioPedagogico()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Apoio Pedagógico
+    </div>
+    <div class="nav-item" id="nav-evolucao-aluno" onclick="showPage('evolucao-aluno')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Evolução do Aluno
     </div>
     <div class="nav-section">Alunos</div>
     <div class="nav-item" id="nav-alunos" onclick="showPage('alunos')">
@@ -5829,6 +5835,104 @@ async function carregarPainelCoordenacao() {
         }).join('')
       : '<span style="color:var(--gr300)">Nenhuma pendência — todos os alunos com adaptação recente.</span>';
   } catch(e) { console.error(e); }
+}
+
+function popularSelectEvolucaoAlunos() {
+  const sel = document.getElementById('evol-aluno-sel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+}
+
+let _chartEvolucaoPedagogica = null;
+async function carregarEvolucaoAluno() {
+  const id = document.getElementById('evol-aluno-sel')?.value;
+  const body = document.getElementById('evol-body');
+  if (!id || !body) { if (body) body.innerHTML = ''; return; }
+  const areas = ['comunicacao','cognicao','social','emocional','mobilidade','curriculo'];
+  const labels = { comunicacao:'Comunicação', cognicao:'Cognição', social:'Social', emocional:'Emocional', mobilidade:'Mobilidade', curriculo:'Currículo' };
+  const { data: regs } = await db.from('evolucoes_pedagogicas').select('*').eq('aluno_id', id).order('data_registro', { ascending: false });
+  body.innerHTML = `
+    <div class="clinic-card" style="margin-bottom:16px">
+      <div class="clinic-card-title">Evolução ao longo do tempo</div>
+      ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para o gráfico — aparece a partir do 2º registro.</div></div>' : '<canvas id="evol-grafico" height="90"></canvas>'}
+    </div>
+    <div class="clinic-card" style="margin-bottom:16px">
+      <div class="clinic-card-title">Novo registro — ${new Date().toLocaleDateString('pt-BR')}</div>
+      ${areas.map(a => `
+        <div style="margin-bottom:10px">
+          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}</div>
+          <div class="mon-btn-group">
+            <button class="mon-btn ok" onclick="selEvolBtn(this,'${a}','avancou')" data-area="${a}" data-val="avancou">✔ Avançou</button>
+            <button class="mon-btn parcial" onclick="selEvolBtn(this,'${a}','manteve')" data-area="${a}" data-val="manteve">⚠ Manteve</button>
+            <button class="mon-btn nao" onclick="selEvolBtn(this,'${a}','regrediu')" data-area="${a}" data-val="regrediu">✗ Regrediu</button>
+          </div>
+        </div>`).join('')}
+      <textarea id="evol-destaque" class="ftarea sm" placeholder="Destaque do período (opcional)…" style="margin-top:8px"></textarea>
+      <textarea id="evol-atencao" class="ftarea sm" placeholder="Pontos de atenção (opcional)…" style="margin-top:8px"></textarea>
+      <textarea id="evol-estrategias" class="ftarea sm" placeholder="Estratégias usadas (opcional)…" style="margin-top:8px"></textarea>
+      <button class="btn-sm" style="margin-top:10px" onclick="salvarEvolucaoAluno('${id}')">Salvar registro</button>
+    </div>
+    ${(regs||[]).length ? `
+      <h3 style="font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:10px">Histórico</h3>
+      ${(regs||[]).slice(0,10).map(r => `
+        <div class="rel-card">
+          <div class="rel-meta">${new Date(r.data_registro+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">
+            ${areas.filter(a => r[a]).map(a => `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:${r[a]==='avancou'?'#D1FAE5':r[a]==='manteve'?'#FEF3C7':'#FEE2E2'};color:${r[a]==='avancou'?'#065F46':r[a]==='manteve'?'#92400E':'#7F1D1D'}">${labels[a]}: ${r[a]==='avancou'?'✔':r[a]==='manteve'?'⚠':'✗'}</span>`).join('')}
+          </div>
+          ${r.destaque ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px"><strong>Destaque:</strong> ${r.destaque}</div>` : ''}
+          ${r.atencao ? `<div style="font-size:12px;color:var(--gr400);margin-top:3px"><strong>Atenção:</strong> ${r.atencao}</div>` : ''}
+        </div>`).join('')}` : ''}`;
+  window._evolSelecoes = {};
+  if ((regs||[]).length >= 2) renderizarGraficoEvolucaoPedagogica(regs, areas, labels);
+}
+
+function selEvolBtn(btn, area, val) {
+  const group = btn.closest('.mon-btn-group');
+  group.querySelectorAll('.mon-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  window._evolSelecoes = window._evolSelecoes || {};
+  window._evolSelecoes[area] = val;
+}
+
+async function salvarEvolucaoAluno(alunoId) {
+  const aluno = (alunosCad||[]).find(a => a.id === alunoId);
+  const payload = {
+    usuario_id: user.id,
+    aluno_id: alunoId,
+    aluno_nome: aluno?.nome || '',
+    data_registro: new Date().toISOString().slice(0,10),
+    destaque: document.getElementById('evol-destaque')?.value?.trim() || null,
+    atencao: document.getElementById('evol-atencao')?.value?.trim() || null,
+    estrategias: document.getElementById('evol-estrategias')?.value?.trim() || null,
+    criado_em: new Date().toISOString(),
+    ...(window._evolSelecoes || {})
+  };
+  const { error } = await db.from('evolucoes_pedagogicas').insert(payload);
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Evolução registrada!', 'success');
+  carregarEvolucaoAluno();
+}
+
+function renderizarGraficoEvolucaoPedagogica(regs, areas, labels) {
+  const canvas = document.getElementById('evol-grafico');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const CORES = { comunicacao:'#2563EB', cognicao:'#7C3AED', social:'#059669', emocional:'#D97706', mobilidade:'#DC2626', curriculo:'#0891B2' };
+  const VALOR = { avancou: 100, manteve: 50, regrediu: 0 };
+  const ordenados = [...regs].sort((a,b) => new Date(a.data_registro) - new Date(b.data_registro));
+  const dataLabels = ordenados.map(r => new Date(r.data_registro+'T00:00:00').toLocaleDateString('pt-BR'));
+  const datasets = areas.filter(a => ordenados.some(r => r[a])).map(a => ({
+    label: labels[a],
+    data: ordenados.map(r => r[a] ? VALOR[r[a]] : null),
+    borderColor: CORES[a], backgroundColor: CORES[a],
+    spanGaps: true, tension: 0.3, pointRadius: 4,
+  }));
+  if (_chartEvolucaoPedagogica) _chartEvolucaoPedagogica.destroy();
+  _chartEvolucaoPedagogica = new Chart(canvas, {
+    type: 'line',
+    data: { labels: dataLabels, datasets },
+    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }, plugins: { legend: { position: 'bottom' } } },
+  });
 }
 
 async function carregarDashboardProfessor() {
@@ -11317,6 +11421,13 @@ function renderPagesClinica() {
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
   </div>` : ''}
+
+  <div id="page-evolucao-aluno" class="page">
+    <h1 class="page-title">Evolução do Aluno</h1>
+    <p class="page-sub">Registro periódico de evolução pedagógica — comunicação, cognição, social, emocional, mobilidade e currículo.</p>
+    <div style="margin-bottom:16px"><select class="fselect" id="evol-aluno-sel" onchange="carregarEvolucaoAluno()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
+    <div id="evol-body"></div>
+  </div>
 
   <div id="page-coord-painel" class="page">
     <h1 class="page-title">Painel de Coordenação</h1>
