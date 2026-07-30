@@ -5917,6 +5917,85 @@ function selEvolBtn(btn, area, val) {
   window._evolSelecoes[area] = val;
 }
 
+async function gerarRelatorioEvolucaoPedagogica(alunoId) {
+  const aluno = (alunosCad||[]).find(a => a.id === alunoId);
+  if (!aluno) return toast('Aluno não encontrado.', 'error');
+  const btn = document.getElementById('btn-gerar-evolucao-ped');
+  btn.textContent = '⏳ Gerando com a Lou…'; btn.disabled = true;
+
+  const { data: regs } = await db.from('evolucoes_pedagogicas').select('*').eq('aluno_id', alunoId).order('data_registro', { ascending: true });
+  const labels = { comunicacao:'Comunicação', cognicao:'Cognição', social:'Social', emocional:'Emocional', mobilidade:'Mobilidade', curriculo:'Currículo' };
+  const areas = Object.keys(labels);
+  const linhas = (regs||[]).map(r => {
+    const data = new Date(r.data_registro+'T00:00:00').toLocaleDateString('pt-BR');
+    const resultadosTxt = areas.filter(a => r[a]).map(a => `${labels[a]}: ${r[a]}`).join(', ');
+    const extras = [r.destaque ? 'Destaque: '+r.destaque : '', r.atencao ? 'Atenção: '+r.atencao : '', r.estrategias ? 'Estratégias: '+r.estrategias : ''].filter(Boolean).join(' | ');
+    return `- ${data} — ${resultadosTxt}${extras ? ' | ' + extras : ''}`;
+  }).join('\n');
+
+  const prompt = `Você é especialista em pedagogia inclusiva, escrevendo um relatório de evolução pedagógica de um aluno.
+
+ALUNO: ${aluno.nome}
+
+REGISTROS DE EVOLUÇÃO (do mais antigo ao mais recente, "avancou"/"manteve"/"regrediu" por área):
+${linhas}
+
+Escreva um RELATÓRIO DE EVOLUÇÃO PEDAGÓGICA em texto corrido, organizado por área trabalhada, citando datas concretas dos registros. Para cada área com dados, descreva a evolução ao longo do período, aponte estagnações ou retrocessos se houver, e finalize com uma síntese geral e recomendações pedagógicas objetivas. Linguagem técnica adequada a registro escolar, sem jargão desnecessário, sem enrolação. NUNCA use emojis. NUNCA use tabela markdown.
+
+FORMATO: comece com "Período do relatório: [data do primeiro registro] a [data do último registro]", depois o corpo do relatório.`;
+
+  try {
+    const txt = await chamarClaude({ prompt, maxTokens: 1400, modulo: 'relatorio_evolucao_pedagogica' });
+    document.getElementById('evol-relatorio-texto').value = txt.trim();
+    document.getElementById('evol-relatorio-card').classList.add('show');
+    await db.from('relatorios').insert({
+      user_id: user.id, origem: 'escola', destino: 'evolucao-pedagogica',
+      aluno_nome: aluno.nome, titulo: `Relatório de Evolução Pedagógica — ${aluno.nome} — ${new Date().toLocaleDateString('pt-BR')}`,
+      conteudo: txt.trim(), created_at: new Date().toISOString()
+    });
+    carregarHistoricoEvolucaoPedagogica(alunoId);
+    toast('Relatório gerado e salvo com sucesso!', 'success');
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  }
+  btn.textContent = '⭐ Gerar relatório de evolução com a Lou'; btn.disabled = false;
+}
+
+function baixarRelatorioEvolucaoPedagogicaPDF(alunoId) {
+  const aluno = (alunosCad||[]).find(a => a.id === alunoId);
+  const texto = document.getElementById('evol-relatorio-texto')?.value?.trim();
+  if (!texto) return toast('Gere o relatório primeiro.', 'error');
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+  gerarPDFDocumento({
+    tipo: 'RELATÓRIO DE EVOLUÇÃO PEDAGÓGICA', titulo: 'Relatório de Evolução Pedagógica', subtitulo: 'Evolução do Aluno',
+    aluno: aluno?.nome||'', professor: profNome, conteudo: texto,
+    nomeArquivo: 'Relatorio_Evolucao_Pedagogica_' + (aluno?.nome||'aluno').replace(/\s+/g,'_'),
+    isAtividade: true, guiaProf: null, fonteTamanho: 'medio', espacamento: 'normal', fonteTipo: 'sans', imagensPorItem: {}
+  });
+}
+
+async function carregarHistoricoEvolucaoPedagogica(alunoId) {
+  const cont = document.getElementById('evol-relatorio-historico');
+  if (!cont) return;
+  const aluno = (alunosCad||[]).find(a => a.id === alunoId);
+  if (!aluno) return;
+  const { data } = await db.from('relatorios').select('id, titulo, created_at, conteudo').eq('destino', 'evolucao-pedagogica').eq('aluno_nome', aluno.nome).order('created_at', { ascending: false });
+  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum relatório gerado ainda.</p>'; return; }
+  cont.innerHTML = data.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
+      <div style="font-size:12.5px">${r.titulo}</div>
+      <button class="btn-sm" onclick="reabrirRelatorioEvolucaoPedagogica('${r.id}')">Abrir</button>
+    </div>`).join('');
+}
+
+async function reabrirRelatorioEvolucaoPedagogica(id) {
+  const { data, error } = await db.from('relatorios').select('*').eq('id', id).single();
+  if (error || !data) return toast('Não foi possível abrir esse relatório.', 'error');
+  document.getElementById('evol-relatorio-texto').value = data.conteudo;
+  document.getElementById('evol-relatorio-card').classList.add('show');
+  document.getElementById('evol-relatorio-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
 async function salvarEvolucaoAluno(alunoId) {
   const aluno = (alunosCad||[]).find(a => a.id === alunoId);
   const payload = {
