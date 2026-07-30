@@ -10135,6 +10135,33 @@ function renderPages() {
     <div class="guia-grid" id="guia-grid"></div>
   </div>
 
+  <div id="page-evolucao-aluno" class="page">
+    <h1 class="page-title">Evolução do Aluno</h1>
+    <p class="page-sub">Registro periódico de evolução pedagógica — comunicação, cognição, social, emocional, mobilidade e currículo.</p>
+    <div style="margin-bottom:16px"><select class="fselect" id="evol-aluno-sel" onchange="carregarEvolucaoAluno()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
+    <div id="evol-body"></div>
+  </div>
+
+  <div id="page-coord-painel" class="page">
+    <h1 class="page-title">Painel de Coordenação</h1>
+    <p class="page-sub">Visão pedagógica de toda a escola — sem poder de cadastro ou exclusão, que fica com a Gestão.</p>
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card"><div class="stat-num" id="coord-total-alunos">—</div><div class="stat-label">Total de alunos</div></div>
+      <div class="stat-card"><div class="stat-num" id="coord-peis-pendentes" style="color:#B91C1C">—</div><div class="stat-label">PEIs pendentes</div></div>
+      <div class="stat-card"><div class="stat-num" id="coord-adapt-atrasadas" style="color:#B91C1C">—</div><div class="stat-label">Adaptações atrasadas (+10 dias)</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+      <div class="fcard">
+        <div class="fcard-title">Alunos sem PEI cadastrado</div>
+        <div id="coord-lista-peis-pendentes" style="font-size:13px;color:var(--gr500)">Carregando…</div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-title">Alunos sem adaptação recente (10+ dias)</div>
+        <div id="coord-lista-adapt-atrasadas" style="font-size:13px;color:var(--gr500)">Carregando…</div>
+      </div>
+    </div>
+  </div>
+
   <!-- DIVERSIDADE & INCLUSÃO -->
   <div id="page-diversidade" class="page">
     <h1 class="page-title">Diversidade & Inclusão</h1>
@@ -11421,33 +11448,6 @@ function renderPagesClinica() {
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
   </div>` : ''}
-
-  <div id="page-evolucao-aluno" class="page">
-    <h1 class="page-title">Evolução do Aluno</h1>
-    <p class="page-sub">Registro periódico de evolução pedagógica — comunicação, cognição, social, emocional, mobilidade e currículo.</p>
-    <div style="margin-bottom:16px"><select class="fselect" id="evol-aluno-sel" onchange="carregarEvolucaoAluno()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
-    <div id="evol-body"></div>
-  </div>
-
-  <div id="page-coord-painel" class="page">
-    <h1 class="page-title">Painel de Coordenação</h1>
-    <p class="page-sub">Visão pedagógica de toda a escola — sem poder de cadastro ou exclusão, que fica com a Gestão.</p>
-    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat-card"><div class="stat-num" id="coord-total-alunos">—</div><div class="stat-label">Total de alunos</div></div>
-      <div class="stat-card"><div class="stat-num" id="coord-peis-pendentes" style="color:#B91C1C">—</div><div class="stat-label">PEIs pendentes</div></div>
-      <div class="stat-card"><div class="stat-num" id="coord-adapt-atrasadas" style="color:#B91C1C">—</div><div class="stat-label">Adaptações atrasadas (+10 dias)</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
-      <div class="fcard">
-        <div class="fcard-title">Alunos sem PEI cadastrado</div>
-        <div id="coord-lista-peis-pendentes" style="font-size:13px;color:var(--gr500)">Carregando…</div>
-      </div>
-      <div class="fcard">
-        <div class="fcard-title">Alunos sem adaptação recente (10+ dias)</div>
-        <div id="coord-lista-adapt-atrasadas" style="font-size:13px;color:var(--gr500)">Carregando…</div>
-      </div>
-    </div>
-  </div>
 
   <div id="page-clinica-perfil" class="page">
     <div class="clinic-hero"><h2> Módulo Clínico — Perfil Funcional</h2><p>Construa o perfil funcional do aluno. Essas informações alimentam o plano de intervenção integrado e os relatórios para escola e AT.</p></div>
