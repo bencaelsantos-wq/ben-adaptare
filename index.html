@@ -5880,15 +5880,22 @@ async function carregarEvolucaoAluno() {
         <label class="flabel" for="evol-data-registro">Data do registro</label>
         <input type="date" id="evol-data-registro" class="finput" style="max-width:170px" value="${new Date().toISOString().slice(0,10)}">
       </div>
-      ${areas.map(a => `
-        <div style="margin-bottom:10px">
-          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}</div>
+      <div style="display:flex;gap:14px;align-items:center;padding:8px 10px;background:var(--gr50,#F9FAFB);border-radius:8px;margin-bottom:12px;font-size:11.5px;color:var(--gr500)">
+        <span><span style="color:#059669;font-weight:700">✔</span> Avançou</span>
+        <span><span style="color:#D97706;font-weight:700">⚠</span> Manteve</span>
+        <span><span style="color:#DC2626;font-weight:700">✗</span> Regrediu</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px">
+        ${areas.map(a => `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--gr100)">
+          <div style="font-size:12.5px;font-weight:600;color:var(--gr600)">${labels[a]}</div>
           <div class="mon-btn-group">
-            <button class="mon-btn ok" onclick="selEvolBtn(this,'${a}','avancou')" data-area="${a}" data-val="avancou">✔ Avançou</button>
-            <button class="mon-btn parcial" onclick="selEvolBtn(this,'${a}','manteve')" data-area="${a}" data-val="manteve">⚠ Manteve</button>
-            <button class="mon-btn nao" onclick="selEvolBtn(this,'${a}','regrediu')" data-area="${a}" data-val="regrediu">✗ Regrediu</button>
+            <button class="mon-btn ok" title="Avançou" onclick="selEvolBtn(this,'${a}','avancou')" data-area="${a}" data-val="avancou">✔</button>
+            <button class="mon-btn parcial" title="Manteve" onclick="selEvolBtn(this,'${a}','manteve')" data-area="${a}" data-val="manteve">⚠</button>
+            <button class="mon-btn nao" title="Regrediu" onclick="selEvolBtn(this,'${a}','regrediu')" data-area="${a}" data-val="regrediu">✗</button>
           </div>
         </div>`).join('')}
+      </div>
       <textarea id="evol-destaque" class="ftarea sm" placeholder="Destaque do período (opcional)…" style="margin-top:8px"></textarea>
       <textarea id="evol-atencao" class="ftarea sm" placeholder="Pontos de atenção (opcional)…" style="margin-top:8px"></textarea>
       <textarea id="evol-estrategias" class="ftarea sm" placeholder="Estratégias usadas (opcional)…" style="margin-top:8px"></textarea>
