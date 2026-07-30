@@ -4011,6 +4011,15 @@ async function lerPerfilDobanco() {
 
     window._organizacaoId = data?.organizacao_id || null;
 
+    if (!window._organizacaoId && data && ['gestao','gestao-clinica'].includes(data.role)) {
+      const { data: novaOrg } = await db.from('organizacoes').insert({ dono_id: user.id, nome: data.nome || 'Minha Organização' }).select('id').single();
+      if (novaOrg?.id) {
+        await db.from('profiles').update({ organizacao_id: novaOrg.id }).eq('id', user.id);
+        window._organizacaoId = novaOrg.id;
+        data.organizacao_id = novaOrg.id;
+      }
+    }
+
     if (data?.organizacao_id) {
       const { data: org } = await db.from('organizacoes').select(`plano, ativo, motivo_pausa, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
       if (org && org.ativo === false) {
@@ -8960,6 +8969,7 @@ async function salvarProfissionalClinica() {
     await db.from('convites').insert({
       email, papel: roleParaEnviar, sub_papel: ehAT ? '' : especialidade,
       convidado_por: user.id,
+      organizacao_id: window._organizacaoId || null,
       instituicao_nome: document.getElementById('cpc-vinculo')?.value || null,
       status: 'pendente'
     });
