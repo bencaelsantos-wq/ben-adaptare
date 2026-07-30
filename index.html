@@ -8955,17 +8955,7 @@ async function salvarProfissionalClinica() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Criando acesso…'; }
 
   try {
-    // 1. Convidar via Supabase — envia e-mail "Ativar minha conta"
-    const _sessao = await db.auth.getSession();
-    const _token = _sessao?.data?.session?.access_token || '';
-    const _convResp = await fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/convidar-usuario', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token },
-      body: JSON.stringify({ email, nome, role: roleParaEnviar, subrole: ehAT ? '' : especialidade, redirect_to: window.location.href })
-    });
-    if (!_convResp.ok) { const _e = await _convResp.json().catch(()=>({})); throw new Error('Erro ao enviar convite: ' + (_e.error || _convResp.status)); }
-
-    // 2. Registrar convite na tabela convites
+    // 1. Registrar convite na tabela convites (antes de disparar o e-mail, evita corrida)
     await db.from('convites').insert({
       email, papel: roleParaEnviar, sub_papel: ehAT ? '' : especialidade,
       convidado_por: user.id,
@@ -8973,6 +8963,16 @@ async function salvarProfissionalClinica() {
       instituicao_nome: document.getElementById('cpc-vinculo')?.value || null,
       status: 'pendente'
     });
+
+    // 2. Convidar via Supabase — envia e-mail "Ativar minha conta"
+    const _sessao = await db.auth.getSession();
+    const _token = _sessao?.data?.session?.access_token || '';
+    const _convResp = await fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/convidar-usuario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token },
+      body: JSON.stringify({ email, nome, role: roleParaEnviar, subrole: ehAT ? '' : especialidade, organizacao_id: window._organizacaoId || null, redirect_to: window.location.href })
+    });
+    if (!_convResp.ok) { const _e = await _convResp.json().catch(()=>({})); throw new Error('Erro ao enviar convite: ' + (_e.error || _convResp.status)); }
 
     // 3. Salvar na tabela profissionais_clinica (não se aplica a AT — ele não usa esse cadastro)
     if (!ehAT) {
