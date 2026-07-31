@@ -4892,9 +4892,14 @@ async function carregarProfissionaisClinica() {
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👨‍⚕️</div><div class="empty-text">Nenhum profissional cadastrado. Clique em "+ Cadastrar profissional".</div></div>`;
     return;
   }
+  const emails = lista.map(p => p.email).filter(Boolean);
+  const { data: profs } = emails.length ? await db.from('profiles').select('id, email').in('email', emails) : { data: [] };
+  const mapaEmailId = {};
+  (profs||[]).forEach(p => { mapaEmailId[p.email] = p.id; });
   grid.innerHTML = lista.map(p => {
     const iniciais = (p.nome||'?').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
     const especialidadeLabel = ESPECIALIDADE_LABELS[p.especialidade] || p.especialidade || '—';
+    const profileId = mapaEmailId[p.email] || '';
     return `<div class="prof-card">
       <div class="prof-card-top">
         <div class="prof-avatar">${iniciais}</div>
@@ -4903,7 +4908,7 @@ async function carregarProfissionaisClinica() {
       </div>
       <div class="prof-info-row"><span class="prof-badge mat">🩺 ${especialidadeLabel}</span></div>
       <div class="prof-card-actions">
-        <button class="btn-sm" onclick="verPacientesDoProfissional('${p.id}','${(p.nome||'').replace(/'/g,"&#39;")}')">Ver pacientes</button>
+        <button class="btn-sm" ${profileId ? `onclick="verPacientesDoProfissional('${profileId}','${(p.nome||'').replace(/'/g,"&#39;")}')"` : 'disabled title="Profissional ainda não ativou o acesso"'}>Ver pacientes</button>
         <button class="btn-danger" onclick="excluirProfissional('${p.id}','${(p.nome||'').replace(/'/g,"&#39;")}')">Excluir</button>
       </div>
     </div>`;
@@ -16624,12 +16629,8 @@ let perfisClinicaList = [], perfilClinicaSel = null, planoGerado = {};
 let objetivosMap = {}, monitoramentoMap = {};
 
 async function carregarAlunosClinica() {
-  const [{ data }, { data: meuProf }] = await Promise.all([
-    db.from('perfis_clinicos').select('*').order('nome'),
-    db.from('profissionais_clinica').select('id').eq('email', user.email).maybeSingle(),
-  ]);
-  const meuProfId = meuProf?.id || null;
-  perfisClinicaList = (data || []).filter(p => p.user_id === user.id || (meuProfId && (p.profissionais_ids||[]).includes(meuProfId)));
+  const { data } = await db.from('perfis_clinicos').select('*').order('nome');
+  perfisClinicaList = data || [];
   renderPerfisClinicaGrid();
   popularSelectsClinica();
 }
@@ -16762,9 +16763,13 @@ async function abrirModalCadClinica(p) {
 async function popularDropdownProfissionaisCad() {
   const sel = document.getElementById('cad-profissionais-sel');
   if (!sel) return;
-  const { data } = await db.from('profissionais_clinica').select('id, nome').order('nome');
+  const { data: pcs } = await db.from('profissionais_clinica').select('id, nome, email').order('nome');
+  const emails = (pcs||[]).map(p => p.email).filter(Boolean);
+  const { data: profs } = emails.length ? await db.from('profiles').select('id, email').in('email', emails) : { data: [] };
+  const mapaEmailId = {};
+  (profs||[]).forEach(p => { mapaEmailId[p.email] = p.id; });
   sel.innerHTML = '<option value="">Selecione um profissional</option>' +
-    (data||[]).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+    (pcs||[]).filter(p => mapaEmailId[p.email]).map(p => `<option value="${mapaEmailId[p.email]}">${p.nome}${!mapaEmailId[p.email] ? ' (login ainda não ativado)' : ''}</option>`).join('');
 }
 function adicionarProfissionalCad() {
   const sel = document.getElementById('cad-profissionais-sel');
