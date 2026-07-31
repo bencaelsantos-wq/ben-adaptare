@@ -6124,26 +6124,35 @@ async function carregarColaboracao() {
   }
 }
 
-function carregarDashboardGC() {
-  const perfis = (window.clinicaPerfis||[]).length;
-  const prof   = (window.gcProfissionais||[]).length;
-  const rel    = (window.clinicaRelatorios||[]).length;
-  const el     = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  el('dash-gc-especialistas', prof||'0');
-  el('dash-gc-alunos',        perfis||'0');
-  el('dash-gc-rel',           rel||'0');
-  el('dash-gc-escola',        perfis>0?'1':'0');
+async function carregarDashboardGC() {
+  const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  el('dash-gc-especialistas','…'); el('dash-gc-alunos','…'); el('dash-gc-rel','…'); el('dash-gc-escola','…');
+
+  const [{ data: perfisData }, { data: profData }, { data: relData }] = await Promise.all([
+    db.from('perfis_clinicos').select('*').order('nome'),
+    db.from('profissionais_clinica').select('*').eq('user_id', user.id).order('nome'),
+    db.from('relatorios').select('id,aluno_nome,created_at').order('created_at', { ascending:false }),
+  ]);
+  const perfisList = perfisData || [];
+  const profList   = profData || [];
+  const relList    = relData || [];
+
+  el('dash-gc-especialistas', profList.length||'0');
+  el('dash-gc-alunos',        perfisList.length||'0');
+  el('dash-gc-rel',           relList.length||'0');
+  el('dash-gc-escola',        perfisList.length>0?'1':'0');
 
   const listaP = document.getElementById('dash-gc-prof-lista');
   if(listaP) {
-    const p = (window.gcProfissionais||[]).slice(0,5);
+    const p = profList.slice(0,5);
     listaP.innerHTML = p.length ? p.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${x.nome||'Profissional'} <span style="float:right;font-size:11px;color:var(--gr300)">${x.especialidade||''}</span></div>`).join('') : '<span style="color:var(--gr300)">Nenhum profissional cadastrado ainda.</span>';
   }
   const listaA = document.getElementById('dash-gc-perfis-lista');
   if(listaA) {
-    const a = (window.clinicaPerfis||[]).slice(0,5);
+    const a = perfisList.slice(0,5);
     listaA.innerHTML = a.length ? a.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${x.aluno_nome||x.nome||'Aluno'}</div>`).join('') : '<span style="color:var(--gr300)">Nenhum perfil clínico ainda.</span>';
   }
+  const prof = profList.length;
   const acoes = document.getElementById('dash-gc-acoes');
   if(acoes) {
     const s = [];
@@ -16615,8 +16624,8 @@ let perfisClinicaList = [], perfilClinicaSel = null, planoGerado = {};
 let objetivosMap = {}, monitoramentoMap = {};
 
 async function carregarAlunosClinica() {
-  const { data } = await db.from('perfis_clinicos').select('*').eq('user_id', user.id).order('nome');
-  perfisClinicaList = data || [];
+  const { data } = await db.from('perfis_clinicos').select('*').order('nome');
+  perfisClinicaList = (data || []).filter(p => p.user_id === user.id || (p.profissionais_ids||[]).includes(user.id));
   renderPerfisClinicaGrid();
   popularSelectsClinica();
 }
