@@ -18184,9 +18184,25 @@ function renderizarGraficoAutonomia(regs) {
   const dataLabels = regsComAjuda.map(r => new Date(r.data).toLocaleDateString('pt-BR'));
   if (_chartAutonomia) _chartAutonomia.destroy();
   _chartAutonomia = new Chart(canvas, {
-    type: 'line',
-    data: { labels: dataLabels, datasets: [{ label: 'Autonomia (nível de ajuda)', data: regsComAjuda.map(r => r.score), borderColor: '#7C3AED', backgroundColor: '#7C3AED', tension: 0.3, pointRadius: 4, spanGaps: true }] },
-    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }, plugins: { legend: { position: 'bottom' } } }
+    type: 'bar',
+    data: { labels: dataLabels, datasets: [{
+      label: 'Autonomia (nível de ajuda)',
+      data: regsComAjuda.map(r => r.score),
+      backgroundColor: ctx => {
+        const { chart, dataIndex } = ctx;
+        const { ctx: c, chartArea } = chart;
+        if (!chartArea) return '#5EEAD4';
+        const ultimo = dataIndex === regsComAjuda.length - 1;
+        const gradient = c.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        if (ultimo) { gradient.addColorStop(0, '#4ADE80'); gradient.addColorStop(1, '#15803D'); }
+        else { gradient.addColorStop(0, '#5EEAD4'); gradient.addColorStop(1, '#0F766E'); }
+        return gradient;
+      },
+      borderRadius: 6,
+      borderSkipped: false,
+      maxBarThickness: 48,
+    }] },
+    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }, plugins: { legend: { display: false } } }
   });
 }
 
