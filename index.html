@@ -16624,8 +16624,12 @@ let perfisClinicaList = [], perfilClinicaSel = null, planoGerado = {};
 let objetivosMap = {}, monitoramentoMap = {};
 
 async function carregarAlunosClinica() {
-  const { data } = await db.from('perfis_clinicos').select('*').order('nome');
-  perfisClinicaList = (data || []).filter(p => p.user_id === user.id || (p.profissionais_ids||[]).includes(user.id));
+  const [{ data }, { data: meuProf }] = await Promise.all([
+    db.from('perfis_clinicos').select('*').order('nome'),
+    db.from('profissionais_clinica').select('id').eq('email', user.email).maybeSingle(),
+  ]);
+  const meuProfId = meuProf?.id || null;
+  perfisClinicaList = (data || []).filter(p => p.user_id === user.id || (meuProfId && (p.profissionais_ids||[]).includes(meuProfId)));
   renderPerfisClinicaGrid();
   popularSelectsClinica();
 }
