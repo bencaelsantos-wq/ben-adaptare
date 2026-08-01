@@ -8914,6 +8914,7 @@ async function salvarProfissionalClinica() {
     if (!ehAT) {
       const payload = {
         user_id:     user.id,
+        organizacao_id: window._organizacaoId || null,
         nome,
         email,
         telefone:    document.getElementById('cpc-tel').value.trim()      || null,
@@ -16799,7 +16800,7 @@ async function salvarPerfilClinico() {
   if (!nome) return toast('Informe o nome do aluno.', 'error');
   if (!lgpdValidar('clinica')) return;
   const payload = {
-    nome, user_id: user.id,
+    nome, user_id: user.id, organizacao_id: window._organizacaoId || null,
     idade:         document.getElementById('cc-idade').value.trim() || null,
     diagnostico:   document.getElementById('cc-diag').value.trim() || null,
     hipotese:      document.getElementById('cc-hipotese').value.trim() || null,
