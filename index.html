@@ -6158,6 +6158,7 @@ async function carregarDashboardGC() {
     listaA.innerHTML = a.length ? a.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${x.aluno_nome||x.nome||'Aluno'}</div>`).join('') : '<span style="color:var(--gr300)">Nenhum perfil clínico ainda.</span>';
   }
   const prof = profList.length;
+  const perfis = perfisList.length;
   const acoes = document.getElementById('dash-gc-acoes');
   if(acoes) {
     const s = [];
