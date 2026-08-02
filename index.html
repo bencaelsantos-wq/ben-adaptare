@@ -1899,22 +1899,10 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div style="background:#fff;border:1px solid #E5E7EB;border-radius:16px;box-shadow:0 12px 32px rgba(15,118,110,.1);overflow:hidden;font-family:inherit">
         <div style="background:#F0FDFA;padding:14px 18px;border-bottom:1px solid #99F6E4">
           <div style="font-size:13px;font-weight:800;color:#0F766E">Monitoramento de Evolução — Miguel S.</div>
-          <div style="font-size:10.5px;color:#6B7280;margin-top:2px">Evolução por área + autonomia, com base nos registros salvos</div>
+          <div style="font-size:10.5px;color:#6B7280;margin-top:2px">Evolução por área, com base nos registros salvos</div>
         </div>
         <div style="padding:18px">
-          <div style="display:flex;align-items:flex-end;gap:10px;height:100px;margin-bottom:6px">
-            <div style="flex:1;background:linear-gradient(180deg,#5EEAD4,#0F766E);border-radius:6px 6px 0 0;height:38%"></div>
-            <div style="flex:1;background:linear-gradient(180deg,#5EEAD4,#0F766E);border-radius:6px 6px 0 0;height:52%"></div>
-            <div style="flex:1;background:linear-gradient(180deg,#5EEAD4,#0F766E);border-radius:6px 6px 0 0;height:61%"></div>
-            <div style="flex:1;background:linear-gradient(180deg,#5EEAD4,#0F766E);border-radius:6px 6px 0 0;height:79%"></div>
-            <div style="flex:1;background:linear-gradient(180deg,#22C55E,#15803D);border-radius:6px 6px 0 0;height:91%"></div>
-          </div>
-          <div style="display:flex;gap:10px;font-size:9.5px;color:#9CA3AF;text-align:center;margin-bottom:14px">
-            <div style="flex:1">Sem 1</div><div style="flex:1">Sem 2</div><div style="flex:1">Sem 3</div><div style="flex:1">Sem 4</div><div style="flex:1">Sem 5</div>
-          </div>
-          <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:10px 12px;font-size:11.5px;color:#166534">
-            📈 <strong>Sugestão de progressão:</strong> autonomia crescente nas últimas 3 semanas — considerar aumentar a dificuldade da próxima atividade.
-          </div>
+          <canvas id="lp-grafico-monitoramento" height="180"></canvas>
         </div>
       </div>
     </div>
@@ -19543,9 +19531,42 @@ async function verificarStatusEscola(email) {
 }
 // ===== FIM PAINEL DEV =====
 
-function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; } function mostrarLanding() {
+function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; } let _chartLpMonitoramento = null;
+function iniciarGraficoLpMonitoramento() {
+  const canvas = document.getElementById('lp-grafico-monitoramento');
+  if (!canvas || typeof Chart === 'undefined' || _chartLpMonitoramento) return;
+  const CORES = { Cognitivo:'#2563EB', Comunicação:'#7C3AED', Social:'#059669', Comportamental:'#D97706', Acadêmico:'#DC2626' };
+  const datas = ['02/07/2026','16/07/2026','30/07/2026'];
+  const series = {
+    Cognitivo:      [50, 100, 50],
+    Comunicação:    [null, 50, 100],
+    Social:         [null, 50, 100],
+    Comportamental: [null, 100, null],
+    Acadêmico:      [null, 100, 100],
+  };
+  _chartLpMonitoramento = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: datas,
+      datasets: Object.keys(series).map(k => ({
+        label: k, data: series[k], backgroundColor: CORES[k],
+        borderRadius: 6, borderSkipped: false, maxBarThickness: 28,
+      })),
+    },
+    options: {
+      scales: {
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { display: false } },
+        x: { grid: { display: false } },
+      },
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10.5 } } } },
+    },
+  });
+}
+
+function mostrarLanding() {
   document.getElementById('landing-page').style.display = 'block';
   document.getElementById('login-screen').style.display = 'none';
+  setTimeout(iniciarGraficoLpMonitoramento, 50);
 }
 
 function irParaLogin() {
