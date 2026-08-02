@@ -687,6 +687,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .mon-btn.parcial.sel{background:#F59E0B;color:#fff}
 .mon-btn.nao{border-color:#EF4444;color:#EF4444}
 .mon-btn.nao.sel{background:#EF4444;color:#fff}
+.mon-btn.sel:not(.ok):not(.parcial):not(.nao){background:#7C3AED;border-color:#7C3AED;color:#fff}
 
 /* ══ PONTE ESCOLA ↔ CLÍNICA ══════════════════════════════════ */
 :root{
@@ -18227,7 +18228,7 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   ordenados.forEach(r => Object.keys(r.resultados||{}).forEach(k => areasComDados.add(k)));
   const datasets = areas.filter(a => areasComDados.has(a)).map(a => ({
     label: labels[a].replace(/^\S+\s/, ''),
-    data: ordenados.map(r => r.resultados && r.resultados[a] !== undefined ? VALOR[r.resultados[a]] : null),
+    data: ordenados.map(r => r.resultados && r.resultados[a] !== undefined ? Math.max(VALOR[r.resultados[a]], 2) : null),
     backgroundColor: CORES[a],
     borderRadius: 6,
     borderSkipped: false,
