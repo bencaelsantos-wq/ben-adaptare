@@ -18212,7 +18212,7 @@ function renderizarGraficoAutonomia(regs) {
       borderSkipped: false,
       maxBarThickness: 48,
     }] },
-    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }, plugins: { legend: { display: false } } }
+    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
   });
 }
 
@@ -18240,7 +18240,7 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
     data: { labels: dataLabels, datasets },
     options: {
       scales: {
-        y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { display: false } },
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } },
         x: { grid: { display: false } },
       },
       plugins: { legend: { position: 'bottom' } },
