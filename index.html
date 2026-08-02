@@ -18240,15 +18240,20 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   const datasets = areas.filter(a => areasComDados.has(a)).map(a => ({
     label: labels[a].replace(/^\S+\s/, ''),
     data: ordenados.map(r => r.resultados && r.resultados[a] !== undefined ? VALOR[r.resultados[a]] : null),
-    borderColor: CORES[a], backgroundColor: CORES[a],
-    spanGaps: true, tension: 0.3, pointRadius: 4,
+    backgroundColor: CORES[a],
+    borderRadius: 6,
+    borderSkipped: false,
+    maxBarThickness: 36,
   }));
   if (_chartMonitoramento) _chartMonitoramento.destroy();
   _chartMonitoramento = new Chart(canvas, {
-    type: 'line',
+    type: 'bar',
     data: { labels: dataLabels, datasets },
     options: {
-      scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } },
+      scales: {
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { display: false } },
+        x: { grid: { display: false } },
+      },
       plugins: { legend: { position: 'bottom' } },
     },
   });
