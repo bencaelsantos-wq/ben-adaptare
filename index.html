@@ -659,7 +659,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .clinic-card-title{font-size:13px;font-weight:600;color:var(--gr800);margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .obj-area{background:var(--gr50);border-radius:var(--rsm);padding:12px 14px;margin-bottom:8px}
 .obj-area-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gr400);margin-bottom:6px}
-.obj-area textarea{width:100%;border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--gr800);outline:none;resize:none;line-height:1.6;min-height:54px}
+.obj-area textarea{width:100%;border:1.5px solid var(--gr200);background:#fff;border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;color:var(--gr800);outline:none;resize:vertical;line-height:1.6;min-height:54px;transition:border-color .15s}
+.obj-area textarea:focus{border-color:var(--p-purple,#7C3AED)}
 /* ROTEIRO AT */
 .at-hero{background:#F0FDFA;border:1px solid #99F6E4;border-radius:var(--rlg);padding:26px 28px;color:var(--p-teal);margin-bottom:22px}
 .at-card{background:#fff;border:1px solid var(--gr200);border-radius:var(--rmd);padding:16px 18px;margin-bottom:10px;border-left:3px solid var(--at)}
