@@ -12621,11 +12621,11 @@ Avalie a atividade que você está prestes a entregar contra esta escala. Se qua
 
 ${incluiGuia ? `***GUIA_PROFESSOR***
 
-Guia do professor — CURTO e escaneável, feito pra ser lido em menos de 1 minuto por alguém sem tempo. Regra geral de todo o guia: frases curtas, direto ao ponto, NUNCA parágrafo longo em nenhum campo abaixo — se uma explicação passar de 1 frase, corte.
+Guia do professor — CURTO e escaneável, feito pra ser lido em menos de 1 minuto por alguém sem tempo. Regra geral de todo o guia: frases curtas, direto ao ponto, NUNCA parágrafo longo em nenhum campo abaixo — se uma explicação passar de 1 frase, corte. Escreva sempre em português correto, com acentuação e cedilha (ex: "acentuação", "não", "condição").
 
 PERFIL: [1 linha — diagnóstico + barreira principal removida]
 
-OBJETIVO PEDAGOGICO: [1 linha — habilidade desenvolvida]
+OBJETIVO PEDAGÓGICO: [1 linha — habilidade desenvolvida]
 
 HABILIDADE/BNCC: [código e descrição quando aplicável e você tiver certeza do código correto; senão omitir esta linha — nunca invente um código]
 
@@ -12634,17 +12634,17 @@ BARREIRAS IDENTIFICADAS (até 3 — liste APENAS barreiras realmente sustentadas
 - [barreira 2]
 - [barreira 3]
 
-ADAPTACOES REALIZADAS (até 4 — liste cada adaptação seguida da justificativa, NUNCA em formato de tabela; se só há base real para menos de 4, liste menos, NUNCA invente para completar. CADA justificativa tem no máximo 12 palavras, UMA frase curta, nunca um parágrafo explicativo):
+ADAPTAÇÕES REALIZADAS (até 4 — liste cada adaptação seguida da justificativa, NUNCA em formato de tabela; se só há base real para menos de 4, liste menos, NUNCA invente para completar. CADA justificativa tem no máximo 12 palavras, UMA frase curta, nunca um parágrafo explicativo):
 - Adaptação: [o que foi feito, máx 10 palavras] — Justificativa: [por que, máx 12 palavras]
 - Adaptação: [o que foi feito, máx 10 palavras] — Justificativa: [por que, máx 12 palavras]
 - Adaptação: [o que foi feito, máx 10 palavras] — Justificativa: [por que, máx 12 palavras]
 - Adaptação: [o que foi feito, máx 10 palavras] — Justificativa: [por que, máx 12 palavras]
 
-PRINCIPIOS UTILIZADOS (selecione só os aplicados nesta atividade): UDL — múltiplas formas de acesso; Organização visual; Redução da carga cognitiva; Autorregulação; Comunicação alternativa; Autonomia; Flexibilização curricular.
+PRINCÍPIOS UTILIZADOS (selecione só os aplicados nesta atividade): UDL — múltiplas formas de acesso; Organização visual; Redução da carga cognitiva; Autorregulação; Comunicação alternativa; Autonomia; Flexibilização curricular.
 
 MATERIAIS: [max 3 itens]
 TEMPO: [X minutos]
-APLICACAO:
+APLICAÇÃO:
 1. [passo curto]
 2. [passo curto]
 3. [passo curto]
@@ -12653,7 +12653,7 @@ SCRIPT DO MEDIADOR (2-3 frases curtas e prontas que o profissional pode falar du
 - "[frase 1]"
 - "[frase 2]"
 
-INDICADORES DE OBSERVACAO DURANTE A ATIVIDADE:
+INDICADORES DE OBSERVAÇÃO DURANTE A ATIVIDADE:
 - Inicia a tarefa sem ajuda?
 - Mantém atenção por quanto tempo?
 - Compreende os comandos?
@@ -12661,13 +12661,13 @@ INDICADORES DE OBSERVACAO DURANTE A ATIVIDADE:
 
 SINAIS DE SOBRECARGA (intervir rápido se aparecerem): agitação ou dispersão, recusa da tarefa, repetição sem compreensão, irritação ou ansiedade.
 
-AVALIACAO: [2 critérios observáveis]
+AVALIAÇÃO: [2 critérios observáveis]
 
 RETIRADA GRADUAL DOS APOIOS: [1 frase curta, máx 15 palavras — como aumentar a autonomia nas próximas atividades]
 
-GENERALIZACAO (1 linha, máx 15 palavras): [como estimular essa habilidade fora da atividade — sala, casa, recreio, rotina, jogos]
+GENERALIZAÇÃO (1 linha, máx 15 palavras): [como estimular essa habilidade fora da atividade — sala, casa, recreio, rotina, jogos]
 
-NAO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
+NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
 
   try {
     const textoBruto = await chamarClaude({ prompt, maxTokens: incluiGuia ? 2800 : 1200, modulo: 'adaptacao' });
@@ -14449,8 +14449,8 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       .replace(/---USO EXCLUSIVO DO PROFESSOR---/gi, '')
       .trim();
 
-    const fontSizeGuiaMap = { pequeno: 10, medio: 12, grande: 14, extragrande: 16 };
-    const fontSizeGuia = fontSizeGuiaMap[opts.fonteGuia] || 12;
+    const fontSizeGuiaMap = { pequeno: 8.5, medio: 9.5, grande: 10.5, extragrande: 10.5 };
+    const fontSizeGuia = Math.min(fontSizeGuiaMap[opts.fonteGuia] || 9.5, 10.5);
     const altLinha = 6.2;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fontSizeGuia);
@@ -14469,8 +14469,8 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       }
       const linha = linhasGuia[i];
       const linhaT = linha.trim();
-      const campoRotulo = /^(PERFIL|OBJETIVO PEDAGOGICO|HABILIDADE\/BNCC|BARREIRAS IDENTIFICADAS|ADAPTACOES REALIZADAS|PRINCIPIOS UTILIZADOS|MATERIAIS|TEMPO|APLICACAO|SCRIPT DO MEDIADOR[^:]*|INDICADORES DE OBSERVACAO[^:]*|SINAIS DE SOBRECARGA|AVALIACAO|RETIRADA GRADUAL DOS APOIOS|GENERALIZACAO[^:]*)\s*:/i;
-      const isNaoFazer = /^NAO FAZER\s*:/i.test(linhaT);
+      const campoRotulo = /^(PERFIL|OBJETIVO PEDAG[OÓ]GICO|HABILIDADE\/BNCC|BARREIRAS IDENTIFICADAS|ADAPTA[ÇC][OÕ]ES REALIZADAS|PRINC[IÍ]PIOS UTILIZADOS|MATERIAIS|TEMPO|APLICA[ÇC][AÃ]O|SCRIPT DO MEDIADOR[^:]*|INDICADORES DE OBSERVA[ÇC][AÃ]O[^:]*|SINAIS DE SOBRECARGA|AVALIA[ÇC][AÃ]O|RETIRADA GRADUAL DOS APOIOS|GENERALIZA[ÇC][AÃ]O[^:]*)\s*:/i;
+      const isNaoFazer = /^N[AÃ]O FAZER\s*:/i.test(linhaT);
       const isH = campoRotulo.test(linhaT) && !isNaoFazer;
       const isSep = /^-{3,}$/.test(linhaT) || linhaT === '';
       if (isSep) { y += 2; continue; }
