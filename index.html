@@ -17422,9 +17422,12 @@ REGRAS OBRIGATÓRIAS, sem exceção:
 - As 3 alternativas são SEMPRE só texto curto (um número, uma palavra, ou uma frase curta — o que fizer sentido pro contexto pedido), NUNCA uma imagem, NUNCA um desenho do próprio conteúdo da alternativa.
 - As alternativas NUNCA têm imagem própria — o campo de imagem de cada ALT fica SEMPRE vazio. A imagem existe só uma vez, no IMG_PERGUNTA, e deve representar o MESMO estímulo em todas as 5 perguntas (ex: sempre contagem, ou sempre leitura de palavra — não misture tipos diferentes de pergunta na mesma atividade).
 
-FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes, repetindo o bloco para as ${qtdPerguntas} perguntas (nem uma a mais, nem uma a menos):
+Se o objetivo/contexto pedir interpretação de um texto, história ou situação narrativa (não apenas contagem/leitura de palavra isolada/reconhecimento visual), é OBRIGATÓRIO escrever esse texto de apoio ANTES das perguntas, no campo TEXTO_APOIO abaixo — nunca faça uma pergunta que dependa de "ler o texto" sem ter escrito esse texto. Se o tipo de pergunta não depende de nenhum texto (ex: contar objetos numa imagem, reconhecer uma palavra isolada), deixe TEXTO_APOIO vazio.
+
+FORMATO OBRIGATÓRIO — sua resposta deve começar EXATAMENTE assim, nada antes, repetindo o bloco de pergunta para as ${qtdPerguntas} perguntas (nem uma a mais, nem uma a menos):
 
 TITULO: [título curto da atividade]
+TEXTO_APOIO: [texto curto, 4 a 8 linhas, linguagem adequada ao perfil do paciente — ou deixe vazio se não for necessário nenhum texto de apoio]
 
 PERGUNTA 1: [texto da pergunta]
 IMG_PERGUNTA: [nome-imagem — nunca vazio]
@@ -17441,8 +17444,10 @@ ALT: C | | [texto curto]
 CORRETA: [A, B ou C]`;
 
   try {
-    const txt = await chamarClaude({ prompt, maxTokens: 1600, modulo: 'pratica_guiada' });
+    const txt = await chamarClaude({ prompt, maxTokens: 1800, modulo: 'pratica_guiada' });
     const tituloMatch = txt.match(/^TITULO:\s*(.+)$/im);
+    const textoApoioMatch = txt.match(/^TEXTO_APOIO:\s*(.*)$/im);
+    const textoApoio = textoApoioMatch ? textoApoioMatch[1].trim() : '';
     const blocosBrutos = [...txt.matchAll(/PERGUNTA\s*\d+:\s*(.+?)\s*\n+([\s\S]*?)CORRETA:\s*([ABC])/gim)];
     const perguntas = blocosBrutos.map(b => {
       const pergunta = b[1].trim();
@@ -17468,7 +17473,7 @@ CORRETA: [A, B ou C]`;
       perfil_id: p.id, user_id: user.id, titulo: tituloFinal, area, perguntas, status: 'pendente'
     }).select('id').single();
     if (erroSalvar) console.warn('Não foi possível reservar a atividade no perfil do paciente:', erroSalvar.message);
-    ultimaPraticaGuiada = { id: registroSalvo?.id || null, titulo: tituloFinal, perguntas, paciente: p, area };
+    ultimaPraticaGuiada = { id: registroSalvo?.id || null, titulo: tituloFinal, textoApoio, perguntas, paciente: p, area };
     carregarPendentesPraticaGuiada();
     document.getElementById('pg-result-lista').innerHTML = perguntas.map((q, i) => `
       <div class="clinic-card" style="margin-bottom:10px">
@@ -17525,7 +17530,7 @@ function detectarImagensPraticaGuiada() {
 
 async function baixarPraticaGuiadaPDF() {
   if (!ultimaPraticaGuiada) return toast('Gere uma atividade primeiro.', 'error');
-  const { titulo, perguntas, paciente } = ultimaPraticaGuiada;
+  const { titulo, textoApoio, perguntas, paciente } = ultimaPraticaGuiada;
 
   const todosItens = window._imgItens || [];
   const itensComImagem = todosItens.filter(i => i.urlEscolhida);
@@ -17560,7 +17565,19 @@ async function baixarPraticaGuiadaPDF() {
     doc.setFontSize(9);
     doc.setTextColor(80,80,80);
     doc.text('Paciente: ' + sanitizarTexto(paciente.nome), ml, y);
-    y += 14;
+    y += 10;
+
+    if (textoApoio) {
+      doc.setFillColor(240, 244, 255);
+      const linhasTexto = doc.splitTextToSize(sanitizarTexto(textoApoio), W - ml - mr - 10);
+      const altCaixa = linhasTexto.length * 5.5 + 8;
+      doc.roundedRect(ml, y, W - ml - mr, altCaixa, 2, 2, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10.5);
+      doc.setTextColor(30, 30, 30);
+      linhasTexto.forEach((l, li) => doc.text(l, ml + 5, y + 7 + li * 5.5));
+      y += altCaixa + 8;
+    }
 
     doc.setFont('helvetica','bold');
     doc.setFontSize(13);
