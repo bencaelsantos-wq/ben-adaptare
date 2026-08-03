@@ -3229,11 +3229,16 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     </div>
     <div style="margin-top:16px">
       <div class="fblock" style="margin-bottom:14px;padding:12px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:10px">
-        <label class="flabel" style="margin-bottom:6px">Preencher automaticamente a partir do laudo (opcional)</label>
-        <button type="button" class="btn-copy" onclick="document.getElementById('cc-inp-laudo').click()">📎 Anexar laudo/relatório (PDF ou Word)</button>
+        <label class="flabel" style="margin-bottom:6px">Preencher automaticamente a partir dos documentos (opcional)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn-copy" onclick="document.getElementById('cc-inp-laudo').click()">📎 Anexar laudo/relatório principal (PDF ou Word)</button>
+          <button type="button" class="btn-copy" onclick="document.getElementById('cc-inp-docs-extras').click()">📎 Anexar outros documentos (PEI, relatório de observação, avaliações anteriores...)</button>
+        </div>
         <input type="file" id="cc-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoPerfilClinico(this)">
+        <input type="file" id="cc-inp-docs-extras" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="processarDocumentosExtrasPerfilClinico(this)">
+        <div id="cc-docs-extras-lista" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
         <div id="cc-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
-        <div style="font-size:11px;color:#6B7DBF;margin-top:6px">A IA sugere o preenchimento dos campos abaixo — revise e corrija antes de salvar. Nenhum campo é preenchido sem sua confirmação ao clicar em "Salvar perfil".</div>
+        <div style="font-size:11px;color:#6B7DBF;margin-top:6px">A IA cruza o laudo principal com os documentos extras e sugere o preenchimento dos campos abaixo — revise e corrija antes de salvar. Nenhum campo é preenchido sem sua confirmação ao clicar em "Salvar perfil".</div>
       </div>
       <div class="frow">
         <div><label class="flabel" for="cc-nome">Nome do aluno *</label><input type="text" id="cc-nome" class="finput" placeholder="Nome completo"></div>
@@ -16654,27 +16659,87 @@ function renderPerfisClinicaGrid() {
     </div>`).join('');
 }
 
+async function extrairTextoArquivoGenerico(file, status) {
+  let texto = '';
+  if (file.name.endsWith('.pdf')) {
+    texto = await extrairTextoPDF(file);
+    if (!texto.trim()) texto = await extrairTextoPDFComOCR(file, status);
+  } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+    texto = await extrairTextoDOCX(file);
+  }
+  return texto;
+}
+
 async function processarLaudoPerfilClinico(input) {
   const file = input.files[0];
   if (!file) return;
   const status = document.getElementById('cc-laudo-status');
   status.style.display = 'block';
   status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
-  status.textContent = 'Lendo arquivo…';
+  status.textContent = 'Lendo laudo principal…';
   try {
-    let texto = '';
-    if (file.name.endsWith('.pdf')) {
-      texto = await extrairTextoPDF(file);
-      if (!texto.trim()) texto = await extrairTextoPDFComOCR(file, status);
+    const texto = await extrairTextoArquivoGenerico(file, status);
+    if (!file.name.endsWith('.pdf') && !file.name.endsWith('.docx') && !file.name.endsWith('.doc')) {
+      status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Formato não suportado. Use PDF ou DOCX.'; return;
     }
-    else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) texto = await extrairTextoDOCX(file);
-    else { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Formato não suportado. Use PDF ou DOCX.'; return; }
     if (!texto.trim()) { status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = 'Não foi possível extrair texto, mesmo com OCR. Preencha manualmente.'; return; }
+    window._ccLaudoTexto = { nome: file.name, texto };
+    await executarExtracaoPerfilClinico(status);
+  } catch(e) {
+    status.style.background = '#FEF2F2'; status.style.color = '#991B1B';
+    status.textContent = 'Erro ao processar o laudo: ' + (e.message || 'tente novamente ou preencha manualmente.');
+  }
+  input.value = '';
+}
 
-    status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
-    status.textContent = 'IA lendo o laudo e sugerindo o preenchimento…';
+async function processarDocumentosExtrasPerfilClinico(input) {
+  const files = [...input.files];
+  if (!files.length) return;
+  const status = document.getElementById('cc-laudo-status');
+  status.style.display = 'block';
+  status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
+  if (!window._ccDocsExtras) window._ccDocsExtras = [];
+  for (const file of files) {
+    status.textContent = `Lendo ${file.name}…`;
+    if (!file.name.endsWith('.pdf') && !file.name.endsWith('.docx') && !file.name.endsWith('.doc')) {
+      status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = `${file.name}: formato não suportado (use PDF ou DOCX).`;
+      continue;
+    }
+    const texto = await extrairTextoArquivoGenerico(file, status);
+    if (!texto.trim()) {
+      status.style.background='#FEF2F2'; status.style.color='#991B1B'; status.textContent = `${file.name}: não foi possível extrair texto, mesmo com OCR.`;
+      continue;
+    }
+    window._ccDocsExtras.push({ nome: file.name, texto });
+  }
+  renderDocsExtrasPerfilClinico();
+  await executarExtracaoPerfilClinico(status);
+  input.value = '';
+}
 
-    const prompt = `Extraia do texto de laudo/relatório abaixo as informações para um cadastro de perfil clínico. Responda APENAS em JSON válido, sem markdown, com exatamente estas chaves:
+function renderDocsExtrasPerfilClinico() {
+  const el = document.getElementById('cc-docs-extras-lista');
+  if (!el) return;
+  const docs = window._ccDocsExtras || [];
+  el.innerHTML = docs.map((d, i) => `<span class="mat-tag">${d.nome}<button onclick="window._ccDocsExtras.splice(${i},1);renderDocsExtrasPerfilClinico();executarExtracaoPerfilClinico(document.getElementById('cc-laudo-status'))" style="background:none;border:none;cursor:pointer;margin-left:4px">×</button></span>`).join('');
+}
+
+async function executarExtracaoPerfilClinico(status) {
+  const laudo = window._ccLaudoTexto;
+  const extras = window._ccDocsExtras || [];
+  if (!laudo && !extras.length) return;
+
+  status.style.display = 'block';
+  status.style.background = '#F0F4FF'; status.style.color = '#1E3A8A';
+  status.textContent = 'IA cruzando os documentos e sugerindo o preenchimento…';
+
+  const fontesTexto = [
+    laudo ? `--- LAUDO/RELATÓRIO PRINCIPAL (${laudo.nome}) ---\n${laudo.texto.slice(0, 10000)}` : '',
+    ...extras.map(d => `--- DOCUMENTO ADICIONAL (${d.nome}) ---\n${d.texto.slice(0, 6000)}`)
+  ].filter(Boolean).join('\n\n');
+
+  try {
+    const prompt = `Extraia dos documentos abaixo (laudo principal e/ou documentos adicionais como PEI anterior, relatório de observação, avaliações de outra clínica/escola) as informações para um cadastro de perfil clínico. Cruze as informações de todos os documentos — se um dado aparecer em mais de um documento, use a informação mais completa/recente. Responda APENAS em JSON válido, sem markdown, com exatamente estas chaves:
 {
   "idade": "",
   "diagnostico": "",
@@ -16691,10 +16756,10 @@ Para "comunicacao", escolha exatamente uma destas opções ou deixe vazio: "Verb
 Para "regulacao", escolha exatamente uma destas: "Preservada", "Comprometida — crises frequentes", "Em desenvolvimento", "Necessita suporte constante".
 Para "sensorial", escolha exatamente uma destas: "Sem particularidades", "Hipersensibilidade", "Hipossensibilidade", "Misto (hipo + hiper)".
 Para "motricidade", escolha exatamente uma destas: "Preservada", "Motricidade fina comprometida", "Motricidade ampla comprometida", "Ambas comprometidas".
-Se uma informação não estiver claramente no texto, deixe a chave como string vazia — nunca invente ou deduza.
+Se uma informação não estiver claramente em nenhum documento, deixe a chave como string vazia — nunca invente ou deduza.
 
-TEXTO DO LAUDO:
-${texto.slice(0, 12000)}`;
+DOCUMENTOS:
+${fontesTexto}`;
 
     const respostaBruta = await chamarClaude({ prompt, maxTokens: 700, modulo: 'perfil-clinico-extracao' });
     const json = respostaBruta.replace(/```json|```/g, '').trim();
@@ -16713,16 +16778,21 @@ ${texto.slice(0, 12000)}`;
     });
 
     status.style.background = '#F0FDF4'; status.style.color = '#166534';
-    status.textContent = 'Campos preenchidos a partir do laudo — revise e corrija antes de salvar.';
+    status.textContent = `Campos preenchidos a partir de ${1 + extras.length > 1 ? (1 + extras.length) + ' documentos' : '1 documento'} — revise e corrija antes de salvar.`;
   } catch(e) {
     status.style.background = '#FEF2F2'; status.style.color = '#991B1B';
-    status.textContent = 'Erro ao processar o laudo: ' + (e.message || 'tente novamente ou preencha manualmente.');
+    status.textContent = 'Erro ao processar os documentos: ' + (e.message || 'tente novamente ou preencha manualmente.');
   }
-  input.value = '';
 }
 
 async function abrirModalCadClinica(p) {
   perfilClinicaSel = p || null;
+  window._ccLaudoTexto = null;
+  window._ccDocsExtras = [];
+  const listaDocsEl = document.getElementById('cc-docs-extras-lista');
+  if (listaDocsEl) listaDocsEl.innerHTML = '';
+  const statusEl = document.getElementById('cc-laudo-status');
+  if (statusEl) statusEl.style.display = 'none';
   document.getElementById('mcc-titulo').textContent = p ? 'Editar Perfil Clínico' : 'Novo Perfil Clínico';
   ['cc-nome','cc-idade','cc-diag','cc-hipotese','cc-preservadas','cc-comprometidas','cc-comportamento'].forEach(id => {
     const el = document.getElementById(id);
