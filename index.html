@@ -17283,7 +17283,7 @@ async function carregarPendentesPraticaGuiada() {
 async function reabrirPraticaGuiada(id) {
   const { data, error } = await db.from('praticas_guiadas').select('*, perfis_clinicos(*)').eq('id', id).single();
   if (error || !data) return toast('Não foi possível abrir essa atividade.', 'error');
-  ultimaPraticaGuiada = { id: data.id, titulo: data.titulo, perguntas: data.perguntas, paciente: data.perfis_clinicos, area: data.area };
+  ultimaPraticaGuiada = { id: data.id, titulo: data.titulo, textoApoio: data.texto_apoio || '', perguntas: data.perguntas, paciente: data.perfis_clinicos, area: data.area };
   const perguntas = data.perguntas;
   document.getElementById('pg-result-lista').innerHTML = perguntas.map((q, i) => `
     <div class="clinic-card" style="margin-bottom:10px">
@@ -17470,7 +17470,7 @@ CORRETA: [A, B ou C]`;
     if (semImagem) toast(`Atenção: ${semImagem} de ${perguntas.length} perguntas vieram sem imagem — reveja antes de aplicar ou gere novamente.`, 'error');
     const tituloFinal = tituloMatch ? tituloMatch[1].trim() : 'Atividade de Múltipla Escolha';
     const { data: registroSalvo, error: erroSalvar } = await db.from('praticas_guiadas').insert({
-      perfil_id: p.id, user_id: user.id, titulo: tituloFinal, area, perguntas, status: 'pendente'
+      perfil_id: p.id, user_id: user.id, titulo: tituloFinal, area, perguntas, texto_apoio: textoApoio || null, status: 'pendente'
     }).select('id').single();
     if (erroSalvar) console.warn('Não foi possível reservar a atividade no perfil do paciente:', erroSalvar.message);
     ultimaPraticaGuiada = { id: registroSalvo?.id || null, titulo: tituloFinal, textoApoio, perguntas, paciente: p, area };
