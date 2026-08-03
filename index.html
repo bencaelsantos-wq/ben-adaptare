@@ -1678,25 +1678,27 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   <!-- ══ LANDING PAGE ══ -->
 <div id="landing-page" style="display:none">
   <nav class="lp-nav">
-    <div style="display:flex;align-items:center;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="window.scrollTo({top:0,behavior:'smooth'})">
   <div style="width:28px;height:28px;background:linear-gradient(135deg,#1E3A8A,#7C3AED);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800">✦</div>
   <span style="font-size:16px;font-weight:800;color:#1E3A8A;letter-spacing:-.3px">Pluramente</span>
 </div>
     <div style="display:flex;align-items:center;gap:16px;margin-left:auto">
-      <button onclick="document.getElementById('lp-planos').scrollIntoView({behavior:'smooth'})" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">PLANOS</button>
       <button onclick="document.getElementById('lp-como').scrollIntoView({behavior:'smooth'})" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">COMO FUNCIONA</button>
-      <button onclick="abrirModalDemo('escola')" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">SOLICITAR DEMO</button>
-      <button class="btn-primary" style="font-size:13px;padding:8px 20px" onclick="irParaLogin()">Acessar →</button>
+      <button onclick="document.getElementById('lp-pilares').scrollIntoView({behavior:'smooth'})" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">RECURSOS</button>
+      <button onclick="document.getElementById('lp-planos').scrollIntoView({behavior:'smooth'})" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">PLANOS</button>
+      <button onclick="mostrarQuemSomos()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">SOBRE</button>
+      <button onclick="irParaLogin()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">ENTRAR</button>
+      <button class="btn-primary" style="font-size:13px;padding:8px 20px" onclick="abrirModalDemo('escola')">Testar grátis →</button>
     </div>
   </nav>
 
   <section class="lp-hero">
 <img src="logo-hero.png" alt="Pluramente" class="lp-hero-logo">
-    <h1>A criança não se divide entre escola e clínica. A equipe dela também não deveria.</h1>
-    <p>Pluramente conecta professores, terapeutas, ATs e família em um único fluxo — para que nenhuma descoberta se perca entre um atendimento e uma aula.</p>
+    <h1>A plataforma de Inteligência Artificial criada para a Educação Inclusiva.</h1>
+    <p>Crie adaptações pedagógicas, PEI, PAEE e estratégias comportamentais em minutos — com professor, AEE, AT, clínica e família conectados num só lugar, em torno do mesmo aluno.</p>
     <div class="lp-hero-btns">
-      <button class="btn-lp-primary" onclick="irParaLogin()">Começar agora</button>
-      <button class="btn-lp-ghost" onclick="document.getElementById('lp-como').scrollIntoView({behavior:'smooth'})">Saiba mais ↓</button>
+      <button class="btn-lp-primary" onclick="abrirModalDemo('escola')">Testar gratuitamente</button>
+      <button class="btn-lp-ghost" onclick="document.getElementById('lp-como').scrollIntoView({behavior:'smooth'})">Ver demonstração ↓</button>
     </div>
   </section>
 
