@@ -3297,6 +3297,11 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
        <label class="flabel" for="cc-comportamento">Comportamento (observações relevantes)</label>
         <textarea id="cc-comportamento" class="ftarea sm" placeholder="Ex: Estereotipias em situações de estresse, rigidez de rotina, autolesão ocasional…"></textarea>
       </div>
+      <div class="fblock">
+        <label class="flabel" for="cc-diretrizes">Diretrizes de Adaptação (opcional)</label>
+        <textarea id="cc-diretrizes" class="ftarea sm" placeholder="Regras específicas deste aluno por matéria, ex: Leitura: frases curtas, sem metáforas, textos de até 10 linhas. Matemática: apoio visual de tabuada até o 5, contas de divisão com apoio visual."></textarea>
+        <div style="font-size:11px;color:#9CA3AF;margin-top:4px">Essas diretrizes são aplicadas automaticamente sempre que a Lou gerar uma Nova Adaptação para este aluno, além das regras gerais do sistema.</div>
+      </div>
 
       <!-- ── Seção: Profissionais vinculados ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍⚕️ Profissionais com acesso a este perfil</div>
@@ -12502,6 +12507,9 @@ ${aprendizadoTexto ? `
 APRENDIZADO DE ATIVIDADES ANTERIORES (baseado em registros reais de aplicação deste aluno — use para não repetir estratégias que não funcionaram e reforçar as que funcionaram):
 ${aprendizadoTexto}
 ` : ''}
+${a.diretrizes_adaptacao ? `DIRETRIZES ESPECÍFICAS DESTE ALUNO (definidas pela clínica/profissional responsável — seguir com prioridade sobre preferências genéricas, desde que não contradigam a REGRA INEGOCIÁVEL de adaptação real):
+${a.diretrizes_adaptacao}
+` : ''}
 CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
@@ -16813,6 +16821,7 @@ async function abrirModalCadClinica(p) {
     document.getElementById('cc-preservadas').value  = p.preservadas || '';
     document.getElementById('cc-comprometidas').value= p.comprometidas || '';
     document.getElementById('cc-comportamento').value= p.comportamento || '';
+    document.getElementById('cc-diretrizes').value = p.diretrizes_adaptacao || '';
   }
   window._cadProfissionaisIds = (p && p.profissionais_ids) ? [...p.profissionais_ids] : [];
   const selProf = document.getElementById('cad-profissionais-sel');
@@ -16875,6 +16884,7 @@ async function salvarPerfilClinico() {
     preservadas:   document.getElementById('cc-preservadas').value.trim() || null,
     comprometidas: document.getElementById('cc-comprometidas').value.trim() || null,
     comportamento: document.getElementById('cc-comportamento').value.trim() || null,
+    diretrizes_adaptacao: document.getElementById('cc-diretrizes')?.value.trim() || null,
     profissionais_ids: window._cadProfissionaisIds?.length ? [...window._cadProfissionaisIds] : [],
   };
   let error;
