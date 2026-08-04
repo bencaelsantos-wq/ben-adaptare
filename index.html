@@ -14241,8 +14241,17 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     const linha = linhas[i];
     const linhaT = linha.trim();
     const isH = /^#{1,3}\s/.test(linhaT) || (/^\*\*[^*]/.test(linhaT) && linhaT.endsWith('**'));
-    const isSep = /^-{3,}$/.test(linhaT) || linhaT === '';
-    if (isSep) { y += isSep ? 2 : 0; continue; }
+    const isDivisor = /^-{3,}$/.test(linhaT);
+    const isSep = isDivisor || linhaT === '';
+    if (isDivisor) {
+      y += 3;
+      doc.setDrawColor(210, 210, 210);
+      doc.setLineWidth(0.3);
+      doc.line(ml, y, ml + maxW, y);
+      y += 5;
+      continue;
+    }
+    if (isSep) { y += 2; continue; }
 const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\s*$/, '');
     if (!limpa) { y += altLinha; continue; }
     if (/^_{6,}$/.test(limpa)) {
