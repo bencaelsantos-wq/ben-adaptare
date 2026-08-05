@@ -17460,7 +17460,7 @@ CORRETA: [A, B ou C]`;
     const txt = await chamarClaude({ prompt, maxTokens: 1800, modulo: 'pratica_guiada' });
     const tituloMatch = txt.match(/^TITULO:\s*(.+)$/im);
     const textoApoioMatch = txt.match(/^TEXTO_APOIO:\s*(.*)$/im);
-    const textoApoio = textoApoioMatch ? textoApoioMatch[1].trim() : '';
+    let textoApoio = textoApoioMatch ? textoApoioMatch[1].trim() : '';
     const blocosBrutos = [...txt.matchAll(/PERGUNTA\s*\d+:\s*(.+?)\s*\n+([\s\S]*?)CORRETA:\s*([ABC])/gim)];
     const perguntas = blocosBrutos.map(b => {
       const pergunta = b[1].trim();
@@ -17475,6 +17475,16 @@ CORRETA: [A, B ou C]`;
       }
       return { pergunta, imagemPergunta, alternativas, correta: b[3].trim().toUpperCase() };
     }).filter(q => q.alternativas.length >= 3);
+    // Trava de segurança: se a IA copiou o enunciado de alguma pergunta pro texto de apoio, descarta — não depende só da instrução do prompt.
+    if (textoApoio) {
+      const normaliza = s => s.toLowerCase().replace(/[^a-zà-ú0-9]+/g, ' ').trim();
+      const apoioNorm = normaliza(textoApoio);
+      const duplicado = perguntas.some(q => {
+        const pergNorm = normaliza(q.pergunta);
+        return pergNorm && (apoioNorm.includes(pergNorm) || pergNorm.includes(apoioNorm));
+      });
+      if (duplicado) textoApoio = '';
+    }
     if (!perguntas.length) {
       console.warn('Prática Guiada — resposta da IA não interpretada:', txt);
       toast('Não foi possível interpretar a atividade gerada. Tente novamente.', 'error'); btn.textContent = '⭐ Gerar com a Lou'; btn.disabled = false; return;
