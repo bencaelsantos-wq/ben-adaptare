@@ -17581,11 +17581,11 @@ async function baixarPraticaGuiadaPDF() {
 
     if (textoApoio) {
       doc.setFillColor(240, 244, 255);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10.5);
       const linhasTexto = doc.splitTextToSize(sanitizarTexto(textoApoio), W - ml - mr - 10);
       const altCaixa = linhasTexto.length * 5.5 + 8;
       doc.roundedRect(ml, y, W - ml - mr, altCaixa, 2, 2, 'F');
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10.5);
       doc.setTextColor(30, 30, 30);
       linhasTexto.forEach((l, li) => doc.text(l, ml + 5, y + 7 + li * 5.5));
       y += altCaixa + 8;
