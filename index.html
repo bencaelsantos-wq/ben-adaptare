@@ -12965,7 +12965,7 @@ function imagemParaBase64(url) {
   }));
 }
 
-function linhaCampoRegistro(doc, x, y, rotulo, valor, largura) {
+function linhaCampoRegistro(doc, x, y, rotulo, valor, largura, comprimentoLinha) {
   doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(50,70,140);
   doc.text(rotulo + ':', x, y);
   const rw = doc.getTextWidth(rotulo + ': ');
@@ -12974,7 +12974,8 @@ function linhaCampoRegistro(doc, x, y, rotulo, valor, largura) {
     doc.text(String(valor), x + rw + 2, y);
   } else {
     doc.setDrawColor(150,150,150); doc.setLineWidth(0.2);
-    doc.line(x + rw + 2, y + 0.5, x + largura, y + 0.5);
+    const fimLinha = comprimentoLinha ? Math.min(x + rw + 2 + comprimentoLinha, x + largura) : x + largura;
+    doc.line(x + rw + 2, y + 0.5, fimLinha, y + 0.5);
   }
   return y + 7;
 }
@@ -13061,11 +13062,11 @@ function baixarFolhaRegistro(alunoOverride, nomeAtividadeOverride) {
   doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
   doc.text('IDENTIFICAÇÃO', ml, y); y += 7;
   y = linhaCampoRegistro(doc, ml, y, 'Aluno', aluno, maxX);
-  y = linhaCampoRegistro(doc, ml, y, 'Data', '', maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Data', '', maxX, 35);
   y = linhaCampoRegistro(doc, ml, y, 'Profissional', profNome, maxX);
-  y = linhaCampoRegistro(doc, ml, y, 'Área de atuação', '', maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Área de atuação', '', maxX, 80);
   y = linhaCampoRegistro(doc, ml, y, 'Atividade', nomeAtividade, maxX);
-  y = linhaCampoRegistro(doc, ml, y, 'Tempo de realização (minutos)', '', maxX);
+  y = linhaCampoRegistro(doc, ml, y, 'Tempo de realização (minutos)', '', maxX, 25);
   y += 4;
 
   doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
