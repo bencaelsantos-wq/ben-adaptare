@@ -8543,6 +8543,8 @@ async function gerarSolicitacaoAT() {
   const btn = document.getElementById('sat-btn-gerar');
   btn.disabled = true; btn.textContent = '⏳ Gerando com a Lou…';
 
+  const dataHojeExtenso = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+
   const perfilAluno = [
     a.idade ? `Idade: ${a.idade}` : '',
     a.serie ? `Série: ${a.serie}` : '',
@@ -8562,11 +8564,11 @@ ${docTexto || 'Não anexado — use apenas a justificativa adicional abaixo'}
 JUSTIFICATIVA ADICIONAL INFORMADA:
 ${justificativa || 'Nenhuma'}
 
-Escreva o documento completo, em português correto e formal, com acentuação e cedilha, seguindo exatamente esta estrutura:
+Escreva o documento completo, em português correto e formal, com acentuação e cedilha, seguindo exatamente esta estrutura. NUNCA use markdown (nada de #, ##, ** ou similares) — apenas texto simples, com os títulos de seção em letras maiúsculas:
 
 SOLICITAÇÃO DE ACOMPANHANTE TERAPÊUTICO (AT)
 
-[Cidade], [data por extenso — use a data de hoje]
+São Paulo, ${dataHojeExtenso}
 
 IDENTIFICAÇÃO DO ALUNO
 Nome: ${a.nome}
@@ -8590,9 +8592,10 @@ Assinatura do responsável pedagógico
 REGRAS: nunca use emojis, nunca use markdown com asteriscos, nunca invente dado que não esteja nas fontes fornecidas — se uma informação não estiver disponível, omita o campo em vez de inventar.`;
 
   try {
-    const texto = await chamarClaude({ prompt, maxTokens: 1600, modulo: 'solicitacao_at' });
-    ultimaSolicitacaoAT = { aluno: a.nome, texto: texto.trim() };
-    document.getElementById('sat-resultado-texto').value = texto.trim();
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 2600, modulo: 'solicitacao_at' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '').trim();
+    ultimaSolicitacaoAT = { aluno: a.nome, texto };
+    document.getElementById('sat-resultado-texto').value = texto;
     document.getElementById('sat-resultado-box').style.display = 'block';
     document.getElementById('sat-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
     toast('Solicitação gerada!', 'success');
