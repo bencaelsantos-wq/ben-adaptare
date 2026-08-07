@@ -14764,10 +14764,19 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         y += altCaixa + 4;
       } else if (isH) {
         y += 2;
+        const matchRotulo = limpa.match(campoRotulo);
+        const rotuloTxt = matchRotulo ? matchRotulo[0] : limpa;
+        const restoTxt = limpa.slice(rotuloTxt.length);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(fontSizeGuia);
         doc.setTextColor(20, 40, 120);
-        doc.text(limpa, ml, y);
+        doc.text(rotuloTxt, ml, y);
+        if (restoTxt.trim()) {
+          const larguraRotulo = doc.getTextWidth(rotuloTxt + ' ');
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(25, 25, 25);
+          doc.text(restoTxt.trim(), ml + larguraRotulo, y);
+        }
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(25, 25, 25);
         y += altLinha + 1;
