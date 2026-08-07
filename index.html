@@ -9411,11 +9411,12 @@ function renderPages() {
         <div class="result-title">Adaptação gerada pela IA</div>
         <div class="result-badge" id="result-badge">—</div>
       </div>
-      <div class="result-text" id="result-text"></div>
+      <textarea class="result-text" id="result-text" style="width:100%;min-height:320px"></textarea>
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
+        <button class="btn-copy" onclick="downloadAdaptacaoWord()">📝 Baixar Word</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
         <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
       </div>
@@ -11688,11 +11689,12 @@ function renderPagesClinica() {
         <div class="result-title">Adaptação gerada pela IA</div>
         <div class="result-badge" id="result-badge">—</div>
       </div>
-      <div class="result-text" id="result-text"></div>
+      <textarea class="result-text" id="result-text" style="width:100%;min-height:320px"></textarea>
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
+        <button class="btn-copy" onclick="downloadAdaptacaoWord()">📝 Baixar Word</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
 
         <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
@@ -12942,7 +12944,7 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
     }
     ultimaAdapt = textoFinal;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento };
-    document.getElementById('result-text').textContent = textoFinal;
+    document.getElementById('result-text').value = textoFinal;
     document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -12969,8 +12971,40 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
 
 
 // ── DOWNLOAD PDF DA ADAPTAÇÃO ────────────────────────────────
+function downloadAdaptacaoWord() {
+  if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
+  const textoAtual = document.getElementById('result-text').value || ultimaAdapt;
+  const separadorGuia = /\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i;
+  const partesW = textoAtual.split(separadorGuia);
+  const folhaW = partesW[0].trim().replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+  const guiaW = partesW[1] ? partesW[1].trim().replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '') : '';
+  const nomeAlunoW = dadosUltima?.aluno || 'Aluno';
+
+  const paraHtml = txt => txt.split('\n').map(l => l.trim()
+    ? `<p style="margin:0 0 10px 0">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</p>`
+    : '<p>&nbsp;</p>').join('');
+
+  const corpoHtml = paraHtml(folhaW) + (guiaW
+    ? '<br clear="all" style="page-break-before:always"><h2>Guia do Professor — Uso Exclusivo</h2>' + paraHtml(guiaW)
+    : '');
+
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="utf-8"><title>Atividade Adaptada</title></head>
+  <body style="font-family:Calibri,Arial,sans-serif;font-size:12pt">
+    <h1 style="font-size:16pt">Atividade Adaptada — ${nomeAlunoW}</h1>
+    ${corpoHtml}
+  </body></html>`;
+  const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const aEl = document.createElement('a');
+  aEl.href = url; aEl.download = `Adaptacao_${nomeAlunoW.replace(/\s+/g,'_')}.doc`;
+  document.body.appendChild(aEl); aEl.click(); document.body.removeChild(aEl);
+  URL.revokeObjectURL(url);
+}
+
 async function downloadAdaptacaoPDF() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
+  ultimaAdapt = document.getElementById('result-text').value || ultimaAdapt;
 
   const separador = /\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i;
   const partes = ultimaAdapt.split(separador);
