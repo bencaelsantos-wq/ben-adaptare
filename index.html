@@ -4261,7 +4261,7 @@ function renderNavCoordenacaoPedagogica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Apoio Pedagógico
     </div>
     <div class="nav-item" id="nav-solicitar-at-coord2" onclick="showPage('solicitar-at');popularSelectSolicitacaoAT()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M14 15h2M15 14v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Solicitar AT
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M14 15h2M15 14v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Solicitações
     </div>
     <div class="nav-item" id="nav-evolucao-aluno" onclick="showPage('evolucao-aluno')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Evolução do Aluno
@@ -8532,6 +8532,33 @@ async function processarDocSolicitacaoAT(input) {
 
 let ultimaSolicitacaoAT = null;
 
+const TIPOS_SOLICITACAO = {
+  at: {
+    titulo: 'SOLICITAÇÃO DE ACOMPANHANTE TERAPÊUTICO (AT)',
+    papel: 'um Acompanhante Terapêutico (AT) escolar',
+    fundamentacao: 'Cite brevemente a Lei Brasileira de Inclusão (Lei 13.146/2015, art. 3º e 28) e o Decreto nº 12.686/2025, que preveem o direito a profissional de apoio quando necessário à inclusão escolar.',
+    pedido: 'Pedido objetivo: acompanhante terapêutico para o aluno, com carga horária sugerida com base na necessidade descrita (ex: período integral, ou turno específico), e as funções esperadas do profissional (apoio à comunicação, autonomia, organização, transições, regulação).',
+  },
+  avaliacao_psico: {
+    titulo: 'SOLICITAÇÃO DE AVALIAÇÃO PSICOLÓGICA',
+    papel: 'uma avaliação psicológica especializada',
+    fundamentacao: 'Cite brevemente a Lei Brasileira de Inclusão (Lei 13.146/2015) e a importância da avaliação multiprofissional para o planejamento pedagógico individualizado, conforme o Decreto nº 12.686/2025.',
+    pedido: 'Pedido objetivo de avaliação psicológica do aluno, explicando o que se espera que a avaliação esclareça (funcionamento emocional, comportamental, cognitivo ou social) com base nas evidências relatadas.',
+  },
+  avaliacao_to: {
+    titulo: 'SOLICITAÇÃO DE AVALIAÇÃO DE TERAPIA OCUPACIONAL',
+    papel: 'uma avaliação de Terapia Ocupacional',
+    fundamentacao: 'Cite brevemente a Lei Brasileira de Inclusão (Lei 13.146/2015) e a importância da avaliação multiprofissional para o planejamento pedagógico individualizado, conforme o Decreto nº 12.686/2025.',
+    pedido: 'Pedido objetivo de avaliação de Terapia Ocupacional, explicando o que se espera que a avaliação esclareça (aspectos sensoriais, motricidade fina/ampla, autonomia em atividades de vida diária) com base nas evidências relatadas.',
+  },
+  avaliacao_fono: {
+    titulo: 'SOLICITAÇÃO DE AVALIAÇÃO FONOAUDIOLÓGICA',
+    papel: 'uma avaliação fonoaudiológica',
+    fundamentacao: 'Cite brevemente a Lei Brasileira de Inclusão (Lei 13.146/2015) e a importância da avaliação multiprofissional para o planejamento pedagógico individualizado, conforme o Decreto nº 12.686/2025.',
+    pedido: 'Pedido objetivo de avaliação fonoaudiológica, explicando o que se espera que a avaliação esclareça (comunicação verbal/não-verbal, uso funcional de CAA, linguagem receptiva/expressiva) com base nas evidências relatadas.',
+  },
+};
+
 async function gerarSolicitacaoAT() {
   const id = document.getElementById('sat-aluno-sel')?.value;
   const a = (alunosCad||[]).find(x => x.id === id);
@@ -8539,6 +8566,19 @@ async function gerarSolicitacaoAT() {
   const docTexto = document.getElementById('sat-doc-texto')?.value.trim() || '';
   const justificativa = document.getElementById('sat-justificativa')?.value.trim() || '';
   if (!docTexto && !justificativa) return toast('Anexe o relatório da escola ou preencha a justificativa adicional.', 'error');
+
+  const tipoKey = document.getElementById('sat-tipo-sel')?.value || 'at';
+  let tipo = TIPOS_SOLICITACAO[tipoKey];
+  if (tipoKey === 'avaliacao_geral') {
+    const areaCustom = document.getElementById('sat-tipo-outro')?.value.trim();
+    if (!areaCustom) return toast('Especifique a área da avaliação.', 'error');
+    tipo = {
+      titulo: `SOLICITAÇÃO DE AVALIAÇÃO — ${areaCustom.toUpperCase()}`,
+      papel: `uma avaliação de ${areaCustom}`,
+      fundamentacao: 'Cite brevemente a Lei Brasileira de Inclusão (Lei 13.146/2015) e a importância da avaliação multiprofissional para o planejamento pedagógico individualizado, conforme o Decreto nº 12.686/2025.',
+      pedido: `Pedido objetivo de avaliação de ${areaCustom}, explicando o que se espera que a avaliação esclareça com base nas evidências relatadas.`,
+    };
+  }
 
   const btn = document.getElementById('sat-btn-gerar');
   btn.disabled = true; btn.textContent = '⏳ Gerando com a Lou…';
@@ -8552,7 +8592,7 @@ async function gerarSolicitacaoAT() {
     a.observacoes ? `Observações já cadastradas: ${a.observacoes}` : '',
   ].filter(Boolean).join('\n');
 
-  const prompt = `Você é especialista em documentação pedagógica para redes de ensino, escrevendo uma SOLICITAÇÃO FORMAL DE ACOMPANHANTE TERAPÊUTICO (AT) escolar, para ser protocolada pela escola junto à mantenedora/secretaria responsável.
+  const prompt = `Você é especialista em documentação pedagógica para redes de ensino, escrevendo uma SOLICITAÇÃO FORMAL DE ${tipo.papel.toUpperCase()} escolar, para ser protocolada pela escola junto à mantenedora/secretaria/clínica responsável.
 
 ALUNO: ${a.nome}
 PERFIL JÁ CADASTRADO NO SISTEMA:
@@ -8566,7 +8606,7 @@ ${justificativa || 'Nenhuma'}
 
 Escreva o documento completo, em português correto e formal, com acentuação e cedilha, seguindo exatamente esta estrutura. NUNCA use markdown (nada de #, ##, ** ou similares) — apenas texto simples, com os títulos de seção em letras maiúsculas:
 
-SOLICITAÇÃO DE ACOMPANHANTE TERAPÊUTICO (AT)
+${tipo.titulo}
 
 São Paulo, ${dataHojeExtenso}
 
@@ -8575,13 +8615,13 @@ Nome: ${a.nome}
 [demais dados disponíveis: idade, série, instituição]
 
 JUSTIFICATIVA TÉCNICA
-[Parágrafos objetivos, citando EVIDÊNCIAS CONCRETAS do relatório/perfil acima — nunca invente informação que não esteja nas fontes fornecidas. Cite situações reais observadas (comunicação, autonomia, organização, mediação necessária) e explique por que a presença de um AT é necessária para a participação funcional do aluno no ambiente escolar.]
+[Parágrafos objetivos, citando EVIDÊNCIAS CONCRETAS do relatório/perfil acima — nunca invente informação que não esteja nas fontes fornecidas. Cite situações reais observadas relevantes ao tipo de solicitação e explique por que ${tipo.papel} é necessária para a participação/desenvolvimento funcional do aluno.]
 
 FUNDAMENTAÇÃO LEGAL
-[Cite brevemente a Lei Brasileira de Inclusão (Lei 13.146/2015, art. 3º e 28) e o Decreto nº 12.686/2025, que preveem o direito a profissional de apoio quando necessário à inclusão escolar.]
+[${tipo.fundamentacao}]
 
 SOLICITAÇÃO
-[Pedido objetivo: acompanhante terapêutico para o aluno, com carga horária sugerida com base na necessidade descrita (ex: período integral, ou turno específico), e as funções esperadas do profissional (apoio à comunicação, autonomia, organização, transições, regulação).]
+[${tipo.pedido}]
 
 CONSIDERAÇÕES FINAIS
 [1 parágrafo curto reforçando que a escola permanece à disposição para esclarecimentos, e que a solicitação visa favorecer a participação e o desenvolvimento do aluno.]
@@ -8594,7 +8634,7 @@ REGRAS: nunca use emojis, nunca use markdown com asteriscos, nunca invente dado 
   try {
     const textoBruto = await chamarClaude({ prompt, maxTokens: 2600, modulo: 'solicitacao_at' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '').trim();
-    ultimaSolicitacaoAT = { aluno: a.nome, texto };
+    ultimaSolicitacaoAT = { aluno: a.nome, tipoTitulo: tipo.titulo, texto };
     document.getElementById('sat-resultado-texto').value = texto;
     document.getElementById('sat-resultado-box').style.display = 'block';
     document.getElementById('sat-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -8618,8 +8658,8 @@ function baixarSolicitacaoATPDF() {
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W = 210, H = 297, ml = 20, mr = 20;
   doc.setFillColor(30,58,138); doc.rect(0,0,W,16,'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
-  doc.text('SOLICITAÇÃO DE ACOMPANHANTE TERAPÊUTICO', W/2, 10, { align:'center' });
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text(sanitizarTexto((ultimaSolicitacaoAT.tipoTitulo||'SOLICITAÇÃO').replace(/\s*\([^)]*\)\s*$/,'')), W/2, 10, { align:'center' });
   let y = 28;
   doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor(25,25,25);
   const linhas = doc.splitTextToSize(sanitizarTexto(textoAtual), W - ml - mr);
@@ -9808,9 +9848,23 @@ function renderPages() {
   </div>
 
   <div id="page-solicitar-at" class="page">
-    <h1 class="page-title">Solicitação de Acompanhante Terapêutico (AT)</h1>
-    <p class="page-sub">Gera o documento formal de solicitação de AT, cruzando o perfil do aluno já cadastrado com o relatório de observação enviado pela escola/equipe pedagógica.</p>
+    <h1 class="page-title">Solicitação Multiprofissional</h1>
+    <p class="page-sub">Gera o documento formal de solicitação (AT ou avaliação especializada), cruzando o perfil do aluno já cadastrado com o relatório de observação enviado pela escola/equipe pedagógica.</p>
     <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 12px;margin:8px 0 12px;font-size:12.5px;color:#1E3A8A"><strong>Importante:</strong> este documento organiza informações já observadas pela escola — não substitui avaliação clínica nem tem finalidade diagnóstica. Revise antes de protocolar.</div>
+
+    <div class="fblock"><label class="flabel" for="sat-tipo-sel">Tipo de solicitação</label>
+      <select id="sat-tipo-sel" class="fselect" style="max-width:340px" onchange="document.getElementById('sat-tipo-outro-bloco').style.display = this.value==='avaliacao_geral' ? 'block' : 'none'">
+        <option value="at">Acompanhante Terapêutico (AT)</option>
+        <option value="avaliacao_psico">Avaliação Psicológica</option>
+        <option value="avaliacao_to">Avaliação de Terapia Ocupacional</option>
+        <option value="avaliacao_fono">Avaliação Fonoaudiológica</option>
+        <option value="avaliacao_geral">Outra avaliação/acompanhamento (especificar)</option>
+      </select>
+    </div>
+    <div class="fblock" id="sat-tipo-outro-bloco" style="display:none">
+      <label class="flabel" for="sat-tipo-outro">Especifique a área da avaliação</label>
+      <input type="text" id="sat-tipo-outro" class="finput" placeholder="Ex: Neuropsicologia, Psicopedagogia, Nutrição...">
+    </div>
 
     <div class="fblock"><label class="flabel" for="sat-aluno-sel">Aluno cadastrado</label>
       <select id="sat-aluno-sel" class="fselect" style="max-width:340px"><option value="">Selecione um aluno</option></select>
