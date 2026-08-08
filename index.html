@@ -13100,7 +13100,7 @@ function detectarItensImagem() {
     ? termos.map(t => {
         const m = /^original-(\d+)$/i.exec(t);
         const imgOriginal = m && window._imagensPDFOriginal ? window._imagensPDFOriginal[parseInt(m[1],10)-1] : null;
-        return { termo: t, chave: t, fonte: imgOriginal ? 'original' : 'proprio', resultados: [], urlEscolhida: imgOriginal || null };
+        return { termo: t, chave: t, fonte: imgOriginal ? 'original' : 'proprio', resultados: imgOriginal ? [imgOriginal] : [], urlEscolhida: imgOriginal || null };
       })
     : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
   if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
@@ -13117,6 +13117,7 @@ function renderizarPainelImagens() {
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
         <input type="text" class="finput" value="${item.termo}" oninput="window._imgItens[${i}].termo=this.value" placeholder="Ex: cavalo" style="flex:1;min-width:120px">
         <select class="fselect" style="width:190px" onchange="window._imgItens[${i}].fonte=this.value">
+          ${item.fonte==='original' ? `<option value="original" selected>📄 Imagem original do documento</option>` : ''}
           <option value="proprio" ${item.fonte==='proprio'?'selected':''}>Banco próprio</option>
           <option value="pixabay" ${item.fonte==='pixabay'?'selected':''}>Banco de sites gratuitos</option>
           <option value="openclipart" ${item.fonte==='openclipart'?'selected':''}>OpenClipart (domínio público)</option>
