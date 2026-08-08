@@ -20048,13 +20048,13 @@ async function enviarSolicitacaoDemo() {
 // ── ONBOARDING GESTÃO ─────────────────────────────────────────
 function verificarOnboardingGestao() {
   if (userRole !== 'gestao') return;
-  if (!localStorage.getItem('loumind_lgpd_ok')) {
+  const key = 'loumind_onboarding_gestao_' + (user?.id || 'x');
   if (localStorage.getItem(key)) return;
   const modal = document.getElementById('modal-onboarding-gestao');
   if (modal) modal.classList.add('open');
 }
 function fecharOnboardingGestao() {
-  if (!localStorage.getItem('loumind_lgpd_ok')) {
+  const key = 'loumind_onboarding_gestao_' + (user?.id || 'x');
   localStorage.setItem(key, '1');
   fecharModal('modal-onboarding-gestao');
 }
