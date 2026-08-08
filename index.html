@@ -2542,7 +2542,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <div style="text-align:center;margin-bottom:28px">
       <div style="font-size:32px;margin-bottom:6px">🏫↔🏥</div>
       <h1 style="font-size:20px;font-weight:700;color:#1E293B;margin:0">Solicitação de Devolutiva</h1>
-      <p style="font-size:13px;color:#64748B;margin-top:4px">Plataforma LOUMIND — Comunicação Segura</p>
+      <p style="font-size:13px;color:#64748B;margin-top:4px">Plataforma LouMind — Comunicação Segura</p>
     </div>
 
     <!-- Senha (se necessário) -->
@@ -3082,7 +3082,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           <input type="checkbox" id="lgpd-cb-prof-1" onclick="event.stopPropagation();lgpdAtualizarBotao('lgpd-prof','btn-salvar-prof')">
           <div class="lgpd-item-texto">
             <strong>Sigilo e uso restrito dos dados</strong>
-            <span>Confirmo que os dados acessados serão utilizados exclusivamente para fins pedagógicos e não serão compartilhados fora do sistema LOUMIND.</span>
+            <span>Confirmo que os dados acessados serão utilizados exclusivamente para fins pedagógicos e não serão compartilhados fora do sistema LouMind.</span>
           </div>
           <span class="lgpd-item-obrig">obrigatório</span>
         </label>
@@ -6361,7 +6361,7 @@ function renderPagesDeveloper() {
   <!-- DASHBOARD -->
   <div id="page-dev-dashboard" class="page active">
     <h1 class="page-title">⚙️ Dashboard do Desenvolvedor</h1>
-    <p class="page-sub">Visão completa e em tempo real de toda a plataforma LOUMIND.</p>
+    <p class="page-sub">Visão completa e em tempo real de toda a plataforma LouMind.</p>
 
     <!-- KPI CARDS -->
     <div id="dev-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
@@ -7333,13 +7333,13 @@ async function criarSolicitacao() {
     if (whatsapp) {
       const num = whatsapp.replace(/\D/g,'');
       const dias = parseInt(document.getElementById('sol-expiracao')?.value||'15');
-      const txt = encodeURIComponent('Olá ' + parceiroNome + ',\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse o link seguro abaixo para visualizar a solicitação e enviar sua devolutiva:\n\n🔗 ' + link + '\n\n⚠️ Este link é pessoal, intransferível e expira em ' + dias + ' dias.\nPlataforma LOUMIND — Comunicação Segura');
+      const txt = encodeURIComponent('Olá ' + parceiroNome + ',\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse o link seguro abaixo para visualizar a solicitação e enviar sua devolutiva:\n\n🔗 ' + link + '\n\n⚠️ Este link é pessoal, intransferível e expira em ' + dias + ' dias.\nPlataforma LouMind — Comunicação Segura');
       window.open('https://wa.me/' + (num ? '55'+num : '') + '?text=' + txt, '_blank');
     } else if (email) {
       fetch('https://wgnrxzoccelzzxwyibwj.supabase.co/functions/v1/enviar-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
-        body: JSON.stringify({ to: email, parceiroNome, link, dias, remetente: 'A equipe LOUMIND' })
+        body: JSON.stringify({ to: email, parceiroNome, link, dias, remetente: 'A equipe LouMind' })
       }).then(r => r.json()).then(d => { if (!d.success) console.error('enviar-email:', d); })
         .catch(e => console.error('enviar-email fetch error:', e));
     }
@@ -7455,9 +7455,9 @@ function enviarEmail() {
   if (!_solLinkGerado) return;
   const { link, parceiro_nome, expira_em } = _solLinkGerado;
   const dias = Math.round((new Date(expira_em) - Date.now()) / 86400000);
-  const assunto = encodeURIComponent('Solicitação de Devolutiva — LOUMIND');
+  const assunto = encodeURIComponent('Solicitação de Devolutiva — LouMind');
   const corpo = encodeURIComponent(
-    `Olá ${parceiro_nome},\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse: ${link}\n\nEste link expira em ${dias} dias.\n\nPlataforma LOUMIND`
+    `Olá ${parceiro_nome},\n\nA equipe solicita sua colaboração no acompanhamento de um aluno em comum.\n\nAcesse: ${link}\n\nEste link expira em ${dias} dias.\n\nPlataforma LouMind`
   );
   window.open(`mailto:${_solParceiro.email || ''}?subject=${assunto}&body=${corpo}`);
 }
@@ -7770,7 +7770,7 @@ function exportarRespostaPDF() {
       { titulo: 'Próximos Passos',                    conteudo: s.resposta_proximos_passos || '—' },
       { titulo: 'Nível de Urgência',                  conteudo: urg },
     ],
-    rodape: `Gerado em ${new Date().toLocaleString('pt-BR')} — LOUMIND`
+    rodape: `Gerado em ${new Date().toLocaleString('pt-BR')} — LouMind`
   };
   gerarPDFDocumento(opts);
 }
@@ -10147,7 +10147,7 @@ function renderPages() {
     <!-- TAB 3: COMO ADAPTAR POR PERFIL -->
     <div id="guia-ens-como" class="guia-ens-content" style="display:none">
       <div style="background:var(--bg2);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--gr600);line-height:1.7">
-        ⚠️ <strong>Importante:</strong> estas orientações são baseadas nas características gerais de cada perfil. Sempre considere o aluno concreto, seu laudo e a devolutiva da equipe clínica. A IA do LOUMIND gera a adaptação — este guia ajuda você a <em>compreender</em> e <em>aplicar</em> com intencionalidade.
+        ⚠️ <strong>Importante:</strong> estas orientações são baseadas nas características gerais de cada perfil. Sempre considere o aluno concreto, seu laudo e a devolutiva da equipe clínica. A IA do LouMind gera a adaptação — este guia ajuda você a <em>compreender</em> e <em>aplicar</em> com intencionalidade.
       </div>
 
       <!-- TEA -->
@@ -10348,7 +10348,7 @@ function renderPages() {
         </div>
         <div style="background:var(--bg2);border-radius:10px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start">
           <span style="font-size:18px;flex-shrink:0">🚫</span>
-          <div><div style="font-size:13px;font-weight:600;color:var(--gr700);margin-bottom:3px">Não registrar o que foi feito</div><div style="font-size:12px;color:var(--gr500);line-height:1.6">Sem registro, a adaptação não pode ser avaliada, melhorada nem comunicada à clínica. Use o Diário do Aluno no LOUMIND para registrar em tempo real.</div></div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--gr700);margin-bottom:3px">Não registrar o que foi feito</div><div style="font-size:12px;color:var(--gr500);line-height:1.6">Sem registro, a adaptação não pode ser avaliada, melhorada nem comunicada à clínica. Use o Diário do Aluno no LouMind para registrar em tempo real.</div></div>
         </div>
       </div>
 
@@ -11465,7 +11465,7 @@ function renderPagesGestao() {
       <h1 class="page-title">Relatórios da clínica</h1>
       <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#EEF2FF;color:#1D4ED8">Gestão Educacional</span>
     </div>
-    <p class="page-sub">Respostas dos profissionais de saúde sobre os estudantes da escola — recebidas via formulário fechado do LOUMIND.</p>
+    <p class="page-sub">Respostas dos profissionais de saúde sobre os estudantes da escola — recebidas via formulário fechado do LouMind.</p>
     <div style="display:flex;gap:8px;margin-bottom:16px">
       <div class="search-box" style="flex:1"><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="gcrel-q" placeholder="Buscar por estudante ou clínica..." oninput="gcFiltrarRelatorios()"></div>
       <select class="filter-sel" id="gcrel-fstatus" onchange="gcFiltrarRelatorios()"><option value="">Todos os status</option><option value="pendente">Aguardando resposta</option><option value="respondido">Respondido</option></select>
@@ -13130,9 +13130,9 @@ function renderizarPainelImagens() {
         <button class="btn-sm-ghost" style="font-size:12px" onclick="document.getElementById('${px}-upload-${i}').click()">📤 Não achou? Envie uma imagem</button>
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gr500);cursor:pointer">
           <input type="checkbox" id="${px}-compartilhar-${i}">
-          Compartilhar com a comunidade LOUMIND
+          Compartilhar com a comunidade LouMind
           <span class="chip-wrap" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--gr200);color:var(--gr600);font-size:10px;font-weight:700;cursor:help">?
-            <span class="chip-tooltip">Se marcar, essa imagem também fica disponível para outras escolas e clínicas que usam a LOUMIND, não só a sua. Se deixar desmarcado, ela fica visível apenas para a sua organização.</span>
+            <span class="chip-tooltip">Se marcar, essa imagem também fica disponível para outras escolas e clínicas que usam a LouMind, não só a sua. Se deixar desmarcado, ela fica visível apenas para a sua organização.</span>
           </span>
         </label>
       </div>
@@ -15362,7 +15362,7 @@ async function enviarConviteFamilia() {
     if (error) { toast('Erro ao gerar convite: ' + error.message, 'error'); continue; }
     const link = `${window.location.origin}${window.location.pathname}?convite=${data.token}`;
     const msg = encodeURIComponent(
-      `Olá! A escola convidou você a acompanhar o progresso de *${aluno.nome}* no LOUMIND.\n\n` +
+      `Olá! A escola convidou você a acompanhar o progresso de *${aluno.nome}* na LouMind.\n\n` +
       `Acesse pelo link abaixo para criar sua senha e ver os registros:\n${link}\n\n` +
       `_O link expira em 7 dias._`
     );
@@ -20032,7 +20032,7 @@ async function enviarSolicitacaoDemo() {
   } catch(_) {}
 
   const msg = encodeURIComponent(
-    `Olá! Gostaria de agendar uma demonstração do LOUMIND.\n\n` +
+    `Olá! Gostaria de agendar uma demonstração da LouMind.\n\n` +
     `👤 Nome: ${nome}\n🏫 Escola: ${escola}\n📧 E-mail: ${email}\n📦 Plano: ${plano}\n👥 Alunos com laudo: ${alunos}`
   );
 
