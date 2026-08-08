@@ -3383,7 +3383,7 @@ const _initHash = new URLSearchParams(window.location.hash.replace(/^#/,''));
 const _isInviteOrRecovery = _initHash.get('type') === 'invite' || _initHash.get('type') === 'recovery';
 
 const db = supabase.createClient(SB_URL, SB_KEY);
-const dbAnon = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-LOUMIND-anon' } });
+const dbAnon = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-loumind-anon' } });
 
 // ── DADOS GLOBAIS ────────────────────────────────────────────
 const PERFIS = ['TEA — Transtorno do Espectro Autista','TDAH — Déficit de Atenção/Hiperatividade','Dislexia','Discalculia','Disgrafia','Disortografia','D.I. — Deficiência Intelectual','D.F. — Deficiência Física','D.V. — Deficiência Visual','D.A. — Deficiência Auditiva','NCC — Neurodivergência / Cognição Complexa','Apraxia de Fala','Síndrome de Down','Síndrome de Williams','Altas Habilidades / Superdotação','TGD — Transtorno Global do Desenvolvimento','TOD — Transtorno Opositivo Desafiador','Transtorno de Ansiedade','Transtorno de Processamento Sensorial','Deficiência Múltipla'];
@@ -3859,7 +3859,7 @@ function entrarDev() {
   if (!confirm('Modo demonstração: dados fictícios, sem acesso ao banco real. Continuar?')) return;
   user = {
     id: '00000000-0000-0000-0000-000000000000',
-    email: 'demo@LOUMIND.app',
+    email: 'demo@loumind.app',
     user_metadata: { role: 'gestao' }
   };
   window._devMode = true;
@@ -14119,7 +14119,7 @@ function gerarPDFDocumento(opts) {
       doc.setTextColor(150, 150, 150);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
-      doc.text('Gerado via LOUMIND · LOUMIND.ia.br', W - mr, 10, { align: 'right' });
+      doc.text('Gerado via LouMind · loumind.ia.br', W - mr, 10, { align: 'right' });
       doc.text(dataHoje, W - mr, 16, { align: 'right' });
       doc.setTextColor(30, 30, 30);
       y = 36;
@@ -14882,7 +14882,7 @@ function adicionarRodapePagina(doc, W, H, ml, mr, numPag) {
   doc.setFontSize(7);
   doc.setTextColor(170, 170, 170);
   doc.setFont('helvetica', 'normal');
-  doc.text('LOUMIND — Plataforma de Integração Clínica-Pedagógica | LOUMIND.ia.br', W / 2, H - 5, { align: 'center' });
+  : doc.text('LouMind — Plataforma de Integração Clínica-Pedagógica | loumind.ia.br', W / 2, H - 5, { align: 'center' });
   doc.text('Pág. ' + numPag, W - mr, H - 5, { align: 'right' });
   doc.setTextColor(30, 30, 30);
   doc.setFont(_fontAntes.fontName, _fontAntes.fontStyle);
@@ -20048,13 +20048,13 @@ async function enviarSolicitacaoDemo() {
 // ── ONBOARDING GESTÃO ─────────────────────────────────────────
 function verificarOnboardingGestao() {
   if (userRole !== 'gestao') return;
-  const key = 'LOUMIND_onboarding_gestao_' + (user?.id || 'x');
+  if (!localStorage.getItem('loumind_lgpd_ok')) {
   if (localStorage.getItem(key)) return;
   const modal = document.getElementById('modal-onboarding-gestao');
   if (modal) modal.classList.add('open');
 }
 function fecharOnboardingGestao() {
-  const key = 'LOUMIND_onboarding_gestao_' + (user?.id || 'x');
+  if (!localStorage.getItem('loumind_lgpd_ok')) {
   localStorage.setItem(key, '1');
   fecharModal('modal-onboarding-gestao');
 }
@@ -20117,7 +20117,7 @@ function verificarLGPD() {
   }
 }
 function aceitarLGPD() {
-  localStorage.setItem('LOUMIND_lgpd_ok', '1');
+  localStorage.setItem('loumind_lgpd_ok', '1');
   fecharLGPD();
 }
 function fecharLGPD() {
