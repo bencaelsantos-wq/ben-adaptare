@@ -12689,8 +12689,9 @@ async function gerar() {
   const INSTRUCAO_PERFIL = PERFIS_ADAPTACAO_TEXTOS[perfilAdaptacao] || '';
 
   const qtdImagensOriginais = (window._imagensPDFOriginal||[]).length;
-  const INSTRUCAO_IMAGENS_ORIGINAIS = (window._usarImagensOriginais === true && qtdImagensOriginais)
-    ? `IMAGENS DO MATERIAL ORIGINAL: o profissional enviou o material original e pediu para REAPROVEITAR as mesmas imagens (não gerar nem buscar outras). Há ${qtdImagensOriginais} imagem(ns) disponível(is), na ordem em que aparecem no documento original. Sempre que um item da adaptação precisar de apoio visual, use o marcador [IMAGEM: original-N], onde N é o número da imagem na ordem (ex: [IMAGEM: original-1] para a primeira). Use SOMENTE esses marcadores original-N para apoio visual nesta adaptação — não use nomes genéricos de objetos.`
+  const usarVisaoImagensOriginais = window._usarImagensOriginais === true && qtdImagensOriginais > 0;
+  const INSTRUCAO_IMAGENS_ORIGINAIS = usarVisaoImagensOriginais
+    ? `IMAGENS DO MATERIAL ORIGINAL: o profissional enviou o material original e pediu para REAPROVEITAR as mesmas imagens (não gerar nem buscar outras). Você está VENDO ${qtdImagensOriginais} imagem(ns) reais anexadas a esta mensagem, nesta ordem, identificadas como original-1, original-2 etc. (a primeira imagem anexada é original-1, a segunda é original-2, e assim por diante). Observe o CONTEÚDO de cada imagem antes de decidir onde usá-la: use o marcador [IMAGEM: original-N] apenas junto da pergunta/item ao qual aquela imagem específica realmente se refere. NÃO force o uso de uma imagem em um lugar que não faz sentido, e NÃO é obrigatório usar todas — se uma imagem for um logotipo, marca d'água ou não tiver relação com nenhum exercício, simplesmente não a use. Use SOMENTE esses marcadores original-N para apoio visual nesta adaptação — não use nomes genéricos de objetos.`
     : '';
 
   const MONTESSORI_SISTEMA = isMontessori ? `
@@ -13019,7 +13020,7 @@ GENERALIZAÇÃO (1 linha, máx 15 palavras): [como estimular essa habilidade for
 NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: incluiGuia ? 2800 : 1200, modulo: 'adaptacao' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: incluiGuia ? 2800 : 1200, modulo: 'adaptacao', imagensBase64: usarVisaoImagensOriginais ? window._imagensPDFOriginal : [] });
     let texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     const idxNome = texto.search(/Nome\s*:\s*_{2,}/i);
     if (idxNome > 0) texto = texto.slice(idxNome);
@@ -13027,13 +13028,17 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, nivel, fonteTipo, fonteTamanho, espacamento };
     let textoFinal = usaMaiusculas ? texto.toUpperCase() : texto;
     if (window._usarImagensOriginais === true && (window._imagensPDFOriginal||[]).length) {
-      const marcadoresOriginais = window._imagensPDFOriginal.map((_,i) => `[IMAGEM: original-${i+1}]`).join(' ');
-      const rotuloRef = usaMaiusculas ? 'MATERIAL DE REFERÊNCIA VISUAL (MESMO MATERIAL DA TURMA):' : 'Material de referência visual (mesmo material da turma):';
-      const separadorGuia = /\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i;
-      if (separadorGuia.test(textoFinal)) {
-        textoFinal = textoFinal.replace(separadorGuia, `\n\n${rotuloRef}\n${marcadoresOriginais}\n\n$&`);
-      } else {
-        textoFinal += `\n\n${rotuloRef}\n${marcadoresOriginais}`;
+      const usadosNoTexto = new Set([...textoFinal.matchAll(/\[IMAGEM:\s*original-(\d+)\]/gi)].map(m => parseInt(m[1], 10)));
+      const naoUsados = window._imagensPDFOriginal.map((_, i) => i + 1).filter(n => !usadosNoTexto.has(n));
+      if (naoUsados.length) {
+        const marcadoresOriginais = naoUsados.map(n => `[IMAGEM: original-${n}]`).join(' ');
+        const rotuloRef = usaMaiusculas ? 'MATERIAL DE REFERÊNCIA VISUAL (MESMO MATERIAL DA TURMA):' : 'Material de referência visual (mesmo material da turma):';
+        const separadorGuia = /\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i;
+        if (separadorGuia.test(textoFinal)) {
+          textoFinal = textoFinal.replace(separadorGuia, `\n\n${rotuloRef}\n${marcadoresOriginais}\n\n$&`);
+        } else {
+          textoFinal += `\n\n${rotuloRef}\n${marcadoresOriginais}`;
+        }
       }
     }
     ultimaAdapt = textoFinal;
