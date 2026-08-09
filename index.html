@@ -12333,6 +12333,7 @@ async function processarArquivoAdaptacao(input) {
     let texto = '';
     if (file.name.endsWith('.pdf')) {
       texto = await extrairTextoPDF(file);
+      if (!texto.trim()) { status.textContent = 'Documento sem texto — aplicando OCR…'; texto = await extrairTextoPDFComOCR(file, status); }
       try { window._imagensPDFOriginal = await extrairImagensPDF(file); } catch(e) { console.warn('Falha ao extrair imagens do PDF', e); }
     } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
       texto = await extrairTextoDOCX(file);
