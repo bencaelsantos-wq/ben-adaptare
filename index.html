@@ -12405,6 +12405,17 @@ async function extrairImagensPaginaInteiraPDF(file) {
   });
 }
 
+function _pdfjsMulMatriz(m, ctm) {
+  return [
+    m[0]*ctm[0] + m[1]*ctm[2],
+    m[0]*ctm[1] + m[1]*ctm[3],
+    m[2]*ctm[0] + m[3]*ctm[2],
+    m[2]*ctm[1] + m[3]*ctm[3],
+    m[4]*ctm[0] + m[5]*ctm[2] + ctm[4],
+    m[4]*ctm[1] + m[5]*ctm[3] + ctm[5]
+  ];
+}
+
 async function extrairImagensPDF(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -12419,10 +12430,24 @@ async function extrairImagensPDF(file) {
         const imagens = [];
         for (let i = 1; i <= maxPaginas && imagens.length < 20; i++) {
           const page = await pdf.getPage(i);
+          const vp1 = page.getViewport({ scale: 1 });
+          const pageW = Math.abs(vp1.width), pageH = Math.abs(vp1.height);
           const opList = await page.getOperatorList();
+          let ctm = [1,0,0,1,0,0];
+          const pilha = [];
           for (let j = 0; j < opList.fnArray.length && imagens.length < 20; j++) {
             const op = opList.fnArray[j];
+            if (op === pdfjsLib.OPS.save) { pilha.push(ctm.slice()); continue; }
+            if (op === pdfjsLib.OPS.restore) { ctm = pilha.pop() || ctm; continue; }
+            if (op === pdfjsLib.OPS.transform) { ctm = _pdfjsMulMatriz(opList.argsArray[j], ctm); continue; }
             if (op !== pdfjsLib.OPS.paintImageXObject && op !== pdfjsLib.OPS.paintJpegXObject) continue;
+
+            const largExibida = Math.hypot(ctm[0], ctm[1]);
+            const altExibida = Math.hypot(ctm[2], ctm[3]);
+            const coberturaLarg = pageW ? largExibida / pageW : 0;
+            const coberturaAlt = pageH ? altExibida / pageH : 0;
+            if (coberturaLarg > 0.6 && coberturaAlt > 0.6) continue; // imagem cobre quase a pagina inteira - provavel scan de fundo, descarta
+
             const nome = opList.argsArray[j][0];
             try {
               const imgObj = await new Promise((res) => page.objs.get(nome, res));
