@@ -12351,7 +12351,12 @@ async function processarArquivoAdaptacao(input) {
     status.textContent = 'Arquivo importado com sucesso. Revise o texto abaixo e clique em Gerar.';
     if (window._imagensPDFOriginal.length && toggleBox) {
       toggleBox.style.display = 'block';
-      preview.innerHTML = window._imagensPDFOriginal.map((src,i) => `<img src="${src}" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid #DBEAFE" alt="Página ${i+1} do material original">`).join('');
+      preview.innerHTML = window._imagensPDFOriginal.map((src,i) => `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <img src="${src}" style="width:70px;height:70px;object-fit:contain;background:#fff;border-radius:6px;border:1px solid #DBEAFE" alt="Imagem original ${i+1}">
+          <span style="font-size:10px;color:#1D4ED8;font-weight:600">original-${i+1}</span>
+        </div>
+      `).join('');
     }
   } catch(e) {
     status.style.background = '#FEF2F2';
@@ -12371,7 +12376,7 @@ function definirUsoImagensOriginais(usar) {
   toast(usar ? 'A IA vai priorizar reaproveitar as imagens do material original.' : 'A IA vai manter só o mesmo tema, buscando novas imagens.', 'success');
 }
 
-async function extrairImagensPDF(file) {
+async function extrairImagensPaginaInteiraPDF(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -12391,6 +12396,69 @@ async function extrairImagensPDF(file) {
           canvas.height = viewport.height;
           await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
           imagens.push(canvas.toDataURL('image/jpeg', 0.85));
+        }
+        resolve(imagens);
+      } catch(err) { reject(err); }
+    };
+    reader.onerror = () => reject(new Error('Erro ao ler imagens do arquivo.'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function extrairImagensPDF(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const typedArray = new Uint8Array(e.target.result);
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        if (!pdfjsLib) { resolve([]); return; }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+        const maxPaginas = Math.min(pdf.numPages, 20);
+        const imagens = [];
+        for (let i = 1; i <= maxPaginas && imagens.length < 20; i++) {
+          const page = await pdf.getPage(i);
+          const opList = await page.getOperatorList();
+          for (let j = 0; j < opList.fnArray.length && imagens.length < 20; j++) {
+            const op = opList.fnArray[j];
+            if (op !== pdfjsLib.OPS.paintImageXObject && op !== pdfjsLib.OPS.paintJpegXObject) continue;
+            const nome = opList.argsArray[j][0];
+            try {
+              const imgObj = await new Promise((res) => page.objs.get(nome, res));
+              if (!imgObj || !imgObj.width || !imgObj.height) continue;
+              if (imgObj.width < 60 || imgObj.height < 60) continue;
+              const canvas = document.createElement('canvas');
+              canvas.width = imgObj.width;
+              canvas.height = imgObj.height;
+              const ctx = canvas.getContext('2d');
+              if (imgObj.bitmap) {
+                ctx.drawImage(imgObj.bitmap, 0, 0);
+              } else if (imgObj.data) {
+                const total = imgObj.width * imgObj.height;
+                const rgba = new Uint8ClampedArray(total * 4);
+                const src = imgObj.data;
+                if (src.length === total * 4) {
+                  rgba.set(src);
+                } else if (src.length === total * 3) {
+                  for (let p = 0; p < total; p++) {
+                    rgba[p*4] = src[p*3]; rgba[p*4+1] = src[p*3+1]; rgba[p*4+2] = src[p*3+2]; rgba[p*4+3] = 255;
+                  }
+                } else {
+                  continue;
+                }
+                ctx.putImageData(new ImageData(rgba, imgObj.width, imgObj.height), 0, 0);
+              } else {
+                continue;
+              }
+              imagens.push(canvas.toDataURL('image/jpeg', 0.88));
+            } catch(errImg) { /* ignora imagem que falhar ao converter */ }
+          }
+        }
+        if (!imagens.length) {
+          const fallback = await extrairImagensPaginaInteiraPDF(file);
+          resolve(fallback);
+          return;
         }
         resolve(imagens);
       } catch(err) { reject(err); }
