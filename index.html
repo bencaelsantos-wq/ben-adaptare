@@ -14698,7 +14698,43 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const restante = limpa.slice(cursor).trim();
       if (restante) itens[itens.length - 1].rotulo = (itens[itens.length - 1].rotulo + ' ' + restante).trim();
 
+      const ehLigarAssociar = itens.length === 1 && /^->/.test(itens[0].rotulo || '');
       const maxImgW = 34, maxImgH = 34;
+
+      if (ehLigarAssociar) {
+        const item = itens[0];
+        const b64 = opts.imagensPorItem && opts.imagensPorItem[item.nome];
+        let imgW = 0, imgH = 0, imgFormato = null;
+        if (b64) {
+          try {
+            const props = doc.getImageProperties(b64);
+            imgW = Math.min(24, maxImgW);
+            imgH = imgW * (props.height / props.width);
+            if (imgH > 24) { imgH = 24; imgW = imgH * (props.width / props.height); }
+            imgFormato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+          } catch(e) { imgW = 0; imgH = 0; }
+        }
+        const larguraTexto = maxW - (imgW ? imgW + 6 : 0);
+        const linhasRotulo = item.rotulo ? doc.splitTextToSize(item.rotulo, larguraTexto) : [];
+        const altTexto = linhasRotulo.length * altLinha;
+        const altCelula = Math.max(altTexto, imgH) + 6;
+
+        if (y + altCelula > H - rodapeH) {
+          adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+          doc.addPage();
+          y = 10;
+        }
+        const yImg = y + Math.max(0, (altTexto - imgH) / 2);
+        if (b64 && imgFormato) {
+          try { doc.addImage(b64, imgFormato, ml, yImg, imgW, imgH); } catch(e) {}
+        }
+        const xTexto = ml + (imgW ? imgW + 6 : 0);
+        const yTextoInicio = y + Math.max(0, (imgH - altTexto) / 2) + altLinha * 0.8;
+        linhasRotulo.forEach((l, li) => doc.text(l, xTexto, yTextoInicio + li * altLinha));
+        y += altCelula;
+        continue;
+      }
+
       const celulaW = maxW / itens.length;
       itens.forEach(item => {
         item.linhasRotulo = item.rotulo ? doc.splitTextToSize(item.rotulo, celulaW - 4) : [];
