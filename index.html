@@ -6756,8 +6756,8 @@ function renderPagesDeveloper() {
     </div>
   </div>
 
-  <div id="modal-novo-caso-dev" class="modal-overlay">
-    <div class="modal-box">
+  <div id="modal-novo-caso-dev" class="overlay">
+    <div class="modal" style="max-width:420px" onclick="event.stopPropagation()">
       <h3>Novo Caso</h3>
       <label class="flabel">Nome/identificação do caso</label>
       <input type="text" id="ecm-nome" class="finput" style="margin-bottom:10px">
