@@ -6349,6 +6349,10 @@ function renderNavDeveloper() {
     <div class="nav-item" id="nav-dev-ia" onclick="showPage('dev-ia'); carregarConsumoIA()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Consumo de IA
     </div>
+    <div class="nav-section" style="margin-top:12px">Pessoal</div>
+    <div class="nav-item" id="nav-dev-estudos-caso" onclick="abrirEstudosCasoDev()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h9l3 3v11H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 9h6M7 12h6M7 15h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>🔒 Estudos de Caso
+    </div>
     <div class="nav-section" style="margin-top:12px">Admin</div>
     <div class="nav-item" id="nav-dev-sql" onclick="showPage('dev-sql')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 7l3 3-3 3M10 14h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Console SQL
@@ -6677,6 +6681,41 @@ function renderPagesDeveloper() {
   </div>
 
   <!-- CONSOLE SQL -->
+  <div id="page-dev-estudos-caso" class="page">
+    <h1 class="page-title">🔒 Estudos de Caso</h1>
+    <p class="page-sub">Espaço pessoal e privado — visível só para você. Use para registrar observações e gerar análises de apoio ao seu próprio trabalho de estudo.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;align-items:start">
+      <div class="dash-card">
+        <h3 style="margin:0 0 12px">Novo registro</h3>
+        <label class="flabel">Título / identificação do caso (não use nome completo real se preferir)</label>
+        <input type="text" id="ec-titulo" class="finput" placeholder="Ex: Caso A — turma 3º ano" style="margin-bottom:10px">
+        <label class="flabel">Relato principal (comportamento/situação observada)</label>
+        <textarea id="ec-relato" class="ftarea" style="min-height:90px;margin-bottom:10px" placeholder="Descreva o que foi observado..."></textarea>
+        <label class="flabel">Contexto / gatilho identificado</label>
+        <textarea id="ec-contexto" class="ftarea" style="min-height:60px;margin-bottom:10px"></textarea>
+        <label class="flabel">O que já foi tentado</label>
+        <textarea id="ec-tentativas" class="ftarea" style="min-height:60px;margin-bottom:10px"></textarea>
+        <label class="flabel">Instrumentos já aplicados (se houver)</label>
+        <textarea id="ec-instrumentos" class="ftarea" style="min-height:50px;margin-bottom:10px"></textarea>
+        <label class="flabel">Trechos de laudos/relatórios relevantes (opcional, cole o texto)</label>
+        <textarea id="ec-laudo" class="ftarea" style="min-height:60px;margin-bottom:14px"></textarea>
+        <button class="btn-primary" id="ec-btn-gerar" onclick="gerarEstudoCasoDev()" style="width:100%">Gerar Análise</button>
+        <div id="ec-resultado-box" style="display:none;margin-top:16px">
+          <label class="flabel">Resultado (editável)</label>
+          <textarea id="ec-resultado-texto" class="ftarea" style="min-height:260px"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn-sm" onclick="salvarEstudoCasoDev()">💾 Salvar no histórico</button>
+            <button class="btn-sm-ghost" onclick="navigator.clipboard.writeText(document.getElementById('ec-resultado-texto').value);toast('Copiado!','success')">Copiar texto</button>
+          </div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <h3 style="margin:0 0 12px">Histórico salvo</h3>
+        <div id="ec-lista-salvas"><p style="color:var(--gr400);font-size:13px">Carregando...</p></div>
+      </div>
+    </div>
+  </div>
+
   <div id="page-dev-sql" class="page">
     <h1 class="page-title">Console SQL</h1>
     <p class="page-sub">Execute queries diretamente nas tabelas da plataforma (somente leitura segura).</p>
@@ -6695,6 +6734,101 @@ function renderPagesDeveloper() {
   preencherAtalhosSQLDev();
 }
 
+
+// ── DEV: Estudos de Caso (espaço pessoal e privado) ──────────
+function abrirEstudosCasoDev() {
+  showPage('dev-estudos-caso');
+  carregarEstudosCasoDev();
+}
+
+async function gerarEstudoCasoDev() {
+  const titulo = document.getElementById('ec-titulo')?.value.trim() || '';
+  const relato = document.getElementById('ec-relato')?.value.trim();
+  if (!relato) return toast('Descreva a situação observada.', 'error');
+  const contexto = document.getElementById('ec-contexto')?.value.trim() || '';
+  const tentativas = document.getElementById('ec-tentativas')?.value.trim() || '';
+  const instrumentos = document.getElementById('ec-instrumentos')?.value.trim() || '';
+  const laudo = document.getElementById('ec-laudo')?.value.trim() || '';
+
+  const prompt = `${SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL}
+
+O solicitante é o próprio profissional realizando estudo pessoal de caso, com formação técnica — pode usar terminologia técnica plena.
+
+DADOS FORNECIDOS:
+Identificação do caso: ${titulo || 'não identificado'}
+
+Relato principal (comportamento observado):
+${relato}
+
+Contexto/gatilho identificado:
+${contexto || 'não informado'}
+
+O que já foi tentado:
+${tentativas || 'não informado'}
+
+Instrumentos já aplicados (se houver):
+${instrumentos || 'nenhum informado'}
+
+Trecho de laudos/relatórios anexados (se houver):
+${laudo || 'nenhum anexado'}
+
+Gere o relatório completo seguindo as 4 camadas do seu papel.`;
+
+  const btn = document.getElementById('ec-btn-gerar');
+  btn.disabled = true;
+  document.getElementById('ec-resultado-box').style.display = 'none';
+  try {
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'estudo-caso-dev' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+    document.getElementById('ec-resultado-texto').value = texto;
+    document.getElementById('ec-resultado-box').style.display = 'block';
+    document.getElementById('ec-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function salvarEstudoCasoDev() {
+  const titulo = document.getElementById('ec-titulo')?.value.trim() || '';
+  const relato = document.getElementById('ec-relato')?.value.trim() || '';
+  const contexto = document.getElementById('ec-contexto')?.value.trim() || '';
+  const tentativas = document.getElementById('ec-tentativas')?.value.trim() || '';
+  const instrumentos = document.getElementById('ec-instrumentos')?.value.trim() || '';
+  const laudo = document.getElementById('ec-laudo')?.value.trim() || '';
+  const resultado = document.getElementById('ec-resultado-texto')?.value.trim() || '';
+  const { error } = await db.from('estudos_caso_dev').insert({
+    user_id: user.id, titulo, relato, contexto, tentativas, instrumentos, laudo_texto: laudo, resultado
+  });
+  if (error) { toast('Erro ao salvar: ' + error.message, 'error'); return; }
+  toast('Estudo de caso salvo!', 'success');
+  carregarEstudosCasoDev();
+}
+
+async function carregarEstudosCasoDev() {
+  const lista = document.getElementById('ec-lista-salvas');
+  if (!lista) return;
+  const { data, error } = await db.from('estudos_caso_dev')
+    .select('id, titulo, relato, resultado, created_at')
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error || !data?.length) { lista.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhum estudo salvo ainda.</p>'; return; }
+  lista.innerHTML = data.map(r => `
+    <div class="ic-card" style="cursor:pointer" onclick='abrirEstudoCasoSalvoDev(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="ic-nome">${r.titulo || '(sem título)'}</div>
+      <div style="font-size:11px;color:var(--gr400)">${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>
+  `).join('');
+}
+
+function abrirEstudoCasoSalvoDev(r) {
+  document.getElementById('ec-titulo').value = r.titulo || '';
+  document.getElementById('ec-relato').value = r.relato || '';
+  document.getElementById('ec-resultado-texto').value = r.resultado || '';
+  document.getElementById('ec-resultado-box').style.display = 'block';
+  document.getElementById('ec-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
 
 // ── DEV: Consumo de IA ────────────────────────────────────────
 async function carregarConsumoIA() {
