@@ -6353,6 +6353,9 @@ function renderNavDeveloper() {
     <div class="nav-item" id="nav-dev-estudos-caso" onclick="abrirEstudosCasoDev()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h9l3 3v11H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 9h6M7 12h6M7 15h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>🔒 Estudos de Caso
     </div>
+    <div class="nav-item" id="nav-dev-linha-laudos" onclick="abrirLinhaDoTempoLaudosDev()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>🔒 Linha do Tempo de Laudos
+    </div>
     <div class="nav-section" style="margin-top:12px">Admin</div>
     <div class="nav-item" id="nav-dev-sql" onclick="showPage('dev-sql')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 7l3 3-3 3M10 14h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Console SQL
@@ -6757,8 +6760,23 @@ function renderPagesDeveloper() {
   </div>
 
   <div id="modal-novo-caso-dev" class="overlay">
-    <div class="modal" style="max-width:420px" onclick="event.stopPropagation()">
+    <div class="modal" style="max-width:520px" onclick="event.stopPropagation()">
       <h3>Novo Caso</h3>
+      <p style="font-size:13px;color:var(--gr500);margin:0 0 14px">Envie o laudo/relatório primeiro — a IA gera o perfil geral, e o caso já nasce com essa análise.</p>
+
+      <label class="flabel">Laudo/relatório (PDF)</label>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <button class="btn-sm-ghost" onclick="document.getElementById('ecm-inp-pdf').click()">📄 Enviar PDF</button>
+        <input type="file" id="ecm-inp-pdf" accept=".pdf" style="display:none" onchange="lerLaudoPreCasoDev(this)">
+        <span id="ecm-pdf-status" style="font-size:12px;color:var(--gr500)"></span>
+      </div>
+
+      <div id="ecm-bloco-analise" style="display:none">
+        <button class="btn-sm" style="margin-bottom:10px" onclick="analisarLaudoPreCasoDev()">Gerar Perfil a partir do Laudo</button>
+        <label class="flabel">Perfil geral gerado (editável)</label>
+        <textarea id="ecm-perfil-preview" class="ftarea" style="min-height:160px;margin-bottom:14px"></textarea>
+      </div>
+
       <label class="flabel">Nome/identificação do caso</label>
       <input type="text" id="ecm-nome" class="finput" style="margin-bottom:10px">
       <label class="flabel">Idade (opcional)</label>
@@ -6767,7 +6785,7 @@ function renderPagesDeveloper() {
       <textarea id="ecm-contexto" class="ftarea" style="min-height:60px;margin-bottom:14px"></textarea>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="btn-sm-ghost" onclick="fecharModal('modal-novo-caso-dev')">Cancelar</button>
-        <button class="btn-sm" onclick="criarCasoDev()">Criar</button>
+        <button class="btn-sm" onclick="criarCasoDev()">Criar Caso</button>
       </div>
     </div>
   </div>
@@ -6813,18 +6831,81 @@ async function carregarCasosDev() {
   `).join('');
 }
 
+async function lerLaudoPreCasoDev(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('ecm-pdf-status');
+  status.textContent = 'Lendo arquivo…';
+  try {
+    let texto = '';
+    if (file.name.endsWith('.pdf')) {
+      texto = await extrairTextoPDF(file);
+      if (!texto.trim()) { status.textContent = 'Documento sem texto — aplicando OCR…'; texto = await extrairTextoPDFComOCR(file, { textContent: '' }); }
+    } else {
+      status.textContent = 'Use um arquivo PDF.';
+      return;
+    }
+    if (!texto.trim()) { status.textContent = 'Não foi possível extrair texto deste PDF.'; return; }
+    window._preCasoLaudoDev = { nomeArquivo: file.name, texto: texto.trim() };
+    status.textContent = `"${file.name}" lido com sucesso.`;
+    document.getElementById('ecm-bloco-analise').style.display = 'block';
+  } catch(e) {
+    status.textContent = 'Erro ao ler o arquivo: ' + (e.message || '');
+  }
+  input.value = '';
+}
+
+async function analisarLaudoPreCasoDev() {
+  if (!window._preCasoLaudoDev) return;
+  const status = document.getElementById('ecm-pdf-status');
+  status.textContent = 'Gerando análise…';
+  const prompt = `${SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL}
+
+O solicitante é o próprio profissional realizando estudo pessoal de caso, com formação técnica — pode usar terminologia técnica plena.
+
+LAUDO/RELATÓRIO ANEXADO (${window._preCasoLaudoDev.nomeArquivo}):
+${window._preCasoLaudoDev.texto}
+
+Gere uma ANÁLISE DE PERFIL GERAL inicial, seguindo as 4 camadas do seu papel, com base neste documento.`;
+  try {
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'estudo-caso-dev' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+    document.getElementById('ecm-perfil-preview').value = texto;
+    status.textContent = 'Perfil gerado — revise antes de criar o caso.';
+  } catch(e) {
+    status.textContent = 'Erro: ' + (e.message || 'Tente novamente.');
+  }
+}
+
 async function criarCasoDev() {
   const nome_caso = document.getElementById('ecm-nome')?.value.trim();
   if (!nome_caso) return toast('Informe o nome/identificação do caso.', 'error');
   const idade = document.getElementById('ecm-idade')?.value.trim() || null;
   const contexto_geral = document.getElementById('ecm-contexto')?.value.trim() || null;
+  const perfil_geral = document.getElementById('ecm-perfil-preview')?.value.trim() || null;
   const { data, error } = await db.from('estudos_caso_dev')
-    .insert({ user_id: user.id, nome_caso, idade, contexto_geral })
+    .insert({ user_id: user.id, nome_caso, idade, contexto_geral, perfil_geral })
     .select().single();
   if (error) return toast('Erro ao criar caso: ' + error.message, 'error');
+
+  if (window._preCasoLaudoDev) {
+    await db.from('estudos_caso_registros_dev').insert({
+      caso_id: data.id, user_id: user.id, tipo: 'laudo', titulo: window._preCasoLaudoDev.nomeArquivo, conteudo: window._preCasoLaudoDev.texto
+    });
+    if (perfil_geral) {
+      await db.from('estudos_caso_registros_dev').insert({
+        caso_id: data.id, user_id: user.id, tipo: 'analise', titulo: 'Análise de perfil geral', resultado_ia: perfil_geral
+      });
+    }
+  }
+
   document.getElementById('ecm-nome').value = '';
   document.getElementById('ecm-idade').value = '';
   document.getElementById('ecm-contexto').value = '';
+  document.getElementById('ecm-perfil-preview').value = '';
+  document.getElementById('ecm-pdf-status').textContent = '';
+  document.getElementById('ecm-bloco-analise').style.display = 'none';
+  window._preCasoLaudoDev = null;
   fecharModal('modal-novo-caso-dev');
   await carregarCasosDev();
   abrirCasoDev(data);
@@ -8395,6 +8476,13 @@ function abrirLinhaDoTempoLaudos() {
     sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
       (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
   }
+  carregarLinhasDoTempo();
+}
+
+function abrirLinhaDoTempoLaudosDev() {
+  showPage('linha-laudos');
+  const sel = document.getElementById('lt-aluno-sel');
+  if (sel) sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>';
   carregarLinhasDoTempo();
 }
 
