@@ -6716,6 +6716,62 @@ function renderPagesDeveloper() {
     </div>
   </div>
 
+  <div id="page-dev-estudos-caso" class="page">
+    <h1 class="page-title">🔒 Estudos de Caso</h1>
+    <p class="page-sub">Espaço pessoal e privado — visível só para você.</p>
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;margin-top:16px;align-items:start">
+      <div class="dash-card">
+        <button class="btn-sm" style="width:100%;margin-bottom:10px" onclick="abrirModal('modal-novo-caso-dev')">+ Novo Caso</button>
+        <div id="ec-lista-casos"><p style="color:var(--gr400);font-size:13px">Carregando...</p></div>
+      </div>
+      <div class="dash-card" id="ec-caso-detalhe" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
+          <div>
+            <h3 id="ec-det-nome" style="margin:0 0 4px"></h3>
+            <div id="ec-det-sub" style="font-size:12px;color:var(--gr500)"></div>
+          </div>
+        </div>
+
+        <div style="background:#F8FAFC;border:1px solid var(--gr200);border-radius:10px;padding:14px;margin-bottom:16px">
+          <label class="flabel">Perfil geral (gerado a partir dos laudos enviados — editável)</label>
+          <textarea id="ec-perfil-geral" class="ftarea" style="min-height:140px;margin-bottom:8px"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-sm-ghost" onclick="document.getElementById('ec-inp-pdf').click()">📄 Enviar PDF (laudo/relatório)</button>
+            <input type="file" id="ec-inp-pdf" accept=".pdf" style="display:none" onchange="enviarLaudoEstudoCasoDev(this)">
+            <button class="btn-sm" onclick="gerarPerfilGeralDev()">Gerar/Atualizar Perfil Geral</button>
+            <button class="btn-sm-ghost" onclick="salvarPerfilGeralDev()">💾 Salvar edição do perfil</button>
+          </div>
+          <div id="ec-upload-status" style="font-size:12px;color:var(--gr500);margin-top:6px"></div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label class="flabel">Nova observação</label>
+          <textarea id="ec-nova-obs" class="ftarea" style="min-height:70px;margin-bottom:8px" placeholder="Registre aqui o que você observou..."></textarea>
+          <button class="btn-sm" onclick="adicionarObservacaoDev()">+ Adicionar observação</button>
+        </div>
+
+        <h4 style="margin:0 0 8px">Linha do tempo</h4>
+        <div id="ec-timeline"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-novo-caso-dev" class="modal-overlay">
+    <div class="modal-box">
+      <h3>Novo Caso</h3>
+      <label class="flabel">Nome/identificação do caso</label>
+      <input type="text" id="ecm-nome" class="finput" style="margin-bottom:10px">
+      <label class="flabel">Idade (opcional)</label>
+      <input type="text" id="ecm-idade" class="finput" style="margin-bottom:10px">
+      <label class="flabel">Contexto geral (opcional — turma, série, situação)</label>
+      <textarea id="ecm-contexto" class="ftarea" style="min-height:60px;margin-bottom:14px"></textarea>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-sm-ghost" onclick="fecharModal('modal-novo-caso-dev')">Cancelar</button>
+        <button class="btn-sm" onclick="criarCasoDev()">Criar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="page-dev-sql" class="page">
     <h1 class="page-title">Console SQL</h1>
     <p class="page-sub">Execute queries diretamente nas tabelas da plataforma (somente leitura segura).</p>
@@ -6738,96 +6794,166 @@ function renderPagesDeveloper() {
 // ── DEV: Estudos de Caso (espaço pessoal e privado) ──────────
 function abrirEstudosCasoDev() {
   showPage('dev-estudos-caso');
-  carregarEstudosCasoDev();
+  document.getElementById('ec-caso-detalhe').style.display = 'none';
+  carregarCasosDev();
 }
 
-async function gerarEstudoCasoDev() {
-  const titulo = document.getElementById('ec-titulo')?.value.trim() || '';
-  const relato = document.getElementById('ec-relato')?.value.trim();
-  if (!relato) return toast('Descreva a situação observada.', 'error');
-  const contexto = document.getElementById('ec-contexto')?.value.trim() || '';
-  const tentativas = document.getElementById('ec-tentativas')?.value.trim() || '';
-  const instrumentos = document.getElementById('ec-instrumentos')?.value.trim() || '';
-  const laudo = document.getElementById('ec-laudo')?.value.trim() || '';
+async function carregarCasosDev() {
+  const lista = document.getElementById('ec-lista-casos');
+  if (!lista) return;
+  const { data, error } = await db.from('estudos_caso_dev')
+    .select('id, nome_caso, idade, contexto_geral, perfil_geral, created_at')
+    .order('created_at', { ascending: false });
+  if (error || !data?.length) { lista.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhum caso cadastrado ainda.</p>'; return; }
+  lista.innerHTML = data.map(c => `
+    <div class="ic-card" style="cursor:pointer" onclick='abrirCasoDev(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
+      <div class="ic-nome">${c.nome_caso}</div>
+      <div style="font-size:11px;color:var(--gr400)">${c.idade ? c.idade + ' · ' : ''}${new Date(c.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>
+  `).join('');
+}
+
+async function criarCasoDev() {
+  const nome_caso = document.getElementById('ecm-nome')?.value.trim();
+  if (!nome_caso) return toast('Informe o nome/identificação do caso.', 'error');
+  const idade = document.getElementById('ecm-idade')?.value.trim() || null;
+  const contexto_geral = document.getElementById('ecm-contexto')?.value.trim() || null;
+  const { data, error } = await db.from('estudos_caso_dev')
+    .insert({ user_id: user.id, nome_caso, idade, contexto_geral })
+    .select().single();
+  if (error) return toast('Erro ao criar caso: ' + error.message, 'error');
+  document.getElementById('ecm-nome').value = '';
+  document.getElementById('ecm-idade').value = '';
+  document.getElementById('ecm-contexto').value = '';
+  fecharModal('modal-novo-caso-dev');
+  await carregarCasosDev();
+  abrirCasoDev(data);
+}
+
+function abrirCasoDev(caso) {
+  window._casoAtualDev = caso;
+  document.getElementById('ec-caso-detalhe').style.display = 'block';
+  document.getElementById('ec-det-nome').textContent = caso.nome_caso;
+  document.getElementById('ec-det-sub').textContent = [caso.idade, caso.contexto_geral].filter(Boolean).join(' · ') || '—';
+  document.getElementById('ec-perfil-geral').value = caso.perfil_geral || '';
+  document.getElementById('ec-nova-obs').value = '';
+  document.getElementById('ec-upload-status').textContent = '';
+  carregarTimelineDev(caso.id);
+}
+
+async function enviarLaudoEstudoCasoDev(input) {
+  const file = input.files[0];
+  if (!file || !window._casoAtualDev) return;
+  const status = document.getElementById('ec-upload-status');
+  status.textContent = 'Lendo arquivo…';
+  try {
+    let texto = '';
+    if (file.name.endsWith('.pdf')) {
+      texto = await extrairTextoPDF(file);
+      if (!texto.trim()) { status.textContent = 'Documento sem texto — aplicando OCR…'; texto = await extrairTextoPDFComOCR(file, status); }
+    } else {
+      status.textContent = 'Use um arquivo PDF.';
+      return;
+    }
+    if (!texto.trim()) { status.textContent = 'Não foi possível extrair texto deste PDF.'; return; }
+    const { error } = await db.from('estudos_caso_registros_dev').insert({
+      caso_id: window._casoAtualDev.id, user_id: user.id, tipo: 'laudo', titulo: file.name, conteudo: texto.trim()
+    });
+    if (error) { status.textContent = 'Erro ao salvar: ' + error.message; return; }
+    status.textContent = 'Laudo importado com sucesso.';
+    carregarTimelineDev(window._casoAtualDev.id);
+  } catch(e) {
+    status.textContent = 'Erro ao ler o arquivo: ' + (e.message || '');
+  }
+  input.value = '';
+}
+
+async function gerarPerfilGeralDev() {
+  if (!window._casoAtualDev) return;
+  const casoId = window._casoAtualDev.id;
+  const { data: registros } = await db.from('estudos_caso_registros_dev')
+    .select('tipo, titulo, conteudo, created_at')
+    .eq('caso_id', casoId)
+    .order('created_at', { ascending: true });
+
+  const laudos = (registros || []).filter(r => r.tipo === 'laudo');
+  const observacoes = (registros || []).filter(r => r.tipo === 'observacao');
+  if (!laudos.length && !observacoes.length) return toast('Envie ao menos um laudo ou adicione uma observação antes de gerar o perfil.', 'error');
 
   const prompt = `${SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL}
 
 O solicitante é o próprio profissional realizando estudo pessoal de caso, com formação técnica — pode usar terminologia técnica plena.
 
-DADOS FORNECIDOS:
-Identificação do caso: ${titulo || 'não identificado'}
+IDENTIFICAÇÃO DO CASO: ${window._casoAtualDev.nome_caso}
+CONTEXTO GERAL: ${window._casoAtualDev.contexto_geral || 'não informado'}
 
-Relato principal (comportamento observado):
-${relato}
+LAUDOS/RELATÓRIOS ANEXADOS:
+${laudos.length ? laudos.map(l => `--- ${l.titulo} ---\n${l.conteudo}`).join('\n\n') : 'nenhum anexado'}
 
-Contexto/gatilho identificado:
-${contexto || 'não informado'}
+OBSERVAÇÕES REGISTRADAS PELO PROFISSIONAL:
+${observacoes.length ? observacoes.map(o => `- ${o.conteudo}`).join('\n') : 'nenhuma ainda'}
 
-O que já foi tentado:
-${tentativas || 'não informado'}
+Gere uma ANÁLISE DE PERFIL GERAL consolidada, seguindo as 4 camadas do seu papel, cruzando os laudos com as observações quando houver.`;
 
-Instrumentos já aplicados (se houver):
-${instrumentos || 'nenhum informado'}
-
-Trecho de laudos/relatórios anexados (se houver):
-${laudo || 'nenhum anexado'}
-
-Gere o relatório completo seguindo as 4 camadas do seu papel.`;
-
-  const btn = document.getElementById('ec-btn-gerar');
-  btn.disabled = true;
-  document.getElementById('ec-resultado-box').style.display = 'none';
+  const btn = event?.target;
+  if (btn) btn.disabled = true;
+  document.getElementById('ec-upload-status').textContent = 'Gerando análise…';
   try {
     const textoBruto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'estudo-caso-dev' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
-    document.getElementById('ec-resultado-texto').value = texto;
-    document.getElementById('ec-resultado-box').style.display = 'block';
-    document.getElementById('ec-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    document.getElementById('ec-perfil-geral').value = texto;
+    await db.from('estudos_caso_dev').update({ perfil_geral: texto, updated_at: new Date().toISOString() }).eq('id', casoId);
+    await db.from('estudos_caso_registros_dev').insert({ caso_id: casoId, user_id: user.id, tipo: 'analise', titulo: 'Análise de perfil geral', resultado_ia: texto });
+    document.getElementById('ec-upload-status').textContent = 'Perfil atualizado.';
+    carregarTimelineDev(casoId);
+    carregarCasosDev();
   } catch(e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
   } finally {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 }
 
-async function salvarEstudoCasoDev() {
-  const titulo = document.getElementById('ec-titulo')?.value.trim() || '';
-  const relato = document.getElementById('ec-relato')?.value.trim() || '';
-  const contexto = document.getElementById('ec-contexto')?.value.trim() || '';
-  const tentativas = document.getElementById('ec-tentativas')?.value.trim() || '';
-  const instrumentos = document.getElementById('ec-instrumentos')?.value.trim() || '';
-  const laudo = document.getElementById('ec-laudo')?.value.trim() || '';
-  const resultado = document.getElementById('ec-resultado-texto')?.value.trim() || '';
-  const { error } = await db.from('estudos_caso_dev').insert({
-    user_id: user.id, titulo, relato, contexto, tentativas, instrumentos, laudo_texto: laudo, resultado
-  });
-  if (error) { toast('Erro ao salvar: ' + error.message, 'error'); return; }
-  toast('Estudo de caso salvo!', 'success');
-  carregarEstudosCasoDev();
+async function salvarPerfilGeralDev() {
+  if (!window._casoAtualDev) return;
+  const texto = document.getElementById('ec-perfil-geral')?.value.trim() || '';
+  const { error } = await db.from('estudos_caso_dev').update({ perfil_geral: texto, updated_at: new Date().toISOString() }).eq('id', window._casoAtualDev.id);
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Perfil salvo.', 'success');
 }
 
-async function carregarEstudosCasoDev() {
-  const lista = document.getElementById('ec-lista-salvas');
-  if (!lista) return;
-  const { data, error } = await db.from('estudos_caso_dev')
-    .select('id, titulo, relato, resultado, created_at')
-    .order('created_at', { ascending: false })
-    .limit(50);
-  if (error || !data?.length) { lista.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhum estudo salvo ainda.</p>'; return; }
-  lista.innerHTML = data.map(r => `
-    <div class="ic-card" style="cursor:pointer" onclick='abrirEstudoCasoSalvoDev(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
-      <div class="ic-nome">${r.titulo || '(sem título)'}</div>
-      <div style="font-size:11px;color:var(--gr400)">${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+async function adicionarObservacaoDev() {
+  if (!window._casoAtualDev) return;
+  const texto = document.getElementById('ec-nova-obs')?.value.trim();
+  if (!texto) return toast('Escreva a observação antes de salvar.', 'error');
+  const { error } = await db.from('estudos_caso_registros_dev').insert({
+    caso_id: window._casoAtualDev.id, user_id: user.id, tipo: 'observacao', conteudo: texto
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  document.getElementById('ec-nova-obs').value = '';
+  toast('Observação adicionada.', 'success');
+  carregarTimelineDev(window._casoAtualDev.id);
+}
+
+async function carregarTimelineDev(casoId) {
+  const cont = document.getElementById('ec-timeline');
+  if (!cont) return;
+  const { data, error } = await db.from('estudos_caso_registros_dev')
+    .select('id, tipo, titulo, conteudo, resultado_ia, created_at')
+    .eq('caso_id', casoId)
+    .order('created_at', { ascending: false });
+  if (error || !data?.length) { cont.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhum registro ainda.</p>'; return; }
+  const icone = { laudo: '📄', observacao: '📝', analise: '🧠' };
+  const rotulo = { laudo: 'Laudo enviado', observacao: 'Observação', analise: 'Análise gerada' };
+  cont.innerHTML = data.map(r => `
+    <div style="border:1px solid var(--gr200);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gr500);margin-bottom:4px">
+        <span>${icone[r.tipo] || '•'} ${rotulo[r.tipo] || r.tipo}${r.titulo ? ' — ' + r.titulo : ''}</span>
+        <span>${new Date(r.created_at).toLocaleDateString('pt-BR')}</span>
+      </div>
+      <div style="font-size:13px;color:var(--gr700);white-space:pre-line;max-height:120px;overflow-y:auto">${(r.resultado_ia || r.conteudo || '').slice(0, 800)}</div>
     </div>
   `).join('');
-}
-
-function abrirEstudoCasoSalvoDev(r) {
-  document.getElementById('ec-titulo').value = r.titulo || '';
-  document.getElementById('ec-relato').value = r.relato || '';
-  document.getElementById('ec-resultado-texto').value = r.resultado || '';
-  document.getElementById('ec-resultado-box').style.display = 'block';
-  document.getElementById('ec-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
 // ── DEV: Consumo de IA ────────────────────────────────────────
