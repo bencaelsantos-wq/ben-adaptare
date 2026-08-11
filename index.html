@@ -6712,6 +6712,12 @@ function renderPagesDeveloper() {
           <div id="ec-upload-status" style="font-size:12px;color:var(--gr500);margin-top:6px"></div>
         </div>
 
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px;margin-bottom:16px">
+          <label class="flabel">Rastreamento de potencialidades e barreiras (consolidado a partir de tudo já registrado)</label>
+          <textarea id="ec-rastreamento" class="ftarea" style="min-height:140px;margin-bottom:8px"></textarea>
+          <button class="btn-sm" onclick="gerarRastreamentoDev()">🔍 Atualizar Rastreamento</button>
+        </div>
+
         <div style="margin-bottom:16px">
           <label class="flabel">Nova observação</label>
           <textarea id="ec-nova-obs" class="ftarea" style="min-height:70px;margin-bottom:8px" placeholder="Registre aqui o que você observou..."></textarea>
@@ -6923,6 +6929,7 @@ function abrirCasoDev(caso) {
   document.getElementById('ec-det-nome').textContent = caso.nome_caso;
   document.getElementById('ec-det-sub').textContent = [caso.idade, caso.contexto_geral].filter(Boolean).join(' · ') || '—';
   document.getElementById('ec-perfil-geral').value = caso.perfil_geral || '';
+  document.getElementById('ec-rastreamento').value = caso.rastreamento_atual || '';
   document.getElementById('ec-nova-obs').value = '';
   document.getElementById('ec-upload-status').textContent = '';
   carregarTimelineDev(caso.id);
@@ -7001,6 +7008,57 @@ Gere uma ANÁLISE DE PERFIL GERAL consolidada, seguindo as 4 camadas do seu pape
   }
 }
 
+async function gerarRastreamentoDev() {
+  if (!window._casoAtualDev) return;
+  const casoId = window._casoAtualDev.id;
+  const { data: registros } = await db.from('estudos_caso_registros_dev')
+    .select('tipo, titulo, conteudo, resultado_ia, created_at')
+    .eq('caso_id', casoId)
+    .order('created_at', { ascending: true });
+
+  if (!registros || !registros.length) return toast('Ainda não há laudos, relatórios ou observações registrados neste caso.', 'error');
+
+  const fontesTexto = registros.map(r => {
+    const rotulo = r.tipo === 'laudo' ? `LAUDO/RELATÓRIO (${r.titulo || 'sem título'}, ${new Date(r.created_at).toLocaleDateString('pt-BR')})`
+      : r.tipo === 'observacao' ? `OBSERVAÇÃO REGISTRADA (${new Date(r.created_at).toLocaleDateString('pt-BR')})`
+      : `ANÁLISE ANTERIOR (${new Date(r.created_at).toLocaleDateString('pt-BR')})`;
+    return `--- ${rotulo} ---\n${r.conteudo || r.resultado_ia || ''}`;
+  }).join('\n\n');
+
+  const prompt = `${SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL}
+
+O solicitante é o próprio profissional realizando estudo pessoal de caso, com formação técnica.
+
+IDENTIFICAÇÃO DO CASO: ${window._casoAtualDev.nome_caso}
+
+TODAS AS FONTES JÁ REGISTRADAS NESTE CASO, EM ORDEM CRONOLÓGICA:
+${fontesTexto}
+
+TAREFA: gere um RASTREAMENTO CONSOLIDADO DE POTENCIALIDADES E BARREIRAS deste aluno/paciente, cruzando TODAS as fontes acima. Organize em duas listas:
+
+POTENCIALIDADES IDENTIFICADAS:
+- [potencialidade] — fonte: [de qual laudo/observação/data isso veio]
+
+BARREIRAS IDENTIFICADAS:
+- [barreira] — fonte: [de qual laudo/observação/data isso veio]
+
+Regras: cite a fonte de cada item para rastreabilidade. Se um mesmo ponto aparece em mais de uma fonte, cite todas. Se houver contradição entre fontes (ex: uma observação recente contradiz o laudo), sinalize isso explicitamente como "ponto de atenção — revisar". Seja objetivo, sem repetir texto integral das fontes, apenas sintetizar.`;
+
+  const status = document.getElementById('ec-upload-status');
+  if (status) status.textContent = 'Gerando rastreamento…';
+  try {
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 2400, modulo: 'estudo-caso-dev' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+    document.getElementById('ec-rastreamento').value = texto;
+    await db.from('estudos_caso_dev').update({ rastreamento_atual: texto, updated_at: new Date().toISOString() }).eq('id', casoId);
+    await db.from('estudos_caso_registros_dev').insert({ caso_id: casoId, user_id: user.id, tipo: 'rastreamento', titulo: 'Rastreamento de potencialidades e barreiras', resultado_ia: texto });
+    if (status) status.textContent = 'Rastreamento atualizado.';
+    carregarTimelineDev(casoId);
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  }
+}
+
 async function salvarPerfilGeralDev() {
   if (!window._casoAtualDev) return;
   const texto = document.getElementById('ec-perfil-geral')?.value.trim() || '';
@@ -7030,8 +7088,8 @@ async function carregarTimelineDev(casoId) {
     .eq('caso_id', casoId)
     .order('created_at', { ascending: false });
   if (error || !data?.length) { cont.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhum registro ainda.</p>'; return; }
-  const icone = { laudo: '📄', observacao: '📝', analise: '🧠' };
-  const rotulo = { laudo: 'Laudo enviado', observacao: 'Observação', analise: 'Análise gerada' };
+  const icone = { laudo: '📄', observacao: '📝', analise: '🧠', rastreamento: '🔍' };
+  const rotulo = { laudo: 'Laudo enviado', observacao: 'Observação', analise: 'Análise gerada', rastreamento: 'Rastreamento de potencialidades/barreiras' };
   cont.innerHTML = data.map(r => `
     <div style="border:1px solid var(--gr200);border-radius:10px;padding:10px 12px;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gr500);margin-bottom:4px">
