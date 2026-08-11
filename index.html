@@ -7034,7 +7034,7 @@ IDENTIFICAÇÃO DO CASO: ${window._casoAtualDev.nome_caso}
 TODAS AS FONTES JÁ REGISTRADAS NESTE CASO, EM ORDEM CRONOLÓGICA:
 ${fontesTexto}
 
-TAREFA: gere um RASTREAMENTO CONSOLIDADO DE POTENCIALIDADES E BARREIRAS deste aluno/paciente, cruzando TODAS as fontes acima. Organize em duas listas:
+TAREFA: gere um RASTREAMENTO CONSOLIDADO deste aluno/paciente, cruzando TODAS as fontes acima. Organize em três partes:
 
 POTENCIALIDADES IDENTIFICADAS:
 - [potencialidade] — fonte: [de qual laudo/observação/data isso veio]
@@ -7042,7 +7042,13 @@ POTENCIALIDADES IDENTIFICADAS:
 BARREIRAS IDENTIFICADAS:
 - [barreira] — fonte: [de qual laudo/observação/data isso veio]
 
-Regras: cite a fonte de cada item para rastreabilidade. Se um mesmo ponto aparece em mais de uma fonte, cite todas. Se houver contradição entre fontes (ex: uma observação recente contradiz o laudo), sinalize isso explicitamente como "ponto de atenção — revisar". Seja objetivo, sem repetir texto integral das fontes, apenas sintetizar.`;
+ABORDAGENS PEDAGÓGICAS SUGERIDAS (com base nas potencialidades e barreiras acima):
+- [princípio/abordagem recomendada, ex: UDL, estrutura visual, redução de carga cognitiva, comunicação alternativa, etc.] — por quê: [ligação direta com a potencialidade/barreira que justifica essa escolha]
+
+TIPOS DE ATIVIDADE E MODELOS RECOMENDADOS PARA ESTE PERFIL:
+- [tipo/modelo de atividade concreto, ex: exercício de completar frase com apoio visual, ligar imagem a conceito, decomposição em etapas sequenciais, etc.] — indicado para: [qual barreira específica esse modelo endereça ou qual potencialidade aproveita]
+
+Regras: cite a fonte de cada item das duas primeiras listas para rastreabilidade. Se um mesmo ponto aparece em mais de uma fonte, cite todas. Se houver contradição entre fontes (ex: uma observação recente contradiz o laudo), sinalize isso explicitamente como "ponto de atenção — revisar". As sugestões de abordagens e modelos de atividade devem decorrer logicamente das potencialidades/barreiras listadas, nunca genéricas ou desconectadas do perfil. Seja objetivo, sem repetir texto integral das fontes, apenas sintetizar.`;
 
   const status = document.getElementById('ec-upload-status');
   if (status) status.textContent = 'Gerando rastreamento…';
