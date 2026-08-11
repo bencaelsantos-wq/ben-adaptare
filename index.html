@@ -6025,12 +6025,13 @@ async function carregarDashboardClinica() {
   el('dash-cli-alunos','…'); el('dash-cli-obj','…');
   el('dash-cli-rel','…'); el('dash-cli-planos','…');
   try {
-    const [{ data: perfis },{ data: obj },{ data: rel },{ data: planos }] = await Promise.all([
-      db.from('perfis_clinicos').select('*').eq('user_id',user.id).order('nome'),
+    const [{ data: perfisTodos },{ data: obj },{ data: rel },{ data: planos }] = await Promise.all([
+      db.from('perfis_clinicos').select('*').order('nome'),
       db.from('objetivos_terapeuticos').select('id',{count:'exact'}).eq('user_id',user.id),
       db.from('relatorios').select('id,aluno_nome,created_at').eq('user_id',user.id).order('created_at',{ascending:false}),
       db.from('devolutivas').select('id',{count:'exact'}).eq('usuario_id',user.id)
     ]);
+    const perfis = (perfisTodos||[]).filter(p => p.user_id === user.id || (p.profissionais_ids||[]).includes(user.id));
     const np=perfis?.length||0, no=obj?.length||0, nr=rel?.length||0, npl=planos?.length||0;
     el('dash-cli-alunos',np); el('dash-cli-obj',no);
     el('dash-cli-rel',nr); el('dash-cli-planos',npl);
