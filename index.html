@@ -6692,40 +6692,53 @@ function renderPagesDeveloper() {
         <button class="btn-sm" style="width:100%;margin-bottom:10px" onclick="abrirModal('modal-novo-caso-dev')">+ Novo Caso</button>
         <div id="ec-lista-casos"><p style="color:var(--gr400);font-size:13px">Carregando...</p></div>
       </div>
-      <div class="dash-card" id="ec-caso-detalhe" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
-          <div>
-            <h3 id="ec-det-nome" style="margin:0 0 4px"></h3>
-            <div id="ec-det-sub" style="font-size:12px;color:var(--gr500)"></div>
-          </div>
-        </div>
-
-        <div style="background:#F8FAFC;border:1px solid var(--gr200);border-radius:10px;padding:14px;margin-bottom:16px">
-          <label class="flabel">Perfil geral (gerado a partir dos laudos enviados — editável)</label>
-          <textarea id="ec-perfil-geral" class="ftarea" style="min-height:140px;margin-bottom:8px"></textarea>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn-sm-ghost" onclick="document.getElementById('ec-inp-pdf').click()">📄 Enviar PDF (laudo/relatório)</button>
-            <input type="file" id="ec-inp-pdf" accept=".pdf" style="display:none" onchange="enviarLaudoEstudoCasoDev(this)">
-            <button class="btn-sm" onclick="gerarPerfilGeralDev()">Gerar/Atualizar Perfil Geral</button>
-            <button class="btn-sm-ghost" onclick="salvarPerfilGeralDev()">💾 Salvar edição do perfil</button>
-          </div>
-          <div id="ec-upload-status" style="font-size:12px;color:var(--gr500);margin-top:6px"></div>
-        </div>
-
-        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px;margin-bottom:16px">
-          <label class="flabel">Rastreamento de potencialidades e barreiras (consolidado a partir de tudo já registrado)</label>
-          <textarea id="ec-rastreamento" class="ftarea" style="min-height:140px;margin-bottom:8px"></textarea>
-          <button class="btn-sm" onclick="gerarRastreamentoDev()">🔍 Atualizar Rastreamento</button>
-        </div>
-
+      <div id="ec-caso-detalhe" style="display:none">
         <div style="margin-bottom:16px">
-          <label class="flabel">Nova observação</label>
-          <textarea id="ec-nova-obs" class="ftarea" style="min-height:70px;margin-bottom:8px" placeholder="Registre aqui o que você observou..."></textarea>
+          <h3 id="ec-det-nome" style="margin:0 0 4px;font-size:20px"></h3>
+          <div id="ec-det-sub" style="font-size:12px;color:var(--gr500)"></div>
+        </div>
+
+        <div class="pei-step">
+          <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Laudos e relatórios</div><div class="pei-step-sub">Envie quantos documentos precisar — cada um entra na linha do tempo do caso</div></div></div>
+          <button class="btn-sm-ghost" onclick="document.getElementById('ec-inp-pdf').click()">📄 Enviar PDF</button>
+          <input type="file" id="ec-inp-pdf" accept=".pdf" style="display:none" onchange="enviarLaudoEstudoCasoDev(this)">
+          <div id="ec-upload-status" style="font-size:12px;color:var(--gr500);margin-top:8px"></div>
+        </div>
+
+        <div class="pei-step">
+          <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Perfil geral</div><div class="pei-step-sub">Análise gerada a partir dos laudos enviados — editável</div></div></div>
+          <textarea id="ec-perfil-geral" class="ftarea" style="min-height:160px;margin-bottom:10px"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-sm" onclick="gerarPerfilGeralDev()">Gerar/Atualizar Perfil Geral</button>
+            <button class="btn-sm-ghost" onclick="salvarPerfilGeralDev()">💾 Salvar edição</button>
+          </div>
+        </div>
+
+        <div class="pei-step">
+          <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Observações</div><div class="pei-step-sub">Registre o que você observa ao longo do acompanhamento</div></div></div>
+          <textarea id="ec-nova-obs" class="ftarea" style="min-height:70px;margin-bottom:10px" placeholder="Registre aqui o que você observou..."></textarea>
           <button class="btn-sm" onclick="adicionarObservacaoDev()">+ Adicionar observação</button>
         </div>
 
-        <h4 style="margin:0 0 8px">Linha do tempo</h4>
-        <div id="ec-timeline"></div>
+        <div class="pei-step" style="background:#F0FDF4;border-color:#BBF7D0">
+          <div class="pei-step-header"><div class="pei-step-num">4</div><div><div class="pei-step-title">Rastreamento de potencialidades, barreiras e abordagens</div><div class="pei-step-sub">Cruza todos os laudos e observações registrados até agora, com sugestão de abordagens e modelos de atividade</div></div></div>
+          <textarea id="ec-rastreamento" class="ftarea" style="min-height:160px;margin-bottom:10px"></textarea>
+          <button class="btn-sm" onclick="gerarRastreamentoDev()">🔍 Atualizar Rastreamento</button>
+        </div>
+
+        <div class="pei-step" style="background:#EFF6FF;border-color:#BFDBFE">
+          <div class="pei-step-header"><div class="pei-step-num">5</div><div><div class="pei-step-title">Resultado final</div><div class="pei-step-sub">Monta o perfil geral + rastreamento num único documento, editável antes de baixar</div></div></div>
+          <textarea id="ec-resultado-final" class="ftarea" style="min-height:220px;margin-bottom:10px"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-sm-ghost" onclick="montarResultadoFinalDev()">Montar a partir do perfil + rastreamento</button>
+            <button class="btn-sm" onclick="baixarPDFCasoDev()">⬇ Baixar PDF</button>
+          </div>
+        </div>
+
+        <div class="pei-step">
+          <div class="pei-step-header"><div><div class="pei-step-title">Linha do tempo</div><div class="pei-step-sub">Histórico completo de laudos, observações, análises e rastreamentos deste caso</div></div></div>
+          <div id="ec-timeline"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -7063,6 +7076,33 @@ Regras: cite a fonte de cada item das duas primeiras listas para rastreabilidade
   } catch(e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
   }
+}
+
+function montarResultadoFinalDev() {
+  if (!window._casoAtualDev) return;
+  const perfil = document.getElementById('ec-perfil-geral')?.value.trim() || '';
+  const rastreamento = document.getElementById('ec-rastreamento')?.value.trim() || '';
+  if (!perfil && !rastreamento) return toast('Gere o perfil geral e/ou o rastreamento antes de montar o resultado final.', 'error');
+  const partes = [];
+  if (perfil) partes.push('PERFIL GERAL\n\n' + perfil);
+  if (rastreamento) partes.push('RASTREAMENTO — POTENCIALIDADES, BARREIRAS E ABORDAGENS\n\n' + rastreamento);
+  document.getElementById('ec-resultado-final').value = partes.join('\n\n───────────────────────\n\n');
+}
+
+function baixarPDFCasoDev() {
+  const texto = document.getElementById('ec-resultado-final')?.value.trim();
+  if (!texto) return toast('Monte o resultado final antes de baixar.', 'error');
+  gerarPDFDocumento({
+    tipo: 'ESTUDO DE CASO',
+    titulo: window._casoAtualDev?.nome_caso || 'Estudo de Caso',
+    subtitulo: 'Documento pessoal de estudo — uso profissional',
+    semAssinatura: true,
+    aluno: window._casoAtualDev?.nome_caso || '',
+    professor: user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
+    conteudo: texto,
+    nomeArquivo: 'Estudo_Caso_' + (window._casoAtualDev?.nome_caso || 'caso').replace(/\s+/g,'_'),
+    isAtividade: false
+  });
 }
 
 async function salvarPerfilGeralDev() {
