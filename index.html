@@ -6354,6 +6354,9 @@ function renderNavDeveloper() {
     <div class="nav-item" id="nav-dev-estudos-caso" onclick="abrirEstudosCasoDev()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h9l3 3v11H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 9h6M7 12h6M7 15h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>🔒 Estudos de Caso
     </div>
+    <div class="nav-item" id="nav-dev-analise-perfil" onclick="abrirAnaliseComportamentalDev()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>🔒 Análise de Perfil
+    </div>
     <div class="nav-item" id="nav-dev-linha-laudos" onclick="abrirLinhaDoTempoLaudosDev()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>🔒 Linha do Tempo de Laudos
     </div>
@@ -6771,6 +6774,49 @@ function renderPagesDeveloper() {
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="btn-sm-ghost" onclick="fecharModal('modal-novo-caso-dev')">Cancelar</button>
         <button class="btn-sm" onclick="criarCasoDev()">Criar Caso</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-analise-comp" class="page">
+    <h1 class="page-title">Análise de Perfil</h1>
+    <p class="page-sub">Organiza um relato observacional em hipóteses fundamentadas em evidência. Não substitui avaliação formal.</p>
+    <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico. Todo conteúdo gerado deve ser tratado como hipótese para investigação, nunca como conclusão.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação (opcional)</div><div class="pei-step-sub">Digite o nome/identificação, se quiser</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-aluno">Nome do aluno/paciente</label><input type="text" id="ac-aluno" class="finput" placeholder="Ex: João Pedro"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios (opcional)</div><div class="pei-step-sub">Se tiver, anexe — ajuda a fundamentar melhor a análise</div></div></div>
+      <button type="button" class="btn-copy" onclick="document.getElementById('ac-inp-laudo').click()">📎 Anexar PDF ou Word</button>
+      <input type="file" id="ac-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoAnalise(this)">
+      <div id="ac-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+      <textarea id="ac-laudo-texto" class="ftarea sm" style="margin-top:10px" placeholder="Texto extraído do laudo aparecerá aqui — você pode editar ou colar diretamente"></textarea>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Relato da situação observada</div><div class="pei-step-sub">Descreva livremente — quanto mais detalhado, melhor a análise</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-relato">O que foi observado (comportamento, frequência, duração)</label><textarea id="ac-relato" class="ftarea" style="min-height:140px" placeholder="Ex: Nas últimas 3 semanas, durante a transição do recreio para a sala, a criança grita e se joga no chão por cerca de 2 minutos, cerca de 3x por semana..."></textarea></div>
+      <div class="frow">
+        <div><label class="flabel" for="ac-gatilho">Contexto/gatilho identificado</label><textarea id="ac-gatilho" class="ftarea sm" placeholder="Ex: sempre após atividades com muito ruído; quando é solicitado a parar uma atividade preferida..."></textarea></div>
+        <div><label class="flabel" for="ac-tentativas">O que já foi tentado</label><textarea id="ac-tentativas" class="ftarea sm" placeholder="Ex: aviso antecipado de 5 min antes da transição; uso de timer visual..."></textarea></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ac-instrumentos">Instrumentos já aplicados (se houver)</label><textarea id="ac-instrumentos" class="ftarea sm" placeholder="Ex: M-CHAT aplicado em [data], escore X; escala Vineland..."></textarea></div>
+    </div>
+
+    <button class="btn-gerar" id="ac-btn-gerar" onclick="gerarAnaliseComportamentalDev()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar análise com a Lou
+    </button>
+
+    <div class="result-card show" id="ac-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Relatório gerado</h3>
+      <textarea id="ac-resultado-texto" class="ftarea" style="min-height:260px;white-space:pre-wrap;font-size:13.5px;line-height:1.6"></textarea>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('ac-resultado-texto').value);toast('Copiado!','success')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFAnaliseComp()">Baixar PDF</button>
       </div>
     </div>
   </div>
@@ -8590,6 +8636,60 @@ function abrirLinhaDoTempoLaudos() {
   carregarLinhasDoTempo();
 }
 
+function abrirAnaliseComportamentalDev() {
+  showPage('analise-comp');
+}
+
+async function gerarAnaliseComportamentalDev() {
+  const relato = document.getElementById('ac-relato')?.value.trim();
+  if (!relato) return toast('Descreva a situação observada.', 'error');
+  const laudos = document.getElementById('ac-laudo-texto')?.value.trim() || '';
+  const nomeAluno = document.getElementById('ac-aluno')?.value.trim() || '';
+  const gatilho = document.getElementById('ac-gatilho')?.value.trim() || '';
+  const tentativas = document.getElementById('ac-tentativas')?.value.trim() || '';
+  const instrumentos = document.getElementById('ac-instrumentos')?.value.trim() || '';
+
+  const prompt = `${SYSTEM_PROMPT_ANALISE_COMPORTAMENTAL}
+
+O solicitante é o próprio profissional realizando estudo pessoal, com formação técnica — pode usar terminologia técnica plena.
+
+DADOS FORNECIDOS PELO PROFISSIONAL:
+Aluno/paciente: ${nomeAluno || 'não identificado'}
+
+Relato principal (comportamento observado):
+${relato}
+
+Contexto/gatilho identificado:
+${gatilho || 'não informado'}
+
+O que já foi tentado:
+${tentativas || 'não informado'}
+
+Instrumentos já aplicados (se houver):
+${instrumentos || 'nenhum informado'}
+
+Trecho de laudos/relatórios anexados (se houver):
+${laudos || 'nenhum anexado'}
+
+Gere o relatório completo seguindo as 4 camadas do seu papel.`;
+
+  const btn = document.getElementById('ac-btn-gerar');
+  btn.disabled = true;
+  document.getElementById('ac-resultado-box').style.display = 'none';
+  try {
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'analise-comportamental' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+    window._ultimaAnaliseCompDev = { texto, aluno: nomeAluno };
+    document.getElementById('ac-resultado-texto').value = texto;
+    document.getElementById('ac-resultado-box').style.display = 'block';
+    document.getElementById('ac-resultado-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function abrirLinhaDoTempoLaudosDev() {
   showPage('linha-laudos');
   const sel = document.getElementById('lt-aluno-sel');
@@ -8810,17 +8910,19 @@ function abrirAnaliseSalva(r) {
 }
 
 function baixarPDFAnaliseComp() {
-  const dados = window._ultimaAnaliseComp;
+  const dados = window._ultimaAnaliseCompDev || window._ultimaAnaliseComp;
   if (!dados) return toast('Gere uma análise primeiro.', 'error');
+  const textoLive = document.getElementById('ac-resultado-texto');
+  const conteudo = (textoLive && 'value' in textoLive) ? textoLive.value : dados.texto;
   gerarPDFDocumento({
     tipo: 'ANÁLISE',
-    titulo: 'Análise e Estratégias Pedagógicas',
+    titulo: 'Análise de Perfil',
     subtitulo: 'Uso profissional — não substitui avaliação formal',
     semAssinatura: true,
     aluno: dados.aluno || 'Não identificado',
     professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
-    conteudo: dados.texto,
-    nomeArquivo: 'Analise_Comportamental_' + (dados.aluno||'paciente').replace(/\s+/g,'_'),
+    conteudo: conteudo,
+    nomeArquivo: 'Analise_Perfil_' + (dados.aluno||'paciente').replace(/\s+/g,'_'),
     isAtividade: false
   });
 }
