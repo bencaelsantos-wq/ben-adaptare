@@ -6940,7 +6940,7 @@ ${window._preCasoLaudoDev.texto}
 
 Gere uma ANÁLISE DE PERFIL GERAL inicial, seguindo as 4 camadas do seu papel, com base neste documento.`;
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'estudo-caso-dev' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 6000, modulo: 'estudo-caso-dev' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     document.getElementById('ecm-perfil-preview').value = texto;
     status.textContent = 'Perfil gerado — revise antes de criar o caso.';
@@ -7113,7 +7113,7 @@ Regras: cite a fonte de cada item das duas primeiras listas para rastreabilidade
   const status = document.getElementById('ec-upload-status');
   if (status) status.textContent = 'Gerando rastreamento…';
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 2400, modulo: 'estudo-caso-dev' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 4500, modulo: 'estudo-caso-dev' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     document.getElementById('ec-rastreamento').value = texto;
     await db.from('estudos_caso_dev').update({ rastreamento_atual: texto, updated_at: new Date().toISOString() }).eq('id', casoId);
@@ -8677,7 +8677,7 @@ Gere o relatório completo seguindo as 4 camadas do seu papel.`;
   btn.disabled = true;
   document.getElementById('ac-resultado-box').style.display = 'none';
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 3000, modulo: 'analise-comportamental' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 6000, modulo: 'analise-comportamental' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     window._ultimaAnaliseCompDev = { texto, aluno: nomeAluno };
     document.getElementById('ac-resultado-texto').value = texto;
