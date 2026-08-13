@@ -851,6 +851,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   /* Cards grid — 1 coluna em mobile */
   .cards-grid{grid-template-columns:1fr !important;}
   .cards-grid-3{grid-template-columns:1fr !important;}
+  .ec-layout{grid-template-columns:1fr !important;}
 
   /* Formulários */
   .frow{grid-template-columns:1fr !important;}
@@ -6691,7 +6692,7 @@ function renderPagesDeveloper() {
   <div id="page-dev-estudos-caso" class="page">
     <h1 class="page-title">🔒 Estudos de Caso</h1>
     <p class="page-sub">Espaço pessoal e privado — visível só para você.</p>
-    <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;margin-top:16px;align-items:start">
+    <div class="ec-layout" style="display:grid;grid-template-columns:280px 1fr;gap:20px;margin-top:16px;align-items:start">
       <div class="dash-card">
         <button class="btn-sm" style="width:100%;margin-bottom:10px" onclick="abrirModal('modal-novo-caso-dev')">+ Novo Caso</button>
         <div id="ec-lista-casos"><p style="color:var(--gr400);font-size:13px">Carregando...</p></div>
