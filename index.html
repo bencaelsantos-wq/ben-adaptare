@@ -12824,10 +12824,27 @@ function filtrarAlSel() {
   }).join('');
 }
 
-function selecionarAluno(id) {
+async function selecionarAluno(id) {
   alunoSelId = id;
   const a = alunosCad.find(x => x.id === id);
   if (!a) return;
+
+  const boxSugMon = document.getElementById('nova-adapt-sugestao-mon');
+  if (boxSugMon) {
+    boxSugMon.style.display = 'none';
+    try {
+      const { data: monRegs } = await db.from('monitoramentos').select('*').eq('perfil_id', id).order('created_at', { ascending: false }).limit(10);
+      const sugestao = analisarProgressaoPraticaGuiada(monRegs);
+      if (sugestao) {
+        boxSugMon.style.display = 'block';
+        boxSugMon.style.background = sugestao.fundo;
+        boxSugMon.style.color = sugestao.cor;
+        boxSugMon.style.borderColor = sugestao.cor;
+        boxSugMon.innerHTML = `<strong>${sugestao.titulo}</strong><br>${sugestao.motivo}<br><span style="opacity:.8;font-size:11.5px">A Lou vai considerar isso ao calibrar esta adaptação.</span>`;
+      }
+    } catch(e) { /* aluno sem monitoramento clinico — segue normalmente */ }
+  }
+
   const info = document.getElementById('aluno-sel-info');
   const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
   const tags = (a.perfis || []).map(p => `<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join(' ');
