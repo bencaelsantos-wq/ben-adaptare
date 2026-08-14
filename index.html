@@ -13859,17 +13859,28 @@ function extrairItensParaIlustrar(texto) {
   return [...new Set(itens)];
 }
 
-function detectarItensImagem() {
+async function detectarItensImagem() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
   window._imgListaId = 'ap-img-itens';
   window._imgPrefixo = 'ai';
   const folhaAluno = ultimaAdapt.split(/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i)[0];
   const termos = extrairItensParaIlustrar(folhaAluno);
+
+  let vocabulario = {};
+  if (alunoSelId) {
+    try {
+      const { data: vocab } = await db.from('vocabulario_visual_aluno').select('termo,url_imagem').eq('aluno_id', alunoSelId);
+      (vocab || []).forEach(v => { vocabulario[v.termo] = v.url_imagem; });
+    } catch(e) { /* sem vocabulario salvo ainda — segue normalmente */ }
+  }
+
   window._imgItens = termos.length
     ? termos.map(t => {
         const m = /^original-(\d+)$/i.exec(t);
         const imgOriginal = m && window._imagensPDFOriginal ? window._imagensPDFOriginal[parseInt(m[1],10)-1] : null;
-        return { termo: t, chave: t, fonte: imgOriginal ? 'original' : 'proprio', resultados: imgOriginal ? [imgOriginal] : [], urlEscolhida: imgOriginal || null };
+        const imgVocab = !imgOriginal ? vocabulario[t.toLowerCase().trim()] : null;
+        const urlEscolhida = imgOriginal || imgVocab || null;
+        return { termo: t, chave: t, fonte: imgOriginal ? 'original' : (imgVocab ? 'vocabulario' : 'proprio'), resultados: urlEscolhida ? [urlEscolhida] : [], urlEscolhida };
       })
     : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
   if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
@@ -13981,9 +13992,18 @@ async function buscarImagemItem(i) {
   }
 }
 
-function escolherImagemItem(i, url) {
+async function escolherImagemItem(i, url) {
   window._imgItens[i].urlEscolhida = url;
   renderResultadosItem(i);
+
+  const termo = (window._imgItens[i].termo || '').toLowerCase().trim();
+  const m = /^original-(\d+)$/i.exec(termo);
+  if (alunoSelId && termo && !m) {
+    try {
+      await db.from('vocabulario_visual_aluno')
+        .upsert({ aluno_id: alunoSelId, termo, url_imagem: url, organizacao_id: window._organizacaoId || null, user_id: user.id }, { onConflict: 'aluno_id,termo' });
+    } catch(e) { /* nao bloqueia o fluxo se falhar ao salvar o vocabulario */ }
+  }
 }
 
 function removerItemImagem(i) {
