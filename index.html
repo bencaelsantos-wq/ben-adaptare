@@ -12829,18 +12829,20 @@ async function selecionarAluno(id) {
   const a = alunosCad.find(x => x.id === id);
   if (!a) return;
 
-  const boxSugMon = document.getElementById('nova-adapt-sugestao-mon');
-  if (boxSugMon) {
-    boxSugMon.style.display = 'none';
+  const boxesSugMon = document.querySelectorAll('#nova-adapt-sugestao-mon');
+  boxesSugMon.forEach(b => b.style.display = 'none');
+  if (boxesSugMon.length) {
     try {
       const { data: monRegs } = await db.from('monitoramentos').select('*').eq('perfil_id', id).order('created_at', { ascending: false }).limit(10);
       const sugestao = analisarProgressaoPraticaGuiada(monRegs);
       if (sugestao) {
-        boxSugMon.style.display = 'block';
-        boxSugMon.style.background = sugestao.fundo;
-        boxSugMon.style.color = sugestao.cor;
-        boxSugMon.style.borderColor = sugestao.cor;
-        boxSugMon.innerHTML = `<strong>${sugestao.titulo}</strong><br>${sugestao.motivo}<br><span style="opacity:.8;font-size:11.5px">A Lou vai considerar isso ao calibrar esta adaptação.</span>`;
+        boxesSugMon.forEach(boxSugMon => {
+          boxSugMon.style.display = 'block';
+          boxSugMon.style.background = sugestao.fundo;
+          boxSugMon.style.color = sugestao.cor;
+          boxSugMon.style.borderColor = sugestao.cor;
+          boxSugMon.innerHTML = `<strong>${sugestao.titulo}</strong><br>${sugestao.motivo}<br><span style="opacity:.8;font-size:11.5px">A Lou vai considerar isso ao calibrar esta adaptação.</span>`;
+        });
       }
     } catch(e) { /* aluno sem monitoramento clinico — segue normalmente */ }
   }
@@ -13304,8 +13306,7 @@ async function gerar() {
     const { data: monRegs } = await db.from('monitoramentos').select('*').eq('perfil_id', alunoSelId).order('created_at', { ascending: false }).limit(10);
     sugestaoMonitoramento = analisarProgressaoPraticaGuiada(monRegs);
   } catch(e) { /* aluno sem monitoramento clinico — segue normalmente */ }
-  const boxSugMon = document.getElementById('nova-adapt-sugestao-mon');
-  if (boxSugMon) {
+  document.querySelectorAll('#nova-adapt-sugestao-mon').forEach(boxSugMon => {
     if (sugestaoMonitoramento) {
       boxSugMon.style.display = 'block';
       boxSugMon.style.background = sugestaoMonitoramento.fundo;
@@ -13315,7 +13316,7 @@ async function gerar() {
     } else {
       boxSugMon.style.display = 'none';
     }
-  }
+  });
 
   // ── BASE DE CONHECIMENTO MONTESSORI ──────────────────────────
   const tiposDetectados = detectarTiposExercicio(conteudo);
