@@ -9961,14 +9961,10 @@ function renderPages() {
     </div>
 
     <div id="nova-adapt-sugestao-mon" style="display:none;border:1px solid;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;line-height:1.5"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        Gerar adaptação com a Lou
-      </button>
-      <button class="btn-sm-ghost" id="btn-gerar-3-niveis" onclick="gerarTresNiveis()">🔀 Gerar nos 3 níveis</button>
-    </div>
-    <div id="niveis-comparacao" style="display:none;margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+    <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar adaptação com a Lou
+    </button>
     <div class="gen-box" id="gen-box"><div class="spin"></div><span>IA gerando adaptação personalizada…</span></div>
     <div class="result-card" id="result-card">
       <div class="result-header">
@@ -12244,14 +12240,10 @@ function renderPagesClinica() {
     </div>
 
     <div id="nova-adapt-sugestao-mon" style="display:none;border:1px solid;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;line-height:1.5"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        Gerar adaptação com a Lou
-      </button>
-      <button class="btn-sm-ghost" id="btn-gerar-3-niveis" onclick="gerarTresNiveis()">🔀 Gerar nos 3 níveis</button>
-    </div>
-    <div id="niveis-comparacao" style="display:none;margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+    <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar adaptação com a Lou
+    </button>
     <div class="gen-box" id="gen-box"><div class="spin"></div><span>IA gerando adaptação personalizada…</span></div>
     <div class="result-card" id="result-card">
       <div class="result-header">
@@ -13255,62 +13247,6 @@ async function buscarAprendizadoAluno(alunoId) {
   if (recomendacoes.length) partes.push(`- Recomendações registradas em atividades anteriores: ${recomendacoes.join(' | ')}`);
 
   return partes.join('\n');
-}
-
-async function gerarTresNiveis() {
-  if (!alunoSelId) return toast('Selecione um aluno cadastrado pela gestão.', 'error');
-  const conteudo = document.getElementById('inp-conteudo')?.value.trim();
-  if (!conteudo) return toast('Cole o conteúdo a adaptar.', 'error');
-  const materia = document.getElementById('inp-materia')?.value;
-  if (!materia) return toast('Selecione a matéria.', 'error');
-
-  const selNivel = document.getElementById('inp-nivel');
-  if (!selNivel) return;
-  const nivelOriginal = selNivel.value;
-  const niveis = [
-    { valor: 'basico', label: 'Básico' },
-    { valor: 'intermediario', label: 'Intermediário' },
-    { valor: 'avancado', label: 'Avançado' }
-  ];
-
-  const painel = document.getElementById('niveis-comparacao');
-  painel.style.display = 'grid';
-  painel.innerHTML = niveis.map(n => `
-    <div class="clinic-card" id="nivel-card-${n.valor}">
-      <div class="clinic-card-title">${n.label}</div>
-      <div style="font-size:12px;color:var(--gr400);padding:20px 0;text-align:center">Gerando…</div>
-    </div>
-  `).join('');
-  painel.scrollIntoView({ behavior:'smooth', block:'nearest' });
-
-  const resultados = {};
-  for (const n of niveis) {
-    selNivel.value = n.valor;
-    await gerar();
-    const texto = document.getElementById('result-text')?.value || '';
-    resultados[n.valor] = texto;
-    const card = document.getElementById(`nivel-card-${n.valor}`);
-    if (card) {
-      card.innerHTML = `
-        <div class="clinic-card-title">${n.label}</div>
-        <div style="font-size:11.5px;color:var(--gr600);white-space:pre-line;max-height:220px;overflow-y:auto;border:1px solid var(--gr200);border-radius:6px;padding:8px;margin:6px 0">${texto.slice(0, 1500)}${texto.length > 1500 ? '…' : ''}</div>
-        <button class="btn-sm" style="width:100%" onclick="usarVersaoNivel('${n.valor}')">Usar esta versão</button>
-      `;
-    }
-  }
-  window._resultadosTresNiveis = resultados;
-  selNivel.value = nivelOriginal;
-}
-
-function usarVersaoNivel(nivelValor) {
-  const texto = (window._resultadosTresNiveis || {})[nivelValor];
-  if (!texto) return;
-  const el = document.getElementById('result-text');
-  if (el) el.value = texto;
-  document.getElementById('result-card')?.classList.add('show');
-  document.getElementById('niveis-comparacao').style.display = 'none';
-  toast('Versão selecionada — revise e salve normalmente.', 'success');
-  document.getElementById('result-card')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
 async function gerar() {
