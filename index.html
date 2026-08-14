@@ -13808,7 +13808,7 @@ function renderizarPainelImagens() {
           ${item.fonte==='original' ? `<option value="original" selected>📄 Imagem original do documento</option>` : ''}
           <option value="proprio" ${item.fonte==='proprio'?'selected':''}>Banco próprio</option>
           <option value="pixabay" ${item.fonte==='pixabay'?'selected':''}>Banco de sites gratuitos</option>
-          <option value="openclipart" ${item.fonte==='openclipart'?'selected':''}>OpenClipart (domínio público)</option>
+
         </select>
         <button class="btn-sm" onclick="buscarImagemItem(${i})">Buscar</button>
         <button class="btn-danger" onclick="removerItemImagem(${i})">Remover</button>
@@ -13885,12 +13885,7 @@ async function buscarImagemItem(i) {
         : q.or(`organizacao_id.is.null,compartilhada.eq.true`);
       const { data } = await q;
       urls = (data||[]).map(d => d.url);
-    } else if (item.fonte === 'openclipart') {
-      const r = await fetch(`https://openclipart.org/search/json/?query=${encodeURIComponent(item.termo.trim())}&amount=12`);
-      const data = await r.json();
-      const payload = data.payload || {};
-      urls = Object.values(payload).map(p => p?.svg?.png_thumb || p?.svg?.png_full_lossy).filter(Boolean).slice(0,8);
-    } else {
+       } else {
       const r = await fetch(`${PIXABAY_PROXY}?q=${encodeURIComponent(item.termo.trim())}&image_type=illustration`, {
         headers: { 'Authorization': `Bearer ${SB_KEY}` }
       });
