@@ -9960,6 +9960,7 @@ function renderPages() {
       </div>
     </div>
 
+    <div id="nova-adapt-sugestao-mon" style="display:none;border:1px solid;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;line-height:1.5"></div>
     <button class="btn-gerar" id="btn-gerar" onclick="gerar()">
       <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
       Gerar adaptação com a Lou
@@ -13281,6 +13282,24 @@ async function gerar() {
 
   const aprendizadoTexto = await buscarAprendizadoAluno(alunoSelId);
 
+  let sugestaoMonitoramento = null;
+  try {
+    const { data: monRegs } = await db.from('monitoramentos').select('*').eq('perfil_id', alunoSelId).order('created_at', { ascending: false }).limit(10);
+    sugestaoMonitoramento = analisarProgressaoPraticaGuiada(monRegs);
+  } catch(e) { /* aluno sem monitoramento clinico — segue normalmente */ }
+  const boxSugMon = document.getElementById('nova-adapt-sugestao-mon');
+  if (boxSugMon) {
+    if (sugestaoMonitoramento) {
+      boxSugMon.style.display = 'block';
+      boxSugMon.style.background = sugestaoMonitoramento.fundo;
+      boxSugMon.style.color = sugestaoMonitoramento.cor;
+      boxSugMon.style.borderColor = sugestaoMonitoramento.cor;
+      boxSugMon.innerHTML = `<strong>${sugestaoMonitoramento.titulo}</strong><br>${sugestaoMonitoramento.motivo}<br><span style="opacity:.8;font-size:11.5px">A Lou vai considerar isso ao calibrar esta adaptação.</span>`;
+    } else {
+      boxSugMon.style.display = 'none';
+    }
+  }
+
   // ── BASE DE CONHECIMENTO MONTESSORI ──────────────────────────
   const tiposDetectados = detectarTiposExercicio(conteudo);
   const tecnicasTexto = tiposDetectados.map(t => TECNICAS_POR_TIPO[t]).filter(Boolean).join('\n');
@@ -13465,6 +13484,11 @@ ${estrategiasTexto || 'Aplique estratégias de educação inclusiva baseadas em 
 ${aprendizadoTexto ? `
 APRENDIZADO DE ATIVIDADES ANTERIORES (baseado em registros reais de aplicação deste aluno — use para não repetir estratégias que não funcionaram e reforçar as que funcionaram):
 ${aprendizadoTexto}
+` : ''}
+${sugestaoMonitoramento ? `
+HISTÓRICO DE MONITORAMENTO CLÍNICO DESTE PACIENTE (dados reais registrados pela equipe em Prática Guiada/atividades anteriores):
+${sugestaoMonitoramento.titulo} — ${sugestaoMonitoramento.motivo}
+Use isso para calibrar o nível de apoio/dificuldade desta adaptação: ${sugestaoMonitoramento.nivel === 'aumentar' ? 'os últimos registros mostram domínio consistente e independência — pode reduzir o apoio e aumentar levemente o desafio em relação ao padrão do perfil' : sugestaoMonitoramento.nivel === 'reduzir' ? 'os últimos registros mostram dificuldade mesmo com ajuda — aumente o apoio e reduza a dificuldade em relação ao padrão do perfil' : 'os últimos registros são mistos — mantenha o nível de apoio já praticado, sem mudanças bruscas'}.
 ` : ''}
 ${a.diretrizes_adaptacao ? `DIRETRIZES ESPECÍFICAS DESTE ALUNO (definidas pela clínica/profissional responsável — seguir com prioridade sobre preferências genéricas, desde que não contradigam a REGRA INEGOCIÁVEL de adaptação real):
 ${a.diretrizes_adaptacao}
