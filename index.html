@@ -15360,7 +15360,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       if (restante) itens[itens.length - 1].rotulo = (itens[itens.length - 1].rotulo + ' ' + restante).trim();
 
       const ehLigarAssociar = itens.length === 1 && /^->/.test(itens[0].rotulo || '');
-      const maxImgW = 34, maxImgH = 34;
+      const maxImgW = 55, maxImgH = 55;
 
       if (ehLigarAssociar) {
         const item = itens[0];
@@ -15369,9 +15369,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         if (b64) {
           try {
             const props = doc.getImageProperties(b64);
-            imgW = Math.min(24, maxImgW);
+            imgW = Math.min(34, maxImgW);
             imgH = imgW * (props.height / props.width);
-            if (imgH > 24) { imgH = 24; imgW = imgH * (props.width / props.height); }
+            if (imgH > 34) { imgH = 34; imgW = imgH * (props.width / props.height); }
             imgFormato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
           } catch(e) { imgW = 0; imgH = 0; }
         }
@@ -15523,7 +15523,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     doc.setTextColor(30, 58, 138);
     doc.text('Apoio visual', ml, y);
     y += altLinha + 2;
-    const maxImgSizeFallback = 22;
+    const maxImgSizeFallback = 40;
     const celulaWFallback = maxW / Math.min(itensImagemSemMarcador.length, 4);
     let colIdx = 0;
     let alturaMaxLinhaFallback = 0;
