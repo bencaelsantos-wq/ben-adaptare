@@ -13696,7 +13696,7 @@ GENERALIZAÇÃO (1 linha, máx 15 palavras): [como estimular essa habilidade for
 NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: incluiGuia ? 2800 : 1200, modulo: 'adaptacao', imagensBase64: usarVisaoImagensOriginais ? window._imagensPDFOriginal : [] });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: incluiGuia ? 5500 : 2200, modulo: 'adaptacao', imagensBase64: usarVisaoImagensOriginais ? window._imagensPDFOriginal : [] });
     let texto = corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, ''));
     const idxNome = texto.search(/Nome\s*:\s*_{2,}/i);
     if (idxNome > 0) texto = texto.slice(idxNome);
