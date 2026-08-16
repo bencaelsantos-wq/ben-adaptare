@@ -9957,6 +9957,10 @@ function renderPages() {
           <input type="checkbox" id="inp-guia-prof" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
           <span>📋 Incluir guia do professor no PDF</span>
         </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
+          <input type="checkbox" id="inp-maiusculas" style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+          <span>🔠 Folha do aluno em CAIXA ALTA</span>
+        </label>
       </div>
     </div>
 
@@ -15090,7 +15094,8 @@ function gerarPDFDocumento(opts) {
       const linha = linhas[i];
       const linhaT = linha.trim();
       const isTituloMaiusculo = linhaT.length < 90 && linhaT.length > 3 && linhaT === linhaT.toUpperCase() && /[A-ZÀ-Ú]/.test(linhaT) && !/^\(/.test(linhaT);
-      const isH1 = /^#{1,2}\s/.test(linhaT) || (/^\d+\.\s[A-Z]/.test(linhaT) && linhaT.length < 80) || isTituloMaiusculo;
+      const isParteLabel = /^parte\s*\d+\s*[:.\-]/i.test(linhaT) && linhaT.length < 90;
+      const isH1 = /^#{1,2}\s/.test(linhaT) || (/^\d+\.\s[A-Z]/.test(linhaT) && linhaT.length < 80) || isTituloMaiusculo || isParteLabel;
       const isH2 = /^#{3}\s/.test(linhaT) || (/^\d+\.\d+\s/.test(linhaT) && linhaT.length < 80);
       const isSep = /^---+$/.test(linhaT) || linhaT === '';
       if (isSep) {
@@ -15123,6 +15128,8 @@ function gerarPDFDocumento(opts) {
         doc.setFontSize(9.5);
         doc.setTextColor(30, 30, 30);
       } else {
+        const ehLinhaResposta = /^_{3,}\s*$/.test(linhaClean);
+        if (ehLinhaResposta && !linhaAnteriorEraResposta) y += 3;
         // Negrito inline **texto**
         if (linhaClean.includes('**')) {
           const parts = linhaClean.split('**');
