@@ -13361,7 +13361,11 @@ async function gerar() {
   const qtdImagensOriginais = (window._imagensPDFOriginal||[]).length;
   const usarVisaoImagensOriginais = window._usarImagensOriginais === true && qtdImagensOriginais > 0;
   const INSTRUCAO_IMAGENS_ORIGINAIS = usarVisaoImagensOriginais
-    ? `IMAGENS DO MATERIAL ORIGINAL: o profissional enviou o material original e pediu para REAPROVEITAR as mesmas imagens (não gerar nem buscar outras). Você está VENDO ${qtdImagensOriginais} imagem(ns) reais anexadas a esta mensagem, nesta ordem, identificadas como original-1, original-2 etc. (a primeira imagem anexada é original-1, a segunda é original-2, e assim por diante). Observe o CONTEÚDO de cada imagem antes de decidir onde usá-la: use o marcador [IMAGEM: original-N] apenas junto da pergunta/item ao qual aquela imagem específica realmente se refere. NÃO force o uso de uma imagem em um lugar que não faz sentido, e NÃO é obrigatório usar todas — se uma imagem for um logotipo, marca d'água ou não tiver relação com nenhum exercício, simplesmente não a use. Use SOMENTE esses marcadores original-N para apoio visual nesta adaptação — não use nomes genéricos de objetos.`
+    ? `IMAGENS DO MATERIAL ORIGINAL: o profissional enviou o material original e pediu para REAPROVEITAR as mesmas imagens (não gerar nem buscar outras). Você está VENDO ${qtdImagensOriginais} imagem(ns) reais anexadas a esta mensagem, nesta ordem, identificadas como original-1, original-2 etc. (a primeira imagem anexada é original-1, a segunda é original-2, e assim por diante). Observe o CONTEÚDO de cada imagem antes de decidir onde usá-la: use o marcador [IMAGEM: original-N] apenas junto da pergunta/item ao qual aquela imagem específica realmente se refere. NÃO force o uso de uma imagem em um lugar que não faz sentido, e NÃO é obrigatório usar todas — se uma imagem for um logotipo, marca d'água ou não tiver relação com nenhum exercício, simplesmente não a use.
+
+REGRA TÉCNICA OBRIGATÓRIA E INEGOCIÁVEL SOBRE O NOME DO MARCADOR: o texto dentro do marcador [IMAGEM: ...] DEVE SER EXATAMENTE "original-1", "original-2" etc — a palavra "original" seguida de hífen e o número, sempre em minúsculo, nunca um nome descritivo do que a imagem mostra. Isso é uma regra técnica de sistema, não estética: o código que monta o PDF só reconhece esse formato exato para linkar com a imagem certa; qualquer outro nome faz a imagem se perder.
+ERRADO (nunca faça): [IMAGEM: caravela] ou [IMAGEM: astrolabio] ou [IMAGEM: bussola]
+CERTO (sempre faça): [IMAGEM: original-1] ou [IMAGEM: original-2] ou [IMAGEM: original-3]`
     : '';
 
   const MONTESSORI_SISTEMA = isMontessori ? `
@@ -13895,6 +13899,15 @@ async function detectarItensImagem() {
   document.getElementById('ap-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
+function usarImagemOriginalNoItem(i, indiceOriginal) {
+  const src = (window._imagensPDFOriginal||[])[indiceOriginal];
+  if (!src) return;
+  window._imgItens[i].urlEscolhida = src;
+  window._imgItens[i].fonte = 'original';
+  window._imgItens[i].resultados = [src];
+  renderizarPainelImagens();
+}
+
 function renderizarPainelImagens() {
   const cont = document.getElementById(window._imgListaId);
   const px = window._imgPrefixo;
@@ -13911,6 +13924,15 @@ function renderizarPainelImagens() {
         <button class="btn-sm" onclick="buscarImagemItem(${i})">Buscar</button>
         <button class="btn-danger" onclick="removerItemImagem(${i})">Remover</button>
       </div>
+      ${(window._imagensPDFOriginal||[]).length && item.fonte !== 'original' ? `
+      <div style="margin-bottom:8px;padding:8px;background:#F8FAFC;border-radius:8px">
+        <div style="font-size:11px;color:var(--gr500);margin-bottom:6px">📄 Ou use uma imagem do material original enviado:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${window._imagensPDFOriginal.map((src, oi) => `
+            <img src="${src}" onclick="usarImagemOriginalNoItem(${i}, ${oi})" title="original-${oi+1}" style="width:44px;height:44px;object-fit:contain;background:#fff;border-radius:5px;cursor:pointer;border:2px solid ${item.urlEscolhida===src?'#2563EB':'var(--gr200)'}">
+          `).join('')}
+        </div>
+      </div>` : ''}
       <div id="${px}-resultados-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px dashed var(--gr200)">
         <input type="file" id="${px}-upload-${i}" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="enviarImagemBancoItem(${i}, this)">
