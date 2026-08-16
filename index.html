@@ -13009,10 +13009,13 @@ async function extrairImagensPDF(file) {
         const maxPaginas = Math.min(pdf.numPages, 20);
         const imagens = [];
         for (let i = 1; i <= maxPaginas && imagens.length < 20; i++) {
-          const page = await pdf.getPage(i);
-          const vp1 = page.getViewport({ scale: 1 });
-          const pageW = Math.abs(vp1.width), pageH = Math.abs(vp1.height);
-          const opList = await page.getOperatorList();
+          let page, opList, pageW, pageH;
+          try {
+            page = await pdf.getPage(i);
+            const vp1 = page.getViewport({ scale: 1 });
+            pageW = Math.abs(vp1.width); pageH = Math.abs(vp1.height);
+            opList = await page.getOperatorList();
+          } catch(errPagina) { continue; }
           let ctm = [1,0,0,1,0,0];
           const pilha = [];
           for (let j = 0; j < opList.fnArray.length && imagens.length < 20; j++) {
@@ -13030,7 +13033,10 @@ async function extrairImagensPDF(file) {
 
             const nome = opList.argsArray[j][0];
             try {
-              const imgObj = await new Promise((res) => page.objs.get(nome, res));
+              const imgObj = await Promise.race([
+                new Promise((res) => page.objs.get(nome, res)),
+                new Promise((res) => setTimeout(() => res(null), 4000))
+              ]);
               if (!imgObj || !imgObj.width || !imgObj.height) continue;
               if (imgObj.width < 60 || imgObj.height < 60) continue;
               const canvas = document.createElement('canvas');
