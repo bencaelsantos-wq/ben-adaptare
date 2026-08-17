@@ -15470,7 +15470,8 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         continue;
       }
 
-      const celulaW = maxW / itens.length;
+      const colsPorLinha = Math.min(itens.length, 2);
+      const celulaW = maxW / colsPorLinha;
       itens.forEach(item => {
         item.linhasRotulo = item.rotulo ? doc.splitTextToSize(item.rotulo, celulaW - 4) : [];
         const b64 = opts.imagensPorItem && opts.imagensPorItem[item.nome];
@@ -15489,24 +15490,27 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const maxLinhasRotulo = Math.max(0, ...itens.map(it => it.linhasRotulo.length));
       const altTexto = maxLinhasRotulo * altLinha;
       const maxImgHReal = Math.max(0, ...itens.map(it => it.imgH || 0));
-      const altCelula = altTexto + maxImgHReal + 12;
+      const altLinhaGrade = altTexto + maxImgHReal + 12;
 
-      if (y + altCelula > H - rodapeH) {
-        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
-        doc.addPage();
-        y = 10;
-      }
-      itens.forEach((item, idx) => {
-        const x = ml + idx * celulaW;
-        item.linhasRotulo.forEach((l, li) => doc.text(l, x, y + li * altLinha));
-        if (item.b64) {
-          try {
-            const xImg = x + Math.max(0, (celulaW - 4 - item.imgW) / 2);
-            doc.addImage(item.b64, item.imgFormato, xImg, y + altTexto + 2, item.imgW, item.imgH);
-          } catch(e) {}
+      for (let li0 = 0; li0 < itens.length; li0 += colsPorLinha) {
+        const linhaItens = itens.slice(li0, li0 + colsPorLinha);
+        if (y + altLinhaGrade > H - rodapeH) {
+          adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+          doc.addPage();
+          y = 10;
         }
-      });
-      y += altCelula;
+        linhaItens.forEach((item, idx) => {
+          const x = ml + idx * celulaW;
+          item.linhasRotulo.forEach((l, li) => doc.text(l, x, y + li * altLinha));
+          if (item.b64) {
+            try {
+              const xImg = x + Math.max(0, (celulaW - 4 - item.imgW) / 2);
+              doc.addImage(item.b64, item.imgFormato, xImg, y + altTexto + 2, item.imgW, item.imgH);
+            } catch(e) {}
+          }
+        });
+        y += altLinhaGrade;
+      }
       continue;
     }
     const matchCaixa = limpa.match(/^\[CAIXA:\s*(.+)\]$/i);
