@@ -6703,7 +6703,7 @@ function renderPagesDeveloper() {
         <div class="pei-step">
           <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Laudos e relatórios</div><div class="pei-step-sub">Envie quantos documentos precisar — cada um entra na linha do tempo do caso</div></div></div>
           <button class="btn-sm-ghost" onclick="document.getElementById('ec-inp-pdf').click()">📄 Enviar PDF</button>
-          <input type="file" id="ec-inp-pdf" accept=".pdf" style="display:none" onchange="enviarLaudoEstudoCasoDev(this)">
+          <input type="file" id="ec-inp-pdf" accept=".pdf,.doc,.docx" style="display:none" onchange="enviarLaudoEstudoCasoDev(this)">
           <div id="ec-upload-status" style="font-size:12px;color:var(--gr500);margin-top:8px"></div>
         </div>
 
@@ -6753,7 +6753,7 @@ function renderPagesDeveloper() {
       <label class="flabel">Laudo/relatório (PDF)</label>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
         <button class="btn-sm-ghost" onclick="document.getElementById('ecm-inp-pdf').click()">📄 Enviar PDF</button>
-        <input type="file" id="ecm-inp-pdf" accept=".pdf" style="display:none" onchange="lerLaudoPreCasoDev(this)">
+        <input type="file" id="ecm-inp-pdf" accept=".pdf,.doc,.docx" style="display:none" onchange="lerLaudoPreCasoDev(this)">
         <span id="ecm-pdf-status" style="font-size:12px;color:var(--gr500)"></span>
       </div>
 
@@ -6911,11 +6911,13 @@ async function lerLaudoPreCasoDev(input) {
     if (file.name.endsWith('.pdf')) {
       texto = await extrairTextoPDF(file);
       if (!texto.trim()) { status.textContent = 'Documento sem texto — aplicando OCR…'; texto = await extrairTextoPDFComOCR(file, { textContent: '' }); }
+    } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+      texto = await extrairTextoDOCX(file);
     } else {
-      status.textContent = 'Use um arquivo PDF.';
+      status.textContent = 'Use um arquivo PDF ou Word.';
       return;
     }
-    if (!texto.trim()) { status.textContent = 'Não foi possível extrair texto deste PDF.'; return; }
+    if (!texto.trim()) { status.textContent = 'Não foi possível extrair texto deste arquivo.'; return; }
     window._preCasoLaudoDev = { nomeArquivo: file.name, texto: texto.trim() };
     status.textContent = `"${file.name}" lido com sucesso.`;
     document.getElementById('ecm-bloco-analise').style.display = 'block';
@@ -7003,11 +7005,13 @@ async function enviarLaudoEstudoCasoDev(input) {
     if (file.name.endsWith('.pdf')) {
       texto = await extrairTextoPDF(file);
       if (!texto.trim()) { status.textContent = 'Documento sem texto — aplicando OCR…'; texto = await extrairTextoPDFComOCR(file, status); }
+    } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+      texto = await extrairTextoDOCX(file);
     } else {
-      status.textContent = 'Use um arquivo PDF.';
+      status.textContent = 'Use um arquivo PDF ou Word.';
       return;
     }
-    if (!texto.trim()) { status.textContent = 'Não foi possível extrair texto deste PDF.'; return; }
+    if (!texto.trim()) { status.textContent = 'Não foi possível extrair texto deste arquivo.'; return; }
     const { error } = await db.from('estudos_caso_registros_dev').insert({
       caso_id: window._casoAtualDev.id, user_id: user.id, tipo: 'laudo', titulo: file.name, conteudo: texto.trim()
     });
