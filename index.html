@@ -12937,7 +12937,11 @@ async function processarArquivoAdaptacao(input) {
       try { window._imagensPDFOriginal = await extrairImagensPDF(file); } catch(e) { console.warn('Falha ao extrair imagens do PDF', e); }
     } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
       texto = await extrairTextoDOCX(file);
-      try { window._imagensPDFOriginal = await extrairImagensDOCX(file); } catch(e) { console.warn('Falha ao extrair imagens do Word', e); }
+      if (file.name.endsWith('.docx')) {
+        try { window._imagensPDFOriginal = await extrairImagensDOCX(file); } catch(e) { console.warn('Falha ao extrair imagens do Word', e); }
+      } else {
+        toast('Arquivo .doc (formato antigo): o texto foi lido normalmente, mas a extração automática de imagens só funciona em .docx ou PDF. Se precisar reaproveitar imagens, salve o arquivo como .docx antes de enviar.', 'error');
+      }
     } else {
       status.textContent = 'Formato não suportado. Use PDF ou DOCX.';
       return;
