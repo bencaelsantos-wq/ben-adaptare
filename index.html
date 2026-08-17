@@ -12937,6 +12937,7 @@ async function processarArquivoAdaptacao(input) {
       try { window._imagensPDFOriginal = await extrairImagensPDF(file); } catch(e) { console.warn('Falha ao extrair imagens do PDF', e); }
     } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
       texto = await extrairTextoDOCX(file);
+      try { window._imagensPDFOriginal = await extrairImagensDOCX(file); } catch(e) { console.warn('Falha ao extrair imagens do Word', e); }
     } else {
       status.textContent = 'Formato não suportado. Use PDF ou DOCX.';
       return;
@@ -13156,6 +13157,27 @@ async function extrairTextoPDFComOCR(file, statusEl) {
       } catch(err) { reject(err); }
     };
     reader.onerror = () => reject(new Error('Erro ao ler o arquivo.'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function extrairImagensDOCX(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const imagens = [];
+        const opcoesImagem = mammoth.images.imgElement(function(image) {
+          return image.read('base64').then(function(base64) {
+            if (imagens.length < 20) imagens.push(`data:${image.contentType};base64,${base64}`);
+            return { src: '' };
+          });
+        });
+        await mammoth.convertToHtml({ arrayBuffer: e.target.result }, { convertImage: opcoesImagem });
+        resolve(imagens);
+      } catch(err) { console.warn('Falha ao extrair imagens do Word', err); resolve([]); }
+    };
+    reader.onerror = () => resolve([]);
     reader.readAsArrayBuffer(file);
   });
 }
