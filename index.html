@@ -6867,10 +6867,11 @@ function renderPagesDeveloper() {
     <h1 class="page-title">🔒 Banco de Imagens LouMind</h1>
     <p class="page-sub">Banco curado por você — visível pra todo mundo que usa a plataforma, mas só você consegue subir ou apagar imagens aqui.</p>
     <div class="clinic-card" style="margin-bottom:16px">
-      <label class="flabel">Tags (separadas por vírgula)</label>
-      <input type="text" id="blm-tags" class="finput" placeholder="Ex: gato, animal, floresta" style="margin-bottom:10px">
-      <button class="btn-sm" onclick="document.getElementById('blm-inp-file').click()">📤 Enviar imagem</button>
-      <input type="file" id="blm-inp-file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="enviarImagemBancoLoumindDev(this)">
+      <p style="font-size:12.5px;color:var(--gr500);margin:0 0 10px">A tag de busca é gerada automaticamente a partir do <strong>nome do arquivo</strong> (ex: "agua-liquida.png" vira a tag "agua liquida"). Nomeie os arquivos antes de subir.</p>
+      <label class="flabel">Tags extras (opcional, aplicadas a todos os arquivos deste envio)</label>
+      <input type="text" id="blm-tags" class="finput" placeholder="Ex: ciencias, natureza" style="margin-bottom:10px">
+      <button class="btn-sm" onclick="document.getElementById('blm-inp-file').click()">📤 Enviar imagens</button>
+      <input type="file" id="blm-inp-file" accept="image/png,image/jpeg,image/webp" multiple style="display:none" onchange="enviarImagemBancoLoumindDev(this)">
       <div id="blm-status" style="font-size:12px;color:var(--gr500);margin-top:8px"></div>
     </div>
     <div style="margin-bottom:10px"><input type="text" id="blm-busca" class="finput" placeholder="Buscar por tag..." style="max-width:320px" oninput="carregarBancoImagensLoumindDev()"></div>
@@ -8732,27 +8733,32 @@ async function carregarBancoImagensLoumindDev() {
 }
 
 async function enviarImagemBancoLoumindDev(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const tagsRaw = document.getElementById('blm-tags')?.value.trim();
-  if (!tagsRaw) { toast('Preencha ao menos uma tag antes de enviar.', 'error'); input.value = ''; return; }
-  const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  const tagsExtras = (document.getElementById('blm-tags')?.value.trim() || '')
+    .split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
   const status = document.getElementById('blm-status');
-  status.textContent = 'Enviando…';
-  try {
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const path = `banco-loumind/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-    const { error: errUpload } = await db.storage.from('imagens-atividades').upload(path, file, { upsert: false, contentType: file.type });
-    if (errUpload) throw errUpload;
-    const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
-    const { error: errInsert } = await db.from('banco_imagens_loumind').insert({ url: urlData.publicUrl, tags, criado_por: user.id });
-    if (errInsert) throw errInsert;
-    status.textContent = 'Imagem enviada!';
-    document.getElementById('blm-tags').value = '';
-    carregarBancoImagensLoumindDev();
-  } catch(e) {
-    status.textContent = 'Erro: ' + e.message;
+  let enviadas = 0, falhas = 0;
+  for (const file of files) {
+    status.textContent = `Enviando ${enviadas + falhas + 1} de ${files.length}…`;
+    try {
+      const nomeBase = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim().toLowerCase();
+      const tags = [...new Set([nomeBase, ...tagsExtras])].filter(Boolean);
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `banco-loumind/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const { error: errUpload } = await db.storage.from('imagens-atividades').upload(path, file, { upsert: false, contentType: file.type });
+      if (errUpload) throw errUpload;
+      const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
+      const { error: errInsert } = await db.from('banco_imagens_loumind').insert({ url: urlData.publicUrl, tags, criado_por: user.id });
+      if (errInsert) throw errInsert;
+      enviadas++;
+    } catch(e) {
+      falhas++;
+      console.warn('Falha ao enviar', file.name, e);
+    }
   }
+  status.textContent = `${enviadas} imagem(ns) enviada(s)${falhas ? `, ${falhas} falharam` : ''}.`;
+  carregarBancoImagensLoumindDev();
   input.value = '';
 }
 
