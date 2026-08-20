@@ -15309,6 +15309,10 @@ function desenharIconeComando(doc, tipo, cx, cy, tam) {
     doc.line(cx - half, cy, cx - half/3, cy - half);
     doc.line(cx - half/3, cy - half, cx + half/3, cy + half);
     doc.line(cx + half/3, cy + half, cx + half, cy - half);
+  } else if (tipo === 'generico') {
+    doc.setFillColor(255,255,255);
+    doc.circle(cx, cy - half * 0.4, half * 0.35, 'F');
+    doc.line(cx, cy + half * 0.15, cx, cy + half * 0.55);
   }
   doc.setDrawColor(30, 30, 30);
 }
@@ -15692,7 +15696,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         { re: /\bCOMPLETE\b/i, icone: 'completar', cor: [30,58,138] },
         { re: /\b(DESENHE|ILUSTRE)\b/i, icone: 'desenho', cor: [15,118,110] }
       ];
-      const comandoAtiv = (isQuestaoNumeradaAtiv || isLinhaComandoAtiv) ? VERBOS_COMANDO_ATIV.find(v => v.re.test(linhaT)) : null;
+      const comandoAtiv = (isQuestaoNumeradaAtiv || isLinhaComandoAtiv)
+        ? (VERBOS_COMANDO_ATIV.find(v => v.re.test(linhaT)) || { icone: 'generico', cor: [71,85,105] })
+        : null;
       y += 2;
       if (comandoAtiv) {
         const [r,g,b] = comandoAtiv.cor;
