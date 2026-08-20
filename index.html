@@ -15448,7 +15448,8 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     const isTituloMaiusculoAtiv = linhaT.length < 90 && linhaT.length > 3 && linhaT === linhaT.toUpperCase() && /[A-ZÀ-Ú]/.test(linhaT) && !/^\(/.test(linhaT);
     const isParteLabelAtiv = /^parte\s*\d+\s*[:.\-]/i.test(linhaT) && linhaT.length < 90;
     const isQuestaoNumeradaAtiv = /^\d+\.\s[A-Z]/.test(linhaT) && linhaT.length < 80;
-    const isH = /^#{1,3}\s/.test(linhaT) || (/^\*\*[^*]/.test(linhaT) && linhaT.endsWith('**')) || isTituloMaiusculoAtiv || isParteLabelAtiv || isQuestaoNumeradaAtiv;
+    const isLinhaComandoAtiv = /\b(ESCREVA|RESPONDA|MARQUE|ASSINALE|CIRCULE|LIGUE|ASSOCIE|COMPLETE|DESENHE|ILUSTRE)\b/i.test(linhaT) && /[:?]$/.test(linhaT) && linhaT.length < 100;
+    const isH = /^#{1,3}\s/.test(linhaT) || (/^\*\*[^*]/.test(linhaT) && linhaT.endsWith('**')) || isTituloMaiusculoAtiv || isParteLabelAtiv || isQuestaoNumeradaAtiv || isLinhaComandoAtiv;
     const isDivisor = /^-{3,}$/.test(linhaT);
     const isSep = isDivisor || linhaT === '';
     if (isDivisor) {
@@ -15637,7 +15638,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         { re: /\bCOMPLETE\b/i, icone: 'completar', cor: [30,58,138] },
         { re: /\b(DESENHE|ILUSTRE)\b/i, icone: 'desenho', cor: [15,118,110] }
       ];
-      const comandoAtiv = isQuestaoNumeradaAtiv ? VERBOS_COMANDO_ATIV.find(v => v.re.test(linhaT)) : null;
+      const comandoAtiv = (isQuestaoNumeradaAtiv || isLinhaComandoAtiv) ? VERBOS_COMANDO_ATIV.find(v => v.re.test(linhaT)) : null;
       y += 2;
       if (comandoAtiv) {
         const [r,g,b] = comandoAtiv.cor;
