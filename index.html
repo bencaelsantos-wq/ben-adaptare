@@ -14167,6 +14167,7 @@ async function buscarImagemItem(i) {
     }
     item.resultados = urls;
     if (!urls.length) { box.innerHTML = '<span style="font-size:12px;color:#B45309">Nenhuma imagem encontrada para "'+item.termo+'".</span>'; return; }
+    if (urls.length === 1) item.urlEscolhida = urls[0];
     renderResultadosItem(i);
   } catch(e) {
     box.innerHTML = '<span style="font-size:12px;color:#991B1B">Erro ao buscar: '+(e.message||'tente novamente')+'</span>';
@@ -15799,16 +15800,17 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       continue;
     }
     if (isH) {
+      const CORES_LOUMIND_ATIV = [[30,58,138],[37,99,235],[124,58,237],[20,184,166]];
       const VERBOS_COMANDO_ATIV = [
-        { re: /\b(ESCREVA|RESPONDA)\b/i, icone: 'lapis', cor: [22,101,52] },
-        { re: /\b(MARQUE|ASSINALE)\b/i, icone: 'x', cor: [190,24,93] },
-        { re: /\bCIRCULE\b/i, icone: 'circulo', cor: [194,65,12] },
-        { re: /\b(LIGUE|ASSOCIE)\b/i, icone: 'ligar', cor: [109,40,217] },
-        { re: /\bCOMPLETE\b/i, icone: 'completar', cor: [30,58,138] },
-        { re: /\b(DESENHE|ILUSTRE)\b/i, icone: 'desenho', cor: [15,118,110] }
+        { re: /\b(ESCREVA|RESPONDA)\b/i, icone: 'lapis', cor: CORES_LOUMIND_ATIV[0] },
+        { re: /\b(MARQUE|ASSINALE)\b/i, icone: 'x', cor: CORES_LOUMIND_ATIV[1] },
+        { re: /\bCIRCULE\b/i, icone: 'circulo', cor: CORES_LOUMIND_ATIV[2] },
+        { re: /\b(LIGUE|ASSOCIE)\b/i, icone: 'ligar', cor: CORES_LOUMIND_ATIV[3] },
+        { re: /\bCOMPLETE\b/i, icone: 'completar', cor: CORES_LOUMIND_ATIV[0] },
+        { re: /\b(DESENHE|ILUSTRE)\b/i, icone: 'desenho', cor: CORES_LOUMIND_ATIV[1] }
       ];
       const comandoAtiv = (isQuestaoNumeradaAtiv || isLinhaComandoAtiv)
-        ? (VERBOS_COMANDO_ATIV.find(v => v.re.test(linhaT)) || { icone: 'generico', cor: [71,85,105] })
+        ? (VERBOS_COMANDO_ATIV.find(v => v.re.test(linhaT)) || { icone: 'generico', cor: CORES_LOUMIND_ATIV[2] })
         : null;
       y += 2;
       if (comandoAtiv) {
