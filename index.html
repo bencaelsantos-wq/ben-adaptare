@@ -13254,6 +13254,14 @@ const DICIONARIO_ACENTUACAO = {
   'tambem':'também','alguem':'alguém','ninguem':'ninguém','parabens':'parabéns',
   'saude':'saúde','juizo':'juízo','baul':'baú',
 };
+function corrigirAlternativasColadas(texto) {
+  return texto.split('\n').flatMap(linha => {
+    const partes = linha.split(/(?=\(\s?\))/g);
+    if (partes.length <= 1) return [linha];
+    return partes.map(p => p.trim()).filter(Boolean);
+  }).join('\n');
+}
+
 function corrigirAcentuacaoComum(texto) {
   let out = texto;
   for (const [semAcento, comAcento] of Object.entries(DICIONARIO_ACENTUACAO)) {
@@ -13750,7 +13758,7 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
 
   try {
     const textoBruto = await chamarClaude({ prompt, maxTokens: incluiGuia ? 5500 : 2200, modulo: 'adaptacao', imagensBase64: usarVisaoImagensOriginais ? window._imagensPDFOriginal : [] });
-    let texto = corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, ''));
+    let texto = corrigirAlternativasColadas(corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '')));
     const idxNome = texto.search(/Nome\s*:\s*_{2,}/i);
     if (idxNome > 0) texto = texto.slice(idxNome);
     ultimaAdapt = texto;
@@ -15110,7 +15118,7 @@ function gerarPDFDocumento(opts) {
     doc.setTextColor(30, 30, 30);
 
     const maxW = W - ml - mr;
-   const linhas = doc.splitTextToSize(sanitizarTexto(opts.conteudo), maxW);
+   const linhas = sanitizarTexto(opts.conteudo).split('\n');
 
     const altLinha = 5.8;
     const rodapeH = 35; // espaço reservado para assinaturas
@@ -15213,7 +15221,9 @@ function gerarPDFDocumento(opts) {
           });
           doc.setFont('helvetica', 'normal');
         } else {
-          doc.text(linhaClean || linha, ml, y);
+          const linhasQuebradas = doc.splitTextToSize(linhaClean || linha, maxW);
+          linhasQuebradas.forEach((lq, li) => doc.text(lq, ml, y + li * altLinha));
+          y += altLinha * (linhasQuebradas.length - 1);
         }
       }
       y += altLinha;
