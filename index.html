@@ -21293,8 +21293,21 @@ async function gerarTesteGratis() {
 
   const btn = document.getElementById('btn-tg-gerar');
   btn.disabled = true;
-  document.getElementById('tg-status').textContent = 'Gerando adaptação…';
+  document.getElementById('tg-status').textContent = 'Verificando…';
 
+  try {
+    const { data: jaUsou } = await dbAnon.rpc('email_ja_usou_teste_gratis', { email_input: email });
+    if (jaUsou) {
+      document.getElementById('tg-status').textContent = '';
+      localStorage.setItem('loumind_testes_gratis', '1');
+      toast('Esse e-mail já usou o teste grátis. Crie sua conta pra continuar adaptando!', 'error');
+      abrirModalTesteGratis();
+      btn.disabled = false;
+      return;
+    }
+  } catch(e) { /* se a checagem falhar, segue o fluxo normalmente */ }
+
+  document.getElementById('tg-status').textContent = 'Gerando adaptação…';
   try { await dbAnon.from('leads_teste_gratis').insert({ email, perfil }); } catch(e) { /* nao bloqueia o fluxo se falhar ao salvar o lead */ }
 
   const prompt = `Você é um assistente pedagógico especializado em adaptação de atividades escolares para alunos com necessidades educacionais especiais.
