@@ -2087,9 +2087,13 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div class="modal-title">✨ Adapte uma atividade grátis</div>
       <button class="modal-close" onclick="fecharModal('overlay-teste-gratis')">×</button>
     </div>
-    <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Cole o conteúdo de uma atividade e veja a Lou adaptar na hora — sem precisar criar conta. Você tem direito a <strong>2 testes grátis</strong> neste navegador.</p>
+    <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Cole o conteúdo de uma atividade e veja a Lou adaptar na hora — sem precisar criar conta. Você tem direito a <strong>1 teste grátis</strong> neste navegador.</p>
 
     <div id="tg-bloco-form">
+      <div class="fblock">
+        <label class="flabel">Seu e-mail *</label>
+        <input class="finput" id="tg-email" type="email" placeholder="seu@email.com" required>
+      </div>
       <div class="frow">
         <div>
           <label class="flabel">Perfil do aluno</label>
@@ -2127,7 +2131,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 
     <div id="tg-bloco-limite" style="display:none;text-align:center;padding:20px 0">
       <div style="font-size:32px;margin-bottom:8px">🔒</div>
-      <div style="font-weight:700;color:#1F2937;margin-bottom:6px">Você já usou seus 2 testes grátis</div>
+      <div style="font-weight:700;color:#1F2937;margin-bottom:6px">Você já usou seu teste grátis</div>
       <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Crie sua conta pra continuar adaptando atividades sem limite.</p>
       <button class="btn-lp-primary" onclick="fecharModal('overlay-teste-gratis');irParaLogin()">Criar conta grátis →</button>
     </div>
@@ -21263,9 +21267,9 @@ function irParaLogin() {
 
 function abrirModalTesteGratis() {
   const usados = parseInt(localStorage.getItem('loumind_testes_gratis') || '0', 10);
-  document.getElementById('tg-bloco-form').style.display = usados >= 2 ? 'none' : 'block';
+  document.getElementById('tg-bloco-form').style.display = usados >= 1 ? 'none' : 'block';
   document.getElementById('tg-bloco-resultado').style.display = 'none';
-  document.getElementById('tg-bloco-limite').style.display = usados >= 2 ? 'block' : 'none';
+  document.getElementById('tg-bloco-limite').style.display = usados >= 1 ? 'block' : 'none';
   abrirModal('overlay-teste-gratis');
 }
 
@@ -21279,7 +21283,9 @@ function reiniciarTesteGratis() {
 
 async function gerarTesteGratis() {
   const usados = parseInt(localStorage.getItem('loumind_testes_gratis') || '0', 10);
-  if (usados >= 2) { abrirModalTesteGratis(); return; }
+  if (usados >= 1) { abrirModalTesteGratis(); return; }
+  const email = document.getElementById('tg-email')?.value.trim() || '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Digite um e-mail válido para continuar.', 'error');
   const conteudo = document.getElementById('tg-conteudo')?.value.trim();
   if (!conteudo) return toast('Cole o conteúdo da atividade primeiro.', 'error');
   const perfil = document.getElementById('tg-perfil')?.value || '';
@@ -21288,6 +21294,8 @@ async function gerarTesteGratis() {
   const btn = document.getElementById('btn-tg-gerar');
   btn.disabled = true;
   document.getElementById('tg-status').textContent = 'Gerando adaptação…';
+
+  try { await dbAnon.from('leads_teste_gratis').insert({ email, perfil }); } catch(e) { /* nao bloqueia o fluxo se falhar ao salvar o lead */ }
 
   const prompt = `Você é um assistente pedagógico especializado em adaptação de atividades escolares para alunos com necessidades educacionais especiais.
 
