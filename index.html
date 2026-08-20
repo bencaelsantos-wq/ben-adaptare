@@ -15399,8 +15399,8 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     .replace(/^ATIVIDADE ADAPTADA[^\n]*/gim, '')
     .replace(/^FOLHA DO ALUNO\s*$/gim, '')
     .replace(/^BLOCO\s*(\d+)\s*[-—–:]?\s*(.*)$/gim, (_, n, resto) => resto.trim() ? `${n}. ${resto.trim()}` : `${n}.`)
-    .replace(/^(\d+\.)[ \t]*\n+[ \t]*(?=\S)/gm, '$1 ')
-    .replace(/^(\d+\.[^\n]{0,60}:)[ \t]*\n+[ \t]*(?=\S)/gm, '$1 ')
+    .replace(/^(\d+\.)[ \t]*\n+[ \t]*(?=[^\s\[])/gm, '$1 ')
+    .replace(/^(\d+\.[^\n]{0,60}:)[ \t]*\n+[ \t]*(?=[^\s\[])/gm, '$1 ')
     .trim();
 
   // Extrai a primeira linha não vazia como título da atividade, para render formatado à parte
@@ -15501,7 +15501,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const restante = limpa.slice(cursor).trim();
       if (restante) itens[itens.length - 1].rotulo = (itens[itens.length - 1].rotulo + ' ' + restante).trim();
 
-      const ehLigarAssociar = itens.length === 1 && /^(\u00BB|->)/.test(itens[0].rotulo || '');
+      const ehLigarAssociar = itens.length === 1 && /\u00BB|->/.test(itens[0].rotulo || '');
       const maxImgW = 55, maxImgH = 55;
 
       if (ehLigarAssociar) {
