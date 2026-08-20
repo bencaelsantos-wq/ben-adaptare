@@ -13617,6 +13617,7 @@ TÉCNICAS OBRIGATÓRIAS DE REDUÇÃO REAL DE CARGA PARA ESTE CONTEÚDO ESPECÍFI
 ${tecnicasTexto || 'Nenhum padrão de operação/exercício específico foi detectado automaticamente — aplique a REGRA INEGOCIÁVEL e o TESTE DE ADAPTAÇÃO REAL diretamente ao conteúdo, garantindo redução real de carga cognitiva em cada exercício.'}
 
 REGRAS UNIVERSAIS DE APOIO (valem para qualquer tipo de exercício):
+- Sempre que houver um trecho de texto de apoio, contextualização ou explicação de conceito ANTES dos exercícios (ex: "sobre o texto", explicação de um conceito, resumo de contexto), use o marcador [CAIXA: texto] envolvendo esse trecho — isso o destaca visualmente numa caixa colorida, separando claramente apoio/contexto das perguntas em si. Não use [CAIXA:] para as perguntas nem para o texto principal de leitura, só para blocos curtos de apoio/explicação.
 - Apoio visual deve ter FUNÇÃO, nunca ser decorativo. Nunca adicione imagem/ícone só para ilustrar o tema (ex: frutas soltas no fim da folha sem relação com o cálculo). Se usar apoio visual, ele precisa representar diretamente a quantidade ou a estrutura do problema (ex: marcadores repetidos representando unidades a contar, ícone ao lado de cada personagem/quantidade de um problema).
 - Quando o diagnóstico indicar memória operacional ou função executiva comprometida, ofereça retirada gradual de apoio dentro da própria atividade quando possível: um primeiro exercício com o passo a passo decomposto e visível, um exercício seguinte do mesmo tipo com menos apoio, e um último exercício só com a operação — replicando a mesma lógica pedagógica com autonomia crescente, não simplesmente repetindo o mesmo nível de apoio em todos os itens.
 - Quando o perfil informado (diagnóstico, observações clínicas ou contexto adicional) indicar ansiedade, baixa tolerância à frustração ou dificuldade de autorregulação, insira uma pista breve de regulação emocional entre os blocos de exercício (ex: "Respire fundo. Vamos para o próximo." ou "Você já fez uma parte! Continue no seu tempo."). Máximo 1 frase curta por transição de bloco, nunca a cada linha — isso é apoio funcional, não enchimento.
@@ -13686,6 +13687,7 @@ REGRAS MECÂNICAS DE FORMATAÇÃO (sempre seguir, sem exceção — é o que gar
 - NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso não renderiza isso
 - NUNCA escreva dentro de [ESPAÇO PARA DESENHO]. Use esse marcador SOMENTE quando o original pede explicitamente "desenhe" ou "ilustre livremente" — nunca no mesmo item que já usa [IMAGEM: nome-do-item] (são mutuamente exclusivos)
 - Separação visual obrigatória entre blocos com ---
+- Sempre que a atividade tiver uma parte de leitura/contexto seguida de uma parte de exercícios/perguntas, insira um marcador "[BANNER: ATIVIDADES]" numa linha sozinha, bem no início da primeira pergunta/exercício, para marcar visualmente a transição — use esse marcador só UMA vez por atividade, no início da parte de exercícios, nunca entre cada questão individual.
 - Um número de questão ou qualquer rótulo curto terminado em dois-pontos (ex: "1.", "Parte 1:", "Sobre a Parte 1:", "Exemplo:") e o conteúdo que vem logo depois SEMPRE ficam na mesma linha, nunca quebrados em linhas separadas (ex correto: "1. Olhe a figura e complete."; ex correto: "Sobre a Parte 1: Onde Lucas foi?"; ex ERRADO, nunca faça: rótulo sozinho numa linha e o conteúdo na linha seguinte)
 - EXCEÇÃO à regra acima: em questões de múltipla escolha com alternativas "( )", NENHUMA alternativa fica na mesma linha do enunciado da pergunta — nem mesmo a primeira. TODAS as alternativas, incluindo a primeira, ficam cada uma em sua própria linha, sempre. (ex correto: "4. Como viviam os indígenas?\n( ) Tinham suas próprias línguas\n( ) Não tinham organização"; ex ERRADO, nunca faça: "4. Como viviam os indígenas? ( ) Tinham suas próprias línguas\n( ) Não tinham organização")
 - Marcador [IMAGEM: nome-do-item]: minúsculo, sem acento, no máximo 1 por item, só quando a imagem representar diretamente o conceito (nunca decorativo) — use nos formatos já descritos na seção FORMATO acima (diagrama substituído / ligar-associar / identificar-nomear)
@@ -15349,6 +15351,10 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
       doc.text('Professor(a): ' + opts.professor, W - mr, 10, { align: 'right' });
       if (_descAtiv) doc.text(_descAtiv, W - mr, 16, { align: 'right' });
     }
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6);
+    doc.setTextColor(160, 168, 190);
+    doc.text('gerado com LouMind', W - mr, 21.5, { align: 'right' });
     y = 30;
   } else {
     // Cabeçalho sem logo — faixa azul fina
@@ -15502,6 +15508,29 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setTextColor(25, 25, 25);
       doc.setFontSize(fontSize);
       y += altDesenho + 4;
+      continue;
+    }
+    const matchBanner = limpa.match(/^\[BANNER:\s*(.+)\]$/i);
+    if (matchBanner) {
+      const altBanner = 12;
+      if (y + altBanner > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 24;
+      }
+      y += 3;
+      doc.setFillColor(217, 164, 6);
+      doc.rect(ml, y, maxW - 8, altBanner, 'F');
+      doc.setFillColor(217, 164, 6);
+      doc.triangle(ml + maxW - 8, y, ml + maxW, y + altBanner / 2, ml + maxW - 8, y + altBanner, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(fontSize + 1);
+      doc.setTextColor(255, 255, 255);
+      doc.text(sanitizarTexto(matchBanner[1].toUpperCase()), ml + 5, y + altBanner / 2 + 1.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      y += altBanner + 6;
       continue;
     }
     if (/^\[LIGAR\]$/i.test(limpa)) {
@@ -15731,6 +15760,14 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(25, 25, 25);
       y += altLinha;
+    } else if (/^\(\s?\)\s*(.+)/.test(limpa)) {
+      const textoOpcao = limpa.replace(/^\(\s?\)\s*/, '');
+      doc.setDrawColor(60, 60, 60);
+      doc.setLineWidth(0.4);
+      doc.rect(ml, y - 3, 3.2, 3.2, 'S');
+      const linhasOpcaoAtiv = doc.splitTextToSize(textoOpcao, maxW - 7);
+      linhasOpcaoAtiv.forEach((lo, li) => doc.text(lo, ml + 6, y + li * altLinha));
+      y += altLinha * linhasOpcaoAtiv.length;
     } else {
       const linhasQuebradasAtiv = doc.splitTextToSize(limpa || linha, maxW);
       linhasQuebradasAtiv.forEach((lq, li) => doc.text(lq, ml, y + li * altLinha));
