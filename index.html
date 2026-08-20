@@ -1697,7 +1697,8 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <p style="font-size:13px;color:#7C3AED;max-width:680px;margin:0 auto 20px;line-height:1.5;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Conecte educação, saúde e família</p>
     <p style="font-size:18px;color:#4B5563;max-width:600px;margin:0 auto 32px;line-height:1.7;font-weight:400">Transforme observações em intervenções: registre, organize, crie planos personalizados e monitore a evolução em tempo real — tudo conectado entre escola, clínica e família.</p>
     <div class="lp-hero-btns">
-      <button class="btn-lp-primary" onclick="abrirModalDemo('escola')">Solicitar demonstração</button>
+      <button class="btn-lp-primary" onclick="abrirModalTesteGratis()">✨ Adaptar uma atividade grátis</button>
+      <button class="btn-lp-secondary" onclick="abrirModalDemo('escola')" style="margin-left:10px">Solicitar demonstração</button>
     </div>
   </section>
 
@@ -2078,6 +2079,61 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 <!-- /MODAL DEMO -->
+
+<!-- MODAL TESTE GRÁTIS -->
+<div id="overlay-teste-gratis" class="overlay" onclick="if(event.target===this)fecharModal('overlay-teste-gratis')">
+  <div class="modal md">
+    <div class="modal-header">
+      <div class="modal-title">✨ Adapte uma atividade grátis</div>
+      <button class="modal-close" onclick="fecharModal('overlay-teste-gratis')">×</button>
+    </div>
+    <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Cole o conteúdo de uma atividade e veja a Lou adaptar na hora — sem precisar criar conta. Você tem direito a <strong>2 testes grátis</strong> neste navegador.</p>
+
+    <div id="tg-bloco-form">
+      <div class="frow">
+        <div>
+          <label class="flabel">Perfil do aluno</label>
+          <select class="fselect" id="tg-perfil">
+            <option value="TEA — Transtorno do Espectro Autista">TEA</option>
+            <option value="TDAH — Déficit de Atenção/Hiperatividade">TDAH</option>
+            <option value="Dislexia">Dislexia</option>
+            <option value="Discalculia">Discalculia</option>
+            <option value="D.I. — Deficiência Intelectual">Deficiência Intelectual</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Idade aproximada</label>
+          <input class="finput" id="tg-idade" placeholder="Ex: 9 anos">
+        </div>
+      </div>
+      <div class="fblock">
+        <label class="flabel">Conteúdo da atividade original</label>
+        <textarea class="ftarea" id="tg-conteudo" style="min-height:140px" placeholder="Cole aqui o texto ou enunciado de uma atividade..."></textarea>
+      </div>
+      <button class="btn-primary" style="width:100%;justify-content:center;font-size:14px" id="btn-tg-gerar" onclick="gerarTesteGratis()">Adaptar agora</button>
+      <div id="tg-status" style="font-size:12px;color:var(--gr500);margin-top:8px"></div>
+    </div>
+
+    <div id="tg-bloco-resultado" style="display:none">
+      <label class="flabel">Resultado adaptado</label>
+      <textarea class="ftarea" id="tg-resultado" style="min-height:220px" readonly></textarea>
+      <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px;margin-top:14px;text-align:center">
+        <div style="font-weight:700;color:#1E3A8A;margin-bottom:6px">Gostou do resultado?</div>
+        <p style="font-size:12.5px;color:#374151;margin:0 0 10px">Crie sua conta grátis e adapte quantas atividades quiser, com perfil clínico completo, histórico e muito mais.</p>
+        <button class="btn-lp-primary" onclick="fecharModal('overlay-teste-gratis');irParaLogin()">Criar conta grátis →</button>
+      </div>
+      <button class="btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="reiniciarTesteGratis()">Testar outra atividade</button>
+    </div>
+
+    <div id="tg-bloco-limite" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:32px;margin-bottom:8px">🔒</div>
+      <div style="font-weight:700;color:#1F2937;margin-bottom:6px">Você já usou seus 2 testes grátis</div>
+      <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Crie sua conta pra continuar adaptando atividades sem limite.</p>
+      <button class="btn-lp-primary" onclick="fecharModal('overlay-teste-gratis');irParaLogin()">Criar conta grátis →</button>
+    </div>
+  </div>
+</div>
+<!-- /MODAL TESTE GRÁTIS -->
 
 <!-- ══ WHATSAPP FLUTUANTE ══ -->
 <a class="wa-float" href="https://wa.me/5511995665193?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20o%20LouMind." target="_blank" id="wa-btn" style="display:none">
@@ -15645,16 +15701,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         if (esquerdaLigar[r]) {
           const linhasTxtEsq = doc.splitTextToSize(esquerdaLigar[r], colEsqW - 6);
           doc.text(linhasTxtEsq[0], colEsqX, rowY);
-          const fimTextoEsq = colEsqX + doc.getTextWidth(linhasTxtEsq[0]) + 2;
-          const circEsqX = colEsqX + colEsqW - 2;
-          if (circEsqX - fimTextoEsq > 2) {
-            doc.setDrawColor(190, 195, 210);
-            doc.setLineWidth(0.2);
-            doc.line(fimTextoEsq, rowY - 1.3, circEsqX - 2, rowY - 1.3);
-          }
-          doc.setDrawColor(30, 58, 138);
-          doc.setLineWidth(0.4);
-          doc.circle(circEsqX, rowY - 1.3, 1.3, 'S');
+          doc.circle(colEsqX + colEsqW - 2, rowY - 1.3, 1.3, 'S');
         }
         if (direitaLigar[r]) {
           const linhasTxtDir = doc.splitTextToSize(direitaLigar[r], colDirW - 6);
@@ -21212,6 +21259,58 @@ function mostrarLanding() {
 function irParaLogin() {
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
+}
+
+function abrirModalTesteGratis() {
+  const usados = parseInt(localStorage.getItem('loumind_testes_gratis') || '0', 10);
+  document.getElementById('tg-bloco-form').style.display = usados >= 2 ? 'none' : 'block';
+  document.getElementById('tg-bloco-resultado').style.display = 'none';
+  document.getElementById('tg-bloco-limite').style.display = usados >= 2 ? 'block' : 'none';
+  abrirModal('overlay-teste-gratis');
+}
+
+function reiniciarTesteGratis() {
+  document.getElementById('tg-conteudo').value = '';
+  document.getElementById('tg-resultado').value = '';
+  document.getElementById('tg-status').textContent = '';
+  document.getElementById('tg-bloco-resultado').style.display = 'none';
+  document.getElementById('tg-bloco-form').style.display = 'block';
+}
+
+async function gerarTesteGratis() {
+  const usados = parseInt(localStorage.getItem('loumind_testes_gratis') || '0', 10);
+  if (usados >= 2) { abrirModalTesteGratis(); return; }
+  const conteudo = document.getElementById('tg-conteudo')?.value.trim();
+  if (!conteudo) return toast('Cole o conteúdo da atividade primeiro.', 'error');
+  const perfil = document.getElementById('tg-perfil')?.value || '';
+  const idade = document.getElementById('tg-idade')?.value.trim() || 'não informado';
+
+  const btn = document.getElementById('btn-tg-gerar');
+  btn.disabled = true;
+  document.getElementById('tg-status').textContent = 'Gerando adaptação…';
+
+  const prompt = `Você é um assistente pedagógico especializado em adaptação de atividades escolares para alunos com necessidades educacionais especiais.
+
+PERFIL DO ALUNO: ${perfil}
+IDADE: ${idade}
+
+CONTEÚDO ORIGINAL:
+${conteudo}
+
+Adapte esta atividade para o perfil informado, reduzindo barreiras reais de acesso ao conteúdo (linguagem, estrutura, apoio visual em texto), preservando o objetivo pedagógico. Máximo 200 palavras. Não use markdown, não use emojis. Comece direto com o título da atividade adaptada, sem introdução nem explicação do que você vai fazer.`;
+
+  try {
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 900, modulo: 'teste-gratis-publico' });
+    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+    document.getElementById('tg-resultado').value = texto;
+    document.getElementById('tg-bloco-form').style.display = 'none';
+    document.getElementById('tg-bloco-resultado').style.display = 'block';
+    localStorage.setItem('loumind_testes_gratis', String(usados + 1));
+  } catch(e) {
+    document.getElementById('tg-status').textContent = 'Erro ao gerar: ' + (e.message || 'tente novamente.');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function abrirModalDemo(plano) {
