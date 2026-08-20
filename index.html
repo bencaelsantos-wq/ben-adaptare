@@ -15645,7 +15645,16 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         if (esquerdaLigar[r]) {
           const linhasTxtEsq = doc.splitTextToSize(esquerdaLigar[r], colEsqW - 6);
           doc.text(linhasTxtEsq[0], colEsqX, rowY);
-          doc.circle(colEsqX + colEsqW - 2, rowY - 1.3, 1.3, 'S');
+          const fimTextoEsq = colEsqX + doc.getTextWidth(linhasTxtEsq[0]) + 2;
+          const circEsqX = colEsqX + colEsqW - 2;
+          if (circEsqX - fimTextoEsq > 2) {
+            doc.setDrawColor(190, 195, 210);
+            doc.setLineWidth(0.2);
+            doc.line(fimTextoEsq, rowY - 1.3, circEsqX - 2, rowY - 1.3);
+          }
+          doc.setDrawColor(30, 58, 138);
+          doc.setLineWidth(0.4);
+          doc.circle(circEsqX, rowY - 1.3, 1.3, 'S');
         }
         if (direitaLigar[r]) {
           const linhasTxtDir = doc.splitTextToSize(direitaLigar[r], colDirW - 6);
