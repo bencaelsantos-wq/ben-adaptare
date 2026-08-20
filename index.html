@@ -15696,15 +15696,18 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       y += 2;
       if (comandoAtiv) {
         const [r,g,b] = comandoAtiv.cor;
-        doc.setFillColor(r, g, b);
-        doc.roundedRect(ml, y - 3.8, 7, 7.6, 1.3, 1.3, 'F');
-        desenharIconeComando(doc, comandoAtiv.icone, ml + 3.5, y, 3.6);
-        doc.setFillColor(r, g, b);
-        doc.rect(ml + 8, y - 3.5, maxW - 8, 7, 'F');
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(fontSize);
+        const linhasBarraAtiv = doc.splitTextToSize(limpa, maxW - 11);
+        const altBarraAtiv = Math.max(7, linhasBarraAtiv.length * altLinha + 2);
+        doc.setFillColor(r, g, b);
+        doc.roundedRect(ml, y - 3.8, 7, altBarraAtiv + 0.6, 1.3, 1.3, 'F');
+        desenharIconeComando(doc, comandoAtiv.icone, ml + 3.5, y, 3.6);
+        doc.setFillColor(r, g, b);
+        doc.rect(ml + 8, y - 3.5, maxW - 8, altBarraAtiv, 'F');
         doc.setTextColor(255, 255, 255);
-        doc.text(limpa, ml + 11, y + 0.5);
+        linhasBarraAtiv.forEach((lb, li) => doc.text(lb, ml + 11, y + 0.5 + li * altLinha));
+        y += altBarraAtiv - 7;
       } else {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(fontSize + 0.5);
