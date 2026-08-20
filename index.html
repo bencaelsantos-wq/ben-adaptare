@@ -13651,9 +13651,20 @@ Nome: _______________ | Data: ___/___/___
 [espaço de desenho: inclua [ESPAÇO PARA DESENHO] SOMENTE se a atividade original pede para desenhar, colorir ou criar algo visual]
 - NUNCA crie grades, tabelas ou colunas feitas de caracteres de texto (traços, barras verticais, pipes) para representar posicionamento de material concreto (barras de contas, fichas, blocos) — papel impresso não tem espaço físico real para isso.
 - NUNCA tente desenhar um diagrama, esquema ou ilustração usando caracteres de texto (barras verticais |, barras invertidas \, traços, espaços para simular posição, emojis em sequência formando uma figura). Fonte de PDF não é monoespaçada, esse tipo de "desenho com texto" sempre sai desalinhado e ilegível. Se o conteúdo original tem um diagrama assim, NUNCA o substitua por campos em branco sem nenhuma pista de qual é qual — troque SEMPRE por um marcador [IMAGEM:] por parte, usando UM dos dois formatos abaixo conforme o tipo de exercício:
-  a) Exercício de LIGAR/ASSOCIAR parte a função/definição: "NOME DA PARTE [IMAGEM: nome] » definição curta" (máx 6 palavras na definição). Use sempre o caractere "»" como conector — NUNCA "->" (hífen + maior que).
+  a) Exercício de IDENTIFICAR parte + sua definição já mostrada junto (é uma referência visual, não um desafio de adivinhar): "NOME DA PARTE [IMAGEM: nome] » definição curta" (máx 6 palavras na definição). Use sempre o caractere "»" como conector — NUNCA "->" (hífen + maior que). NUNCA use as palavras "Ligue"/"Associe" pra introduzir este formato, já que a resposta já vem pronta — use "Observe"/"Veja" como introdução.
   b) Exercício de IDENTIFICAR/NOMEAR cada parte (o aluno tem que escrever o nome ao ver a parte): "[IMAGEM: nome-da-parte] Nome: ___________" — um item por parte, na mesma ordem do original, cada um com seu próprio marcador de imagem ANTES do campo de resposta, nunca deixe um campo "Nome: ___" sem a imagem correspondente logo antes.
-  Nunca omita o marcador [IMAGEM:] nesses dois casos — sem ele o aluno fica sem nenhuma pista visual de qual parte responder.
+  c) Exercício de LIGAR/ASSOCIAR DE VERDADE (quando o aluno precisa DESCOBRIR a associação certa, não quando ela já é óbvia) — use OBRIGATORIAMENTE este formato de bloco, nunca o formato do item "a" para este caso:
+[LIGAR]
+A) primeiro item da coluna esquerda
+B) segundo item da coluna esquerda
+C) terceiro item da coluna esquerda
+---
+1) uma das definições, em ORDEM EMBARALHADA (nunca a mesma ordem das letras)
+2) outra definição embaralhada
+3) outra definição embaralhada
+[/LIGAR]
+  Regras deste formato: a ordem dos números do lado direito DEVE ser diferente da ordem lógica de resposta (nunca 1=A, 2=B, 3=C em sequência — embaralhe de verdade, ex: 1 responde a C, 2 responde a A, 3 responde a B). Cada linha começa com uma letra ou número seguido de ")" e espaço. Não inclua imagens dentro deste bloco.
+  Nunca omita o marcador [IMAGEM:] no item "a" e "b" — sem ele o aluno fica sem nenhuma pista visual de qual parte responder.
 - Se a atividade original pede manipular material concreto sobre números, REFORMULE para o aluno REGISTRAR o resultado por escrito (ex: "Depois de contar com o Material Dourado, escreva o número que você formou: ___"), deixando a manipulação física como instrução separada para o professor/AT conduzir oralmente, não como grade no papel.
 
 ---
@@ -15487,6 +15498,48 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setTextColor(25, 25, 25);
       doc.setFontSize(fontSize);
       y += altDesenho + 4;
+      continue;
+    }
+    if (/^\[LIGAR\]$/i.test(limpa)) {
+      let j = i + 1;
+      const esquerdaLigar = [], direitaLigar = [];
+      let ladoDireitoLigar = false;
+      for (; j < linhas.length; j++) {
+        const ltLigar = linhas[j].trim();
+        if (/^\[\/LIGAR\]$/i.test(ltLigar)) break;
+        if (/^-{3,}$/.test(ltLigar)) { ladoDireitoLigar = true; continue; }
+        const mLigar = ltLigar.match(/^[A-Za-z0-9]+\)\s*(.+)$/);
+        if (mLigar) (ladoDireitoLigar ? direitaLigar : esquerdaLigar).push(mLigar[1].trim());
+      }
+      const numLinhasLigar = Math.max(esquerdaLigar.length, direitaLigar.length);
+      const alturaLinhaLigar = altLinha + 4;
+      const altBlocoLigar = numLinhasLigar * alturaLinhaLigar + 8;
+      if (y + altBlocoLigar > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 24;
+      }
+      y += 4;
+      const colEsqX = ml, colEsqW = maxW * 0.42;
+      const colDirX = ml + maxW * 0.6, colDirW = maxW * 0.4;
+      doc.setDrawColor(30, 58, 138);
+      doc.setLineWidth(0.4);
+      for (let r = 0; r < numLinhasLigar; r++) {
+        const rowY = y + r * alturaLinhaLigar;
+        if (esquerdaLigar[r]) {
+          const linhasTxtEsq = doc.splitTextToSize(esquerdaLigar[r], colEsqW - 6);
+          doc.text(linhasTxtEsq[0], colEsqX, rowY);
+          doc.circle(colEsqX + colEsqW - 2, rowY - 1.3, 1.3, 'S');
+        }
+        if (direitaLigar[r]) {
+          const linhasTxtDir = doc.splitTextToSize(direitaLigar[r], colDirW - 6);
+          doc.circle(colDirX + 2, rowY - 1.3, 1.3, 'S');
+          doc.text(linhasTxtDir[0], colDirX + 6, rowY);
+        }
+      }
+      doc.setDrawColor(120, 120, 120);
+      y += numLinhasLigar * alturaLinhaLigar + 8;
+      i = j;
       continue;
     }
     const imgMatches = [...limpa.matchAll(/\[IMAGEM:\s*([^\]]+)\]/gi)];
