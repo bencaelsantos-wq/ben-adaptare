@@ -6355,6 +6355,9 @@ function renderNavDeveloper() {
     <div class="nav-item" id="nav-dev-analise-perfil" onclick="abrirAnaliseComportamentalDev()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>🔒 Análise de Perfil
     </div>
+    <div class="nav-item" id="nav-dev-banco-loumind" onclick="abrirBancoImagensLoumindDev()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="8" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 14l4.5-4.5 3 3L15 8l3 3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>🔒 Banco de Imagens LouMind
+    </div>
     <div class="nav-item" id="nav-dev-linha-laudos" onclick="abrirLinhaDoTempoLaudosDev()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>🔒 Linha do Tempo de Laudos
     </div>
@@ -6858,6 +6861,20 @@ function renderPagesDeveloper() {
       <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Linhas do tempo salvas</h3>
       <div class="cards-grid" id="lt-lista-salvas"></div>
     </div>
+  </div>
+
+  <div id="page-dev-banco-loumind" class="page">
+    <h1 class="page-title">🔒 Banco de Imagens LouMind</h1>
+    <p class="page-sub">Banco curado por você — visível pra todo mundo que usa a plataforma, mas só você consegue subir ou apagar imagens aqui.</p>
+    <div class="clinic-card" style="margin-bottom:16px">
+      <label class="flabel">Tags (separadas por vírgula)</label>
+      <input type="text" id="blm-tags" class="finput" placeholder="Ex: gato, animal, floresta" style="margin-bottom:10px">
+      <button class="btn-sm" onclick="document.getElementById('blm-inp-file').click()">📤 Enviar imagem</button>
+      <input type="file" id="blm-inp-file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="enviarImagemBancoLoumindDev(this)">
+      <div id="blm-status" style="font-size:12px;color:var(--gr500);margin-top:8px"></div>
+    </div>
+    <div style="margin-bottom:10px"><input type="text" id="blm-busca" class="finput" placeholder="Buscar por tag..." style="max-width:320px" oninput="carregarBancoImagensLoumindDev()"></div>
+    <div id="blm-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>
   </div>
 
   <div id="page-dev-sql" class="page">
@@ -8690,6 +8707,61 @@ Gere o relatório completo seguindo as 4 camadas do seu papel.`;
   } finally {
     btn.disabled = false;
   }
+}
+
+function abrirBancoImagensLoumindDev() {
+  showPage('dev-banco-loumind');
+  carregarBancoImagensLoumindDev();
+}
+
+async function carregarBancoImagensLoumindDev() {
+  const grid = document.getElementById('blm-grid');
+  if (!grid) return;
+  const busca = document.getElementById('blm-busca')?.value.trim().toLowerCase() || '';
+  let q = db.from('banco_imagens_loumind').select('id,url,tags').order('created_at', { ascending: false }).limit(100);
+  if (busca) q = q.contains('tags', [busca]);
+  const { data } = await q;
+  if (!data || !data.length) { grid.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhuma imagem ainda.</p>'; return; }
+  grid.innerHTML = data.map(img => `
+    <div style="border:1px solid var(--gr200);border-radius:8px;padding:6px;text-align:center">
+      <img src="${img.url}" style="width:100%;height:80px;object-fit:cover;border-radius:5px;margin-bottom:4px">
+      <div style="font-size:10px;color:var(--gr500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(img.tags||[]).join(', ')}</div>
+      <button class="btn-danger" style="font-size:10px;padding:3px 6px;margin-top:4px" onclick="apagarImagemBancoLoumindDev('${img.id}')">Apagar</button>
+    </div>
+  `).join('');
+}
+
+async function enviarImagemBancoLoumindDev(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const tagsRaw = document.getElementById('blm-tags')?.value.trim();
+  if (!tagsRaw) { toast('Preencha ao menos uma tag antes de enviar.', 'error'); input.value = ''; return; }
+  const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+  const status = document.getElementById('blm-status');
+  status.textContent = 'Enviando…';
+  try {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `banco-loumind/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error: errUpload } = await db.storage.from('imagens-atividades').upload(path, file, { upsert: false, contentType: file.type });
+    if (errUpload) throw errUpload;
+    const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
+    const { error: errInsert } = await db.from('banco_imagens_loumind').insert({ url: urlData.publicUrl, tags, criado_por: user.id });
+    if (errInsert) throw errInsert;
+    status.textContent = 'Imagem enviada!';
+    document.getElementById('blm-tags').value = '';
+    carregarBancoImagensLoumindDev();
+  } catch(e) {
+    status.textContent = 'Erro: ' + e.message;
+  }
+  input.value = '';
+}
+
+async function apagarImagemBancoLoumindDev(id) {
+  if (!confirm('Apagar essa imagem do Banco LouMind? Isso afeta todas as organizações que usam a plataforma.')) return;
+  const { error } = await db.from('banco_imagens_loumind').delete().eq('id', id);
+  if (error) return toast('Erro ao apagar: ' + error.message, 'error');
+  toast('Imagem apagada.', 'success');
+  carregarBancoImagensLoumindDev();
 }
 
 function abrirLinhaDoTempoLaudosDev() {
@@ -13990,6 +14062,7 @@ function renderizarPainelImagens() {
           ${item.fonte==='original' ? `<option value="original" selected>📄 Imagem original do documento</option>` : ''}
           <option value="proprio" ${item.fonte==='proprio'?'selected':''}>Banco próprio</option>
           <option value="pixabay" ${item.fonte==='pixabay'?'selected':''}>Banco de sites gratuitos</option>
+          <option value="loumind" ${item.fonte==='loumind'?'selected':''}>Banco LouMind</option>
 
         </select>
         <button class="btn-sm" onclick="buscarImagemItem(${i})">Buscar</button>
@@ -14076,7 +14149,10 @@ async function buscarImagemItem(i) {
         : q.or(`organizacao_id.is.null,compartilhada.eq.true`);
       const { data } = await q;
       urls = (data||[]).map(d => d.url);
-       } else {
+    } else if (item.fonte === 'loumind') {
+      const { data } = await db.from('banco_imagens_loumind').select('url,tags').contains('tags', [item.termo.trim().toLowerCase()]);
+      urls = (data||[]).map(d => d.url);
+    } else {
       const r = await fetch(`${PIXABAY_PROXY}?q=${encodeURIComponent(item.termo.trim())}&image_type=illustration`, {
         headers: { 'Authorization': `Bearer ${SB_KEY}` }
       });
