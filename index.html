@@ -15672,9 +15672,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         y = 24;
       }
       y += 3;
-      doc.setFillColor(217, 164, 6);
+      doc.setFillColor(176, 141, 87);
       doc.rect(ml, y, maxW - 8, altBanner, 'F');
-      doc.setFillColor(217, 164, 6);
+      doc.setFillColor(176, 141, 87);
       doc.triangle(ml + maxW - 8, y, ml + maxW, y + altBanner / 2, ml + maxW - 8, y + altBanner, 'F');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(fontSize + 1);
@@ -15922,7 +15922,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       continue;
     }
     if (isH) {
-      const CORES_LOUMIND_ATIV = [[30,58,138],[37,99,235],[124,58,237],[20,184,166]];
+      const CORES_LOUMIND_ATIV = [[52,74,140],[91,125,184],[123,140,166],[94,163,155]];
       const VERBOS_COMANDO_ATIV = [
         { re: /\b(ESCREVA|RESPONDA)\b/i, icone: 'lapis', cor: CORES_LOUMIND_ATIV[0] },
         { re: /\b(MARQUE|ASSINALE)\b/i, icone: 'x', cor: CORES_LOUMIND_ATIV[1] },
