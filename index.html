@@ -13767,6 +13767,7 @@ Terceira linha, se houver
   Cada linha do conteúdo fica sozinha, sem colchetes dentro do bloco. Se o conteúdo couber numa única linha, ainda assim use o formato de bloco (abre com [CAIXA] numa linha, o texto na linha seguinte, fecha com [/CAIXA]) — nunca escreva "[CAIXA: texto]" tudo junto numa linha só.
   IMPORTANTE: quando a caixa tiver uma lista de itens/vocabulário/conceitos (2 ou mais), NUNCA escreva tudo numa frase corrida — cada item fica em SUA PRÓPRIA linha dentro do bloco (ex: cada palavra do vocabulário numa linha separada), nunca "Palavra1 » significado1 Palavra2 » significado2" tudo junto.
 - Da mesma forma, sempre que um trecho de texto (dentro ou fora de caixa) apresentar uma lista de itens, categorias ou etapas (ex: "a água pode ser sólido, líquido ou gasoso"), prefira SEMPRE apresentar cada item em sua própria linha/tópico numerado, em vez de uma frase corrida com vírgulas — isso facilita muito a leitura pra perfis com dificuldade de processamento de texto denso. Frase corrida só é aceitável pra narrativa simples sem lista de itens.
+- Nessas listas por linha/tópico, se precisar de um conector entre o item e sua definição, use SEMPRE "»" — NUNCA "->" (esta regra vale em QUALQUER lugar da atividade, sem exceção, incluindo listas fora de caixa de vocabulário).
 - Apoio visual deve ter FUNÇÃO, nunca ser decorativo. Nunca adicione imagem/ícone só para ilustrar o tema (ex: frutas soltas no fim da folha sem relação com o cálculo). Se usar apoio visual, ele precisa representar diretamente a quantidade ou a estrutura do problema (ex: marcadores repetidos representando unidades a contar, ícone ao lado de cada personagem/quantidade de um problema).
 - Quando o diagnóstico indicar memória operacional ou função executiva comprometida, ofereça retirada gradual de apoio dentro da própria atividade quando possível: um primeiro exercício com o passo a passo decomposto e visível, um exercício seguinte do mesmo tipo com menos apoio, e um último exercício só com a operação — replicando a mesma lógica pedagógica com autonomia crescente, não simplesmente repetindo o mesmo nível de apoio em todos os itens.
 - Quando o perfil informado (diagnóstico, observações clínicas ou contexto adicional) indicar ansiedade, baixa tolerância à frustração ou dificuldade de autorregulação, insira uma pista breve de regulação emocional entre os blocos de exercício (ex: "Respire fundo. Vamos para o próximo." ou "Você já fez uma parte! Continue no seu tempo."). Máximo 1 frase curta por transição de bloco, nunca a cada linha — isso é apoio funcional, não enchimento.
@@ -15641,8 +15642,14 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
 const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\s*$/, '');
     if (!limpa) { y += altLinha; continue; }
     if (/^desenhe\s*aqui\s*:?$/i.test(limpa)) {
-      const proximaLinhaAtiv = (linhas[i+1] || '').trim();
-      if (/\[ESPACO PARA DESENHO\]|\[ESPA.O PARA DESENHO\]/i.test(proximaLinhaAtiv)) continue;
+      let temMarcadorDesenhoAFrente = false;
+      for (let kAtiv = i + 1; kAtiv < Math.min(i + 5, linhas.length); kAtiv++) {
+        const ltAtiv = linhas[kAtiv].trim();
+        if (!ltAtiv) continue;
+        if (/\[ESPACO PARA DESENHO\]|\[ESPA.O PARA DESENHO\]/i.test(ltAtiv)) { temMarcadorDesenhoAFrente = true; break; }
+        if (!/^\[DICA:/i.test(ltAtiv)) break;
+      }
+      if (temMarcadorDesenhoAFrente) continue;
     }
     if (/^_{6,}$/.test(limpa)) {
       doc.setDrawColor(120, 120, 120);
