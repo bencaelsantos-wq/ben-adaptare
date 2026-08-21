@@ -13759,6 +13759,7 @@ REGRAS UNIVERSAIS DE APOIO (valem para qualquer tipo de exercício):
 - Apoio visual deve ter FUNÇÃO, nunca ser decorativo. Nunca adicione imagem/ícone só para ilustrar o tema (ex: frutas soltas no fim da folha sem relação com o cálculo). Se usar apoio visual, ele precisa representar diretamente a quantidade ou a estrutura do problema (ex: marcadores repetidos representando unidades a contar, ícone ao lado de cada personagem/quantidade de um problema).
 - Quando o diagnóstico indicar memória operacional ou função executiva comprometida, ofereça retirada gradual de apoio dentro da própria atividade quando possível: um primeiro exercício com o passo a passo decomposto e visível, um exercício seguinte do mesmo tipo com menos apoio, e um último exercício só com a operação — replicando a mesma lógica pedagógica com autonomia crescente, não simplesmente repetindo o mesmo nível de apoio em todos os itens.
 - Quando o perfil informado (diagnóstico, observações clínicas ou contexto adicional) indicar ansiedade, baixa tolerância à frustração ou dificuldade de autorregulação, insira uma pista breve de regulação emocional entre os blocos de exercício (ex: "Respire fundo. Vamos para o próximo." ou "Você já fez uma parte! Continue no seu tempo."). Máximo 1 frase curta por transição de bloco, nunca a cada linha — isso é apoio funcional, não enchimento.
+- Logo após o enunciado de CADA pergunta numerada (antes do espaço de resposta/alternativas), inclua uma linha no formato "[DICA: instrução curta de como responder]" — uma orientação prática de 1 frase sobre COMO abordar aquela pergunta específica (ex: "[DICA: Leia a pergunta primeiro. Depois, leia uma opção por vez.]" ou "[DICA: Releia a primeira frase do texto antes de responder.]"). Isso reduz carga executiva mostrando o passo a passo de como resolver, não só o que resolver. Máximo 1 frase curta por pergunta, sempre específica àquela pergunta, nunca genérica repetida.
 - Quando o perfil indicar que a expressão ORAL é uma habilidade preservada/forte e a escrita é uma barreira real (ex: dislexia, disgrafia, dificuldade motora fina), e a folha do aluno tiver alguma questão dissertativa ou de resposta aberta, inclua no Guia do Professor (seção APLICACAO ou uma observação curta) a sugestão explícita de aceitar resposta oral como alternativa equivalente à escrita para essa questão — sem alterar a questão na folha do aluno, é uma orientação de aplicação para o profissional.
 - NUNCA use o marcador [IMAGEM:] para representar uma seta, direção, conector ou sequência entre outros itens (ex: entre Planta -> Coelho -> Raposa). Para indicar sequência/direção, use SEMPRE o caractere de texto "->" diretamente no lugar certo — nunca busque nem invente uma imagem para isso, bancos de imagens não têm ícones confiáveis de seta.
 - NUNCA use metáforas, expressões idiomáticas ou outras figuras de linguagem em nenhum enunciado — linguagem sempre literal e direta, mesmo quando isso parecer menos "criativo".
@@ -15808,6 +15809,28 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         });
         y += altLinhaGrade;
       }
+      continue;
+    }
+    const matchDica = limpa.match(/^\[DICA:\s*(.+)\]$/i);
+    if (matchDica) {
+      const linhasDica = doc.splitTextToSize(sanitizarTexto(matchDica[1]), maxW - 8);
+      const altDica = linhasDica.length * altLinha + 4;
+      if (y + altDica > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 24;
+      }
+      doc.setDrawColor(180, 185, 200);
+      doc.setLineWidth(0.6);
+      doc.line(ml, y - 3, ml, y - 3 + linhasDica.length * altLinha);
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(fontSize - 0.5);
+      doc.setTextColor(100, 108, 130);
+      linhasDica.forEach((l, li) => doc.text(l, ml + 4, y + li * altLinha));
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      y += altDica + 2;
       continue;
     }
     const matchCaixa = limpa.match(/^\[CAIXA:\s*(.+)\]$/i);
