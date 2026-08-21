@@ -15927,17 +15927,31 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     }
     if (/^\[CAIXA\]$/i.test(limpa)) {
       let jCaixa = i + 1;
-      const conteudoCaixaLinhas = [];
+      const itensCaixaBloco = [];
       for (; jCaixa < linhas.length; jCaixa++) {
         const ltCaixa = linhas[jCaixa].trim();
         if (/^\[\/CAIXA\]$/i.test(ltCaixa)) break;
-        if (ltCaixa) conteudoCaixaLinhas.push(ltCaixa);
+        if (!ltCaixa) continue;
+        const mImgCaixa = ltCaixa.match(/^\[IMAGEM:\s*([^\]]+)\]$/i);
+        if (mImgCaixa) {
+          const nomeImgCaixa = mImgCaixa[1].trim().toLowerCase();
+          const b64Caixa = opts.imagensPorItem && opts.imagensPorItem[nomeImgCaixa];
+          if (b64Caixa) {
+            try {
+              const propsCaixa = doc.getImageProperties(b64Caixa);
+              let wCaixa = Math.min(30, maxW - 20);
+              let hCaixa = wCaixa * (propsCaixa.height / propsCaixa.width);
+              if (hCaixa > 30) { hCaixa = 30; wCaixa = hCaixa * (propsCaixa.width / propsCaixa.height); }
+              itensCaixaBloco.push({ tipo: 'imagem', b64: b64Caixa, formato: b64Caixa.startsWith('data:image/png') ? 'PNG' : 'JPEG', w: wCaixa, h: hCaixa });
+            } catch(e) {}
+          }
+        } else {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(fontSize);
+          doc.splitTextToSize(sanitizarTexto(ltCaixa), maxW - 10).forEach(lw => itensCaixaBloco.push({ tipo: 'texto', texto: lw }));
+        }
       }
-      const linhasCaixaBloco = [];
-      conteudoCaixaLinhas.forEach(itemCaixa => {
-        doc.splitTextToSize(sanitizarTexto(itemCaixa), maxW - 10).forEach(lw => linhasCaixaBloco.push(lw));
-      });
-      const altCaixaBloco = linhasCaixaBloco.length * altLinha + 8;
+      const altCaixaBloco = itensCaixaBloco.reduce((soma, it) => soma + (it.tipo === 'imagem' ? it.h + 3 : altLinha), 0) + 8;
       if (y + altCaixaBloco > H - rodapeH) {
         adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
         doc.addPage();
@@ -15950,7 +15964,16 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(fontSize);
       doc.setTextColor(30, 58, 138);
-      linhasCaixaBloco.forEach((l, li) => doc.text(l, ml + 5, y + 6 + li * altLinha));
+      let yCaixaBloco = y + 6;
+      itensCaixaBloco.forEach(it => {
+        if (it.tipo === 'imagem') {
+          try { doc.addImage(it.b64, it.formato, ml + 5, yCaixaBloco - 4, it.w, it.h); } catch(e) {}
+          yCaixaBloco += it.h + 3;
+        } else {
+          doc.text(it.texto, ml + 5, yCaixaBloco);
+          yCaixaBloco += altLinha;
+        }
+      });
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(fontSize);
       doc.setTextColor(25, 25, 25);
