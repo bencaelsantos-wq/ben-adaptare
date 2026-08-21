@@ -1673,7 +1673,62 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </script>
 
 </section>
-<!-- ============ FIM QUEM SOMOS ============ --></div> 
+<!-- ============ FIM QUEM SOMOS ============ --></div>
+
+<!-- ══ CENTRAL DE AJUDA ══ -->
+<div id="ajuda-page" style="display:none;min-height:100vh;background:#F8FAFC;font-family:'Inter',sans-serif">
+  <nav style="position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop-filter:blur(8px);border-bottom:1px solid #E5E7EB;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="voltarParaLandingDeAjuda()">
+      <div style="width:28px;height:28px;background:linear-gradient(135deg,#1E3A8A,#7C3AED);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800">✦</div>
+      <span style="font-size:16px;font-weight:800;color:#1E3A8A;letter-spacing:-.3px">LouMind</span>
+    </div>
+    <button onclick="voltarParaLandingDeAjuda()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:600;color:#374151;cursor:pointer;padding:6px 10px">← Voltar</button>
+  </nav>
+
+  <div style="max-width:920px;margin:0 auto;padding:40px 24px 80px">
+    <h1 style="font-size:28px;font-weight:800;color:#1E3A8A;margin:0 0 6px">Ajuda e Suporte</h1>
+    <p style="font-size:14px;color:#6B7280;margin:0 0 24px">Encontre respostas e aprenda a usar a plataforma LouMind</p>
+
+    <input type="text" id="ajuda-busca" placeholder="Busque por dúvidas, funcionalidades ou temas..." oninput="filtrarCentralAjuda()" style="width:100%;box-sizing:border-box;padding:14px 16px;border:1px solid #E5E7EB;border-radius:12px;font-size:14px;font-family:inherit;margin-bottom:32px;background:#fff">
+
+    <h2 style="font-size:16px;font-weight:700;color:#1F2937;margin:0 0 14px">Categorias de Ajuda</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:36px">
+      <div class="ajuda-cat-card" data-cat="primeiros-passos" onclick="filtrarPorCategoriaAjuda('primeiros-passos')" style="background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:18px;cursor:pointer">
+        <div style="font-size:22px;margin-bottom:8px">📘</div>
+        <div style="font-weight:700;color:#1F2937;font-size:14px">Primeiros Passos</div>
+        <div style="font-size:12.5px;color:#6B7280;margin-top:2px">Como começar a usar a LouMind</div>
+      </div>
+      <div class="ajuda-cat-card" data-cat="adaptacao" onclick="filtrarPorCategoriaAjuda('adaptacao')" style="background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:18px;cursor:pointer">
+        <div style="font-size:22px;margin-bottom:8px">📝</div>
+        <div style="font-weight:700;color:#1F2937;font-size:14px">Nova Adaptação</div>
+        <div style="font-size:12.5px;color:#6B7280;margin-top:2px">Criação e adaptação de atividades</div>
+      </div>
+      <div class="ajuda-cat-card" data-cat="clinico" onclick="filtrarPorCategoriaAjuda('clinico')" style="background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:18px;cursor:pointer">
+        <div style="font-size:22px;margin-bottom:8px">🧠</div>
+        <div style="font-weight:700;color:#1F2937;font-size:14px">Módulo Clínico</div>
+        <div style="font-size:12.5px;color:#6B7280;margin-top:2px">Perfil clínico, objetivos e monitoramento</div>
+      </div>
+      <div class="ajuda-cat-card" data-cat="conta" onclick="filtrarPorCategoriaAjuda('conta')" style="background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:18px;cursor:pointer">
+        <div style="font-size:22px;margin-bottom:8px">⚙️</div>
+        <div style="font-weight:700;color:#1F2937;font-size:14px">Configurações</div>
+        <div style="font-size:12.5px;color:#6B7280;margin-top:2px">Conta, logo da instituição e planos</div>
+      </div>
+    </div>
+
+    <h2 style="font-size:16px;font-weight:700;color:#1F2937;margin:0 0 14px">Perguntas Frequentes</h2>
+    <div id="ajuda-faq-lista"></div>
+
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:14px;padding:22px;margin-top:32px;text-align:center">
+      <div style="font-weight:700;color:#1E3A8A;margin-bottom:6px">💬 Não encontrou o que procurava?</div>
+      <p style="font-size:13px;color:#374151;margin:0 0 14px">Nossa equipe está aqui pra ajudar. Fale com a gente:</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <a href="https://wa.me/5511995665193" target="_blank" style="background:#1E3A8A;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600">💬 WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ══ FIM CENTRAL DE AJUDA ══ -->
+
   <!-- ══ LANDING PAGE ══ -->
 <div id="landing-page" style="display:none">
   <nav class="lp-nav">
@@ -1686,6 +1741,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <button onclick="document.getElementById('lp-pilares').scrollIntoView({behavior:'smooth'})" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">RECURSOS</button>
       <button onclick="document.getElementById('lp-planos').scrollIntoView({behavior:'smooth'})" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">PLANOS</button>
       <button onclick="mostrarQuemSomos()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">SOBRE</button>
+      <button onclick="mostrarCentralAjuda()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">AJUDA</button>
       <button onclick="irParaLogin()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">ENTRAR</button>
       <button class="btn-primary" style="font-size:13px;padding:8px 20px" onclick="abrirModalDemo('escola')">Solicitar demo →</button>
     </div>
@@ -21340,7 +21396,68 @@ async function verificarStatusEscola(email) {
 }
 // ===== FIM PAINEL DEV =====
 
-function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; } let _chartLpMonitoramento = null;
+function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; }
+
+const FAQ_AJUDA = [
+  { cat: 'primeiros-passos', pergunta: 'Como faço para começar a usar a LouMind?', resposta: 'Crie sua conta, escolha o módulo (Escola ou Clínica), e complete o cadastro do seu perfil profissional. Depois, cadastre seus alunos/pacientes para começar a gerar adaptações e usar os demais recursos.' },
+  { cat: 'primeiros-passos', pergunta: 'Preciso de conhecimento técnico para usar a plataforma?', resposta: 'Não. A LouMind foi feita para professores, coordenadores e profissionais de saúde sem formação técnica — basta preencher os campos indicados em cada tela.' },
+  { cat: 'adaptacao', pergunta: 'Quais tipos de arquivo posso enviar para adaptar?', resposta: 'PDF e Word (.doc/.docx). Você também pode colar o texto diretamente, sem precisar de arquivo.' },
+  { cat: 'adaptacao', pergunta: 'Como funciona a adaptação automática de atividades?', resposta: 'A Lou (nossa IA) analisa o conteúdo original, o perfil do aluno/paciente (diagnóstico, potencialidades, limitações) e o histórico de monitoramento, e gera uma versão adaptada preservando o objetivo pedagógico, mas removendo barreiras reais de acesso.' },
+  { cat: 'adaptacao', pergunta: 'Posso editar uma atividade depois de adaptada?', resposta: 'Sim — o resultado aparece num campo de texto totalmente editável antes de você salvar ou baixar em PDF/Word.' },
+  { cat: 'adaptacao', pergunta: 'Como vejo o histórico de atividades adaptadas?', resposta: 'Na tela de Nova Adaptação, o histórico de adaptações salvas fica listado abaixo do formulário, vinculado a cada aluno/paciente.' },
+  { cat: 'clinico', pergunta: 'O que são Objetivos Terapêuticos e por que preciso cadastrar?', resposta: 'É a base do módulo clínico — as metas terapêuticas do paciente em 5 áreas (Cognitivo, Comunicação, Social, Comportamental, Acadêmico). Elas alimentam o Monitoramento, o Plano de Intervenção e os Objetivos Convergentes.' },
+  { cat: 'clinico', pergunta: 'Como funciona o Monitoramento?', resposta: 'Cada vez que você aplica uma Prática Guiada ou atividade, registra o resultado no Monitoramento — o sistema monta gráficos de evolução e sugere ajustes de dificuldade automaticamente nas próximas adaptações.' },
+  { cat: 'clinico', pergunta: 'Quais diagnósticos/perfis a plataforma reconhece?', resposta: 'TEA, TDAH, Dislexia, Discalculia, Disgrafia, Disortografia, Deficiência Intelectual, Deficiência Física, Deficiência Visual, Deficiência Auditiva, entre outros — e também aceita diagnósticos combinados em texto livre.' },
+  { cat: 'conta', pergunta: 'Como altero a logo que aparece nos PDFs gerados?', resposta: 'No Dashboard da Gestão Escolar ou Gestão Clínica, no topo da tela, tem um campo pra nome da instituição e upload de logo — depois de configurado, aparece automaticamente em todos os PDFs gerados pela sua equipe.' },
+  { cat: 'conta', pergunta: 'Como funciona a privacidade dos dados dos alunos/pacientes?', resposta: 'A LouMind segue a LGPD — o acesso é controlado por papel profissional (cada pessoa só vê o que precisa pra sua função), e nenhum dado é compartilhado com terceiros ou usado para fins comerciais.' }
+];
+
+function montarFAQAjuda(itens) {
+  const cont = document.getElementById('ajuda-faq-lista');
+  if (!cont) return;
+  const CATS_LABEL = { 'primeiros-passos':'Primeiros Passos', 'adaptacao':'Nova Adaptação', 'clinico':'Módulo Clínico', 'conta':'Configurações' };
+  if (!itens.length) { cont.innerHTML = '<p style="color:#9CA3AF;font-size:13px">Nenhum resultado encontrado.</p>'; return; }
+  cont.innerHTML = itens.map((f, i) => `
+    <div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;margin-bottom:10px;overflow:hidden">
+      <div onclick="document.getElementById('ajuda-resp-${i}').style.display = document.getElementById('ajuda-resp-${i}').style.display==='none'?'block':'none'" style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div>
+          <span style="font-size:10.5px;font-weight:700;color:#7C3AED;background:#F3E8FF;padding:2px 8px;border-radius:999px;margin-right:8px">${CATS_LABEL[f.cat]||f.cat}</span>
+          <span style="font-size:13.5px;font-weight:600;color:#1F2937">${f.pergunta}</span>
+        </div>
+        <span style="color:#9CA3AF">▾</span>
+      </div>
+      <div id="ajuda-resp-${i}" style="display:none;padding:0 16px 14px;font-size:13px;color:#4B5563;line-height:1.6">${f.resposta}</div>
+    </div>
+  `).join('');
+}
+
+function filtrarCentralAjuda() {
+  const q = document.getElementById('ajuda-busca')?.value.trim().toLowerCase() || '';
+  const filtrados = q ? FAQ_AJUDA.filter(f => f.pergunta.toLowerCase().includes(q) || f.resposta.toLowerCase().includes(q)) : FAQ_AJUDA;
+  montarFAQAjuda(filtrados);
+}
+
+function filtrarPorCategoriaAjuda(cat) {
+  document.getElementById('ajuda-busca').value = '';
+  montarFAQAjuda(FAQ_AJUDA.filter(f => f.cat === cat));
+  document.getElementById('ajuda-faq-lista').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function mostrarCentralAjuda() {
+  document.getElementById('landing-page').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('quem-somos-page').style.display = 'none';
+  document.getElementById('ajuda-page').style.display = 'block';
+  montarFAQAjuda(FAQ_AJUDA);
+  window.scrollTo(0, 0);
+}
+
+function voltarParaLandingDeAjuda() {
+  document.getElementById('ajuda-page').style.display = 'none';
+  document.getElementById('landing-page').style.display = 'block';
+}
+
+let _chartLpMonitoramento = null;
 function iniciarGraficoLpMonitoramento() {
   const canvas = document.getElementById('lp-grafico-monitoramento');
   if (!canvas || typeof Chart === 'undefined' || _chartLpMonitoramento) return;
