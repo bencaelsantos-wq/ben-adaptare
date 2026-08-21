@@ -12577,6 +12577,15 @@ function renderPagesClinica() {
       <div id="mat-dica-tipo" style="font-size:12px;color:var(--gr500);margin-bottom:6px"><strong>Agenda Visual / Rotina:</strong> descreva a rotina a organizar em passos (ex: "rotina de escovar os dentes antes de dormir").</div>
       <textarea id="mat-contexto" class="ftarea" placeholder="Ex: rotina de escovar os dentes antes de dormir; ou: palavras para pedir água, banheiro, ajuda; ou: primeira ida ao dentista"></textarea>
     </div>
+    <div class="fblock" style="max-width:260px;margin-bottom:10px">
+      <label class="flabel" for="mat-fonte-tipo">Tipo de fonte</label>
+      <select id="mat-fonte-tipo" class="fselect">
+        <option value="sans">Sem Serifa — padrão (Arial/Helvetica)</option>
+        <option value="serif">Com Serifa (Times New Roman)</option>
+        <option value="mono">Monospace (Courier)</option>
+        <option value="opendyslexic">OpenDyslexic</option>
+      </select>
+    </div>
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none;margin-bottom:14px">
       <input type="checkbox" id="mat-maiusculas" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
       <span>🔠 Material em CAIXA ALTA</span>
@@ -12665,6 +12674,15 @@ function renderPagesClinica() {
     <div class="fblock" style="margin-bottom:14px">
       <label class="flabel" for="pg-contexto">Contexto ou conteúdo a trabalhar (opcional)</label>
       <textarea id="pg-contexto" class="ftarea" placeholder="Ex: reconhecimento de emoções em situações escolares; ou: continhas de adição até 10"></textarea>
+    </div>
+    <div class="fblock" style="max-width:260px;margin-bottom:10px">
+      <label class="flabel" for="pg-fonte-tipo">Tipo de fonte</label>
+      <select id="pg-fonte-tipo" class="fselect">
+        <option value="sans">Sem Serifa — padrão (Arial/Helvetica)</option>
+        <option value="serif">Com Serifa (Times New Roman)</option>
+        <option value="mono">Monospace (Courier)</option>
+        <option value="opendyslexic">OpenDyslexic</option>
+      </select>
     </div>
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none;margin-bottom:14px">
       <input type="checkbox" id="pg-maiusculas" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
@@ -16283,6 +16301,17 @@ async function carregarFonteOpenDyslexic() {
   }
 }
 
+function aplicarFontePersonalizada(doc, fonteTipo) {
+  const FAMILIAS_FONTE_MAP = { sans: 'helvetica', serif: 'times', mono: 'courier' };
+  const fonteEscolhida = fonteTipo === 'opendyslexic' && window._openDyslexicCarregada
+    ? 'OpenDyslexic'
+    : (FAMILIAS_FONTE_MAP[fonteTipo] || 'helvetica');
+  const _setFontOriginal = doc.setFont.bind(doc);
+  doc.setFont = function(family, style) {
+    return _setFontOriginal(family === 'helvetica' ? fonteEscolhida : family, style);
+  };
+}
+
 function sanitizarTexto(txt) {
   if (!txt) return '';
     return txt
@@ -19315,6 +19344,7 @@ async function baixarPraticaGuiadaPDF() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  aplicarFontePersonalizada(doc, document.getElementById('pg-fonte-tipo')?.value || 'sans');
   const W = 210, H = 297, ml = 18, mr = 18;
   const usaMaiusculasPG = document.getElementById('pg-maiusculas')?.checked !== false;
   const aplicarCaixa = (t) => usaMaiusculasPG ? t.toUpperCase() : t;
@@ -19643,6 +19673,7 @@ async function baixarMaterialTerapeuticoPDF() {
     const titulo = tituloMatch ? tituloMatch[1].trim() : 'Escala de Autorregulação';
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    aplicarFontePersonalizada(doc, document.getElementById('mat-fonte-tipo')?.value || 'sans');
     gerarPDFEscalaAutorregulacao(doc, { titulo, paciente: paciente.nome, niveis, imagensPorItem }, 210, 297, 18, 18);
     doc.save('Escala_Autorregulacao_' + paciente.nome.replace(/\s+/g,'_') + '.pdf');
     toast('PDF gerado com sucesso!', 'success');
@@ -19656,6 +19687,7 @@ async function baixarMaterialTerapeuticoPDF() {
     const titulo = tituloMatch ? tituloMatch[1].trim() : 'Economia de Fichas';
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    aplicarFontePersonalizada(doc, document.getElementById('mat-fonte-tipo')?.value || 'sans');
     gerarPDFEconomiaFichas(doc, { titulo, paciente: paciente.nome, meta, recompensa, numFichas }, 210, 297, 18, 18);
     doc.save('Economia_Fichas_' + paciente.nome.replace(/\s+/g,'_') + '.pdf');
     toast('PDF gerado com sucesso!', 'success');
@@ -19668,6 +19700,7 @@ async function baixarMaterialTerapeuticoPDF() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  aplicarFontePersonalizada(doc, document.getElementById('mat-fonte-tipo')?.value || 'sans');
   const porFolha = parseInt(document.getElementById('mat-porfolha')?.value, 10) || 6;
   gerarPDFCartoesTerapeuticos(doc, { titulo, paciente: paciente.nome, cards, imagensPorItem, porFolha }, 210, 297, 18, 18);
   const prefixoArquivo = tipo === 'agenda_visual' ? 'Agenda_Visual_' : tipo === 'integracao_sensorial' ? 'Integracao_Sensorial_' : 'Cartoes_Comunicacao_';
