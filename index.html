@@ -16189,10 +16189,11 @@ async function carregarFonteOpenDyslexic() {
     for (let i = 0; i < bytes.length; i++) binario += String.fromCharCode(bytes[i]);
     const base64 = btoa(binario);
     const { jsPDF } = window.jspdf;
-    jsPDF.API.addFileToVFS('OpenDyslexic-Regular.ttf', base64);
-    jsPDF.API.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'normal');
-    jsPDF.API.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'bold');
-    jsPDF.API.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'italic');
+    const _fontDocAtiv = new jsPDF();
+    _fontDocAtiv.addFileToVFS('OpenDyslexic-Regular.ttf', base64);
+    _fontDocAtiv.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'normal');
+    _fontDocAtiv.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'bold');
+    _fontDocAtiv.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'italic');
     window._openDyslexicCarregada = true;
     console.info('[LouMind] ✅ Fonte OpenDyslexic carregada.');
   } catch(e) {
