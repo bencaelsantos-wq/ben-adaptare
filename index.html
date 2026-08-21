@@ -10092,7 +10092,7 @@ function renderPages() {
         </div>
       </div>
 
-      <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>             <option value="georgia">Georgia</option>             <option value="trebuchet">Trebuchet MS</option>             <option value="palatino">Palatino</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>       </div>       <!-- Opções de saída -->
+      <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial/Helvetica)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>       </div>       <!-- Opções de saída -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
           <input type="checkbox" id="inp-pictogramas" style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
@@ -15476,6 +15476,14 @@ function desenharIconeComando(doc, tipo, cx, cy, tam) {
 }
 
 function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
+  const FAMILIAS_FONTE_ATIV = { sans: 'helvetica', serif: 'times', mono: 'courier' };
+  const fonteEscolhidaAtiv = opts.fonteTipo === 'opendyslexic' && window._openDyslexicCarregada
+    ? 'OpenDyslexic'
+    : (FAMILIAS_FONTE_ATIV[opts.fonteTipo] || 'helvetica');
+  const _setFontOriginalAtiv = doc.setFont.bind(doc);
+  doc.setFont = function(family, style) {
+    return _setFontOriginalAtiv(family === 'helvetica' ? fonteEscolhidaAtiv : family, style);
+  };
   const logoUrl = window._logoEscolaUrl || null;
   const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
   let y = 0;
@@ -16169,6 +16177,29 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
 }
 
 var _iconePluramento = "data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABSAFoDASIAAhEBAxEB/8QAHAAAAQUBAQEAAAAAAAAAAAAABQABAgMGBAcI/8QAORAAAQMDAgQCBwYGAwEAAAAAAQIDBAAFEQYhBxIxQRNhFDRRUnKRsSIyM3GBkggjQlNzoRXR4fD/xAAaAQEAAgMBAAAAAAAAAAAAAAAAAwUBAgQG/8QAKxEAAQQCAQIFAwUBAAAAAAAAAQACAxEhMQRBcRIiUWGBE5GhBTKxwdHx/9oADAMBAAIRAxEAPwD68qbTZXv0A71WeuO52ruSnlSEjtRFBLKB2zT+E37tTplGiKPhN+6Kbwke7WTvfEvRNnuC4E2+M+kNnDiWkKdDZ9iikEA1pLPc4F3gNz7bLZlxXRlDrSuZJ/8AfKpn8eWNoe9pAPUhQs5EUjixrgSOlro8JHuikGke6Kzs/Xuk4U1UN+8NeKlXKrkSpaUnzUBitBDkx5kZuTFebfZcGULQoFKh5GoA4E0CsxzxSEtY4Ej0Kl4Tfu1W4zgZRv5V0Y86VZUq4M0+9PJHK/jsoZpqIoKVh5vzWPrRChjnrDPxp+tFM0RUy5DMSM7JkuoaZaQVuLWcJSkDJJ8sV5pMvmuNd22SNGxIdqs76FNM3GctSXXwdittKR9kewmun+IO6RY2hzbHJrbDlykssFvm+2414g8TlHU7da6uLdnvMvh6u1aSl/8AHvocZbbCHC1zNghIbChuM5Hyq34cTY2xyOAt7qBdoAVmuu+2PtWcuR0hexpNNFkDZu8e2u6PaS0pZtM6eZtMSIxyIbAecUgFTysfaWsnrk5615noyNLkQNbv6ZCodtmXb0OMhs/y2EJ2eeSO2R2HkK22k7FKOkocTU8t653OGz4UlDzhU1zjcHl2C9sYUrOaxPDHUitL8BGbyxAMp1uY+laeiUqL6hzKx2G3+q2Pi+hMS7xEloPobs3+PyuTlCMBniHgaGuONjAFY79PRbHhPP0/etOvxrVafR48R3wHA82kl44zzE9ye4PSh1uhav07Nuq9PxLfNthmLUIKnChad+jfYZBFH+H93jydKQZMe0yo4faLy+VkFKlknmVkdSTv+ooZY9YLn6zumn4MAtOKcUtL0gnCSlISolAGe2wz8q87OGtLQ40dYWWmIQweJ9OOiBWx6f6tRpS/RdQW70phLjLjay2/HdGHGVjqlQox3rCx5cS08VX4i5bbZuFvbU4FkI8R8KwCB0yU5rcgdya3heXAg7GFacWUyNIdsEgrguSsSmR7Un60+ahdPXGPhP1FSqZdKrd9YZ+NP1ok5snNDXPWGfjT9aJkZFEXlfCCG1qWfdOIV4bTKly5rse3hwcwiRmlcqQgHoSQST/2aJz+INikcU4ehlJkCSy7zLdKf5anQ2VJR7e+c4xkCsyzqMcH37nY75EeNmkyXJVmnJQVNDxDlTLmN0lJyfyzWzestkjXa16wbjxZU9xSEPXHwxzOocTypWMbDcoweoTtXouSxn1nSyAljgRHWtY+2iN2qeEu+mGMIDgQX33z99j2VvETUDWntMT9UwnIrztvbKFoWolDn2gAhXL0UFHb2ZPtrOcGGoml+G9va1PcoEN68PuTW2JDiUAB0hQQAo77YP61mde2J/RV+nau0ey4/bUOJOoLWsc0dwLOSQDtnfJ93IPTIrO8aNOam1jqa3al01bpN5s1ygspiqZAIYwDlChn7O5znp19lTcbhxSQNhL6a42XHBwMNrpsm7yFbs4bXzCUuxRHz1XrszUj1l181pNEMNx7knxYcoqyELVnmASB93IOBnqfYdjk1Nktzcm4NPxI82IgLkPZT4igB91zuebz74x0rz66SLowrTuhbR4T+qmLchmXcSMmG2UjmAV2OAN+uMY3Na/Quk7XpZM2IGi5MeHiuSnVcypSB3wemCTkeYOTmqTkcdjQCd9PfO/a1SQyyHkPibTmhx83RuP2j1IPahi7St8zT3E7SjzjcdxKA4ppKnUAOMuAAhSSOnUHrRDhxcZNy0swZq/Elx3FxXl5+8ptRTn9Riht8vdp0dFYs9tgc9xkoK4kCIxjxFkn7RwMAZzn8qL6Bs71k01HhylBUtRU9IIO3iLPMr5Zx+lVzmVKHN1X/P7U/Gc4zhpILg3zkavFfO/juu26eux/hP1FS2qN09dj/CfqKltUitVW76wz/kT9aKULd/HZ/wAifrRPFEXlnF5tMriPw6hT0JctrlykKcQsZQt0NfywQdjvn/dE+Ieip0jRdzjaKfXark+2Ahpl8tsrHMCocv3UKIzhQAOe9GuJOlE6s096G1JMO4Rnky7fKA3YfRulX5dj5Gsg1xfjacItvEW0z7HcWxhT6I6nYsg++2tOdj1x2q947ppYojxsuj2318xcDXUZo+lLgdG1sjxJp2j8VV9NI/wvs11a4WwbVqh9EyXIYcElRVzlaHCogKUfvHlIBNZb+GG4rVoe6Wl9RWLRdn46FH3NlfXm+dBWuMrlx0q7B0fb5DrsNlxUm7SWuSJDaSVYXvutfLjCdskgb0a/hYtLjHDZ+5yysru892TlXVSdkc36kKNT8rjyxced84oucKHvnp0wu+GhAQ04FK/gGhVzf1JqyUAuTcLitpKj/S2nfA+Y/aK1fFF27psIb082ty7BwLQloAuJb3CyM/Lf2+2sBoKXO0/pXV9hhQpEm42+a6QyyvDobWOUOJ7nBAO3tq3hprixae0qWLxdpk27OuFbrHorinUdg2CRvjc9e5qu5MbjMXgXVUPasfFLyfH5kTOMzjPd4fEHEuuqN5q9m77I/qF24qg6GmXdhtm+m6NIWlOM4UFc428gCR0zXo6RtmsBpmBd9UaoY1bfYTluhQkKTaoLv4gKhhTzg7HGwH/x9BG1cMtCgrn9OYfPJmjVXsgACz3/AIpDbn65H+E/UVLA9tNc/XGPhP1FSqJWaomL8Plc91QNFUqBSCk5BGRQ2UjnbIrigXUQl+izMhsH7DnXl8j5URaAmqZMZiS34chlt5HXlcSFD5GpNOtuoC2nEOJPdJyKsG3trINZCLA8RuGMHWrttZk3afAtcRRL9viEIak5II5gOh2677dMda2tuhRrdAYgQmW2IsdtLTTSBhKEgYAFdO9L9KmfyZZI2xuPlbod1kuJFLMS9HQntbxdWR5MiHNbSUSEtEckpOMALHy+Q9laL0ZjxfFLLZc98pHN86sPkDS3qN0jnVZ1hQsgjjJLRVmz39UulOKY4Az0/OhtyvEaKC20pLz52CEnOPzPatFKoz3Au5IQP6Eb/mauxQ62IcUVPOnK1nKjRGiJz0NBbskHOw+VKlRFm5ClNqy2oo+E4rnVIfz+O7+80qVEUDIkZ/Hd/eadMh/l/Hd/eaVKiJzIkf33f3mnEiR/fd/eaVKiKSHnlHCnVkHsVGjFrSOYbD5UqVEWmjbNiraVKiL/2Q==";
+
+async function carregarFonteOpenDyslexic() {
+  try {
+    const url = 'https://cdn.jsdelivr.net/gh/antijingoist/opendyslexic@master/compiled/OpenDyslexic-Regular.ttf';
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Falha ao baixar a fonte OpenDyslexic (status ' + resp.status + ')');
+    const buffer = await resp.arrayBuffer();
+    let binario = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.length; i++) binario += String.fromCharCode(bytes[i]);
+    const base64 = btoa(binario);
+    const { jsPDF } = window.jspdf;
+    jsPDF.API.addFileToVFS('OpenDyslexic-Regular.ttf', base64);
+    jsPDF.API.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'normal');
+    jsPDF.API.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'bold');
+    jsPDF.API.addFont('OpenDyslexic-Regular.ttf', 'OpenDyslexic', 'italic');
+    window._openDyslexicCarregada = true;
+    console.info('[LouMind] ✅ Fonte OpenDyslexic carregada.');
+  } catch(e) {
+    window._openDyslexicCarregada = false;
+    console.warn('[LouMind] ⚠️ Não foi possível carregar OpenDyslexic — PDFs com essa opção vão usar Helvetica como reserva.', e);
+  }
+}
 
 function sanitizarTexto(txt) {
   if (!txt) return '';
@@ -22181,6 +22212,7 @@ function bootHealthCheck() {
   }
 
   console.info('[LouMind] ✅ Boot OK — v' + (typeof LGPD_VERSAO_TERMO !== 'undefined' ? LGPD_VERSAO_TERMO : '?'));
+  carregarFonteOpenDyslexic();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
