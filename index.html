@@ -15546,6 +15546,32 @@ function desenharIconeComando(doc, tipo, cx, cy, tam) {
     doc.setFillColor(255,255,255);
     doc.circle(cx, cy - half * 0.4, half * 0.35, 'F');
     doc.line(cx, cy + half * 0.15, cx, cy + half * 0.55);
+  } else if (tipo === 'calendario') {
+    doc.roundedRect(cx - half, cy - half * 0.8, half * 2, half * 1.8, 0.4, 0.4, 'S');
+    doc.line(cx - half, cy - half * 0.3, cx + half, cy - half * 0.3);
+    doc.line(cx - half * 0.5, cy - half, cx - half * 0.5, cy - half * 0.6);
+    doc.line(cx + half * 0.5, cy - half, cx + half * 0.5, cy - half * 0.6);
+  } else if (tipo === 'balao') {
+    doc.roundedRect(cx - half, cy - half * 0.9, half * 2, half * 1.4, 0.6, 0.6, 'S');
+    doc.line(cx - half * 0.4, cy + half * 0.5, cx - half * 0.1, cy + half);
+    doc.line(cx - half * 0.1, cy + half, cx + half * 0.2, cy + half * 0.5);
+  } else if (tipo === 'sensorial') {
+    for (let ang = 0; ang < 360; ang += 60) {
+      const rad = ang * Math.PI / 180;
+      doc.line(cx, cy, cx + Math.cos(rad) * half, cy + Math.sin(rad) * half);
+    }
+  } else if (tipo === 'escala') {
+    doc.line(cx, cy - half, cx, cy + half);
+    doc.line(cx - half * 0.6, cy - half * 0.3, cx, cy - half * 0.3);
+    doc.line(cx - half * 0.6, cy + half * 0.3, cx, cy + half * 0.3);
+    doc.setFillColor(255,255,255);
+    doc.circle(cx, cy + half * 0.8, half * 0.35, 'F');
+  } else if (tipo === 'fichas') {
+    doc.setFillColor(255,255,255);
+    doc.circle(cx, cy, half * 0.8, 'F');
+    doc.setDrawColor(90, 90, 90);
+    doc.setLineWidth(0.3);
+    doc.circle(cx, cy, half * 0.8, 'S');
   }
   doc.setDrawColor(30, 30, 30);
 }
@@ -19377,12 +19403,30 @@ async function baixarPraticaGuiadaPDF() {
       y += altCaixa + 8;
     }
 
+    const textoPerguntaPG = sanitizarTexto(`${qi+1}. ${q.pergunta}`);
+    const VERBOS_COMANDO_PG = [
+      { re: /\b(ESCREVA|RESPONDA)\b/i, icone: 'lapis', cor: [52,74,140] },
+      { re: /\b(MARQUE|ASSINALE)\b/i, icone: 'x', cor: [91,125,184] },
+      { re: /\bCIRCULE\b/i, icone: 'circulo', cor: [123,140,166] },
+      { re: /\b(LIGUE|ASSOCIE)\b/i, icone: 'ligar', cor: [94,163,155] },
+      { re: /\bCOMPLETE\b/i, icone: 'completar', cor: [52,74,140] },
+      { re: /\b(DESENHE|ILUSTRE)\b/i, icone: 'desenho', cor: [94,163,155] }
+    ];
+    const comandoPG = VERBOS_COMANDO_PG.find(v => v.re.test(textoPerguntaPG)) || { icone: 'generico', cor: [123,140,166] };
     doc.setFont('helvetica','bold');
     doc.setFontSize(13);
+    const linhasPergunta = doc.splitTextToSize(textoPerguntaPG, W - ml - mr - 11);
+    const altBarraPG = Math.max(9, linhasPergunta.length * 7 + 2);
+    const [rPG,gPG,bPG] = comandoPG.cor;
+    doc.setFillColor(rPG, gPG, bPG);
+    doc.roundedRect(ml, y - 2, 9, altBarraPG, 1.5, 1.5, 'F');
+    desenharIconeComando(doc, comandoPG.icone, ml + 4.5, y + altBarraPG/2 - 2, 4.4);
+    doc.setFillColor(rPG, gPG, bPG);
+    doc.rect(ml + 10, y - 2, W - ml - mr - 10, altBarraPG, 'F');
+    doc.setTextColor(255,255,255);
+    linhasPergunta.forEach((l, li) => doc.text(l, ml + 13, y + 5 + li * 7));
     doc.setTextColor(25,25,25);
-    const linhasPergunta = doc.splitTextToSize(sanitizarTexto(`${qi+1}. ${q.pergunta}`), W - ml - mr);
-    linhasPergunta.forEach(l => { doc.text(l, ml, y); y += 7; });
-    y += 4;
+    y += altBarraPG + 6;
 
     const b64Pergunta = imagensPorItem[`pgq${qi}`];
     if (b64Pergunta) {
@@ -19712,6 +19756,8 @@ function gerarPDFCartoesTerapeuticos(doc, opts, W, H, ml, mr) {
   let y = 0;
   doc.setFillColor(30, 58, 138);
   doc.rect(0, 0, W, 18, 'F');
+  const iconeCartoes = /agenda/i.test(opts.titulo) ? 'calendario' : /sensorial/i.test(opts.titulo) ? 'sensorial' : 'balao';
+  desenharIconeComando(doc, iconeCartoes, ml + 4, 9, 5);
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
@@ -19777,6 +19823,7 @@ function gerarPDFEscalaAutorregulacao(doc, opts, W, H, ml, mr) {
   const CORES = ['#065F46', '#16A34A', '#D97706', '#EA580C', '#DC2626'];
   doc.setFillColor(30, 58, 138);
   doc.rect(0, 0, W, 18, 'F');
+  desenharIconeComando(doc, 'escala', ml + 4, 9, 5);
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
@@ -19829,6 +19876,7 @@ function gerarPDFEscalaAutorregulacao(doc, opts, W, H, ml, mr) {
 function gerarPDFEconomiaFichas(doc, opts, W, H, ml, mr) {
   doc.setFillColor(30, 58, 138);
   doc.rect(0, 0, W, 18, 'F');
+  desenharIconeComando(doc, 'fichas', ml + 4, 9, 5);
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
