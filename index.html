@@ -16180,7 +16180,7 @@ var _iconePluramento = "data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSU
 
 async function carregarFonteOpenDyslexic() {
   try {
-    const url = 'https://cdn.jsdelivr.net/gh/antijingoist/opendyslexic@master/compiled/OpenDyslexic-Regular.ttf';
+    const url = 'https://wgnrxzoccelzzxwyibwj.supabase.co/storage/v1/object/public/imagens-atividades/fontes/OpenDyslexic3-Regular.ttf';
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('Falha ao baixar a fonte OpenDyslexic (status ' + resp.status + ')');
     const buffer = await resp.arrayBuffer();
