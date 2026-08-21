@@ -15848,6 +15848,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     }
     const matchDica = limpa.match(/^\[DICA:\s*(.+)\]$/i);
     if (matchDica) {
+      y += 3;
       const linhasDica = doc.splitTextToSize(sanitizarTexto(matchDica[1]), maxW - 8);
       const altDica = linhasDica.length * altLinha + 4;
       if (y + altDica > H - rodapeH) {
