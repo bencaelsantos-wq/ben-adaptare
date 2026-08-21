@@ -13758,7 +13758,13 @@ TÉCNICAS OBRIGATÓRIAS DE REDUÇÃO REAL DE CARGA PARA ESTE CONTEÚDO ESPECÍFI
 ${tecnicasTexto || 'Nenhum padrão de operação/exercício específico foi detectado automaticamente — aplique a REGRA INEGOCIÁVEL e o TESTE DE ADAPTAÇÃO REAL diretamente ao conteúdo, garantindo redução real de carga cognitiva em cada exercício.'}
 
 REGRAS UNIVERSAIS DE APOIO (valem para qualquer tipo de exercício):
-- Sempre que houver um trecho de texto de apoio, contextualização ou explicação de conceito ANTES dos exercícios (ex: "sobre o texto", explicação de um conceito, resumo de contexto), use o marcador [CAIXA: texto] envolvendo esse trecho — isso o destaca visualmente numa caixa colorida, separando claramente apoio/contexto das perguntas em si. Não use [CAIXA:] para as perguntas nem para o texto principal de leitura, só para blocos curtos de apoio/explicação.
+- Sempre que houver um trecho de texto de apoio, contextualização ou explicação de conceito ANTES dos exercícios (ex: "sobre o texto", explicação de um conceito, resumo de contexto, vocabulário), destaque esse trecho numa caixa — não use [CAIXA:] para as perguntas nem para o texto principal de leitura, só para blocos curtos de apoio/explicação. Use SEMPRE este formato de bloco (nunca o texto solto entre colchetes numa única linha):
+[CAIXA]
+Primeira linha do conteúdo de apoio
+Segunda linha, se houver
+Terceira linha, se houver
+[/CAIXA]
+  Cada linha do conteúdo fica sozinha, sem colchetes dentro do bloco. Se o conteúdo couber numa única linha, ainda assim use o formato de bloco (abre com [CAIXA] numa linha, o texto na linha seguinte, fecha com [/CAIXA]) — nunca escreva "[CAIXA: texto]" tudo junto numa linha só.
 - Apoio visual deve ter FUNÇÃO, nunca ser decorativo. Nunca adicione imagem/ícone só para ilustrar o tema (ex: frutas soltas no fim da folha sem relação com o cálculo). Se usar apoio visual, ele precisa representar diretamente a quantidade ou a estrutura do problema (ex: marcadores repetidos representando unidades a contar, ícone ao lado de cada personagem/quantidade de um problema).
 - Quando o diagnóstico indicar memória operacional ou função executiva comprometida, ofereça retirada gradual de apoio dentro da própria atividade quando possível: um primeiro exercício com o passo a passo decomposto e visível, um exercício seguinte do mesmo tipo com menos apoio, e um último exercício só com a operação — replicando a mesma lógica pedagógica com autonomia crescente, não simplesmente repetindo o mesmo nível de apoio em todos os itens.
 - Quando o perfil informado (diagnóstico, observações clínicas ou contexto adicional) indicar ansiedade, baixa tolerância à frustração ou dificuldade de autorregulação, insira uma pista breve de regulação emocional entre os blocos de exercício (ex: "Respire fundo. Vamos para o próximo." ou "Você já fez uma parte! Continue no seu tempo."). Máximo 1 frase curta por transição de bloco, nunca a cada linha — isso é apoio funcional, não enchimento.
@@ -15834,6 +15840,36 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setFontSize(fontSize);
       doc.setTextColor(25, 25, 25);
       y += altDica + 2;
+      continue;
+    }
+    if (/^\[CAIXA\]$/i.test(limpa)) {
+      let jCaixa = i + 1;
+      const conteudoCaixaLinhas = [];
+      for (; jCaixa < linhas.length; jCaixa++) {
+        const ltCaixa = linhas[jCaixa].trim();
+        if (/^\[\/CAIXA\]$/i.test(ltCaixa)) break;
+        if (ltCaixa) conteudoCaixaLinhas.push(ltCaixa);
+      }
+      const linhasCaixaBloco = doc.splitTextToSize(sanitizarTexto(conteudoCaixaLinhas.join(' ')), maxW - 10);
+      const altCaixaBloco = linhasCaixaBloco.length * altLinha + 8;
+      if (y + altCaixaBloco > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 24;
+      }
+      doc.setFillColor(240, 244, 255);
+      doc.setDrawColor(30, 58, 138);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(ml, y, W - ml - mr, altCaixaBloco, 2, 2, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(30, 58, 138);
+      linhasCaixaBloco.forEach((l, li) => doc.text(l, ml + 5, y + 6 + li * altLinha));
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      y += altCaixaBloco + 4;
+      i = jCaixa;
       continue;
     }
     const matchCaixa = limpa.match(/^\[CAIXA:\s*(.+)\]$/i);
