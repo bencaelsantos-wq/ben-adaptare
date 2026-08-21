@@ -2086,23 +2086,27 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div class="modal-title">✨ Adapte uma atividade grátis</div>
       <button class="modal-close" onclick="fecharModal('overlay-teste-gratis')">×</button>
     </div>
-    <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Cole o conteúdo de uma atividade e veja a Lou adaptar na hora — sem precisar criar conta. Você tem direito a <strong>1 teste grátis</strong> neste navegador.</p>
+    <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Cole o conteúdo de uma atividade e veja a Lou adaptar na hora — sem precisar criar conta. Você tem direito a <strong>1 teste grátis</strong>.</p>
 
     <div id="tg-bloco-form">
+      <div class="frow">
+        <div>
+          <label class="flabel">Seu nome *</label>
+          <input class="finput" id="tg-nome" placeholder="Seu nome">
+        </div>
+        <div>
+          <label class="flabel">Sua profissão *</label>
+          <input class="finput" id="tg-profissao" placeholder="Ex: Professora, Psicóloga, Coordenadora...">
+        </div>
+      </div>
       <div class="fblock">
         <label class="flabel">Seu e-mail *</label>
         <input class="finput" id="tg-email" type="email" placeholder="seu@email.com" required>
       </div>
       <div class="frow">
         <div>
-          <label class="flabel">Perfil do aluno</label>
-          <select class="fselect" id="tg-perfil">
-            <option value="TEA — Transtorno do Espectro Autista">TEA</option>
-            <option value="TDAH — Déficit de Atenção/Hiperatividade">TDAH</option>
-            <option value="Dislexia">Dislexia</option>
-            <option value="Discalculia">Discalculia</option>
-            <option value="D.I. — Deficiência Intelectual">Deficiência Intelectual</option>
-          </select>
+          <label class="flabel">Diagnóstico/perfil do aluno</label>
+          <input class="finput" id="tg-perfil" placeholder="Ex: TEA com TDAH associado">
         </div>
         <div>
           <label class="flabel">Idade aproximada</label>
@@ -21306,11 +21310,15 @@ function reiniciarTesteGratis() {
 async function gerarTesteGratis() {
   const usados = parseInt(localStorage.getItem('loumind_testes_gratis') || '0', 10);
   if (usados >= 1) { abrirModalTesteGratis(); return; }
+  const nome = document.getElementById('tg-nome')?.value.trim() || '';
+  const profissao = document.getElementById('tg-profissao')?.value.trim() || '';
+  if (!nome) return toast('Digite seu nome.', 'error');
+  if (!profissao) return toast('Digite sua profissão.', 'error');
   const email = document.getElementById('tg-email')?.value.trim() || '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Digite um e-mail válido para continuar.', 'error');
   const conteudo = document.getElementById('tg-conteudo')?.value.trim();
   if (!conteudo) return toast('Cole o conteúdo da atividade primeiro.', 'error');
-  const perfil = document.getElementById('tg-perfil')?.value || '';
+  const perfil = document.getElementById('tg-perfil')?.value.trim() || 'não informado';
   const idade = document.getElementById('tg-idade')?.value.trim() || 'não informado';
 
   const btn = document.getElementById('btn-tg-gerar');
@@ -21330,7 +21338,7 @@ async function gerarTesteGratis() {
   } catch(e) { /* se a checagem falhar, segue o fluxo normalmente */ }
 
   document.getElementById('tg-status').textContent = 'Gerando adaptação…';
-  try { await dbAnon.from('leads_teste_gratis').insert({ email, perfil }); } catch(e) { /* nao bloqueia o fluxo se falhar ao salvar o lead */ }
+  try { await dbAnon.from('leads_teste_gratis').insert({ email, perfil, nome, profissao }); } catch(e) { /* nao bloqueia o fluxo se falhar ao salvar o lead */ }
 
   const prompt = `Você é um assistente pedagógico especializado em adaptação de atividades escolares para alunos com necessidades educacionais especiais.
 
