@@ -9991,7 +9991,7 @@ function showPage(id) {
   if (id === 'at-relatorios') carregarRelatoriosAT();
   if (id === 'gc-perfis') carregarPerfisGestaoClinica();
   if (id === 'gc-profissionais') { carregarProfissionaisClinica(); carregarVinculosATGestao(); }
-  if (id === 'clinica-pratica-guiada') carregarPendentesPraticaGuiada();
+  if (id === 'clinica-pratica-guiada') { carregarPendentesPraticaGuiada(); carregarHistoricoPraticaGuiada(); }
   if (id === 'dev-conteudo') carregarBancoImagens();
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'guia-gestao') renderGuiaGestao();
@@ -12602,6 +12602,12 @@ function renderPagesClinica() {
         <button class="btn-copy" onclick="baixarFolhaRegistro(ultimoMaterialTerapeutico?.paciente?.nome, 'Material Terapêutico')">📋 Folha de Registro</button>
         <button class="btn-copy" onclick="detectarImagensMaterial()">🖼️ Detectar imagens do material</button>
       </div>
+
+      <div class="fcard" id="mat-historico-painel" style="margin-top:16px">
+        <div class="fcard-title">Histórico de materiais gerados</div>
+        <div class="fblock" style="margin-bottom:10px"><input class="finput" id="mat-hist-q" placeholder="Buscar por paciente..." oninput="filtrarHistoricoMateriais()"></div>
+        <div id="mat-historico-lista"></div>
+      </div>
       <div style="margin-top:18px;border-top:1px solid var(--gr100);padding-top:14px">
         <div class="clinic-card-title" style="margin-bottom:8px">Registrar retorno</div>
         <p class="page-sub" style="margin:0 0 10px">Depois de aplicar o material com o paciente, registre o resultado. Isso entra automaticamente no histórico de Monitoramento.</p>
@@ -12654,6 +12660,13 @@ function renderPagesClinica() {
       <div class="fcard-title">Atividades pendentes de registro</div>
       <p class="page-sub" style="margin:0 0 10px">Geradas mas ainda não aplicadas/registradas — fica reservado no perfil do paciente até você voltar e marcar o resultado.</p>
       <div id="pg-pendentes-lista"></div>
+    </div>
+
+    <div class="fcard" id="pg-historico-painel" style="margin-bottom:16px">
+      <div class="fcard-title">Histórico de atividades geradas</div>
+      <p class="page-sub" style="margin:0 0 10px">Todas as atividades já geradas, aplicadas ou não — clique em "Abrir" para rever ou baixar o PDF de novo.</p>
+      <div class="fblock" style="margin-bottom:10px"><input class="finput" id="pg-hist-q" placeholder="Buscar por paciente..." oninput="filtrarHistoricoPraticaGuiada()"></div>
+      <div id="pg-historico-lista"></div>
     </div>
 
     <div class="frow" style="margin-bottom:14px">
@@ -14024,6 +14037,7 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
     document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    salvarAdaptAutomatico();
 
     const avisos = [];
      if (incluiGuia && !/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i.test(texto)) {
@@ -14554,6 +14568,13 @@ function baixarFolhaRegistro(alunoOverride, nomeAtividadeOverride) {
 
 async function salvarAdapt() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
+  if (dadosUltima.adaptacaoId) {
+    const { error } = await db.from('adaptacoes').update({ adaptacao: ultimaAdapt }).eq('id', dadosUltima.adaptacaoId);
+    if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+    toast('Adaptação já estava salva no histórico — atualizada!', 'success');
+    carregarAdaptacoes();
+    return;
+  }
   const { data, error } = await db.from('adaptacoes').insert({
     user_id: user.id,
     aluno_id:   dadosUltima.alunoId  || null,
@@ -14570,6 +14591,25 @@ async function salvarAdapt() {
   if (data?.id) dadosUltima.adaptacaoId = data.id;
   toast('Adaptação salva! Depois de aplicar, use "💾 Registrar Observação" na lista de Adaptações salvas.', 'success');
   carregarAdaptacoes();
+}
+
+async function salvarAdaptAutomatico() {
+  if (dadosUltima.adaptacaoId) return;
+  try {
+    const { data, error } = await db.from('adaptacoes').insert({
+      user_id: user.id,
+      aluno_id:   dadosUltima.alunoId  || null,
+      aluno_nome: dadosUltima.aluno    || null,
+      idade:      dadosUltima.idade    || null,
+      serie:      dadosUltima.serie    || null,
+      materia:    dadosUltima.materia  || null,
+      tipo_ativ:  dadosUltima.tipoAtiv || null,
+      perfis:     dadosUltima.perfis   || [],
+      observacoes:dadosUltima.obs      || null,
+      adaptacao:  ultimaAdapt
+    }).select('id').single();
+    if (!error && data?.id) { dadosUltima.adaptacaoId = data.id; carregarAdaptacoes(); }
+  } catch(_) {}
 }
 
 function copiarAdapt(elId) {
@@ -18844,6 +18884,39 @@ Responda EXATAMENTE neste formato de texto simples, sem markdown, sem JSON, usan
 
 // ── MATERIAIS TERAPÊUTICOS (uso em sessão) ──────────────────────
 let ultimoMaterialTerapeutico = null;
+let materiaisHistorico = [];
+
+async function carregarHistoricoMateriais() {
+  const { data } = await db.from('materiais_terapeuticos_gerados').select('id, tipo, contexto, criado_em, perfis_clinicos(nome)').eq('user_id', user.id).order('criado_em', { ascending: false });
+  materiaisHistorico = data || [];
+  filtrarHistoricoMateriais();
+}
+
+function filtrarHistoricoMateriais() {
+  const q = (document.getElementById('mat-hist-q')?.value||'').toLowerCase();
+  const lista = document.getElementById('mat-historico-lista');
+  if (!lista) return;
+  const res = materiaisHistorico.filter(r => !q || (r.perfis_clinicos?.nome||'').toLowerCase().includes(q));
+  if (!res.length) { lista.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum material encontrado.</div></div>`; return; }
+  lista.innerHTML = res.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
+      <div>
+        <div style="font-weight:600;font-size:13px">${DICAS_MATERIAL[r.tipo]?.label||r.tipo}</div>
+        <div style="font-size:11.5px;color:var(--gr500)">${r.perfis_clinicos?.nome||''} · ${new Date(r.criado_em).toLocaleDateString('pt-BR')}</div>
+      </div>
+      <button class="btn-sm" onclick="reabrirMaterialTerapeutico('${r.id}')">Abrir</button>
+    </div>`).join('');
+}
+
+async function reabrirMaterialTerapeutico(id) {
+  const { data, error } = await db.from('materiais_terapeuticos_gerados').select('*, perfis_clinicos(*)').eq('id', id).single();
+  if (error || !data) return toast('Não foi possível abrir esse material.', 'error');
+  ultimoMaterialTerapeutico = { id: data.id, tipo: data.tipo, texto: data.texto, paciente: data.perfis_clinicos, contexto: data.contexto };
+  document.getElementById('material-result-text').textContent = data.texto;
+  document.getElementById('material-result-card').classList.add('show');
+  document.getElementById('material-result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  toast('Material reaberto — pode baixar o PDF novamente.', 'success');
+}
 let ultimoRelatorioRotinaAT = null;
 
 async function baseDeFotoRotina(pathOuUrl) {
@@ -19072,6 +19145,29 @@ function atualizarDicaMaterial() {
 let ultimaPraticaGuiada = null;
 let respostasPraticaGuiada = {};
 let nivelAjudaPraticaGuiada = {};
+let praticasGuiadasHistorico = [];
+
+async function carregarHistoricoPraticaGuiada() {
+  const { data } = await db.from('praticas_guiadas').select('id, titulo, area, status, criado_em, perfis_clinicos(nome)').eq('user_id', user.id).order('criado_em', { ascending: false });
+  praticasGuiadasHistorico = data || [];
+  filtrarHistoricoPraticaGuiada();
+}
+
+function filtrarHistoricoPraticaGuiada() {
+  const q = (document.getElementById('pg-hist-q')?.value||'').toLowerCase();
+  const lista = document.getElementById('pg-historico-lista');
+  if (!lista) return;
+  const res = praticasGuiadasHistorico.filter(r => !q || (r.perfis_clinicos?.nome||'').toLowerCase().includes(q));
+  if (!res.length) { lista.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhuma atividade encontrada.</div></div>`; return; }
+  lista.innerHTML = res.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
+      <div>
+        <div style="font-weight:600;font-size:13px">${r.titulo}</div>
+        <div style="font-size:11.5px;color:var(--gr500)">${r.perfis_clinicos?.nome||''} · ${LABELS_AREA[r.area]||r.area} · ${new Date(r.criado_em).toLocaleDateString('pt-BR')} · ${r.status==='registrado'?'✔ registrado':'pendente'}</div>
+      </div>
+      <button class="btn-sm" onclick="reabrirPraticaGuiada('${r.id}')">Abrir</button>
+    </div>`).join('');
+}
 
 async function carregarPendentesPraticaGuiada() {
   const painel = document.getElementById('pg-pendentes-painel');
@@ -19636,6 +19732,12 @@ CARTAO: [nome-imagem] | [texto curto]`;
     ultimoMaterialTerapeutico = { tipo, texto: txt.trim(), paciente: p, contexto };
     document.getElementById('material-result-text').textContent = txt.trim();
     document.getElementById('material-result-card').classList.add('show');
+    const { data: matSalvo, error: erroMatSalvar } = await db.from('materiais_terapeuticos_gerados').insert({
+      user_id: user.id, perfil_id: p.id, tipo, contexto, texto: txt.trim(), por_folha: parseInt(document.getElementById('mat-porfolha')?.value,10)||6
+    }).select('id').single();
+    if (erroMatSalvar) console.warn('Não foi possível salvar o material no histórico:', erroMatSalvar.message);
+    if (matSalvo?.id) ultimoMaterialTerapeutico.id = matSalvo.id;
+    carregarHistoricoMateriais();
     const painelImgAntigo = document.getElementById('mat-img-painel');
     if (painelImgAntigo) painelImgAntigo.style.display = 'none';
     toast('Material gerado com sucesso!', 'success');
