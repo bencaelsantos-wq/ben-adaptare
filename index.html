@@ -19511,7 +19511,7 @@ async function baixarPraticaGuiadaPDF() {
     const comandoPG = VERBOS_COMANDO_PG.find(v => v.re.test(textoPerguntaPG)) || { icone: 'generico', cor: [123,140,166] };
     doc.setFont('helvetica','bold');
     doc.setFontSize(13);
-    const linhasPergunta = doc.splitTextToSize(textoPerguntaPG, W - ml - mr - 11);
+    const linhasPergunta = doc.splitTextToSize(textoPerguntaPG, W - ml - mr - 18);
     const altBarraPG = Math.max(9, linhasPergunta.length * 7 + 2);
     const [rPG,gPG,bPG] = comandoPG.cor;
     doc.setFillColor(rPG, gPG, bPG);
