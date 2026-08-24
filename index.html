@@ -21647,10 +21647,21 @@ IDADE: ${idade}
 CONTEÚDO ORIGINAL:
 ${conteudo}
 
-Adapte esta atividade para o perfil informado, reduzindo barreiras reais de acesso ao conteúdo (linguagem, estrutura, apoio visual em texto), preservando o objetivo pedagógico. Máximo 200 palavras. Não use markdown, não use emojis. Comece direto com o título da atividade adaptada, sem introdução nem explicação do que você vai fazer.`;
+Adapte esta atividade para o perfil informado, reduzindo barreiras reais de acesso ao conteúdo (linguagem, estrutura, apoio visual), preservando o objetivo pedagógico. Gere no máximo 4 questões curtas. Não use markdown, não use emojis. Comece direto com o título da atividade adaptada, sem introdução nem explicação do que você vai fazer.
+
+REGRAS OBRIGATÓRIAS DE FORMATAÇÃO, sem exceção:
+- Toda questão que peça para observar, pintar, circular ou reconhecer algo visual precisa ter, logo abaixo do enunciado, OBRIGATORIAMENTE um marcador [IMAGEM: nome-simples-sem-acento] com a imagem do que deve ser observado/pintado/circulado — nunca peça uma ação visual sem dar a imagem correspondente.
+- Se a questão pedir um desenho livre (não uma imagem pronta pra colorir/circular), use o marcador [ESPAÇO PARA DESENHO] em vez de [IMAGEM:].
+- Para questões de associar/ligar pares (ex: termo com definição), use OBRIGATORIAMENTE este formato de bloco, um par por linha, com o caractere » separando os dois lados (nunca ":" nem "-"):
+[LIGAR]
+Termo 1 » definição 1
+Termo 2 » definição 2
+[/LIGAR]
+- Nunca use "->" como conector — use sempre »
+- Alternativas de múltipla escolha ficam sempre em linhas separadas, nunca coladas no mesmo parágrafo do enunciado, no formato "( ) texto da alternativa".`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 900, modulo: 'teste-gratis-publico' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 1400, modulo: 'teste-gratis-publico' });
     const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     document.getElementById('tg-resultado').value = texto;
     document.getElementById('tg-bloco-form').style.display = 'none';
