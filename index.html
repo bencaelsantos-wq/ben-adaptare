@@ -16024,7 +16024,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         doc.rect(ml + 8, y - 3.5, maxW - 8, altBarraAtiv, 'F');
         doc.setTextColor(255, 255, 255);
         linhasBarraAtiv.forEach((lb, li) => doc.text(lb, ml + 11, y + 0.5 + li * altLinha));
-        y += altBarraAtiv - 7;
+        y += altBarraAtiv - 7 + 3;
       } else {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(fontSize + 0.5);
