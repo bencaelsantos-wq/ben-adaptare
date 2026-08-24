@@ -21639,32 +21639,83 @@ async function gerarTesteGratis() {
   document.getElementById('tg-status').textContent = 'Gerando adaptação…';
   try { await dbAnon.from('leads_teste_gratis').insert({ email, perfil, nome, profissao }); } catch(e) { /* nao bloqueia o fluxo se falhar ao salvar o lead */ }
 
-  const prompt = `Você é um assistente pedagógico especializado em adaptação de atividades escolares para alunos com necessidades educacionais especiais.
+  const prompt = `Você é um assistente pedagógico especializado em adaptação de atividades escolares para alunos com necessidades educacionais especiais, aplicando princípios de Desenho Universal para Aprendizagem (UDL) e educação inclusiva baseada em evidências.
 
-PERFIL DO ALUNO: ${perfil}
-IDADE: ${idade}
+DADOS DO ALUNO:
+- Idade: ${idade}
+- Perfil/diagnóstico informado: ${perfil}
 
-CONTEÚDO ORIGINAL:
+CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
-Adapte esta atividade para o perfil informado, reduzindo barreiras reais de acesso ao conteúdo (linguagem, estrutura, apoio visual), preservando o objetivo pedagógico. Gere no máximo 4 questões curtas. Não use markdown, não use emojis. Comece direto com o título da atividade adaptada, sem introdução nem explicação do que você vai fazer.
+ANÁLISE INTERNA — faça este raciocínio silenciosamente, NUNCA escreva isto na resposta:
+Para CADA exercício do conteúdo original: 1) identifique a habilidade curricular que ele ensina; 2) identifique quais funções cognitivas ele exige na forma original; 3) identifique quais dessas funções o perfil informado provavelmente compromete; 4) decida a menor mudança estrutural capaz de reduzir essa barreira sem remover a habilidade curricular.
 
-REGRAS OBRIGATÓRIAS DE FORMATAÇÃO, sem exceção:
-- Toda questão que peça para observar, pintar, circular ou reconhecer algo visual precisa ter, logo abaixo do enunciado, OBRIGATORIAMENTE um marcador [IMAGEM: nome-simples-sem-acento] com a imagem do que deve ser observado/pintado/circulado — nunca peça uma ação visual sem dar a imagem correspondente.
-- Se a questão pedir um desenho livre (não uma imagem pronta pra colorir/circular), use o marcador [ESPAÇO PARA DESENHO] em vez de [IMAGEM:].
-- Para questões de associar/ligar pares (ex: termo com definição), use OBRIGATORIAMENTE este formato de bloco, um par por linha, com o caractere » separando os dois lados (nunca ":" nem "-"):
+TESTE DE ADAPTAÇÃO REAL — obrigatório: pergunte-se "este exercício, do jeito que vou escrever, ainda exige exatamente as mesmas funções cognitivas do original?" Se sim, você não adaptou, apenas mudou a aparência — reformule.
+
+TESTE DE DIGNIDADE — obrigatório: pergunte-se "esta atividade parece respeitosa e compatível com a idade informada?" Evite infantilização, excesso de decoração e linguagem simplificada demais.
+
+REGRA INEGOCIÁVEL: só é adaptação quando há mudança real na forma de acessar/executar a tarefa, reduzindo barreiras reais, preservando o objetivo pedagógico. Mudança só de layout ou estética não é adaptação.
+
+REGRAS UNIVERSAIS DE FORMATAÇÃO, sem exceção:
+- Em exercícios de FRAÇÃO, represente a divisão em partes com algo que se divide visualmente (retângulo em colunas, círculo em fatias, múltiplos copos idênticos) — NUNCA um objeto inteiro que não se divide (ex: uma garrafa fechada).
+- Texto de apoio/contextualização antes dos exercícios vai OBRIGATORIAMENTE em bloco [CAIXA], cada linha/item numa linha própria (nunca frase corrida com vírgulas):
+[CAIXA]
+Primeira linha do conteúdo de apoio
+Segunda linha, se houver
+[/CAIXA]
+- Sempre que precisar de um conector entre item e definição, use SEMPRE "»" — NUNCA "->".
+- Logo após o enunciado de CADA pergunta numerada, inclua uma linha "[DICA: instrução curta de como responder]" — 1 frase prática e específica àquela pergunta.
+- NUNCA use [IMAGEM:] para representar seta/direção/sequência — use o caractere "->" só nesse caso específico de sequência textual (nunca troque com » usado para ligar/definir).
+- NUNCA use metáforas, expressões idiomáticas ou figuras de linguagem — linguagem sempre literal e direta.
+
+FORMATO OBRIGATÓRIO DA FOLHA — siga exatamente:
+
+REGRA ABSOLUTA DE INÍCIO: sua resposta tem que começar EXATAMENTE com "Nome: ___". Nunca escreva nada antes disso — nenhum título, nenhuma análise, nenhuma explicação.
+
+Nome: _______________ | Data: ___/___/___
+
+[TÍTULO — curto, sem emoji, adequado à idade informada]
+
+---
+
+[BLOCO 1 — instrução curta + exercício adaptado. Se pedir pra observar/pintar/circular algo visual, inclua OBRIGATORIAMENTE logo abaixo [IMAGEM: nome-simples-sem-acento]. Se pedir desenho livre, use [ESPAÇO PARA DESENHO] em vez disso — nunca os dois juntos no mesmo item.
+Para associar/ligar pares (quando o aluno precisa DESCOBRIR a associação certa), use OBRIGATORIAMENTE este bloco, com a ordem da direita EMBARALHADA (nunca 1=A,2=B,3=C em sequência):
 [LIGAR]
-Termo 1 » definição 1
-Termo 2 » definição 2
+A) primeiro item
+B) segundo item
+---
+1) definição embaralhada
+2) definição embaralhada
 [/LIGAR]
-- Nunca use "->" como conector — use sempre »
-- Alternativas de múltipla escolha ficam sempre em linhas separadas, nunca coladas no mesmo parágrafo do enunciado, no formato "( ) texto da alternativa".`;
+Se a associação já é uma referência mostrada (não um desafio), use "ITEM [IMAGEM: nome] » definição curta" em vez do bloco [LIGAR].]
+
+---
+
+[BLOCO 2 — próximo exercício, se houver]
+
+---
+
+Como foi esta atividade?
+( ) Consegui sozinho  ( ) Precisei de ajuda  ( ) Quero tentar de novo
+
+REGRAS MECÂNICAS, sem exceção:
+- Máximo 4 questões curtas, no total até 250 palavras
+- NUNCA emojis, NUNCA markdown, NUNCA tabela em formato de colunas com | 
+- Um número de questão ou rótulo com dois-pontos e o conteúdo seguinte ficam SEMPRE na mesma linha — EXCETO alternativas "( )", que ficam SEMPRE cada uma em sua própria linha, nunca na mesma linha do enunciado (nem a primeira)
+- Marcador [IMAGEM: nome] sempre minúsculo, sem acento
+- Escreva sempre em português correto com acentuação (ex: "não", "número", "questão")
+- Em listas de 2+ itens separados por vírgula, use "e" antes do último (nunca só vírgulas soltas)
+
+Comece direto com "Nome: ___", sem introdução nem explicação do que você vai fazer. NÃO gere guia do professor nem nenhuma seção além da folha do aluno.`;
 
   try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 1400, modulo: 'teste-gratis-publico' });
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 2200, modulo: 'teste-gratis-publico' });
     let texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
     if (typeof corrigirAlternativasColadas === 'function') texto = corrigirAlternativasColadas(texto);
     if (typeof corrigirAcentuacaoComum === 'function') texto = corrigirAcentuacaoComum(texto);
+    const idxNomeTg = texto.search(/Nome\s*:\s*_{2,}/i);
+    if (idxNomeTg > 0) texto = texto.slice(idxNomeTg);
     document.getElementById('tg-resultado').value = texto;
     document.getElementById('tg-bloco-form').style.display = 'none';
     document.getElementById('tg-bloco-resultado').style.display = 'block';
