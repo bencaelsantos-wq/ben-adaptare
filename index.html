@@ -2000,7 +2000,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div class="modal-title">✨ Adapte uma atividade grátis</div>
       <button class="modal-close" onclick="fecharModal('overlay-teste-gratis')">×</button>
     </div>
-    <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Cole o conteúdo de uma atividade e veja a Lou adaptar na hora — sem precisar criar conta. Você tem direito a <strong>1 teste grátis</strong>.</p>
+    <p style="font-size:13px;color:#6B7280;margin:0 0 16px">Cole o conteúdo de uma atividade e veja a Lou adaptar na hora — sem precisar criar conta. Você tem direito a <strong>1 teste grátis</strong>. Este teste gera só o texto adaptado — na versão completa, a LouMind também busca e anexa automaticamente as imagens de apoio de cada questão.</p>
 
     <div id="tg-bloco-form">
       <div class="frow">
@@ -2041,7 +2041,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <button class="btn-copy" style="width:100%;justify-content:center;margin-top:10px" onclick="baixarPDFTesteGratis()">⬇️ Baixar PDF</button>
       <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px;margin-top:14px;text-align:center">
         <div style="font-weight:700;color:#1E3A8A;margin-bottom:6px">Gostou do resultado?</div>
-        <p style="font-size:12.5px;color:#374151;margin:0 0 10px">Assine a LouMind e adapte quantas atividades quiser, com perfil clínico completo, histórico e muito mais.</p>
+        <p style="font-size:12.5px;color:#374151;margin:0 0 10px">Assine a LouMind e adapte quantas atividades quiser, com imagens automáticas em cada questão, perfil clínico completo, histórico e muito mais.</p>
         <a href="https://wa.me/5511995665193?text=Ol%C3%A1!%20Testei%20o%20teste%20gr%C3%A1tis%20da%20LouMind%20e%20quero%20assinar." target="_blank" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#22C55E,#16A34A);color:#fff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;padding:12px 20px;width:100%;box-sizing:border-box">💬 Falar com a gente no WhatsApp</a>
       </div>
       <button class="btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="reiniciarTesteGratis()">Testar outra atividade</button>
@@ -2053,7 +2053,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       const nome = document.getElementById('tg-nome')?.value?.trim() || 'Profissional';
       const perfil = document.getElementById('tg-perfil')?.value?.trim() || '';
       const idade = document.getElementById('tg-idade')?.value?.trim() || '';
-      const avisoDemo = '\n\n[CAIXA]\nVERSÃO DE DEMONSTRAÇÃO — TESTE GRÁTIS LOUMIND\nEsta atividade foi gerada no teste grátis do site, sem perfil clínico completo. Assine a LouMind para gerar atividades assim ilimitadas, com perfil clínico, histórico de aplicações e muito mais.\n[/CAIXA]';
+      const avisoDemo = '\n\n[CAIXA]\nVERSÃO DE DEMONSTRAÇÃO — TESTE GRÁTIS LOUMIND\nEsta atividade foi gerada no teste grátis do site, sem perfil clínico completo e sem imagens (recurso exclusivo dos módulos pagos). Assine a LouMind para gerar atividades assim ilimitadas, com perfil clínico, imagens automáticas em cada questão, histórico de aplicações e muito mais.\n[/CAIXA]';
       gerarPDFDocumento({
         tipo: 'ATIVIDADE ADAPTADA',
         titulo: 'Atividade Adaptada — Teste Grátis',
