@@ -21662,7 +21662,9 @@ Termo 2 » definição 2
 
   try {
     const textoBruto = await chamarClaude({ prompt, maxTokens: 1400, modulo: 'teste-gratis-publico' });
-    const texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+    let texto = textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '');
+    if (typeof corrigirAlternativasColadas === 'function') texto = corrigirAlternativasColadas(texto);
+    if (typeof corrigirAcentuacaoComum === 'function') texto = corrigirAcentuacaoComum(texto);
     document.getElementById('tg-resultado').value = texto;
     document.getElementById('tg-bloco-form').style.display = 'none';
     document.getElementById('tg-bloco-resultado').style.display = 'block';
