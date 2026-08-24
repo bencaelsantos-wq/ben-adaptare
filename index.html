@@ -2050,30 +2050,23 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     function baixarPDFTesteGratis() {
       const texto = document.getElementById('tg-resultado')?.value || '';
       if (!texto.trim()) return;
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const W = 210, H = 297, ml = 18, mr = 18;
-      doc.setFillColor(30, 58, 138);
-      doc.rect(0, 0, W, 18, 'F');
-      doc.setTextColor(255,255,255);
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(12);
-      doc.text('ATIVIDADE ADAPTADA — TESTE LOUMIND', W/2, 11, { align: 'center' });
-      let y = 30;
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(11);
-      doc.setTextColor(30,30,30);
-      const textoLimpo = typeof sanitizarTexto === 'function' ? sanitizarTexto(texto) : texto;
-      const linhas = doc.splitTextToSize(textoLimpo, W - ml - mr);
-      linhas.forEach(l => {
-        if (y > H - 25) { doc.addPage(); y = 20; }
-        doc.text(l, ml, y);
-        y += 6;
+      const nome = document.getElementById('tg-nome')?.value?.trim() || 'Profissional';
+      const perfil = document.getElementById('tg-perfil')?.value?.trim() || '';
+      const idade = document.getElementById('tg-idade')?.value?.trim() || '';
+      const avisoDemo = '\n\n[CAIXA]\nVERSÃO DE DEMONSTRAÇÃO — TESTE GRÁTIS LOUMIND\nEsta atividade foi gerada no teste grátis do site, sem perfil clínico completo. Assine a LouMind para gerar atividades assim ilimitadas, com perfil clínico, histórico de aplicações e muito mais.\n[/CAIXA]';
+      gerarPDFDocumento({
+        tipo: 'ATIVIDADE ADAPTADA',
+        titulo: 'Atividade Adaptada — Teste Grátis',
+        subtitulo: perfil || 'Teste Grátis LouMind',
+        aluno: idade ? `Aluno(a) · ${idade}` : 'Aluno(a)',
+        professor: nome,
+        conteudo: texto + avisoDemo,
+        nomeArquivo: 'Adaptacao_Teste_LouMind',
+        isAtividade: true,
+        guiaProf: null,
+        fonteTipo: 'sans',
+        imagensPorItem: {}
       });
-      doc.setFontSize(8);
-      doc.setTextColor(150,150,150);
-      doc.text('Gerado em loumind.ia.br — crie sua conta para PDFs com ícones, cores e imagens.', W/2, H - 10, { align: 'center' });
-      doc.save('Adaptacao_Teste_LouMind.pdf');
     }
     </script>
 
