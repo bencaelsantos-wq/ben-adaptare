@@ -2038,6 +2038,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <div id="tg-bloco-resultado" style="display:none">
       <label class="flabel">Resultado adaptado</label>
       <textarea class="ftarea" id="tg-resultado" style="min-height:220px" readonly></textarea>
+      <button class="btn-copy" style="width:100%;justify-content:center;margin-top:10px" onclick="baixarPDFTesteGratis()">⬇️ Baixar PDF</button>
       <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px;margin-top:14px;text-align:center">
         <div style="font-weight:700;color:#1E3A8A;margin-bottom:6px">Gostou do resultado?</div>
         <p style="font-size:12.5px;color:#374151;margin:0 0 10px">Crie sua conta grátis e adapte quantas atividades quiser, com perfil clínico completo, histórico e muito mais.</p>
@@ -2045,6 +2046,36 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       </div>
       <button class="btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="reiniciarTesteGratis()">Testar outra atividade</button>
     </div>
+    <script>
+    function baixarPDFTesteGratis() {
+      const texto = document.getElementById('tg-resultado')?.value || '';
+      if (!texto.trim()) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const W = 210, H = 297, ml = 18, mr = 18;
+      doc.setFillColor(30, 58, 138);
+      doc.rect(0, 0, W, 18, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(12);
+      doc.text('ATIVIDADE ADAPTADA — TESTE LOUMIND', W/2, 11, { align: 'center' });
+      let y = 30;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(11);
+      doc.setTextColor(30,30,30);
+      const textoLimpo = typeof sanitizarTexto === 'function' ? sanitizarTexto(texto) : texto;
+      const linhas = doc.splitTextToSize(textoLimpo, W - ml - mr);
+      linhas.forEach(l => {
+        if (y > H - 25) { doc.addPage(); y = 20; }
+        doc.text(l, ml, y);
+        y += 6;
+      });
+      doc.setFontSize(8);
+      doc.setTextColor(150,150,150);
+      doc.text('Gerado em loumind.ia.br — crie sua conta para PDFs com ícones, cores e imagens.', W/2, H - 10, { align: 'center' });
+      doc.save('Adaptacao_Teste_LouMind.pdf');
+    }
+    </script>
 
     <div id="tg-bloco-limite" style="display:none;text-align:center;padding:20px 0">
       <div style="font-size:32px;margin-bottom:8px">🔒</div>
