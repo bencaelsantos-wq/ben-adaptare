@@ -1743,7 +1743,6 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <button onclick="mostrarQuemSomos()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">SOBRE</button>
       <button onclick="mostrarCentralAjuda()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">AJUDA</button>
       <button onclick="irParaLogin()" style="background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#374151;cursor:pointer;padding:6px 10px;border-radius:10px;transition:box-shadow .18s,transform .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(30,58,138,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">ENTRAR</button>
-      <button class="btn-primary" style="font-size:13px;padding:8px 20px" onclick="abrirModalDemo('escola')">Solicitar demo →</button>
     </div>
   </nav>
 
@@ -2057,8 +2056,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   <h2>Pronto para transformar a inclusão na sua escola?</h2>
   <p>Acesse agora e veja como o LouMind simplifica a integração clínica e pedagógica.</p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
-    <button class="btn-primary" style="border-radius:999px;font-size:15px;padding:14px 32px" onclick="abrirModalDemo('escola')">Solicitar demonstração gratuita</button>
-    <button class="btn-ghost" style="border-radius:999px;font-size:15px;padding:14px 32px" onclick="irParaLogin()">Já tenho conta →</button>
+    <button class="btn-primary" style="border-radius:999px;font-size:15px;padding:14px 32px" onclick="irParaLogin()">Já tenho conta →</button>
   </div>
 </div>
 
@@ -2071,70 +2069,6 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     </p>
   </footer>
 </div>
-
-<!-- ══ MODAL: SOLICITAR DEMO ══ -->
-<div id="overlay-demo" class="overlay" onclick="if(event.target===this)fecharModal('overlay-demo')">
-  <div class="modal md">
-    <div class="modal-header">
-      <div class="modal-title">Solicitar demonstração gratuita</div>
-      <button class="modal-close" onclick="fecharModal('overlay-demo')">×</button>
-    </div>
-    <p style="font-size:13px;color:#6B7280;margin:0 0 20px">Preencha os dados abaixo — entraremos em contato em até 24h para agendar sua demo.</p>
-    <div class="fblock">
-      <label class="flabel">Nome completo *</label>
-      <input class="finput" id="demo-nome" placeholder="Seu nome">
-    </div>
-    <div class="frow">
-      <div>
-        <label class="flabel">E-mail *</label>
-        <input class="finput" id="demo-email" type="email" placeholder="seu@escola.com.br">
-      </div>
-      <div>
-        <label class="flabel">WhatsApp *</label>
-        <input class="finput" id="demo-tel" type="tel" placeholder="(11) 99999-9999">
-      </div>
-    </div>
-    <div class="frow">
-      <div>
-        <label class="flabel">Nome da escola/clínica</label>
-        <input class="finput" id="demo-escola" placeholder="Ex: Escola Municipal… ou Clínica…">
-      </div>
-      <div>
-        <label class="flabel">Pacientes/alunos com laudo (aprox.)</label>
-        <select class="fselect" id="demo-alunos">
-          <option value="">Selecione</option>
-          <option>Até 10</option>
-          <option>10 a 30</option>
-          <option>30 a 60</option>
-          <option>Mais de 60</option>
-        </select>
-      </div>
-    </div>
-    <div class="fblock">
-      <label class="flabel">Tenho interesse em</label>
-      <select class="fselect" id="demo-plano">
-        <option value="clinica">Módulo Clínica</option>
-        <option value="escola">Módulo Escola</option>
-        <option value="ambos">Clínica + Escola</option>
-      </select>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn-primary" style="flex:1;justify-content:center;font-size:14px" id="btn-enviar-demo" onclick="enviarSolicitacaoDemo()">
-        Solicitar demonstração
-      </button>
-      <button class="btn-ghost" onclick="fecharModal('overlay-demo')">Cancelar</button>
-    </div>
-    <div id="demo-resultado" style="display:none;margin-top:12px;padding:12px 14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:8px;font-size:13px;color:#166534;line-height:1.6">
-      ✅ <strong>Solicitação enviada!</strong> Entraremos em contato em até 24h. Se preferir resposta imediata, clique no botão abaixo para falar pelo WhatsApp.
-    </div>
-    <div id="demo-wa-btn" style="display:none;margin-top:10px">
-      <button id="btn-demo-wa" class="btn-gerar" style="width:100%;justify-content:center;background:linear-gradient(135deg,#22C55E,#16A34A);font-size:14px">
-        💬 Continuar pelo WhatsApp
-      </button>
-    </div>
-  </div>
-</div>
-<!-- /MODAL DEMO -->
 
 <!-- MODAL TESTE GRÁTIS -->
 <div id="overlay-teste-gratis" class="overlay" onclick="if(event.target===this)fecharModal('overlay-teste-gratis')">
