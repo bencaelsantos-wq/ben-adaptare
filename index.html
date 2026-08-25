@@ -17083,7 +17083,8 @@ async function salvarAluno() {
   if (docs.length && !window._devMode) {
     const falhas = [];
     for (const f of docs) {
-      const path = `laudos/${data.id}/${Date.now()}_${f.name.replace(/\s+/g,'_')}`;
+      const nomeSanitizado = f.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `laudos/${data.id}/${Date.now()}_${nomeSanitizado}`;
       const { error: erroUpload } = await db.storage.from('documentos-alunos').upload(path, f, { upsert: false });
       if (erroUpload) { console.error('Erro ao subir documento:', f.name, erroUpload); falhas.push(f.name); }
     }
