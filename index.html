@@ -6625,6 +6625,10 @@ function renderPagesDeveloper() {
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#0891B2;margin:10px 0 6px">Compartilhados (Clínica + Escola)</div>
       <div id="dam-grupo-compartilhado" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:16px"></div>
 
+      <div id="dam-cpf-wrap" style="display:none;margin-bottom:14px">
+        <label style="font-size:12px;color:#4B5563">CPF do contratante (pessoa física)</label>
+        <input type="text" id="dam-cpf" placeholder="000.000.000-00" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px;margin-top:4px">
+      </div>
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#4B5563;margin:10px 0 6px">Quantidade contratada</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
         <div><label style="font-size:12px;color:#4B5563">Pacientes</label><input type="number" min="0" id="dam-qtd-pacientes" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
@@ -7560,8 +7564,13 @@ function filtrarUsuariosDev() {
   ].join('') || '<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
 }
 
+const PRECO_NOVA_ADAPTACAO_SOLO = 69.90;
+function precoAddonContexto(chave) {
+  if (chave === 'nova_adaptacao' && !window._damOrgId) return PRECO_NOVA_ADAPTACAO_SOLO;
+  return PRECOS_ADDON[chave] || 0;
+}
 function checkboxAddon(u, chave) {
-  return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]} <span style="color:#9CA3AF">(R$${PRECOS_ADDON[chave]})</span></label>`;
+  return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]} <span style="color:#9CA3AF">(R$${precoAddonContexto(chave)})</span></label>`;
 }
 
 async function abrirModalAddonsDev(id) {
@@ -7582,6 +7591,8 @@ async function abrirModalAddonsDev(id) {
   }
 
   document.getElementById('dam-email').innerHTML = (u.email || '') + avisoOrg;
+  const cpfWrap = document.getElementById('dam-cpf-wrap');
+  if (cpfWrap) { cpfWrap.style.display = window._damOrgId ? 'none' : 'block'; document.getElementById('dam-cpf').value = u.cpf || ''; }
   document.getElementById('dam-grupo-clinica').innerHTML = GRUPOS_ADDON.clinica.map(a => checkboxAddon(fonte, a)).join('');
   document.getElementById('dam-grupo-escola').innerHTML = GRUPOS_ADDON.escola.map(a => checkboxAddon(fonte, a)).join('');
   document.getElementById('dam-grupo-compartilhado').innerHTML = GRUPOS_ADDON.compartilhado.map(a => checkboxAddon(fonte, a)).join('');
@@ -7606,7 +7617,7 @@ function fecharModalAddonsDev() {
 function recalcularModalAddonsDev() {
   const checks = document.querySelectorAll('#dev-modal-addons input[type="checkbox"][data-addon]');
   let subtotalAddons = 0;
-  checks.forEach(c => { if (c.checked) subtotalAddons += PRECOS_ADDON[c.dataset.addon] || 0; });
+  checks.forEach(c => { if (c.checked) subtotalAddons += precoAddonContexto(c.dataset.addon); });
   const qtdPacientes = parseInt(document.getElementById('dam-qtd-pacientes').value, 10) || 0;
   const qtdProfissionais = parseInt(document.getElementById('dam-qtd-profissionais').value, 10) || 0;
   const qtdAt = parseInt(document.getElementById('dam-qtd-at').value, 10) || 0;
@@ -7635,6 +7646,7 @@ async function salvarAddonsDev() {
   payload.qtd_professores = parseInt(document.getElementById('dam-qtd-professores').value, 10) || 0;
   payload.desconto_percentual = parseFloat(document.getElementById('dam-desconto').value) || 0;
   payload.observacoes_negociacao = document.getElementById('dam-observacoes').value.trim();
+  if (!window._damOrgId) payload.cpf = document.getElementById('dam-cpf')?.value.trim() || null;
 
   const tabela = window._damOrgId ? 'organizacoes' : 'profiles';
   const alvo = window._damOrgId || id;
