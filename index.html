@@ -3917,7 +3917,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4176,6 +4176,9 @@ function renderNavProfessor() {
     </div>
     <div class="nav-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('historico')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
+    <div class="nav-item" id="nav-ciclo" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Ciclo de Trabalho')" : "showPage('ciclo-trabalho');popularAlunosCiclo()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 016.6 9.3M10 17a7 7 0 01-6.6-9.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M15.5 5l1.5 1-2 1.3M4.5 15l-1.5-1 2-1.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Ciclo de Trabalho${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item" id="nav-estudo-caso" onclick="${!temAddon('estudo_caso') ? "acessarRecursoPremium('Estudo de Caso')" : "showPage('estudo-caso');carregarEstudosCaso()"}">
        <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso${!temAddon('estudo_caso') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -10149,6 +10152,64 @@ function renderPages() {
       <div id="ap-img-itens"></div>
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
+  </div>
+
+  <!-- CICLO DE TRABALHO -->
+  <div id="page-ciclo-trabalho" class="page">
+    <h1 class="page-title">Ciclo de Trabalho</h1>
+    <p class="page-sub">Gere uma unidade de estudo completa e adaptada — aquecimento + 3 níveis de dificuldade crescente — no formato usado em escolas Montessorianas.</p>
+    <div class="info-banner"><strong>Dica:</strong> se a série do aluno tiver um Planejamento Anual cadastrado pela Gestão, a Lou usa esse conteúdo como referência automaticamente.</div>
+
+    <div class="fcard">
+      <div class="fcard-title">Dados do aluno</div>
+      <div class="fblock"><label class="flabel" for="cic-aluno-search">Buscar aluno</label>
+        <div class="aluno-selector">
+          <input class="aluno-search" id="cic-aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSelCiclo()">
+          <div id="cic-aluno-lista-sel"></div>
+        </div>
+      </div>
+      <div class="aluno-sel-info" id="cic-aluno-sel-info"></div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">Ciclo</div>
+      <div class="frow">
+        <div><label class="flabel" for="cic-materia">Matéria / Área</label>
+          <select id="cic-materia" class="fselect">
+            <option value="">Selecione</option>
+            <optgroup label="Montessori">
+              <option>Educação Cósmica</option><option>Vida Prática</option><option>Linguagem Oral e Escrita (Montessori)</option><option>Matemática (Montessori)</option><option>Sensorial</option><option>Cultura Geral</option><option>Arte e Expressão</option><option>Movimento e Coordenação</option><option>Botânica e Zoologia</option><option>Geografia e Geologia</option><option>História do Universo</option><option>Educação para a Paz</option>
+            </optgroup>
+            <optgroup label="Convencional">
+              <option>Língua Portuguesa</option><option>Matemática</option><option>Ciências da Natureza</option><option>História</option><option>Geografia</option><option>Artes</option><option>Educação Física</option><option>Língua Inglesa</option><option>Filosofia</option><option>Sociologia</option><option>Biologia</option><option>Física</option><option>Química</option><option>Ensino Religioso</option><option>Redação e Produção Textual</option>
+            </optgroup>
+          </select>
+        </div>
+        <div><label class="flabel" for="cic-tema">Tema do ciclo</label><input type="text" id="cic-tema" class="finput" placeholder="Ex: Reprodução Humana e Saúde"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="cic-contexto">Contexto ou conteúdo a trabalhar</label><textarea id="cic-contexto" class="ftarea" placeholder="Descreva os pontos principais que o ciclo deve cobrir, ou cole um trecho do material da turma..."></textarea></div>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar-ciclo" onclick="gerarCicloTrabalho()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar Ciclo com a Lou
+    </button>
+    <div class="gen-box" id="gen-box-ciclo"><div class="spin"></div><span>IA montando o ciclo de trabalho…</span></div>
+
+    <div class="result-card" id="result-card-ciclo">
+      <div class="result-header">
+        <div class="result-title">Ciclo gerado pela IA</div>
+        <div class="result-badge" id="result-badge-ciclo">—</div>
+      </div>
+      <div id="ciclo-resultado-blocos"></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarCicloTrabalho()">Salvar no histórico</button>
+        <button class="btn-copy" onclick="baixarPDFCiclo()">Baixar PDF</button>
+      </div>
+    </div>
+
+    <h2 class="page-title" style="font-size:16px;margin:24px 0 10px">Ciclos salvos</h2>
+    <div class="cards-grid" id="cic-lista-salvos"><p style="color:var(--gr400);font-size:13px">Nenhum ciclo gerado ainda.</p></div>
   </div>
 
   <!-- HISTÓRICO -->
