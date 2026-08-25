@@ -13819,6 +13819,7 @@ REGRAS MECÂNICAS DE FORMATAÇÃO (sempre seguir, sem exceção — é o que gar
 - Marcador [IMAGEM: nome-do-item]: minúsculo, sem acento, no máximo 1 por item, só quando a imagem representar diretamente o conceito (nunca decorativo) — use nos formatos já descritos na seção FORMATO acima (diagrama substituído / ligar-associar / identificar-nomear)
 - Escreva sempre em português correto, com acentuação e cedilha (ex: "operação", "não", "número", "questão") — inclusive dentro de textos livres, enunciados e explicações, não só nos títulos.
 - Preste atenção especial à diferença entre "e" (conjunção, ex: "sol e lua") e "é" (verbo ser, ex: "É no começo ou no fim?", "Isso é verdade"). Releia cada frase antes de finalizar: se "e"/"E" está sendo usado como o verbo "ser" (equivalente a "is"/"está sendo"), ele PRECISA do acento — nunca escreva "E no começo" quando o sentido é "É no começo".
+- Em textos de apoio/leitura, quando uma informação necessária para responder uma pergunta não estiver óbvia ou destacada no texto, sublinhe essa informação usando o marcador "__texto__" ao redor da parte exata a destacar (ex: "A Terra é o __único planeta__ com água líquida."). Use com moderação — só na informação que realmente responde a uma pergunta seguinte, nunca a frase inteira.
 - Em listas de duas ou mais características/adjetivos separados por vírgula, sempre use "e" antes do último item, nunca deixe só vírgulas soltas (ex correto: "água muito fria e dura"; ex ERRADO, nunca faça: "água muito fria, dura").
 
 PRINCÍPIOS DE CONTEÚDO DA ADAPTAÇÃO:
@@ -16058,6 +16059,24 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const linhasOpcaoAtiv = doc.splitTextToSize(textoOpcao, maxW - 7);
       linhasOpcaoAtiv.forEach((lo, li) => doc.text(lo, ml + 6, y + li * altLinha));
       y += altLinha * linhasOpcaoAtiv.length;
+    } else if (/__.+?__/.test(limpa)) {
+      const segmentosSublinhar = [...limpa.matchAll(/__(.+?)__/g)].map(m => m[1]);
+      const textoSemMarcador = limpa.replace(/__(.+?)__/g, '$1');
+      const linhasSublinhadas = doc.splitTextToSize(textoSemMarcador, maxW);
+      linhasSublinhadas.forEach((lq, li) => {
+        doc.text(lq, ml, y + li * altLinha);
+        segmentosSublinhar.forEach(seg => {
+          const idx = lq.indexOf(seg);
+          if (idx === -1) return;
+          const xIni = ml + doc.getTextWidth(lq.slice(0, idx));
+          const larguraSeg = doc.getTextWidth(seg);
+          const yLinha = y + li * altLinha + 1;
+          doc.setDrawColor(25, 25, 25);
+          doc.setLineWidth(0.3);
+          doc.line(xIni, yLinha, xIni + larguraSeg, yLinha);
+        });
+      });
+      y += altLinha * linhasSublinhadas.length;
     } else {
       const linhasQuebradasAtiv = doc.splitTextToSize(limpa || linha, maxW);
       linhasQuebradasAtiv.forEach((lq, li) => doc.text(lq, ml, y + li * altLinha));
