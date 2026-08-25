@@ -16847,9 +16847,9 @@ async function abrirPerfilAluno(a) {
 async function popularDropdownProfessoresCad() {
   const sel = document.getElementById('cad-professores-sel');
   if (!sel) return;
-  const { data } = await db.from('professores').select('id, nome').order('nome');
+  const { data } = await db.from('profiles').select('id, nome, email').eq('role', 'professor').eq('organizacao_id', window._organizacaoId).order('nome');
   sel.innerHTML = '<option value="">Selecione um professor</option>' +
-    (data||[]).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+    (data||[]).map(p => `<option value="${p.id}">${p.nome || p.email}</option>`).join('');
 }
 function adicionarProfessorCad() {
   const sel = document.getElementById('cad-professores-sel');
@@ -16904,6 +16904,7 @@ function handleDocsDrop(e) {
 function processDocFile(f) {
   if (f.type !== 'application/pdf') return toast('Apenas PDFs são aceitos.', 'error');
   if (f.size > 5 * 1024 * 1024) return toast(`"${f.name}" excede 5 MB.`, 'error');
+  if (/[^\x00-\x7F]/.test(f.name)) toast(`"${f.name}" tem acento ou caractere especial no nome — o sistema vai ajustar automaticamente para conseguir salvar. Se preferir, renomeie o arquivo sem acentos antes de anexar.`, 'error');
   if (!window._cadDocs) window._cadDocs = [];
   window._cadDocs.push(f);
   renderDocsListAluno();
