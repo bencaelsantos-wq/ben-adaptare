@@ -16523,7 +16523,7 @@ async function carregarAlunosAdaptacaoClinica() {
 }
 
 async function carregarAlunosGestao() {
-  const { data } = await db.from('alunos').select('*').order('nome');
+  const { data } = await db.from('alunos').select('*').eq('organizacao_id', window._organizacaoId).order('nome');
   alunosCad = data || [];
   const el = document.getElementById('gestao-alunos-lista');
   if (!el) return;
@@ -16531,20 +16531,37 @@ async function carregarAlunosGestao() {
     el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👤</div><div class="empty-text">Nenhum aluno cadastrado.<br>Clique em "+ Cadastrar aluno".</div></div>`;
     return;
   }
-  el.innerHTML = alunosCad.map(a => {
+  const alunosAtivos = alunosCad.filter(a => a.ativo !== false);
+  el.innerHTML = alunosAtivos.map(a => {
     const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
     const tags = (a.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('');
     return `<div class="item-card">
-      <div class="ic-nome">${a.nome}</div>
+      <div class="ic-nome">${a.nome} ${a.codigo?`<span style="font-size:10.5px;font-weight:600;color:#9CA3AF">· ${a.codigo}</span>`:''}</div>
       <div class="ic-meta">${meta}</div>
       <div class="ic-tags">${tags}</div>
       ${a.observacoes?`<div style="font-size:11.5px;color:var(--gr400);margin-top:6px">${a.observacoes.slice(0,80)}…</div>`:''}
       <div style="display:flex;gap:6px;margin-top:10px">
         <button class="btn-sm" style="font-size:12px;padding:5px 12px" onclick='editarAluno(${JSON.stringify(a).replace(/'/g,"&#39;")})'>Editar</button>
+        <button class="btn-sm-ghost" onclick="desativarAluno('${a.id}','${(a.nome||'').replace(/'/g,"&#39;")}')">Desativar</button>
         <button class="btn-danger" onclick="excluirAluno('${a.id}','${(a.nome||'').replace(/'/g,"&#39;")}')">Excluir</button>
       </div>
     </div>`;
   }).join('');
+}
+
+async function desativarAluno(id, nome) {
+  if (!confirm(`Desativar "${nome}"? Ele some das listas de trabalho, mas o histórico (adaptações, laudos, monitoramento) continua salvo. A vaga contratada não é liberada — para reativar, use "Editar" em "Alunos inativos".`)) return;
+  const { error } = await db.from('alunos').update({ ativo: false }).eq('id', id);
+  if (error) return toast('Erro ao desativar: ' + error.message, 'error');
+  toast('Aluno desativado.', 'success');
+  carregarAlunosGestao();
+}
+
+async function reativarAluno(id) {
+  const { error } = await db.from('alunos').update({ ativo: true }).eq('id', id);
+  if (error) return toast('Erro ao reativar: ' + error.message, 'error');
+  toast('Aluno reativado.', 'success');
+  carregarAlunosGestao();
 }
 
 function renderAlunosLista() {
@@ -17016,12 +17033,21 @@ async function salvarAluno() {
   if (!nome) return toast('Informe o nome.', 'error');
   if (!lgpdValidar('aluno')) return;
 
+  let novoCodigo = null;
   if (!_editAlunoId) {
-    const { count } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    const { count: countAtivos } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('organizacao_id', window._organizacaoId).eq('ativo', true);
     const limite = limitesAtuais().alunos;
-    if ((count||0) >= limite) {
+    if ((countAtivos||0) >= limite) {
       return toast(`Limite de ${limite} alunos contratados atingido. Fale com o suporte para contratar mais.`, 'error');
     }
+    const umAnoAtras = new Date(); umAnoAtras.setFullYear(umAnoAtras.getFullYear() - 1);
+    const { count: countHistorico12m } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('organizacao_id', window._organizacaoId).gte('created_at', umAnoAtras.toISOString());
+    const limiteRotatividade = Math.ceil(limite * 1.2);
+    if ((countHistorico12m||0) >= limiteRotatividade) {
+      return toast(`Você atingiu o limite de novos cadastros deste ano (${limiteRotatividade} para um plano de ${limite} alunos). Fale com o suporte se precisar de mais vagas.`, 'error');
+    }
+    const { count: countTotalHistorico } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('organizacao_id', window._organizacaoId);
+    novoCodigo = 'LM' + String((countTotalHistorico||0) + 1).padStart(3, '0');
   }
 
   let data, error;
@@ -17034,7 +17060,8 @@ async function salvarAluno() {
     _editAlunoId = null;
   } else {
     ({ data, error } = await db.from('alunos').insert({
-      user_id: user.id, nome, idade, nasc, serie, metodo, perfis, observacoes,
+      user_id: user.id, organizacao_id: window._organizacaoId, codigo: novoCodigo, ativo: true,
+      nome, idade, nasc, serie, metodo, perfis, observacoes,
       pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
       clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs,
       at_id: at_id || null, at_nome: at_nome || null,
