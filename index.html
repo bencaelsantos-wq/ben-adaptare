@@ -8114,6 +8114,12 @@ function editarAluno(a) {
         if (c.textContent.trim() === p.trim()) c.classList.add('active');
       });
     });
+    window._cadProfessoresIds = a.professores_ids ? [...a.professores_ids] : [];
+    renderProfessoresTagsCad();
+    window._cadProfs = a.clinica_profs ? [...a.clinica_profs] : [];
+    renderProfTagsAluno();
+    const atSel = document.getElementById('cad-at-id');
+    if (atSel && a.at_id) atSel.value = a.at_id;
     const titulo = document.querySelector('#modal-cad h2');
     if (titulo) titulo.textContent = 'Editar Aluno';
   }, 50);
