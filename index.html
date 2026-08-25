@@ -17055,7 +17055,9 @@ async function salvarAluno() {
     ({ data, error } = await db.from('alunos').update({
       nome, idade, nasc, serie, metodo, perfis, observacoes,
       pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
-      clinica_nome, clinica_tel, clinica_email, clinica_end
+      clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs,
+      at_id: at_id || null, at_nome: at_nome || null,
+      professores_ids: window._cadProfessoresIds?.length ? [...window._cadProfessoresIds] : []
     }).eq('id', _editAlunoId).select('id').single());
     _editAlunoId = null;
   } else {
