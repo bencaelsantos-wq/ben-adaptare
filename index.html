@@ -4304,6 +4304,9 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-gestao-adapt" onclick="showPage('gestao-adapt')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações
     </div>
+    <div class="nav-item gestao-item" id="nav-gestao-planejamento" onclick="showPage('gestao-planejamento');carregarPlanejamentoAnual()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14" stroke="currentColor" stroke-width="1.5"/><path d="M7 2.5v3M13 2.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Planejamento Anual
+    </div>
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item gestao-item" id="nav-colaboracao-gestao" onclick="abrirColaboracao()" style="font-weight:600">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional
@@ -4333,6 +4336,77 @@ function renderNavGestao() {
 
 function navBloqueado() {
   toast('Recurso não disponível para o perfil Coordenação.', 'error');
+}
+
+// ── PLANEJAMENTO ANUAL ────────────────────────────────────────
+let planejamentosAnuaisList = [];
+let planejamentoEditandoId = null;
+
+async function carregarPlanejamentoAnual() {
+  if (!window._organizacaoId) return;
+  const { data } = await db.from('planejamento_anual').select('*').eq('organizacao_id', window._organizacaoId).order('serie').order('materia');
+  planejamentosAnuaisList = data || [];
+  renderizarListaPlanejamento();
+}
+
+function renderizarListaPlanejamento() {
+  const el = document.getElementById('pa-lista');
+  if (!el) return;
+  if (!planejamentosAnuaisList.length) { el.innerHTML = `<p style="color:var(--gr400);font-size:13px">Nenhum planejamento cadastrado ainda.</p>`; return; }
+  el.innerHTML = planejamentosAnuaisList.map(p => `
+    <div class="item-card" onclick='editarPlanejamentoAnual(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+      <div class="ic-nome">${p.serie} — ${p.materia}</div>
+      <div class="ic-prev">${(p.conteudo||'').slice(0,120)}…</div>
+      <button class="btn-sm" style="margin-top:8px" onclick='event.stopPropagation();apagarPlanejamentoAnual("${p.id}")'>🗑️ Apagar</button>
+    </div>`).join('');
+}
+
+function editarPlanejamentoAnual(p) {
+  planejamentoEditandoId = p.id;
+  document.getElementById('pa-serie').value = p.serie;
+  document.getElementById('pa-materia').value = p.materia;
+  document.getElementById('pa-conteudo').value = p.conteudo;
+  document.getElementById('pa-form-titulo').textContent = 'Editando planejamento';
+  document.getElementById('pa-btn-cancelar').style.display = '';
+  document.getElementById('pa-serie').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function limparFormPlanejamento() {
+  planejamentoEditandoId = null;
+  document.getElementById('pa-serie').value = '';
+  document.getElementById('pa-materia').value = '';
+  document.getElementById('pa-conteudo').value = '';
+  document.getElementById('pa-form-titulo').textContent = 'Novo planejamento';
+  document.getElementById('pa-btn-cancelar').style.display = 'none';
+}
+
+async function salvarPlanejamentoAnual() {
+  const serie = document.getElementById('pa-serie')?.value.trim();
+  const materia = document.getElementById('pa-materia')?.value.trim();
+  const conteudo = document.getElementById('pa-conteudo')?.value.trim();
+  if (!serie || !materia) return toast('Preencha série e matéria.', 'error');
+  if (!conteudo) return toast('Cole o conteúdo programático.', 'error');
+  if (!window._organizacaoId) return toast('Sua conta não está vinculada a uma organização.', 'error');
+
+  const { error } = await db.from('planejamento_anual').upsert({
+    id: planejamentoEditandoId || undefined,
+    organizacao_id: window._organizacaoId,
+    serie, materia, conteudo,
+    atualizado_por: user.id,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'organizacao_id,serie,materia' });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Planejamento salvo!', 'success');
+  limparFormPlanejamento();
+  carregarPlanejamentoAnual();
+}
+
+async function apagarPlanejamentoAnual(id) {
+  if (!confirm('Apagar este planejamento?')) return;
+  const { error } = await db.from('planejamento_anual').delete().eq('id', id);
+  if (error) return toast('Erro ao apagar: ' + error.message, 'error');
+  toast('Planejamento apagado.', 'success');
+  carregarPlanejamentoAnual();
 }
 
 function renderNavCoordenacao() {
@@ -11484,6 +11558,31 @@ function renderPagesGestao() {
       </div>
     </div>
 
+  </div>
+
+  <!-- GESTÃO: PLANEJAMENTO ANUAL -->
+  <div id="page-gestao-planejamento" class="page">
+    <h1 class="page-title">Planejamento Anual</h1>
+    <p class="page-sub">Cadastre o conteúdo programático do ano por série e matéria — a IA usa esse contexto ao gerar Adaptações e Ciclos de Trabalho daquela série.</p>
+
+    <div class="fcard" style="margin-bottom:20px">
+      <div class="fcard-title" id="pa-form-titulo">Novo planejamento</div>
+      <div class="frow">
+        <div><label class="flabel" for="pa-serie">Série</label><input type="text" id="pa-serie" class="finput" placeholder="Ex: 5º ano, 8º ano, 1ª série EM"></div>
+        <div><label class="flabel" for="pa-materia">Matéria</label><input type="text" id="pa-materia" class="finput" placeholder="Ex: Ciências, Matemática, Educação Cósmica"></div>
+      </div>
+      <div class="fblock">
+        <label class="flabel" for="pa-conteudo">Conteúdo programático do ano</label>
+        <textarea id="pa-conteudo" class="ftarea" style="min-height:180px" placeholder="Cole ou escreva o planejamento anual dessa série/matéria — unidades, temas, ordem de conteúdo..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm" onclick="salvarPlanejamentoAnual()">Salvar planejamento</button>
+        <button class="btn-sm-ghost" id="pa-btn-cancelar" style="display:none" onclick="limparFormPlanejamento()">Cancelar edição</button>
+      </div>
+    </div>
+
+    <h2 class="page-title" style="font-size:16px;margin-bottom:10px">Planejamentos cadastrados</h2>
+    <div class="cards-grid" id="pa-lista"><p style="color:var(--gr400);font-size:13px">Nenhum planejamento cadastrado ainda.</p></div>
   </div>
 
   <!-- GESTÃO: ALUNOS -->
