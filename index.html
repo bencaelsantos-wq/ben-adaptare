@@ -4501,6 +4501,7 @@ C) terceiro item
 - Use "»" como conector SÓ em tabelas de completar (ex: "Peixe dourado » Ovíparo » ___"), nunca em exercícios de associar/ligar — esses usam sempre o bloco [LIGAR] acima.
 - Texto de apoio/contextualização vai em bloco [CAIXA]...[/CAIXA], cada linha própria.
 - Logo após cada pergunta, inclua "[DICA: instrução curta de como responder]".
+- Sempre que existir uma forma real e simples do aluno conferir sozinho se acertou (ex: somar valores e comparar com um número, reler a frase em voz alta, contar itens), inclua logo abaixo da atividade uma linha "[DICA: ✓ Como conferir: instrução curta de autoconferência]" — nunca invente um método de conferência que não faça sentido pra aquela atividade específica; se não houver um jeito real, não inclua nada.
 - Nunca metáforas ou figuras de linguagem — linguagem literal e direta.
 - Escreva sempre em português correto, com acentuação, e preste atenção à diferença entre "e" (conjunção) e "é" (verbo ser).
 
@@ -4512,7 +4513,11 @@ OBJETIVOS:
 - [objetivo 3, 1 frase curta]
 
 [BANNER: PARA AQUECER]
-[1 a 2 perguntas curtas e introdutórias sobre o tema — mas escritas de forma CONVIDATIVA e curiosa, não como uma pergunta de prova. Desperte curiosidade genuína antes de começar (ex: uma pergunta intrigante, uma comparação inesperada, um "você sabia que..." antes da pergunta). Nunca exija pesquisa ou leitura longa — é só um gancho de interesse, rápido de responder]
+[Estruture em 3 partes curtas, seguindo a Lição em Três Períodos (técnica clássica Montessori de apresentar um conceito novo):
+1) NOMEAR — uma frase breve e convidativa que apresenta o conceito-chave do tema de forma curiosa (ex: "Você sabia que..."), sem perguntar nada ainda;
+2) RECONHECER — uma pergunta simples onde o aluno reconhece/identifica o conceito já apresentado (ex: escolher entre exemplos, apontar qual é);
+3) RECORDAR — uma pergunta onde o aluno usa o conceito com as próprias palavras, sem mais ajuda.
+As 3 partes juntas devem ser curtas e rápidas de responder — é um gancho de interesse, nunca uma prova.]
 
 [BANNER: NÍVEL BÁSICO]
 [atividade adaptada, com apoio máximo — passo a passo decomposto, exercícios diretos]
@@ -4527,7 +4532,8 @@ Máximo 500 palavras no total. NUNCA emojis, NUNCA markdown, NUNCA tabela em for
 
   try {
     const textoBruto = await chamarClaude({ prompt, maxTokens: 3200, modulo: 'ciclo_trabalho' });
-    const texto = corrigirAlternativasColadas(corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '')));
+    let texto = corrigirAlternativasColadas(corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '')));
+    texto += '\n\n[BANNER: REGISTRO DE TRABALHO]\n[CAIXA]\nData: ___/___/___\nMaterial ou atividade que usei: _______________________________\nO que eu aprendi hoje: _______________________________\n[/CAIXA]\nObservação do professor:\n_______________________________';
     ultimoCiclo = { texto, aluno: a.nome, alunoId: a.id, serie: a.serie, materia, tema };
     document.getElementById('ciclo-resultado-blocos').innerHTML = `<textarea class="result-text" id="ciclo-resultado-texto" style="width:100%;min-height:320px">${texto}</textarea>`;
     document.getElementById('result-badge-ciclo').textContent = `${a.serie||''} · ${materia}`;
