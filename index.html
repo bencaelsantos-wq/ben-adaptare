@@ -4487,7 +4487,18 @@ REGRAS OBRIGATÓRIAS, sem exceção:
 - ESTE MÓDULO NÃO TEM BANCO DE IMAGENS PRÓPRIO — pode usar o marcador [IMAGEM: nome-simples-sem-acento] normalmente, o profissional escolhe a imagem depois.
 - NUNCA peça para "recortar e colar" nenhum item — se precisar de ordenação/sequência, peça para escrever o número da ordem ao lado de cada item, com os itens em ordem embaralhada.
 - Alternativas de múltipla escolha sempre em linhas separadas, formato "( ) texto", nunca coladas no enunciado.
-- Use "»" como conector em associações — nunca "->".
+- TODA pergunta de resposta aberta (escrever com as próprias palavras, dar exemplo, explicar, comparar) precisa terminar com 1 a 3 linhas de resposta em branco, no formato "_______________________________" (uma linha por linha esperada de resposta) — nunca deixe a próxima seção/pergunta começar sem essas linhas.
+- Para associar/relacionar itens (ex: tipo com sua descrição), use OBRIGATORIAMENTE este bloco — nunca o formato de lista solta com "»":
+[LIGAR]
+A) primeiro item
+B) segundo item
+C) terceiro item
+---
+1) descrição embaralhada (nunca 1=A, 2=B, 3=C em sequência)
+2) descrição embaralhada
+3) descrição embaralhada
+[/LIGAR]
+- Use "»" como conector SÓ em tabelas de completar (ex: "Peixe dourado » Ovíparo » ___"), nunca em exercícios de associar/ligar — esses usam sempre o bloco [LIGAR] acima.
 - Texto de apoio/contextualização vai em bloco [CAIXA]...[/CAIXA], cada linha própria.
 - Logo após cada pergunta, inclua "[DICA: instrução curta de como responder]".
 - Nunca metáforas ou figuras de linguagem — linguagem literal e direta.
@@ -4568,7 +4579,7 @@ function baixarPDFCiclo() {
     tipo: 'CICLO DE TRABALHO',
     titulo: ultimoCiclo.tema,
     subtitulo: ultimoCiclo.materia,
-    aluno: ultimoCiclo.aluno,
+    aluno: ultimoCiclo.aluno + (ultimoCiclo.serie ? ' — ' + ultimoCiclo.serie : ''),
     professor: profNome,
     conteudo: textoAtual,
     nomeArquivo: 'Ciclo_' + ultimoCiclo.aluno.replace(/\s+/g,'_') + '_' + ultimoCiclo.materia.replace(/\s+/g,'_'),
