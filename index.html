@@ -4412,6 +4412,172 @@ async function apagarPlanejamentoAnual(id) {
   carregarPlanejamentoAnual();
 }
 
+let cicloAlunoSelId = null;
+
+function popularAlunosCiclo() {
+  filtrarAlSelCiclo();
+}
+
+function filtrarAlSelCiclo() {
+  const q = (document.getElementById('cic-aluno-search')?.value || '').toLowerCase();
+  const lista = (alunosCad||[]).filter(a => a.nome.toLowerCase().includes(q));
+  const el = document.getElementById('cic-aluno-lista-sel');
+  if (!el) return;
+  if (!lista.length) { el.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:var(--gr400)">Nenhum aluno encontrado. Cadastre em "Meus alunos".</div>`; return; }
+  el.innerHTML = lista.map(a => {
+    const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+    return `<div class="aluno-opt ${cicloAlunoSelId===a.id?'selected':''}" onclick="selecionarAlunoCiclo('${a.id}')">
+      <div class="aluno-opt-nome">${a.nome}</div>
+      <div class="aluno-opt-meta">${meta}</div>
+    </div>`;
+  }).join('');
+}
+
+function selecionarAlunoCiclo(id) {
+  cicloAlunoSelId = id;
+  const a = (alunosCad||[]).find(x => x.id === id);
+  if (!a) return;
+  const info = document.getElementById('cic-aluno-sel-info');
+  const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+  const tags = (a.perfis || []).map(p => `<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join(' ');
+  info.style.display = 'block';
+  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${tags}</div>`;
+  filtrarAlSelCiclo();
+}
+
+let ultimoCiclo = null;
+
+async function gerarCicloTrabalho() {
+  const a = (alunosCad||[]).find(x => x.id === cicloAlunoSelId);
+  if (!a) return toast('Selecione um aluno.', 'error');
+  const materia = document.getElementById('cic-materia')?.value;
+  const tema = document.getElementById('cic-tema')?.value.trim();
+  const contexto = document.getElementById('cic-contexto')?.value.trim();
+  if (!materia) return toast('Selecione a matéria.', 'error');
+  if (!tema) return toast('Informe o tema do ciclo.', 'error');
+
+  const btn = document.getElementById('btn-gerar-ciclo');
+  btn.disabled = true;
+  document.getElementById('gen-box-ciclo').classList.add('show');
+  document.getElementById('result-card-ciclo').classList.remove('show');
+
+  let planejamentoTexto = '';
+  if (window._organizacaoId && a.serie) {
+    try {
+      const { data: pa } = await db.from('planejamento_anual').select('conteudo').eq('organizacao_id', window._organizacaoId).eq('serie', a.serie).eq('materia', materia).maybeSingle();
+      if (pa?.conteudo) planejamentoTexto = pa.conteudo;
+    } catch(e) {}
+  }
+
+  const prompt = `Você é um assistente pedagógico especializado em educação inclusiva e no método Montessoriano de ciclos de trabalho, aplicando princípios de Desenho Universal para Aprendizagem (UDL).
+
+DADOS DO ALUNO:
+- Nome: ${a.nome} | Idade: ${a.idade||''} | Série: ${a.serie||''}
+- Diagnóstico(s): ${(a.perfis||[]).join(', ')||'Não informado'}
+${a.observacoes ? `- Observações: ${a.observacoes}` : ''}
+
+MATÉRIA: ${materia}
+TEMA DO CICLO: ${tema}
+${contexto ? `CONTEXTO/CONTEÚDO A TRABALHAR: ${contexto}` : ''}
+${planejamentoTexto ? `PLANEJAMENTO ANUAL DA SÉRIE PARA ESTA MATÉRIA (use como referência de conteúdo, adapte ao aluno):\n${planejamentoTexto}` : ''}
+
+Gere um CICLO DE TRABALHO completo no formato Montessoriano: um aquecimento breve + 3 níveis de atividade com dificuldade e autonomia crescentes, todos adaptados ao perfil do aluno, cobrindo o mesmo tema e progredindo em profundidade — nunca repita o mesmo exercício em níveis diferentes, cada nível deve exigir um passo a mais de raciocínio ou autonomia que o anterior.
+
+REGRAS OBRIGATÓRIAS, sem exceção:
+- ESTE MÓDULO NÃO TEM BANCO DE IMAGENS PRÓPRIO — pode usar o marcador [IMAGEM: nome-simples-sem-acento] normalmente, o profissional escolhe a imagem depois.
+- NUNCA peça para "recortar e colar" nenhum item — se precisar de ordenação/sequência, peça para escrever o número da ordem ao lado de cada item, com os itens em ordem embaralhada.
+- Alternativas de múltipla escolha sempre em linhas separadas, formato "( ) texto", nunca coladas no enunciado.
+- Use "»" como conector em associações — nunca "->".
+- Texto de apoio/contextualização vai em bloco [CAIXA]...[/CAIXA], cada linha própria.
+- Logo após cada pergunta, inclua "[DICA: instrução curta de como responder]".
+- Nunca metáforas ou figuras de linguagem — linguagem literal e direta.
+- Escreva sempre em português correto, com acentuação, e preste atenção à diferença entre "e" (conjunção) e "é" (verbo ser).
+
+FORMATO OBRIGATÓRIO — comece EXATAMENTE assim, nada antes:
+
+OBJETIVOS:
+- [objetivo 1, 1 frase curta]
+- [objetivo 2, 1 frase curta]
+- [objetivo 3, 1 frase curta]
+
+[BANNER: PARA AQUECER]
+[1 a 2 perguntas curtas e introdutórias sobre o tema, para o aluno refletir antes de começar — sem exigir pesquisa ou leitura longa]
+
+[BANNER: NÍVEL BÁSICO]
+[atividade adaptada, com apoio máximo — passo a passo decomposto, exercícios diretos]
+
+[BANNER: NÍVEL INTERMEDIÁRIO]
+[atividade adaptada, um pouco mais desafiadora — menos apoio, mais autonomia]
+
+[BANNER: NÍVEL AVANÇADO]
+[atividade adaptada, mais desafiadora — aplicação/síntese do que foi trabalhado, ainda respeitando o perfil do aluno]
+
+Máximo 500 palavras no total. NUNCA emojis, NUNCA markdown, NUNCA tabela em formato de colunas com |.`;
+
+  try {
+    const textoBruto = await chamarClaude({ prompt, maxTokens: 3200, modulo: 'ciclo_trabalho' });
+    const texto = corrigirAlternativasColadas(corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '')));
+    ultimoCiclo = { texto, aluno: a.nome, alunoId: a.id, serie: a.serie, materia, tema };
+    document.getElementById('ciclo-resultado-blocos').innerHTML = `<textarea class="result-text" id="ciclo-resultado-texto" style="width:100%;min-height:320px">${texto}</textarea>`;
+    document.getElementById('result-badge-ciclo').textContent = `${a.serie||''} · ${materia}`;
+    document.getElementById('result-card-ciclo').classList.add('show');
+    document.getElementById('result-card-ciclo').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('gen-box-ciclo').classList.remove('show');
+  }
+}
+
+async function salvarCicloTrabalho() {
+  if (!ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
+  const textoAtual = document.getElementById('ciclo-resultado-texto')?.value || ultimoCiclo.texto;
+  const { error } = await db.from('ciclos_trabalho').insert({
+    user_id: user.id,
+    aluno_id: ultimoCiclo.alunoId,
+    aluno_nome: ultimoCiclo.aluno,
+    materia: ultimoCiclo.materia,
+    tema: ultimoCiclo.tema,
+    serie: ultimoCiclo.serie,
+    objetivos: textoAtual
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Ciclo salvo no histórico!', 'success');
+  carregarCiclosSalvos();
+}
+
+async function carregarCiclosSalvos() {
+  const { data } = await db.from('ciclos_trabalho').select('id, aluno_nome, materia, tema, created_at').eq('user_id', user.id).order('created_at', { ascending: false });
+  const el = document.getElementById('cic-lista-salvos');
+  if (!el) return;
+  if (!data || !data.length) { el.innerHTML = `<p style="color:var(--gr400);font-size:13px">Nenhum ciclo gerado ainda.</p>`; return; }
+  el.innerHTML = data.map(c => `
+    <div class="item-card">
+      <div class="ic-nome">${c.aluno_nome}</div>
+      <div class="ic-meta">${c.materia} — ${c.tema}</div>
+      <div class="ic-date">${new Date(c.created_at).toLocaleDateString('pt-BR')}</div>
+    </div>`).join('');
+}
+
+function baixarPDFCiclo() {
+  if (!ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
+  const textoAtual = document.getElementById('ciclo-resultado-texto')?.value || ultimoCiclo.texto;
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+  gerarPDFDocumento({
+    tipo: 'CICLO DE TRABALHO',
+    titulo: ultimoCiclo.tema,
+    subtitulo: ultimoCiclo.materia,
+    aluno: ultimoCiclo.aluno,
+    professor: profNome,
+    conteudo: textoAtual,
+    nomeArquivo: 'Ciclo_' + ultimoCiclo.aluno.replace(/\s+/g,'_') + '_' + ultimoCiclo.materia.replace(/\s+/g,'_'),
+    isAtividade: true,
+    guiaProf: null,
+    fonteTipo: 'sans'
+  });
+}
+
 function renderNavCoordenacao() {
   document.getElementById('sb-nav').innerHTML = `
     <div class="nav-section">Gestão Escolar</div>
