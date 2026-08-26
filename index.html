@@ -4447,6 +4447,98 @@ function selecionarAlunoCiclo(id) {
 
 let ultimoCiclo = null;
 
+window._ciclosGerados = [];
+
+async function gerarCiclosOrquestrado() {
+  const qtd = parseInt(document.getElementById('cic-qtd')?.value, 10) || 1;
+  window._ciclosGerados = [];
+  const btnTodos = document.getElementById('btn-baixar-todos-ciclos');
+  if (btnTodos) btnTodos.style.display = 'none';
+
+  if (qtd <= 1) {
+    await gerarCicloTrabalho();
+    if (ultimoCiclo) window._ciclosGerados = [ultimoCiclo];
+    return;
+  }
+
+  const tema = document.getElementById('cic-tema')?.value.trim();
+  const materia = document.getElementById('cic-materia')?.value;
+  const contextoOriginal = document.getElementById('cic-contexto')?.value.trim();
+  if (!tema) return toast('Informe o tema do ciclo.', 'error');
+  if (!materia) return toast('Selecione a matéria.', 'error');
+
+  const btn = document.getElementById('btn-gerar-ciclo');
+  btn.disabled = true;
+  document.getElementById('gen-box-ciclo').classList.add('show');
+  const spanStatus = document.querySelector('#gen-box-ciclo span');
+
+  let subfocos = [];
+  try {
+    if (spanStatus) spanStatus.textContent = 'IA planejando a sequência de ciclos…';
+    const promptDivisao = `Você é um planejador pedagógico Montessoriano. Divida o tema "${tema}" (matéria: ${materia}) em EXATAMENTE ${qtd} sub-tópicos SEQUENCIAIS e PROGRESSIVOS — cada um cobrindo uma parte específica do tema, avançando em profundidade/complexidade do 1º ao último, nunca repetindo o foco entre eles.
+${contextoOriginal ? `CONTEXTO GERAL A COBRIR NO CONJUNTO TODO:\n${contextoOriginal}` : ''}
+Responda APENAS com a lista, uma linha por sub-tópico, no formato:
+1. [foco específico do ciclo 1, 1 frase curta]
+2. [foco específico do ciclo 2, 1 frase curta]
+Nada antes nem depois da lista.`;
+    const respostaDivisao = await chamarClaude({ prompt: promptDivisao, maxTokens: 400, modulo: 'ciclo_trabalho' });
+    subfocos = [...respostaDivisao.matchAll(/^\s*\d+\.\s*(.+)$/gm)].map(m => m[1].trim());
+  } catch(e) {}
+  if (subfocos.length !== qtd) subfocos = Array.from({length: qtd}, (_, i) => subfocos[i] || `Parte ${i+1} de ${tema}`);
+
+  for (let i = 0; i < qtd; i++) {
+    if (spanStatus) spanStatus.textContent = `IA montando o ciclo ${i+1} de ${qtd}…`;
+    document.getElementById('cic-tema').value = `${tema} — Ciclo ${i+1} de ${qtd}`;
+    document.getElementById('cic-contexto').value = (contextoOriginal ? contextoOriginal + '\n\n' : '') + `FOCO ESPECÍFICO DESTE CICLO: ${subfocos[i]}`;
+    await gerarCicloTrabalho();
+    if (ultimoCiclo) window._ciclosGerados.push(ultimoCiclo);
+  }
+
+  document.getElementById('cic-tema').value = tema;
+  document.getElementById('cic-contexto').value = contextoOriginal;
+  btn.disabled = false;
+  document.getElementById('gen-box-ciclo').classList.remove('show');
+  renderizarAbasCiclos();
+}
+
+function renderizarAbasCiclos() {
+  const abasEl = document.getElementById('ciclo-abas');
+  const btnTodos = document.getElementById('btn-baixar-todos-ciclos');
+  if (!abasEl) return;
+  if (window._ciclosGerados.length <= 1) { abasEl.innerHTML = ''; if (btnTodos) btnTodos.style.display = 'none'; return; }
+  abasEl.innerHTML = window._ciclosGerados.map((c,i) => `<button type="button" class="subrole-btn ${i===window._ciclosGerados.length-1?'active':''}" onclick="selecionarCicloAba(${i})">Ciclo ${i+1}</button>`).join('');
+  if (btnTodos) btnTodos.style.display = '';
+}
+
+function selecionarCicloAba(i) {
+  const c = window._ciclosGerados[i];
+  if (!c) return;
+  ultimoCiclo = c;
+  const txt = document.getElementById('ciclo-resultado-texto');
+  if (txt) txt.value = c.texto;
+  document.getElementById('result-badge-ciclo').textContent = `${c.serie||''} · ${c.materia}`;
+  document.querySelectorAll('#ciclo-abas .subrole-btn').forEach((b,idx) => b.classList.toggle('active', idx===i));
+}
+
+async function baixarPDFTodosCiclos() {
+  if (!window._ciclosGerados.length) return toast('Gere os ciclos primeiro.', 'error');
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+  const primeiro = window._ciclosGerados[0];
+  const conteudoCombinado = window._ciclosGerados.map(c => c.texto).join('\n\n[BANNER: PRÓXIMO CICLO]\n\n');
+  gerarPDFDocumento({
+    tipo: 'CICLO DE TRABALHO',
+    titulo: primeiro.tema.split(' — Ciclo')[0],
+    subtitulo: primeiro.materia,
+    aluno: primeiro.aluno + (primeiro.serie ? ' — ' + primeiro.serie : ''),
+    professor: profNome,
+    conteudo: conteudoCombinado,
+    nomeArquivo: 'Ciclos_' + primeiro.aluno.replace(/\s+/g,'_') + '_' + primeiro.materia.replace(/\s+/g,'_'),
+    isAtividade: true,
+    guiaProf: null,
+    fonteTipo: 'sans'
+  });
+}
+
 async function gerarCicloTrabalho() {
   const a = (alunosCad||[]).find(x => x.id === cicloAlunoSelId);
   if (!a) return toast('Selecione um aluno.', 'error');
@@ -10415,9 +10507,17 @@ function renderPages() {
         <div><label class="flabel" for="cic-tema">Tema do ciclo</label><input type="text" id="cic-tema" class="finput" placeholder="Ex: Reprodução Humana e Saúde"></div>
       </div>
       <div class="fblock"><label class="flabel" for="cic-contexto">Contexto ou conteúdo a trabalhar</label><textarea id="cic-contexto" class="ftarea" placeholder="Descreva os pontos principais que o ciclo deve cobrir, ou cole um trecho do material da turma..."></textarea></div>
+      <div class="fblock"><label class="flabel" for="cic-qtd">Quantos ciclos gerar</label><select id="cic-qtd" class="fselect" style="max-width:180px">
+        <option value="1" selected>1 ciclo</option>
+        <option value="2">2 ciclos sequenciais</option>
+        <option value="3">3 ciclos sequenciais</option>
+        <option value="4">4 ciclos sequenciais</option>
+        <option value="5">5 ciclos sequenciais</option>
+        <option value="6">6 ciclos sequenciais</option>
+      </select></div>
     </div>
 
-    <button class="btn-gerar" id="btn-gerar-ciclo" onclick="gerarCicloTrabalho()">
+    <button class="btn-gerar" id="btn-gerar-ciclo" onclick="gerarCiclosOrquestrado()">
       <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
       Gerar Ciclo com a Lou
     </button>
@@ -10428,10 +10528,12 @@ function renderPages() {
         <div class="result-title">Ciclo gerado pela IA</div>
         <div class="result-badge" id="result-badge-ciclo">—</div>
       </div>
+      <div id="ciclo-abas" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"></div>
       <div id="ciclo-resultado-blocos"></div>
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarCicloTrabalho()">Salvar no histórico</button>
-        <button class="btn-copy" onclick="baixarPDFCiclo()">Baixar PDF</button>
+        <button class="btn-copy" onclick="baixarPDFCiclo()">Baixar PDF (ciclo atual)</button>
+        <button class="btn-copy" id="btn-baixar-todos-ciclos" style="display:none" onclick="baixarPDFTodosCiclos()">Baixar PDF (todos os ciclos)</button>
         <button class="btn-copy" onclick="detectarImagensCiclo()">🖼️ Detectar imagens do ciclo</button>
       </div>
     </div>
