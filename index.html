@@ -4474,7 +4474,7 @@ async function gerarCiclosOrquestrado() {
 
   let subfocos = [];
   try {
-    if (spanStatus) spanStatus.textContent = 'IA planejando a sequência de ciclos…';
+    if (spanStatus) spanStatus.textContent = 'Lou planejando a sequência de ciclos…';
     const promptDivisao = `Você é um planejador pedagógico Montessoriano. Divida o tema "${tema}" (matéria: ${materia}) em EXATAMENTE ${qtd} sub-tópicos SEQUENCIAIS e PROGRESSIVOS — cada um cobrindo uma parte específica do tema, avançando em profundidade/complexidade do 1º ao último, nunca repetindo o foco entre eles.
 ${contextoOriginal ? `CONTEXTO GERAL A COBRIR NO CONJUNTO TODO:\n${contextoOriginal}` : ''}
 Responda APENAS com a lista, uma linha por sub-tópico, no formato:
@@ -4487,7 +4487,7 @@ Nada antes nem depois da lista.`;
   if (subfocos.length !== qtd) subfocos = Array.from({length: qtd}, (_, i) => subfocos[i] || `Parte ${i+1} de ${tema}`);
 
   for (let i = 0; i < qtd; i++) {
-    if (spanStatus) spanStatus.textContent = `IA montando o ciclo ${i+1} de ${qtd}…`;
+    if (spanStatus) spanStatus.textContent = `Lou montando o ciclo ${i+1} de ${qtd}…`;
     document.getElementById('cic-tema').value = `${tema} — Ciclo ${i+1} de ${qtd}`;
     document.getElementById('cic-contexto').value = (contextoOriginal ? contextoOriginal + '\n\n' : '') + `FOCO ESPECÍFICO DESTE CICLO: ${subfocos[i]}`;
     await gerarCicloTrabalho();
@@ -10524,7 +10524,7 @@ function renderPages() {
       <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
       Gerar Ciclo com a Lou
     </button>
-    <div class="gen-box" id="gen-box-ciclo"><div class="spin"></div><span>IA montando o ciclo de trabalho…</span></div>
+    <div class="gen-box" id="gen-box-ciclo"><div class="spin"></div><span>Lou montando o ciclo de trabalho…</span></div>
 
     <div class="result-card" id="result-card-ciclo">
       <div class="result-header">
