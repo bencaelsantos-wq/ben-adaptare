@@ -4512,7 +4512,7 @@ OBJETIVOS:
 - [objetivo 3, 1 frase curta]
 
 [BANNER: PARA AQUECER]
-[1 a 2 perguntas curtas e introdutórias sobre o tema, para o aluno refletir antes de começar — sem exigir pesquisa ou leitura longa]
+[1 a 2 perguntas curtas e introdutórias sobre o tema — mas escritas de forma CONVIDATIVA e curiosa, não como uma pergunta de prova. Desperte curiosidade genuína antes de começar (ex: uma pergunta intrigante, uma comparação inesperada, um "você sabia que..." antes da pergunta). Nunca exija pesquisa ou leitura longa — é só um gancho de interesse, rápido de responder]
 
 [BANNER: NÍVEL BÁSICO]
 [atividade adaptada, com apoio máximo — passo a passo decomposto, exercícios diretos]
@@ -4571,10 +4571,35 @@ async function carregarCiclosSalvos() {
     </div>`).join('');
 }
 
-function baixarPDFCiclo() {
+async function detectarImagensCiclo() {
+  if (!ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
+  window._imgListaId = 'cic-img-itens';
+  window._imgPrefixo = 'ci';
+  const termos = extrairItensParaIlustrar(ultimoCiclo.texto);
+  window._imgItens = termos.length
+    ? termos.map(t => ({ termo: t, chave: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
+    : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
+  if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
+  document.getElementById('cic-img-painel').style.display = '';
+  renderizarPainelImagens();
+  document.getElementById('cic-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+async function baixarPDFCiclo() {
   if (!ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
   const textoAtual = document.getElementById('ciclo-resultado-texto')?.value || ultimoCiclo.texto;
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+
+  const itensComImagem = (window._imgItens||[]).filter(i => i.urlEscolhida);
+  const imagensPorItem = {};
+  if (itensComImagem.length) {
+    toast('Montando PDF com imagens…', 'success');
+    for (const item of itensComImagem) {
+      try { imagensPorItem[(item.chave ?? item.termo).trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida); }
+      catch(e) { console.warn('Falha ao carregar imagem de', item.termo, e); }
+    }
+  }
+
   gerarPDFDocumento({
     tipo: 'CICLO DE TRABALHO',
     titulo: ultimoCiclo.tema,
@@ -4585,7 +4610,8 @@ function baixarPDFCiclo() {
     nomeArquivo: 'Ciclo_' + ultimoCiclo.aluno.replace(/\s+/g,'_') + '_' + ultimoCiclo.materia.replace(/\s+/g,'_'),
     isAtividade: true,
     guiaProf: null,
-    fonteTipo: 'sans'
+    fonteTipo: 'sans',
+    imagensPorItem
   });
 }
 
@@ -10400,7 +10426,15 @@ function renderPages() {
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarCicloTrabalho()">Salvar no histórico</button>
         <button class="btn-copy" onclick="baixarPDFCiclo()">Baixar PDF</button>
+        <button class="btn-copy" onclick="detectarImagensCiclo()">🖼️ Detectar imagens do ciclo</button>
       </div>
+    </div>
+
+    <div class="fcard" id="cic-img-painel" style="display:none;margin-top:16px">
+      <div class="fcard-title">Imagens do ciclo</div>
+      <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF — clique em "Baixar PDF" de novo depois de selecionar.</p>
+      <div id="cic-img-itens"></div>
+      <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
 
     <h2 class="page-title" style="font-size:16px;margin:24px 0 10px">Ciclos salvos</h2>
