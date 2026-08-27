@@ -16094,9 +16094,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const linhasOpcaoAtiv = doc.splitTextToSize(textoOpcao, maxW - 7);
       linhasOpcaoAtiv.forEach((lo, li) => doc.text(lo, ml + 6, y + li * altLinha));
       y += altLinha * linhasOpcaoAtiv.length;
-    } else if (/__.+?__/.test(limpa)) {
-      const segmentosSublinhar = [...limpa.matchAll(/__(.+?)__/g)].map(m => m[1]);
-      const textoSemMarcador = limpa.replace(/__(.+?)__/g, '$1');
+    } else if (/(?<!_)__(?!_)[^_\n]*[a-zA-ZÀ-ÿ0-9][^_\n]*(?<!_)__(?!_)/.test(limpa)) {
+      const segmentosSublinhar = [...limpa.matchAll(/(?<!_)__(?!_)([^_\n]*[a-zA-ZÀ-ÿ0-9][^_\n]*)(?<!_)__(?!_)/g)].map(m => m[1]);
+      const textoSemMarcador = limpa.replace(/(?<!_)__(?!_)([^_\n]*[a-zA-ZÀ-ÿ0-9][^_\n]*)(?<!_)__(?!_)/g, '$1');
       const linhasSublinhadas = doc.splitTextToSize(textoSemMarcador, maxW);
       linhasSublinhadas.forEach((lq, li) => {
         doc.text(lq, ml, y + li * altLinha);
