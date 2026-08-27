@@ -20573,6 +20573,35 @@ function analisarProgressaoPraticaGuiada(regs) {
   return { nivel: 'manter', cor: '#92400E', fundo: '#FEF3C7', titulo: 'Sugestão: manter o nível atual', motivo: `Resultados mistos nos últimos registros de Prática Guiada (${Math.round(media*100)}% de acerto médio) — ainda sem padrão claro de domínio.` };
 }
 
+function definirPeriodoMonitoramento(p) {
+  window._monPeriodo = p;
+  carregarMonitoramento();
+}
+
+function filtrarRegsPorPeriodo(regs, campoData) {
+  const periodo = window._monPeriodo || '30d';
+  if (periodo === 'tudo') return regs;
+  const dias = { '30d': 30, '3m': 90, '6m': 180 }[periodo] || 30;
+  const limite = new Date(); limite.setDate(limite.getDate() - dias); limite.setHours(0,0,0,0);
+  return (regs||[]).filter(r => new Date(r[campoData]) >= limite);
+}
+
+function agruparPontosPorSemana(pontos) {
+  const grupos = {};
+  pontos.forEach(p => {
+    const d = new Date(p.data);
+    const inicioSemana = new Date(d);
+    inicioSemana.setDate(d.getDate() - d.getDay());
+    inicioSemana.setHours(0,0,0,0);
+    const chaveGrupo = inicioSemana.toISOString().slice(0,10) + '|' + (p.chave || '');
+    if (!grupos[chaveGrupo]) grupos[chaveGrupo] = { data: inicioSemana, chave: p.chave, valores: [] };
+    grupos[chaveGrupo].valores.push(p.valor);
+  });
+  return Object.values(grupos)
+    .map(g => ({ data: g.data, chave: g.chave, valor: g.valores.reduce((a,b) => a+b, 0) / g.valores.length }))
+    .sort((a,b) => a.data - b.data);
+}
+
 async function carregarMonitoramento() {
   const id   = document.getElementById('mon-aluno-sel')?.value;
   const body = document.getElementById('mon-body');
@@ -20591,7 +20620,15 @@ async function carregarMonitoramento() {
       <p style="font-size:11.5px;color:${sugestaoProgressao.cor};opacity:.8;margin:6px 0 0">Sugestão baseada nos últimos registros de Prática Guiada — a decisão final é sempre do profissional.</p>
     </div>` : ''}
     <div class="clinic-card" style="margin-bottom:16px">
-      <div class="clinic-card-title">📈 Evolução</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div class="clinic-card-title" style="margin:0">📈 Evolução</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="subrole-btn ${(window._monPeriodo||'30d')==='30d'?'active':''}" onclick="definirPeriodoMonitoramento('30d')">30 dias</button>
+          <button class="subrole-btn ${(window._monPeriodo||'30d')==='3m'?'active':''}" onclick="definirPeriodoMonitoramento('3m')">3 meses</button>
+          <button class="subrole-btn ${(window._monPeriodo||'30d')==='6m'?'active':''}" onclick="definirPeriodoMonitoramento('6m')">6 meses</button>
+          <button class="subrole-btn ${(window._monPeriodo||'30d')==='tudo'?'active':''}" onclick="definirPeriodoMonitoramento('tudo')">Tudo</button>
+        </div>
+      </div>
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para montar o gráfico — o gráfico aparece a partir do 2º registro.</div></div>' : '<canvas id="mon-grafico" height="90"></canvas>'}
     </div>
     <div class="clinic-card" style="margin-bottom:16px">
@@ -20698,32 +20735,32 @@ let _chartAutonomia = null;
 function renderizarGraficoAutonomia(regs) {
   const canvas = document.getElementById('mon-grafico-autonomia');
   if (!canvas || typeof Chart === 'undefined') return;
-  const regsComAjuda = [...(regs||[])]
+  const periodo = window._monPeriodo || '30d';
+  const regsFiltrados = filtrarRegsPorPeriodo(regs, 'created_at');
+  let regsComAjuda = [...regsFiltrados]
     .filter(r => /^(Prática Guiada|Nova Adaptação|Material Terapêutico)/i.test(r.observacoes||''))
     .map(r => ({ data: r.created_at, score: calcularScoreAutonomia(r.observacoes) }))
     .filter(r => r.score !== null)
     .sort((a,b) => new Date(a.data) - new Date(b.data));
   if (regsComAjuda.length < 2) return;
-  const dataLabels = regsComAjuda.map(r => new Date(r.data).toLocaleDateString('pt-BR'));
+
+  let pontosFinais = regsComAjuda.map(r => ({ data: r.data, valor: r.score }));
+  if (periodo === '6m' || periodo === 'tudo') {
+    pontosFinais = agruparPontosPorSemana(pontosFinais);
+  }
+  const dataLabels = pontosFinais.map(p => new Date(p.data).toLocaleDateString('pt-BR'));
   if (_chartAutonomia) _chartAutonomia.destroy();
   _chartAutonomia = new Chart(canvas, {
-    type: 'bar',
+    type: 'line',
     data: { labels: dataLabels, datasets: [{
       label: 'Autonomia (nível de ajuda)',
-      data: regsComAjuda.map(r => r.score),
-      backgroundColor: ctx => {
-        const { chart, dataIndex } = ctx;
-        const { ctx: c, chartArea } = chart;
-        if (!chartArea) return '#5EEAD4';
-        const ultimo = dataIndex === regsComAjuda.length - 1;
-        const gradient = c.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-        if (ultimo) { gradient.addColorStop(0, '#4ADE80'); gradient.addColorStop(1, '#15803D'); }
-        else { gradient.addColorStop(0, '#5EEAD4'); gradient.addColorStop(1, '#0F766E'); }
-        return gradient;
-      },
-      borderRadius: 6,
-      borderSkipped: false,
-      maxBarThickness: 48,
+      data: pontosFinais.map(p => p.valor),
+      borderColor: '#0F766E',
+      backgroundColor: '#5EEAD4',
+      tension: 0.3,
+      pointRadius: 4,
+      pointBackgroundColor: '#0F766E',
+      fill: false,
     }] },
     options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
   });
@@ -20735,21 +20772,35 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   if (!canvas || typeof Chart === 'undefined') return;
   const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
   const VALOR = { ok: 100, parcial: 50, nao: 0 };
-  const ordenados = [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-  const dataLabels = ordenados.map(r => new Date(r.created_at).toLocaleDateString('pt-BR'));
+  const periodo = window._monPeriodo || '30d';
+  const regsFiltrados = filtrarRegsPorPeriodo(regs, 'created_at');
+  const ordenados = [...regsFiltrados].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
   const areasComDados = new Set();
   ordenados.forEach(r => Object.keys(r.resultados||{}).forEach(k => areasComDados.add(k)));
-  const datasets = areas.filter(a => areasComDados.has(a)).map(a => ({
-    label: labels[a].replace(/^\S+\s/, ''),
-    data: ordenados.map(r => r.resultados && r.resultados[a] !== undefined ? Math.max(VALOR[r.resultados[a]], 2) : null),
-    backgroundColor: CORES[a],
-    borderRadius: 6,
-    borderSkipped: false,
-    maxBarThickness: 36,
-  }));
+  const agregarSemana = periodo === '6m' || periodo === 'tudo';
+
+  let dataLabels;
+  const datasets = areas.filter(a => areasComDados.has(a)).map(a => {
+    const pontosArea = ordenados
+      .filter(r => r.resultados && r.resultados[a] !== undefined)
+      .map(r => ({ data: r.created_at, valor: Math.max(VALOR[r.resultados[a]], 2) }));
+    const pontosFinais = agregarSemana ? agruparPontosPorSemana(pontosArea) : pontosArea;
+    if (!dataLabels) dataLabels = pontosFinais.map(p => new Date(p.data).toLocaleDateString('pt-BR'));
+    return {
+      label: labels[a].replace(/^\S+\s/, ''),
+      data: pontosFinais.map(p => p.valor),
+      borderColor: CORES[a],
+      backgroundColor: CORES[a],
+      spanGaps: true,
+      tension: 0.3,
+      pointRadius: 4,
+      fill: false,
+    };
+  });
+  if (!dataLabels) dataLabels = [];
   if (_chartMonitoramento) _chartMonitoramento.destroy();
   _chartMonitoramento = new Chart(canvas, {
-    type: 'bar',
+    type: 'line',
     data: { labels: dataLabels, datasets },
     options: {
       scales: {
