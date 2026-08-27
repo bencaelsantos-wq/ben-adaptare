@@ -13444,6 +13444,13 @@ async function buscarAprendizadoAluno(alunoId) {
   return partes.join('\n');
 }
 
+async function buscarContextoBNCC(codigos) {
+  if (!codigos || !codigos.length) return '';
+  const { data } = await db.from('bncc_habilidades').select('codigo, descricao').in('codigo', codigos);
+  if (!data || !data.length) return '';
+  return data.map(h => `${h.codigo}: ${h.descricao}`).join('\n');
+}
+
 async function gerar() {
   let aluno, idade, serie, perfis, obs;
 
@@ -13496,6 +13503,7 @@ async function gerar() {
   ])].join('\n\n');
 
   const aprendizadoTexto = await buscarAprendizadoAluno(alunoSelId);
+  const contextoBNCC = await buscarContextoBNCC(a.bncc_codigos);
 
   let sugestaoMonitoramento = null;
   try {
@@ -13711,6 +13719,9 @@ Use isso para calibrar o nível de apoio/dificuldade desta adaptação: ${sugest
 ${a.diretrizes_adaptacao ? `DIRETRIZES ESPECÍFICAS DESTE ALUNO (definidas pela clínica/profissional responsável — seguir com prioridade sobre preferências genéricas, desde que não contradigam a REGRA INEGOCIÁVEL de adaptação real):
 ${a.diretrizes_adaptacao}
 ` : ''}
+${contextoBNCC ? `HABILIDADE(S) BNCC EM TRABALHO COM ESTE ALUNO (código oficial e descrição — use como referência real do que está sendo desenvolvido, e cite o código exato na linha HABILIDADE/BNCC do guia do professor, sem inventar nem trocar o código):
+${contextoBNCC}
+` : ''}
 CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
@@ -13880,7 +13891,7 @@ PERFIL: [1 linha — diagnóstico + barreira principal removida]
 
 OBJETIVO PEDAGÓGICO: [1 linha — habilidade desenvolvida]
 
-HABILIDADE/BNCC: [código e descrição quando aplicável e você tiver certeza do código correto; senão omitir esta linha — nunca invente um código]
+HABILIDADE/BNCC: [se houver HABILIDADE(S) BNCC informada(s) acima, cite exatamente o(s) código(s) e descrição fornecidos; caso contrário, omita esta linha — nunca invente um código]
 
 BARREIRAS IDENTIFICADAS (até 3 — liste APENAS barreiras realmente sustentadas pelos dados fornecidos acima; se houver evidência clara para só 1 ou 2, liste só essas, NUNCA invente uma terceira para completar a lista; cada barreira em no máximo 8 palavras):
 - [barreira 1]
@@ -13947,7 +13958,7 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
     ultimaAdapt = textoFinal;
     dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento };
     document.getElementById('result-text').value = textoFinal;
-    document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}`;
+    document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}${(a.bncc_codigos&&a.bncc_codigos.length) ? ' · BNCC ' + a.bncc_codigos.join(', ') : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
     salvarAdaptAutomatico();
