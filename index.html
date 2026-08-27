@@ -3314,6 +3314,16 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           <textarea id="cc-diretrizes" class="ftarea sm" placeholder="Regras específicas deste aluno por matéria, ex: Leitura: frases curtas, sem metáforas, textos de até 10 linhas. Matemática: apoio visual de tabuada até o 5, contas de divisão com apoio visual."></textarea>
           <div style="font-size:11px;color:#9CA3AF;margin-top:4px">Essas diretrizes são aplicadas automaticamente sempre que a Lou gerar uma Nova Adaptação para este aluno, além das regras gerais do sistema.</div>
         </div>
+        <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">📘 Habilidades BNCC em trabalho</div>
+        <div class="fblock">
+          <label class="flabel" for="cc-bncc-inp">Código(s) da habilidade (ex: EF35LP07)</label>
+          <div class="salas-input-group">
+            <input type="text" id="cc-bncc-inp" class="finput" placeholder="Ex: EF35LP07" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarBnccCC()}">
+            <button class="btn-sm" onclick="adicionarBnccCC()">+ Adicionar</button>
+          </div>
+          <div class="mat-tag-list" id="cc-bncc-tags"></div>
+          <div style="font-size:11px;color:#9CA3AF;margin-top:4px">A Lou usa a descrição oficial dessas habilidades como referência ao gerar adaptações para este perfil.</div>
+        </div>
 
         <!-- ── Seção: Profissionais vinculados ── -->
         <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍⚕️ Profissionais com acesso a este perfil</div>
