@@ -13956,7 +13956,7 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
       }
     }
     ultimaAdapt = textoFinal;
-    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento };
+    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento, bnccCodigos: a.bncc_codigos||[] };
     document.getElementById('result-text').value = textoFinal;
     document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}${(a.bncc_codigos&&a.bncc_codigos.length) ? ' · BNCC ' + a.bncc_codigos.join(', ') : ''}`;
     document.getElementById('result-card').classList.add('show');
@@ -14053,7 +14053,7 @@ async function downloadAdaptacaoPDF() {
   gerarPDFDocumento({
     tipo: 'ATIVIDADE ADAPTADA',
     titulo: 'Atividade Adaptada',
-    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''),
+    subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '') + (dadosUltima.bnccCodigos?.length ? ' — BNCC ' + dadosUltima.bnccCodigos.join(', ') : ''),
     aluno: nomeAluno,
     professor: profNome,
     conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
