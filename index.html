@@ -20762,7 +20762,7 @@ function renderizarGraficoAutonomia(regs) {
       pointBackgroundColor: '#0F766E',
       fill: false,
     }] },
-    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+    options: { layout: { padding: { top: 12 } }, scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
   });
 }
 
@@ -20803,6 +20803,7 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
     type: 'line',
     data: { labels: dataLabels, datasets },
     options: {
+      layout: { padding: { top: 12 } },
       scales: {
         y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } },
         x: { grid: { display: false } },
