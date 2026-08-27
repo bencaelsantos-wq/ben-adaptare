@@ -18618,6 +18618,8 @@ async function abrirModalCadClinica(p) {
     document.getElementById('cc-comportamento').value= p.comportamento || '';
     document.getElementById('cc-diretrizes').value = p.diretrizes_adaptacao || '';
   }
+  window._ccBnccCodigos = (p && p.bncc_codigos) ? [...p.bncc_codigos] : [];
+  renderizarBnccTagsCC();
   window._cadProfissionaisIds = (p && p.profissionais_ids) ? [...p.profissionais_ids] : [];
   const selProf = document.getElementById('cad-profissionais-sel');
   const tagProf = document.getElementById('cad-profissionais-tags');
@@ -18663,6 +18665,27 @@ function renderProfissionaisTagsCad() {
   }).join('');
 }
 
+function adicionarBnccCC() {
+  const inp = document.getElementById('cc-bncc-inp');
+  const val = (inp?.value || '').trim().toUpperCase();
+  if (!val) return;
+  if (!window._ccBnccCodigos) window._ccBnccCodigos = [];
+  if (!window._ccBnccCodigos.includes(val)) window._ccBnccCodigos.push(val);
+  inp.value = '';
+  renderizarBnccTagsCC();
+}
+function removerBnccCC(codigo) {
+  window._ccBnccCodigos = (window._ccBnccCodigos || []).filter(c => c !== codigo);
+  renderizarBnccTagsCC();
+}
+function renderizarBnccTagsCC() {
+  const el = document.getElementById('cc-bncc-tags');
+  if (!el) return;
+  el.innerHTML = (window._ccBnccCodigos || []).map(c =>
+    `<span class="mat-tag">${c} <span onclick="removerBnccCC('${c}')" style="cursor:pointer">×</span></span>`
+  ).join('');
+}
+
 async function salvarPerfilClinico() {
   const nome = document.getElementById('cc-nome').value.trim();
   if (!nome) return toast('Informe o nome do aluno.', 'error');
@@ -18681,6 +18704,7 @@ async function salvarPerfilClinico() {
     comportamento: document.getElementById('cc-comportamento').value.trim() || null,
     diretrizes_adaptacao: document.getElementById('cc-diretrizes')?.value.trim() || null,
     profissionais_ids: window._cadProfissionaisIds?.length ? [...window._cadProfissionaisIds] : [],
+    bncc_codigos: window._ccBnccCodigos?.length ? [...window._ccBnccCodigos] : [],
   };
   let error;
   if (perfilClinicaSel) {
