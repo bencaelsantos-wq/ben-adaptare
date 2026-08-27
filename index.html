@@ -10052,6 +10052,14 @@ function renderPages() {
             <textarea id="inp-ctx-obs" class="ftarea" rows="2" placeholder="Ex: usa CAA, tem apoio de AT em sala, prefere trabalhar em dupla…" style="margin-top:4px;min-height:56px"></textarea>
           </div>
         </div>
+        <div style="margin-top:12px">
+          <label class="flabel" for="gerar-bncc-inp">Código(s) BNCC desta atividade <span style="font-weight:400;color:#6B7DBF">(além dos já cadastrados no perfil, vale só para esta geração)</span></label>
+          <div class="salas-input-group" style="margin-top:4px">
+            <input type="text" id="gerar-bncc-inp" class="finput" placeholder="Ex: EF35LP07" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarBnccGerar()}">
+            <button class="btn-sm" onclick="adicionarBnccGerar()">+ Adicionar</button>
+          </div>
+          <div class="mat-tag-list" id="gerar-bncc-tags"></div>
+        </div>
       </div>
 
       <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial/Helvetica)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>       </div>       <!-- Opções de saída -->
@@ -12984,6 +12992,9 @@ async function selecionarAluno(id) {
   const a = alunosCad.find(x => x.id === id);
   if (!a) return;
 
+  window._gerarBnccTemp = [];
+  renderizarBnccTagsGerar();
+
   const boxesSugMon = document.querySelectorAll('#nova-adapt-sugestao-mon');
   boxesSugMon.forEach(b => b.style.display = 'none');
   if (boxesSugMon.length) {
@@ -13444,6 +13455,27 @@ async function buscarAprendizadoAluno(alunoId) {
   return partes.join('\n');
 }
 
+function adicionarBnccGerar() {
+  const inp = document.getElementById('gerar-bncc-inp');
+  const val = (inp?.value || '').trim().toUpperCase();
+  if (!val) return;
+  if (!window._gerarBnccTemp) window._gerarBnccTemp = [];
+  if (!window._gerarBnccTemp.includes(val)) window._gerarBnccTemp.push(val);
+  inp.value = '';
+  renderizarBnccTagsGerar();
+}
+function removerBnccGerar(codigo) {
+  window._gerarBnccTemp = (window._gerarBnccTemp || []).filter(c => c !== codigo);
+  renderizarBnccTagsGerar();
+}
+function renderizarBnccTagsGerar() {
+  const el = document.getElementById('gerar-bncc-tags');
+  if (!el) return;
+  el.innerHTML = (window._gerarBnccTemp || []).map(c =>
+    `<span class="mat-tag">${c} <span onclick="removerBnccGerar('${c}')" style="cursor:pointer">×</span></span>`
+  ).join('');
+}
+
 async function buscarContextoBNCC(codigos) {
   if (!codigos || !codigos.length) return '';
   const { data } = await db.from('bncc_habilidades').select('codigo, descricao').in('codigo', codigos);
@@ -13503,7 +13535,8 @@ async function gerar() {
   ])].join('\n\n');
 
   const aprendizadoTexto = await buscarAprendizadoAluno(alunoSelId);
-  const contextoBNCC = await buscarContextoBNCC(a.bncc_codigos);
+  const codigosBncc = [...new Set([...(a.bncc_codigos||[]), ...(window._gerarBnccTemp||[])])];
+  const contextoBNCC = await buscarContextoBNCC(codigosBncc);
 
   let sugestaoMonitoramento = null;
   try {
@@ -13956,9 +13989,9 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
       }
     }
     ultimaAdapt = textoFinal;
-    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento, bnccCodigos: a.bncc_codigos||[] };
+    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento, bnccCodigos: codigosBncc };
     document.getElementById('result-text').value = textoFinal;
-    document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}${(a.bncc_codigos&&a.bncc_codigos.length) ? ' · BNCC ' + a.bncc_codigos.join(', ') : ''}`;
+    document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}${codigosBncc.length ? ' · BNCC ' + codigosBncc.join(', ') : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
     salvarAdaptAutomatico();
