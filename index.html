@@ -2921,6 +2921,18 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div class="fblock"><div class="chips-group" id="chips-cad" style="max-height:130px;overflow-y:auto"></div></div>
       <div class="fblock" style="margin-top:10px"><label class="flabel" for="cad-obs">Observações clínicas</label><textarea id="cad-obs" class="ftarea sm" placeholder="Laudo, pontos fortes, desafios, recursos utilizados, estratégias de manejo…"></textarea></div>
 
+      <!-- ── Seção: Habilidades BNCC ── -->
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">📘 Habilidades BNCC em trabalho</div>
+      <div class="fblock">
+        <label class="flabel" for="cad-bncc-inp">Código(s) da habilidade (ex: EF35LP07)</label>
+        <div class="salas-input-group">
+          <input type="text" id="cad-bncc-inp" class="finput" placeholder="Ex: EF35LP07" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarBnccCad()}">
+          <button class="btn-sm" onclick="adicionarBnccCad()">+ Adicionar</button>
+        </div>
+        <div class="mat-tag-list" id="cad-bncc-tags"></div>
+        <div style="font-size:11px;color:#9CA3AF;margin-top:4px">A Lou usa a descrição oficial dessas habilidades como referência ao gerar adaptações para este aluno.</div>
+      </div>
+
       <!-- ── Seção: Dados da Clínica ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">🏥 Dados da Clínica / Equipe terapêutica</div>
       <div class="frow">
@@ -3220,98 +3232,98 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
-<!-- ══ MODAL: Cadastro Perfil Clínico ══ -->
-<div class="overlay" id="modal-cad-clinica" onclick="fecharModal('modal-cad-clinica',event)">
-  <div class="modal lg">
-    <div class="modal-header">
-      <div class="modal-title" id="mcc-titulo">Novo Perfil Clínico</div>
-      <button class="modal-close" onclick="fecharModal('modal-cad-clinica')">×</button>
-    </div>
-    <div style="margin-top:16px">
-      <div class="fblock" style="margin-bottom:14px;padding:12px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:10px">
-        <label class="flabel" style="margin-bottom:6px">Preencher automaticamente a partir dos documentos (opcional)</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button type="button" class="btn-copy" onclick="document.getElementById('cc-inp-laudo').click()">📎 Anexar laudo/relatório principal (PDF ou Word)</button>
-          <button type="button" class="btn-copy" onclick="document.getElementById('cc-inp-docs-extras').click()">📎 Anexar outros documentos (PEI, relatório de observação, avaliações anteriores...)</button>
+  <!-- ══ MODAL: Cadastro Perfil Clínico ══ -->
+  <div class="overlay" id="modal-cad-clinica" onclick="fecharModal('modal-cad-clinica',event)">
+    <div class="modal lg">
+      <div class="modal-header">
+        <div class="modal-title" id="mcc-titulo">Novo Perfil Clínico</div>
+        <button class="modal-close" onclick="fecharModal('modal-cad-clinica')">×</button>
+      </div>
+      <div style="margin-top:16px">
+        <div class="fblock" style="margin-bottom:14px;padding:12px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:10px">
+          <label class="flabel" style="margin-bottom:6px">Preencher automaticamente a partir dos documentos (opcional)</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn-copy" onclick="document.getElementById('cc-inp-laudo').click()">📎 Anexar laudo/relatório principal (PDF ou Word)</button>
+            <button type="button" class="btn-copy" onclick="document.getElementById('cc-inp-docs-extras').click()">📎 Anexar outros documentos (PEI, relatório de observação, avaliações anteriores...)</button>
+          </div>
+          <input type="file" id="cc-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoPerfilClinico(this)">
+          <input type="file" id="cc-inp-docs-extras" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="processarDocumentosExtrasPerfilClinico(this)">
+          <div id="cc-docs-extras-lista" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
+          <div id="cc-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+          <div style="font-size:11px;color:#6B7DBF;margin-top:6px">A IA cruza o laudo principal com os documentos extras e sugere o preenchimento dos campos abaixo — revise e corrija antes de salvar. Nenhum campo é preenchido sem sua confirmação ao clicar em "Salvar perfil".</div>
         </div>
-        <input type="file" id="cc-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoPerfilClinico(this)">
-        <input type="file" id="cc-inp-docs-extras" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="processarDocumentosExtrasPerfilClinico(this)">
-        <div id="cc-docs-extras-lista" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
-        <div id="cc-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
-        <div style="font-size:11px;color:#6B7DBF;margin-top:6px">A IA cruza o laudo principal com os documentos extras e sugere o preenchimento dos campos abaixo — revise e corrija antes de salvar. Nenhum campo é preenchido sem sua confirmação ao clicar em "Salvar perfil".</div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel" for="cc-nome">Nome do aluno *</label><input type="text" id="cc-nome" class="finput" placeholder="Nome completo"></div>
-        <div><label class="flabel" for="cc-idade">Idade</label><input type="text" id="cc-idade" class="finput" placeholder="Ex: 8 anos"></div>
-      </div>
-      <div class="frow">
-        <div><label class="flabel" for="cc-diag">Diagnóstico(s)</label><input type="text" id="cc-diag" class="finput" placeholder="Ex: TEA nível 2, TDAH combinado"></div>
-        <div><label class="flabel" for="cc-hipotese">Hipóteses clínicas</label><input type="text" id="cc-hipotese" class="finput" placeholder="Ex: TPS associado, ansiedade"></div>
-      </div>
-      <div class="frow">
-        <div>
-          <label class="flabel" for="cc-comunicacao">Comunicação</label>
-          <select id="cc-comunicacao"class="fselect">
-            <option value="">Selecione</option>
-            <option>Verbal fluente</option><option>Verbal com limitações</option>
-            <option>Verbal emergente</option><option>Não-verbal — usa CAA</option>
-            <option>Não-verbal — sem CAA formal</option>
-          </select>
+        <div class="frow">
+          <div><label class="flabel" for="cc-nome">Nome do aluno *</label><input type="text" id="cc-nome" class="finput" placeholder="Nome completo"></div>
+          <div><label class="flabel" for="cc-idade">Idade</label><input type="text" id="cc-idade" class="finput" placeholder="Ex: 8 anos"></div>
         </div>
-        <div>
-<label class="flabel" for="cc-regulacao">Regulação emocional</label>
-          <select id="cc-regulacao" class="fselect">
-            <option value="">Selecione</option>
-            <option>Preservada</option><option>Comprometida — crises frequentes</option>
-            <option>Em desenvolvimento</option><option>Necessita suporte constante</option>
-          </select>
+        <div class="frow">
+          <div><label class="flabel" for="cc-diag">Diagnóstico(s)</label><input type="text" id="cc-diag" class="finput" placeholder="Ex: TEA nível 2, TDAH combinado"></div>
+          <div><label class="flabel" for="cc-hipotese">Hipóteses clínicas</label><input type="text" id="cc-hipotese" class="finput" placeholder="Ex: TPS associado, ansiedade"></div>
         </div>
-      </div>
-      <div class="frow">
-        <div>
-<label class="flabel" for="cc-sensorio">Perfil sensorial</label>
-          <select id="cc-sensorio" class="fselect">
-            <option value="">Selecione</option>
-            <option>Sem particularidades</option><option>Hipersensibilidade</option>
-            <option>Hipossensibilidade</option><option>Misto (hipo + hiper)</option>
-          </select>
+        <div class="frow">
+          <div>
+            <label class="flabel" for="cc-comunicacao">Comunicação</label>
+            <select id="cc-comunicacao"class="fselect">
+              <option value="">Selecione</option>
+              <option>Verbal fluente</option><option>Verbal com limitações</option>
+              <option>Verbal emergente</option><option>Não-verbal — usa CAA</option>
+              <option>Não-verbal — sem CAA formal</option>
+            </select>
+          </div>
+          <div>
+  <label class="flabel" for="cc-regulacao">Regulação emocional</label>
+            <select id="cc-regulacao" class="fselect">
+              <option value="">Selecione</option>
+              <option>Preservada</option><option>Comprometida — crises frequentes</option>
+              <option>Em desenvolvimento</option><option>Necessita suporte constante</option>
+            </select>
+          </div>
         </div>
-        <div>
-<label class="flabel" for="cc-motricidade">Motricidade</label>
-          <select id="cc-motricidade" class="fselect">
-            <option value="">Selecione</option>
-            <option>Preservada</option><option>Motricidade fina comprometida</option>
-            <option>Motricidade ampla comprometida</option><option>Ambas comprometidas</option>
-          </select>
+        <div class="frow">
+          <div>
+  <label class="flabel" for="cc-sensorio">Perfil sensorial</label>
+            <select id="cc-sensorio" class="fselect">
+              <option value="">Selecione</option>
+              <option>Sem particularidades</option><option>Hipersensibilidade</option>
+              <option>Hipossensibilidade</option><option>Misto (hipo + hiper)</option>
+            </select>
+          </div>
+          <div>
+  <label class="flabel" for="cc-motricidade">Motricidade</label>
+            <select id="cc-motricidade" class="fselect">
+              <option value="">Selecione</option>
+              <option>Preservada</option><option>Motricidade fina comprometida</option>
+              <option>Motricidade ampla comprometida</option><option>Ambas comprometidas</option>
+            </select>
+          </div>
         </div>
-      </div>
-      <div class="fblock">
-<label class="flabel" for="cc-preservadas">Funções preservadas</label>
-        <textarea id="cc-preservadas" class="ftarea sm" placeholder="Ex: Boa memória visual, linguagem receptiva preservada, interesse em rotinas…"></textarea>
-      </div>
-      <div class="fblock">
-<label class="flabel" for="cc-comprometidas">Funções comprometidas</label>
-        <textarea id="cc-comprometidas" class="ftarea sm" placeholder="Ex: Linguagem expressiva, regulação emocional, tolerância à frustração…"></textarea>
-      </div>
-      <div class="fblock">
-       <label class="flabel" for="cc-comportamento">Comportamento (observações relevantes)</label>
-        <textarea id="cc-comportamento" class="ftarea sm" placeholder="Ex: Estereotipias em situações de estresse, rigidez de rotina, autolesão ocasional…"></textarea>
-      </div>
-      <div class="fblock">
-        <label class="flabel" for="cc-diretrizes">Diretrizes de Adaptação (opcional)</label>
-        <textarea id="cc-diretrizes" class="ftarea sm" placeholder="Regras específicas deste aluno por matéria, ex: Leitura: frases curtas, sem metáforas, textos de até 10 linhas. Matemática: apoio visual de tabuada até o 5, contas de divisão com apoio visual."></textarea>
-        <div style="font-size:11px;color:#9CA3AF;margin-top:4px">Essas diretrizes são aplicadas automaticamente sempre que a Lou gerar uma Nova Adaptação para este aluno, além das regras gerais do sistema.</div>
-      </div>
+        <div class="fblock">
+  <label class="flabel" for="cc-preservadas">Funções preservadas</label>
+          <textarea id="cc-preservadas" class="ftarea sm" placeholder="Ex: Boa memória visual, linguagem receptiva preservada, interesse em rotinas…"></textarea>
+        </div>
+        <div class="fblock">
+  <label class="flabel" for="cc-comprometidas">Funções comprometidas</label>
+          <textarea id="cc-comprometidas" class="ftarea sm" placeholder="Ex: Linguagem expressiva, regulação emocional, tolerância à frustração…"></textarea>
+        </div>
+        <div class="fblock">
+        <label class="flabel" for="cc-comportamento">Comportamento (observações relevantes)</label>
+          <textarea id="cc-comportamento" class="ftarea sm" placeholder="Ex: Estereotipias em situações de estresse, rigidez de rotina, autolesão ocasional…"></textarea>
+        </div>
+        <div class="fblock">
+          <label class="flabel" for="cc-diretrizes">Diretrizes de Adaptação (opcional)</label>
+          <textarea id="cc-diretrizes" class="ftarea sm" placeholder="Regras específicas deste aluno por matéria, ex: Leitura: frases curtas, sem metáforas, textos de até 10 linhas. Matemática: apoio visual de tabuada até o 5, contas de divisão com apoio visual."></textarea>
+          <div style="font-size:11px;color:#9CA3AF;margin-top:4px">Essas diretrizes são aplicadas automaticamente sempre que a Lou gerar uma Nova Adaptação para este aluno, além das regras gerais do sistema.</div>
+        </div>
 
-      <!-- ── Seção: Profissionais vinculados ── -->
-      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍⚕️ Profissionais com acesso a este perfil</div>
-      <div class="fblock">
-        <div class="salas-input-group">
-          <select id="cad-profissionais-sel" class="fselect" style="flex:1"><option value="">Selecione um profissional</option></select>
-          <button class="btn-sm" onclick="adicionarProfissionalCad()">+ Adicionar</button>
+        <!-- ── Seção: Profissionais vinculados ── -->
+        <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">👨‍⚕️ Profissionais com acesso a este perfil</div>
+        <div class="fblock">
+          <div class="salas-input-group">
+            <select id="cad-profissionais-sel" class="fselect" style="flex:1"><option value="">Selecione um profissional</option></select>
+            <button class="btn-sm" onclick="adicionarProfissionalCad()">+ Adicionar</button>
+          </div>
+          <div class="mat-tag-list" id="cad-profissionais-tags"></div>
         </div>
-        <div class="mat-tag-list" id="cad-profissionais-tags"></div>
-      </div>
 
       <!-- LGPD — Cadastro de Perfil Clínico -->
       <div class="lgpd-bloco" id="lgpd-bloco-clinica">
@@ -3917,7 +3929,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4177,9 +4189,6 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('historico')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-ciclo" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Ciclo de Trabalho')" : "showPage('ciclo-trabalho');popularAlunosCiclo()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 016.6 9.3M10 17a7 7 0 01-6.6-9.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M15.5 5l1.5 1-2 1.3M4.5 15l-1.5-1 2-1.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Ciclo de Trabalho${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
-    </div>
     <div class="nav-item" id="nav-estudo-caso" onclick="${!temAddon('estudo_caso') ? "acessarRecursoPremium('Estudo de Caso')" : "showPage('estudo-caso');carregarEstudosCaso()"}">
        <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso${!temAddon('estudo_caso') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -4307,9 +4316,6 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-gestao-adapt" onclick="showPage('gestao-adapt')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações
     </div>
-    <div class="nav-item gestao-item" id="nav-gestao-planejamento" onclick="showPage('gestao-planejamento');carregarPlanejamentoAnual()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14" stroke="currentColor" stroke-width="1.5"/><path d="M7 2.5v3M13 2.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Planejamento Anual
-    </div>
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item gestao-item" id="nav-colaboracao-gestao" onclick="abrirColaboracao()" style="font-weight:600">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2 2-3 4-3h6c2 0 4 1 4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Colaboração Multiprofissional
@@ -4339,381 +4345,6 @@ function renderNavGestao() {
 
 function navBloqueado() {
   toast('Recurso não disponível para o perfil Coordenação.', 'error');
-}
-
-// ── PLANEJAMENTO ANUAL ────────────────────────────────────────
-let planejamentosAnuaisList = [];
-let planejamentoEditandoId = null;
-
-async function carregarPlanejamentoAnual() {
-  if (!window._organizacaoId) return;
-  const { data } = await db.from('planejamento_anual').select('*').eq('organizacao_id', window._organizacaoId).order('serie').order('materia');
-  planejamentosAnuaisList = data || [];
-  renderizarListaPlanejamento();
-}
-
-function renderizarListaPlanejamento() {
-  const el = document.getElementById('pa-lista');
-  if (!el) return;
-  if (!planejamentosAnuaisList.length) { el.innerHTML = `<p style="color:var(--gr400);font-size:13px">Nenhum planejamento cadastrado ainda.</p>`; return; }
-  el.innerHTML = planejamentosAnuaisList.map(p => `
-    <div class="item-card" onclick='editarPlanejamentoAnual(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
-      <div class="ic-nome">${p.serie} — ${p.materia}</div>
-      <div class="ic-prev">${(p.conteudo||'').slice(0,120)}…</div>
-      <button class="btn-sm" style="margin-top:8px" onclick='event.stopPropagation();apagarPlanejamentoAnual("${p.id}")'>🗑️ Apagar</button>
-    </div>`).join('');
-}
-
-function editarPlanejamentoAnual(p) {
-  planejamentoEditandoId = p.id;
-  document.getElementById('pa-serie').value = p.serie;
-  document.getElementById('pa-materia').value = p.materia;
-  document.getElementById('pa-conteudo').value = p.conteudo;
-  document.getElementById('pa-form-titulo').textContent = 'Editando planejamento';
-  document.getElementById('pa-btn-cancelar').style.display = '';
-  document.getElementById('pa-serie').scrollIntoView({ behavior:'smooth', block:'nearest' });
-}
-
-function limparFormPlanejamento() {
-  planejamentoEditandoId = null;
-  document.getElementById('pa-serie').value = '';
-  document.getElementById('pa-materia').value = '';
-  document.getElementById('pa-conteudo').value = '';
-  document.getElementById('pa-form-titulo').textContent = 'Novo planejamento';
-  document.getElementById('pa-btn-cancelar').style.display = 'none';
-}
-
-async function salvarPlanejamentoAnual() {
-  const serie = document.getElementById('pa-serie')?.value.trim();
-  const materia = document.getElementById('pa-materia')?.value.trim();
-  const conteudo = document.getElementById('pa-conteudo')?.value.trim();
-  if (!serie || !materia) return toast('Preencha série e matéria.', 'error');
-  if (!conteudo) return toast('Cole o conteúdo programático.', 'error');
-  if (!window._organizacaoId) return toast('Sua conta não está vinculada a uma organização.', 'error');
-
-  const { error } = await db.from('planejamento_anual').upsert({
-    id: planejamentoEditandoId || undefined,
-    organizacao_id: window._organizacaoId,
-    serie, materia, conteudo,
-    atualizado_por: user.id,
-    updated_at: new Date().toISOString()
-  }, { onConflict: 'organizacao_id,serie,materia' });
-  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
-  toast('Planejamento salvo!', 'success');
-  limparFormPlanejamento();
-  carregarPlanejamentoAnual();
-}
-
-async function apagarPlanejamentoAnual(id) {
-  if (!confirm('Apagar este planejamento?')) return;
-  const { error } = await db.from('planejamento_anual').delete().eq('id', id);
-  if (error) return toast('Erro ao apagar: ' + error.message, 'error');
-  toast('Planejamento apagado.', 'success');
-  carregarPlanejamentoAnual();
-}
-
-let cicloAlunoSelId = null;
-
-function popularAlunosCiclo() {
-  filtrarAlSelCiclo();
-}
-
-function filtrarAlSelCiclo() {
-  const q = (document.getElementById('cic-aluno-search')?.value || '').toLowerCase();
-  const lista = (alunosCad||[]).filter(a => a.nome.toLowerCase().includes(q));
-  const el = document.getElementById('cic-aluno-lista-sel');
-  if (!el) return;
-  if (!lista.length) { el.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:var(--gr400)">Nenhum aluno encontrado. Cadastre em "Meus alunos".</div>`; return; }
-  el.innerHTML = lista.map(a => {
-    const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
-    return `<div class="aluno-opt ${cicloAlunoSelId===a.id?'selected':''}" onclick="selecionarAlunoCiclo('${a.id}')">
-      <div class="aluno-opt-nome">${a.nome}</div>
-      <div class="aluno-opt-meta">${meta}</div>
-    </div>`;
-  }).join('');
-}
-
-function selecionarAlunoCiclo(id) {
-  cicloAlunoSelId = id;
-  const a = (alunosCad||[]).find(x => x.id === id);
-  if (!a) return;
-  const info = document.getElementById('cic-aluno-sel-info');
-  const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
-  const tags = (a.perfis || []).map(p => `<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join(' ');
-  info.style.display = 'block';
-  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${tags}</div>`;
-  filtrarAlSelCiclo();
-}
-
-let ultimoCiclo = null;
-
-window._ciclosGerados = [];
-
-async function gerarCiclosOrquestrado() {
-  const qtd = parseInt(document.getElementById('cic-qtd')?.value, 10) || 1;
-  window._ciclosGerados = [];
-  const btnTodos = document.getElementById('btn-baixar-todos-ciclos');
-  if (btnTodos) btnTodos.style.display = 'none';
-
-  if (qtd <= 1) {
-    await gerarCicloTrabalho();
-    if (ultimoCiclo) window._ciclosGerados = [ultimoCiclo];
-    return;
-  }
-
-  const tema = document.getElementById('cic-tema')?.value.trim();
-  const materia = document.getElementById('cic-materia')?.value;
-  const contextoOriginal = document.getElementById('cic-contexto')?.value.trim();
-  if (!tema) return toast('Informe o tema do ciclo.', 'error');
-  if (!materia) return toast('Selecione a matéria.', 'error');
-
-  const btn = document.getElementById('btn-gerar-ciclo');
-  btn.disabled = true;
-  document.getElementById('gen-box-ciclo').classList.add('show');
-  const spanStatus = document.querySelector('#gen-box-ciclo span');
-
-  let subfocos = [];
-  try {
-    if (spanStatus) spanStatus.textContent = 'Lou planejando a sequência de ciclos…';
-    const promptDivisao = `Você é um planejador pedagógico Montessoriano. Divida o tema "${tema}" (matéria: ${materia}) em EXATAMENTE ${qtd} sub-tópicos SEQUENCIAIS e PROGRESSIVOS — cada um cobrindo uma parte específica do tema, avançando em profundidade/complexidade do 1º ao último, nunca repetindo o foco entre eles.
-${contextoOriginal ? `CONTEXTO GERAL A COBRIR NO CONJUNTO TODO:\n${contextoOriginal}` : ''}
-Responda APENAS com a lista, uma linha por sub-tópico, no formato:
-1. [foco específico do ciclo 1, 1 frase curta]
-2. [foco específico do ciclo 2, 1 frase curta]
-Nada antes nem depois da lista.`;
-    const respostaDivisao = await chamarClaude({ prompt: promptDivisao, maxTokens: 400, modulo: 'ciclo_trabalho' });
-    subfocos = [...respostaDivisao.matchAll(/^\s*\d+\.\s*(.+)$/gm)].map(m => m[1].trim());
-  } catch(e) {}
-  if (subfocos.length !== qtd) subfocos = Array.from({length: qtd}, (_, i) => subfocos[i] || `Parte ${i+1} de ${tema}`);
-
-  for (let i = 0; i < qtd; i++) {
-    if (spanStatus) spanStatus.textContent = `Lou montando o ciclo ${i+1} de ${qtd}…`;
-    document.getElementById('cic-tema').value = `${tema} — Ciclo ${i+1} de ${qtd}`;
-    document.getElementById('cic-contexto').value = (contextoOriginal ? contextoOriginal + '\n\n' : '') + `FOCO ESPECÍFICO DESTE CICLO: ${subfocos[i]}`;
-    await gerarCicloTrabalho();
-    if (ultimoCiclo) window._ciclosGerados.push(ultimoCiclo);
-  }
-
-  document.getElementById('cic-tema').value = tema;
-  document.getElementById('cic-contexto').value = contextoOriginal;
-  btn.disabled = false;
-  document.getElementById('gen-box-ciclo').classList.remove('show');
-  renderizarAbasCiclos();
-}
-
-function renderizarAbasCiclos() {
-  const abasEl = document.getElementById('ciclo-abas');
-  const btnTodos = document.getElementById('btn-baixar-todos-ciclos');
-  if (!abasEl) return;
-  if (window._ciclosGerados.length <= 1) { abasEl.innerHTML = ''; if (btnTodos) btnTodos.style.display = 'none'; return; }
-  abasEl.innerHTML = window._ciclosGerados.map((c,i) => `<button type="button" class="subrole-btn ${i===window._ciclosGerados.length-1?'active':''}" onclick="selecionarCicloAba(${i})">Ciclo ${i+1}</button>`).join('');
-  if (btnTodos) btnTodos.style.display = '';
-}
-
-function selecionarCicloAba(i) {
-  const c = window._ciclosGerados[i];
-  if (!c) return;
-  ultimoCiclo = c;
-  const txt = document.getElementById('ciclo-resultado-texto');
-  if (txt) txt.value = c.texto;
-  document.getElementById('result-badge-ciclo').textContent = `${c.serie||''} · ${c.materia}`;
-  document.querySelectorAll('#ciclo-abas .subrole-btn').forEach((b,idx) => b.classList.toggle('active', idx===i));
-}
-
-async function baixarPDFTodosCiclos() {
-  if (!window._ciclosGerados.length) return toast('Gere os ciclos primeiro.', 'error');
-  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
-  const primeiro = window._ciclosGerados[0];
-  const conteudoCombinado = window._ciclosGerados.map(c => c.texto).join('\n\n[BANNER: PRÓXIMO CICLO]\n\n');
-  gerarPDFDocumento({
-    tipo: 'CICLO DE TRABALHO',
-    titulo: primeiro.tema.split(' — Ciclo')[0],
-    subtitulo: primeiro.materia,
-    aluno: primeiro.aluno + (primeiro.serie ? ' — ' + primeiro.serie : ''),
-    professor: profNome,
-    conteudo: conteudoCombinado,
-    nomeArquivo: 'Ciclos_' + primeiro.aluno.replace(/\s+/g,'_') + '_' + primeiro.materia.replace(/\s+/g,'_'),
-    isAtividade: true,
-    guiaProf: null,
-    fonteTipo: 'sans'
-  });
-}
-
-async function gerarCicloTrabalho() {
-  const a = (alunosCad||[]).find(x => x.id === cicloAlunoSelId);
-  if (!a) return toast('Selecione um aluno.', 'error');
-  const materia = document.getElementById('cic-materia')?.value;
-  const tema = document.getElementById('cic-tema')?.value.trim();
-  const contexto = document.getElementById('cic-contexto')?.value.trim();
-  if (!materia) return toast('Selecione a matéria.', 'error');
-  if (!tema) return toast('Informe o tema do ciclo.', 'error');
-
-  const btn = document.getElementById('btn-gerar-ciclo');
-  btn.disabled = true;
-  document.getElementById('gen-box-ciclo').classList.add('show');
-  document.getElementById('result-card-ciclo').classList.remove('show');
-
-  let planejamentoTexto = '';
-  if (window._organizacaoId && a.serie) {
-    try {
-      const { data: pa } = await db.from('planejamento_anual').select('conteudo').eq('organizacao_id', window._organizacaoId).eq('serie', a.serie).eq('materia', materia).maybeSingle();
-      if (pa?.conteudo) planejamentoTexto = pa.conteudo;
-    } catch(e) {}
-  }
-
-  const prompt = `Você é um assistente pedagógico especializado em educação inclusiva e no método Montessoriano de ciclos de trabalho, aplicando princípios de Desenho Universal para Aprendizagem (UDL).
-
-DADOS DO ALUNO:
-- Nome: ${a.nome} | Idade: ${a.idade||''} | Série: ${a.serie||''}
-- Diagnóstico(s): ${(a.perfis||[]).join(', ')||'Não informado'}
-${a.observacoes ? `- Observações: ${a.observacoes}` : ''}
-
-MATÉRIA: ${materia}
-TEMA DO CICLO: ${tema}
-${contexto ? `CONTEXTO/CONTEÚDO A TRABALHAR: ${contexto}` : ''}
-${planejamentoTexto ? `PLANEJAMENTO ANUAL DA SÉRIE PARA ESTA MATÉRIA (use como referência de conteúdo, adapte ao aluno):\n${planejamentoTexto}` : ''}
-
-Gere um CICLO DE TRABALHO completo no formato Montessoriano: um aquecimento breve + 3 níveis de atividade com dificuldade e autonomia crescentes, todos adaptados ao perfil do aluno, cobrindo o mesmo tema e progredindo em profundidade — nunca repita o mesmo exercício em níveis diferentes, cada nível deve exigir um passo a mais de raciocínio ou autonomia que o anterior.
-
-REGRAS OBRIGATÓRIAS, sem exceção:
-- Use o marcador [IMAGEM: nome-simples-sem-acento] normalmente sempre que a atividade se beneficiar de apoio visual — o profissional escolhe a imagem certa depois, na tela de detecção de imagens.
-- NUNCA peça para "recortar e colar" nenhum item — se precisar de ordenação/sequência, peça para escrever o número da ordem ao lado de cada item, com os itens em ordem embaralhada.
-- Alternativas de múltipla escolha sempre em linhas separadas, formato "( ) texto", nunca coladas no enunciado.
-- TODA pergunta de resposta aberta (escrever com as próprias palavras, dar exemplo, explicar, comparar) precisa terminar com 1 a 3 linhas de resposta em branco, no formato "_______________________________" (uma linha por linha esperada de resposta) — nunca deixe a próxima seção/pergunta começar sem essas linhas.
-- QUALQUER espaço em branco pra completar dentro de uma frase, conta ou tabela (resposta curta, número, palavra, resultado de operação) precisa ter NO MÍNIMO 5 sublinhados seguidos, tipo "_____" — NUNCA um único caractere "_" sozinho, que não dá espaço nenhum pra escrever. Isso vale inclusive dentro de contas matemáticas (ex: "2/10 + 3/10 = _____", nunca "2/10 + 3/10 = _").
-- Para associar/relacionar itens (ex: tipo com sua descrição), use OBRIGATORIAMENTE este bloco — nunca o formato de lista solta com "»":
-[LIGAR]
-A) primeiro item
-B) segundo item
-C) terceiro item
----
-1) descrição embaralhada (nunca 1=A, 2=B, 3=C em sequência)
-2) descrição embaralhada
-3) descrição embaralhada
-[/LIGAR]
-- Use "»" como conector SÓ em tabelas de completar (ex: "Peixe dourado » Ovíparo » ___"), nunca em exercícios de associar/ligar — esses usam sempre o bloco [LIGAR] acima.
-- Texto de apoio/contextualização vai em bloco [CAIXA]...[/CAIXA], cada linha própria.
-- Logo após cada pergunta, inclua "[DICA: instrução curta de como responder]".
-- Sempre que existir uma forma real e simples do aluno conferir sozinho se acertou (ex: somar valores e comparar com um número, reler a frase em voz alta, contar itens), inclua logo abaixo da atividade uma linha "[DICA: Como conferir: instrução curta de autoconferência]" — nunca invente um método de conferência que não faça sentido pra aquela atividade específica; se não houver um jeito real, não inclua nada.
-- Nunca metáforas ou figuras de linguagem — linguagem literal e direta.
-- Escreva sempre em português correto, com acentuação, e preste atenção à diferença entre "e" (conjunção) e "é" (verbo ser).
-
-FORMATO OBRIGATÓRIO — comece EXATAMENTE assim, nada antes:
-
-OBJETIVOS:
-- [objetivo 1, 1 frase curta]
-- [objetivo 2, 1 frase curta]
-- [objetivo 3, 1 frase curta]
-
-[BANNER: PARA AQUECER]
-[Estruture o raciocínio internamente em 3 momentos da Lição em Três Períodos (técnica clássica Montessori), mas NUNCA escreva os rótulos "NOMEAR/RECONHECER/RECORDAR" na folha — o aluno não deve ver esses termos técnicos, só o conteúdo:
-
-MOMENTO 1 (nomear, sem rótulo visível): um fato REALMENTE surpreendente ou curioso sobre o tema — não pode ser apenas reformular a definição do conceito. Tem que fazer o aluno pensar "eu não sabia disso!". Se souber um interesse pessoal do aluno (informado nas observações), conecte o fato a esse interesse sempre que fizer sentido — nunca invente um interesse não informado.
-MOMENTO 2 (reconhecer, sem rótulo visível): uma pergunta simples de reconhecimento/identificação sobre o fato apresentado.
-MOMENTO 3 (recordar, sem rótulo visível): uma pergunta curta onde o aluno usa o conceito com as próprias palavras, sem mais ajuda.
-
-As 3 partes fluem como um texto único e curioso, sem numeração nem títulos de etapa — curtas e rápidas de responder, nunca uma prova.]
-
-[BANNER: NÍVEL BÁSICO]
-[atividade adaptada, com apoio máximo — passo a passo decomposto, exercícios diretos]
-
-[BANNER: NÍVEL INTERMEDIÁRIO]
-[atividade adaptada, um pouco mais desafiadora — menos apoio, mais autonomia]
-
-[BANNER: NÍVEL AVANÇADO]
-[atividade adaptada, mais desafiadora — aplicação/síntese do que foi trabalhado, ainda respeitando o perfil do aluno]
-
-Máximo 500 palavras no total. NUNCA emojis, NUNCA markdown, NUNCA tabela em formato de colunas com |.`;
-
-  try {
-    const textoBruto = await chamarClaude({ prompt, maxTokens: 3200, modulo: 'ciclo_trabalho' });
-    let texto = corrigirAlternativasColadas(corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '')));
-    texto += '\n\n[BANNER: REGISTRO DE TRABALHO]\n[CAIXA]\nData: ___/___/___\nMaterial ou atividade que usei: _______________________________\nO que eu aprendi hoje: _______________________________\nObservação do professor: _______________________________\n[/CAIXA]';
-    ultimoCiclo = { texto, aluno: a.nome, alunoId: a.id, serie: a.serie, materia, tema };
-    document.getElementById('ciclo-resultado-blocos').innerHTML = `<textarea class="result-text" id="ciclo-resultado-texto" style="width:100%;min-height:320px">${texto}</textarea>`;
-    document.getElementById('result-badge-ciclo').textContent = `${a.serie||''} · ${materia}`;
-    document.getElementById('result-card-ciclo').classList.add('show');
-    document.getElementById('result-card-ciclo').scrollIntoView({ behavior:'smooth', block:'nearest' });
-  } catch(e) {
-    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
-  } finally {
-    btn.disabled = false;
-    document.getElementById('gen-box-ciclo').classList.remove('show');
-  }
-}
-
-async function salvarCicloTrabalho() {
-  if (!ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
-  const textoAtual = document.getElementById('ciclo-resultado-texto')?.value || ultimoCiclo.texto;
-  const { error } = await db.from('ciclos_trabalho').insert({
-    user_id: user.id,
-    aluno_id: ultimoCiclo.alunoId,
-    aluno_nome: ultimoCiclo.aluno,
-    materia: ultimoCiclo.materia,
-    tema: ultimoCiclo.tema,
-    serie: ultimoCiclo.serie,
-    objetivos: textoAtual
-  });
-  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
-  toast('Ciclo salvo no histórico!', 'success');
-  carregarCiclosSalvos();
-}
-
-async function carregarCiclosSalvos() {
-  const { data } = await db.from('ciclos_trabalho').select('id, aluno_nome, materia, tema, created_at').eq('user_id', user.id).order('created_at', { ascending: false });
-  const el = document.getElementById('cic-lista-salvos');
-  if (!el) return;
-  if (!data || !data.length) { el.innerHTML = `<p style="color:var(--gr400);font-size:13px">Nenhum ciclo gerado ainda.</p>`; return; }
-  el.innerHTML = data.map(c => `
-    <div class="item-card">
-      <div class="ic-nome">${c.aluno_nome}</div>
-      <div class="ic-meta">${c.materia} — ${c.tema}</div>
-      <div class="ic-date">${new Date(c.created_at).toLocaleDateString('pt-BR')}</div>
-    </div>`).join('');
-}
-
-async function detectarImagensCiclo() {
-  if (!ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
-  window._imgListaId = 'cic-img-itens';
-  window._imgPrefixo = 'ci';
-  const termos = extrairItensParaIlustrar(ultimoCiclo.texto);
-  window._imgItens = termos.length
-    ? termos.map(t => ({ termo: t, chave: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
-    : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
-  if (!termos.length) toast('Não detectei itens automaticamente — adicione manualmente abaixo.', 'success');
-  document.getElementById('cic-img-painel').style.display = '';
-  renderizarPainelImagens();
-  document.getElementById('cic-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
-}
-
-async function baixarPDFCiclo() {
-  if (!ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
-  const textoAtual = document.getElementById('ciclo-resultado-texto')?.value || ultimoCiclo.texto;
-  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
-
-  const itensComImagem = (window._imgItens||[]).filter(i => i.urlEscolhida);
-  const imagensPorItem = {};
-  if (itensComImagem.length) {
-    toast('Montando PDF com imagens…', 'success');
-    for (const item of itensComImagem) {
-      try { imagensPorItem[(item.chave ?? item.termo).trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida); }
-      catch(e) { console.warn('Falha ao carregar imagem de', item.termo, e); }
-    }
-  }
-
-  gerarPDFDocumento({
-    tipo: 'CICLO DE TRABALHO',
-    titulo: ultimoCiclo.tema,
-    subtitulo: ultimoCiclo.materia,
-    aluno: ultimoCiclo.aluno + (ultimoCiclo.serie ? ' — ' + ultimoCiclo.serie : ''),
-    professor: profNome,
-    conteudo: textoAtual,
-    nomeArquivo: 'Ciclo_' + ultimoCiclo.aluno.replace(/\s+/g,'_') + '_' + ultimoCiclo.materia.replace(/\s+/g,'_'),
-    isAtividade: true,
-    guiaProf: null,
-    fonteTipo: 'sans',
-    imagensPorItem
-  });
 }
 
 function renderNavCoordenacao() {
@@ -6929,10 +6560,6 @@ function renderPagesDeveloper() {
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#0891B2;margin:10px 0 6px">Compartilhados (Clínica + Escola)</div>
       <div id="dam-grupo-compartilhado" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:16px"></div>
 
-      <div id="dam-cpf-wrap" style="display:none;margin-bottom:14px">
-        <label style="font-size:12px;color:#4B5563">CPF do contratante (pessoa física)</label>
-        <input type="text" id="dam-cpf" placeholder="000.000.000-00" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px;margin-top:4px">
-      </div>
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#4B5563;margin:10px 0 6px">Quantidade contratada</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
         <div><label style="font-size:12px;color:#4B5563">Pacientes</label><input type="number" min="0" id="dam-qtd-pacientes" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
@@ -7773,19 +7400,19 @@ async function carregarDashboardDev() {
 const PRECOS_ADDON = {
   objetivos_terapeuticos: 47, plano_intervencao: 127, materiais_terapeuticos: 147, pratica_guiada: 167,
   pdi: 127, monitoramento: 197, devolutiva: 97, relatorios_escola: 67,
-  nova_adaptacao: 147, estudo_caso: 47, pei: 127, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 177,
+  nova_adaptacao: 147, estudo_caso: 47, pei: 127, plano_aee: 107, apoio_pedagogico: 167,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 127, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 47, glossario: 47
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
   pdi:'PDI', monitoramento:'Monitoramento', devolutiva:'Devolutiva Clínica', relatorios_escola:'Relatórios da Escola',
-  nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho',
+  nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
-  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico'],
   compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
@@ -7868,13 +7495,8 @@ function filtrarUsuariosDev() {
   ].join('') || '<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px">Nenhum usuário</td></tr>';
 }
 
-const PRECO_NOVA_ADAPTACAO_SOLO = 69.90;
-function precoAddonContexto(chave) {
-  if (chave === 'nova_adaptacao' && !window._damOrgId) return PRECO_NOVA_ADAPTACAO_SOLO;
-  return PRECOS_ADDON[chave] || 0;
-}
 function checkboxAddon(u, chave) {
-  return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]} <span style="color:#9CA3AF">(R$${precoAddonContexto(chave)})</span></label>`;
+  return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]} <span style="color:#9CA3AF">(R$${PRECOS_ADDON[chave]})</span></label>`;
 }
 
 async function abrirModalAddonsDev(id) {
@@ -7895,8 +7517,6 @@ async function abrirModalAddonsDev(id) {
   }
 
   document.getElementById('dam-email').innerHTML = (u.email || '') + avisoOrg;
-  const cpfWrap = document.getElementById('dam-cpf-wrap');
-  if (cpfWrap) { cpfWrap.style.display = window._damOrgId ? 'none' : 'block'; document.getElementById('dam-cpf').value = u.cpf || ''; }
   document.getElementById('dam-grupo-clinica').innerHTML = GRUPOS_ADDON.clinica.map(a => checkboxAddon(fonte, a)).join('');
   document.getElementById('dam-grupo-escola').innerHTML = GRUPOS_ADDON.escola.map(a => checkboxAddon(fonte, a)).join('');
   document.getElementById('dam-grupo-compartilhado').innerHTML = GRUPOS_ADDON.compartilhado.map(a => checkboxAddon(fonte, a)).join('');
@@ -7921,7 +7541,7 @@ function fecharModalAddonsDev() {
 function recalcularModalAddonsDev() {
   const checks = document.querySelectorAll('#dev-modal-addons input[type="checkbox"][data-addon]');
   let subtotalAddons = 0;
-  checks.forEach(c => { if (c.checked) subtotalAddons += precoAddonContexto(c.dataset.addon); });
+  checks.forEach(c => { if (c.checked) subtotalAddons += PRECOS_ADDON[c.dataset.addon] || 0; });
   const qtdPacientes = parseInt(document.getElementById('dam-qtd-pacientes').value, 10) || 0;
   const qtdProfissionais = parseInt(document.getElementById('dam-qtd-profissionais').value, 10) || 0;
   const qtdAt = parseInt(document.getElementById('dam-qtd-at').value, 10) || 0;
@@ -7950,7 +7570,6 @@ async function salvarAddonsDev() {
   payload.qtd_professores = parseInt(document.getElementById('dam-qtd-professores').value, 10) || 0;
   payload.desconto_percentual = parseFloat(document.getElementById('dam-desconto').value) || 0;
   payload.observacoes_negociacao = document.getElementById('dam-observacoes').value.trim();
-  if (!window._damOrgId) payload.cpf = document.getElementById('dam-cpf')?.value.trim() || null;
 
   const tabela = window._damOrgId ? 'organizacoes' : 'profiles';
   const alvo = window._damOrgId || id;
@@ -8418,12 +8037,8 @@ function editarAluno(a) {
         if (c.textContent.trim() === p.trim()) c.classList.add('active');
       });
     });
-    window._cadProfessoresIds = a.professores_ids ? [...a.professores_ids] : [];
-    renderProfessoresTagsCad();
-    window._cadProfs = a.clinica_profs ? [...a.clinica_profs] : [];
-    renderProfTagsAluno();
-    const atSel = document.getElementById('cad-at-id');
-    if (atSel && a.at_id) atSel.value = a.at_id;
+    window._cadBnccCodigos = a.bncc_codigos ? [...a.bncc_codigos] : [];
+    renderizarBnccTagsCad();
     const titulo = document.querySelector('#modal-cad h2');
     if (titulo) titulo.textContent = 'Editar Aluno';
   }, 50);
@@ -10476,82 +10091,6 @@ function renderPages() {
     </div>
   </div>
 
-  <!-- CICLO DE TRABALHO -->
-  <div id="page-ciclo-trabalho" class="page">
-    <h1 class="page-title">Ciclo de Trabalho</h1>
-    <p class="page-sub">Gere uma unidade de estudo completa e adaptada — aquecimento + 3 níveis de dificuldade crescente — no formato usado em escolas Montessorianas.</p>
-    <div class="info-banner"><strong>Dica:</strong> se a série do aluno tiver um Planejamento Anual cadastrado pela Gestão, a Lou usa esse conteúdo como referência automaticamente.</div>
-
-    <div class="fcard">
-      <div class="fcard-title">Dados do aluno</div>
-      <div class="fblock"><label class="flabel" for="cic-aluno-search">Buscar aluno</label>
-        <div class="aluno-selector">
-          <input class="aluno-search" id="cic-aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSelCiclo()">
-          <div id="cic-aluno-lista-sel"></div>
-        </div>
-      </div>
-      <div class="aluno-sel-info" id="cic-aluno-sel-info"></div>
-    </div>
-
-    <div class="fcard">
-      <div class="fcard-title">Ciclo</div>
-      <div class="frow">
-        <div><label class="flabel" for="cic-materia">Matéria / Área</label>
-          <select id="cic-materia" class="fselect">
-            <option value="">Selecione</option>
-            <optgroup label="Montessori">
-              <option>Educação Cósmica</option><option>Vida Prática</option><option>Linguagem Oral e Escrita (Montessori)</option><option>Matemática (Montessori)</option><option>Sensorial</option><option>Cultura Geral</option><option>Arte e Expressão</option><option>Movimento e Coordenação</option><option>Botânica e Zoologia</option><option>Geografia e Geologia</option><option>História do Universo</option><option>Educação para a Paz</option>
-            </optgroup>
-            <optgroup label="Convencional">
-              <option>Língua Portuguesa</option><option>Matemática</option><option>Ciências da Natureza</option><option>História</option><option>Geografia</option><option>Artes</option><option>Educação Física</option><option>Língua Inglesa</option><option>Filosofia</option><option>Sociologia</option><option>Biologia</option><option>Física</option><option>Química</option><option>Ensino Religioso</option><option>Redação e Produção Textual</option>
-            </optgroup>
-          </select>
-        </div>
-        <div><label class="flabel" for="cic-tema">Tema do ciclo</label><input type="text" id="cic-tema" class="finput" placeholder="Ex: Reprodução Humana e Saúde"></div>
-      </div>
-      <div class="fblock"><label class="flabel" for="cic-contexto">Contexto ou conteúdo a trabalhar</label><textarea id="cic-contexto" class="ftarea" placeholder="Descreva os pontos principais que o ciclo deve cobrir, ou cole um trecho do material da turma..."></textarea></div>
-      <div class="fblock"><label class="flabel" for="cic-qtd">Quantos ciclos gerar</label><select id="cic-qtd" class="fselect" style="max-width:180px">
-        <option value="1" selected>1 ciclo</option>
-        <option value="2">2 ciclos sequenciais</option>
-        <option value="3">3 ciclos sequenciais</option>
-        <option value="4">4 ciclos sequenciais</option>
-        <option value="5">5 ciclos sequenciais</option>
-        <option value="6">6 ciclos sequenciais</option>
-      </select></div>
-    </div>
-
-    <button class="btn-gerar" id="btn-gerar-ciclo" onclick="gerarCiclosOrquestrado()">
-      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
-      Gerar Ciclo com a Lou
-    </button>
-    <div class="gen-box" id="gen-box-ciclo"><div class="spin"></div><span>Lou montando o ciclo de trabalho…</span></div>
-
-    <div class="result-card" id="result-card-ciclo">
-      <div class="result-header">
-        <div class="result-title">Ciclo gerado pela IA</div>
-        <div class="result-badge" id="result-badge-ciclo">—</div>
-      </div>
-      <div id="ciclo-abas" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"></div>
-      <div id="ciclo-resultado-blocos"></div>
-      <div class="result-actions">
-        <button class="btn-sm" onclick="salvarCicloTrabalho()">Salvar no histórico</button>
-        <button class="btn-copy" onclick="baixarPDFCiclo()">Baixar PDF (ciclo atual)</button>
-        <button class="btn-copy" id="btn-baixar-todos-ciclos" style="display:none" onclick="baixarPDFTodosCiclos()">Baixar PDF (todos os ciclos)</button>
-        <button class="btn-copy" onclick="detectarImagensCiclo()">🖼️ Detectar imagens do ciclo</button>
-      </div>
-    </div>
-
-    <div class="fcard" id="cic-img-painel" style="display:none;margin-top:16px">
-      <div class="fcard-title">Imagens do ciclo</div>
-      <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF — clique em "Baixar PDF" de novo depois de selecionar.</p>
-      <div id="cic-img-itens"></div>
-      <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
-    </div>
-
-    <h2 class="page-title" style="font-size:16px;margin:24px 0 10px">Ciclos salvos</h2>
-    <div class="cards-grid" id="cic-lista-salvos"><p style="color:var(--gr400);font-size:13px">Nenhum ciclo gerado ainda.</p></div>
-  </div>
-
   <!-- HISTÓRICO -->
   <div id="page-historico" class="page">
     <h1 class="page-title">Histórico de adaptações</h1>
@@ -11959,31 +11498,6 @@ function renderPagesGestao() {
       </div>
     </div>
 
-  </div>
-
-  <!-- GESTÃO: PLANEJAMENTO ANUAL -->
-  <div id="page-gestao-planejamento" class="page">
-    <h1 class="page-title">Planejamento Anual</h1>
-    <p class="page-sub">Cadastre o conteúdo programático do ano por série e matéria — a IA usa esse contexto ao gerar Adaptações e Ciclos de Trabalho daquela série.</p>
-
-    <div class="fcard" style="margin-bottom:20px">
-      <div class="fcard-title" id="pa-form-titulo">Novo planejamento</div>
-      <div class="frow">
-        <div><label class="flabel" for="pa-serie">Série</label><input type="text" id="pa-serie" class="finput" placeholder="Ex: 5º ano, 8º ano, 1ª série EM"></div>
-        <div><label class="flabel" for="pa-materia">Matéria</label><input type="text" id="pa-materia" class="finput" placeholder="Ex: Ciências, Matemática, Educação Cósmica"></div>
-      </div>
-      <div class="fblock">
-        <label class="flabel" for="pa-conteudo">Conteúdo programático do ano</label>
-        <textarea id="pa-conteudo" class="ftarea" style="min-height:180px" placeholder="Cole ou escreva o planejamento anual dessa série/matéria — unidades, temas, ordem de conteúdo..."></textarea>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-sm" onclick="salvarPlanejamentoAnual()">Salvar planejamento</button>
-        <button class="btn-sm-ghost" id="pa-btn-cancelar" style="display:none" onclick="limparFormPlanejamento()">Cancelar edição</button>
-      </div>
-    </div>
-
-    <h2 class="page-title" style="font-size:16px;margin-bottom:10px">Planejamentos cadastrados</h2>
-    <div class="cards-grid" id="pa-lista"><p style="color:var(--gr400);font-size:13px">Nenhum planejamento cadastrado ainda.</p></div>
   </div>
 
   <!-- GESTÃO: ALUNOS -->
@@ -14319,7 +13833,7 @@ REGRAS MECÂNICAS DE FORMATAÇÃO (sempre seguir, sem exceção — é o que gar
 - Marcador [IMAGEM: nome-do-item]: minúsculo, sem acento, no máximo 1 por item, só quando a imagem representar diretamente o conceito (nunca decorativo) — use nos formatos já descritos na seção FORMATO acima (diagrama substituído / ligar-associar / identificar-nomear)
 - Escreva sempre em português correto, com acentuação e cedilha (ex: "operação", "não", "número", "questão") — inclusive dentro de textos livres, enunciados e explicações, não só nos títulos.
 - Preste atenção especial à diferença entre "e" (conjunção, ex: "sol e lua") e "é" (verbo ser, ex: "É no começo ou no fim?", "Isso é verdade"). Releia cada frase antes de finalizar: se "e"/"E" está sendo usado como o verbo "ser" (equivalente a "is"/"está sendo"), ele PRECISA do acento — nunca escreva "E no começo" quando o sentido é "É no começo".
-- Em textos de apoio/leitura, quando uma informação necessária para responder uma pergunta não estiver óbvia ou destacada no texto, sublinhe essa informação usando o marcador "__texto__" ao redor da parte exata a destacar (ex: "A Terra é o __único planeta__ com água líquida."). Use com moderação — só na informação que realmente responde a uma pergunta seguinte, nunca a frase inteira. REGRA CRÍTICA: se você escrever qualquer instrução avisando o aluno que existem "partes sublinhadas" ou "trechos destacados" no texto (ex: "as partes sublinhadas vão ajudar você"), é OBRIGATÓRIO que pelo menos um trecho do texto de apoio realmente tenha o marcador "__texto__" aplicado — nunca prometa um destaque que não existe. Se não for usar nenhum sublinhado, também não mencione "partes sublinhadas" em nenhuma instrução.
+- Em textos de apoio/leitura, quando uma informação necessária para responder uma pergunta não estiver óbvia ou destacada no texto, sublinhe essa informação usando o marcador "__texto__" ao redor da parte exata a destacar (ex: "A Terra é o __único planeta__ com água líquida."). Use com moderação — só na informação que realmente responde a uma pergunta seguinte, nunca a frase inteira.
 - Em listas de duas ou mais características/adjetivos separados por vírgula, sempre use "e" antes do último item, nunca deixe só vírgulas soltas (ex correto: "água muito fria e dura"; ex ERRADO, nunca faça: "água muito fria, dura").
 
 PRINCÍPIOS DE CONTEÚDO DA ADAPTAÇÃO:
@@ -16559,9 +16073,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const linhasOpcaoAtiv = doc.splitTextToSize(textoOpcao, maxW - 7);
       linhasOpcaoAtiv.forEach((lo, li) => doc.text(lo, ml + 6, y + li * altLinha));
       y += altLinha * linhasOpcaoAtiv.length;
-    } else if (/__[^_\n]*[a-zA-ZÀ-ÿ0-9][^_\n]*__/.test(limpa)) {
-      const segmentosSublinhar = [...limpa.matchAll(/__([^_\n]*[a-zA-ZÀ-ÿ0-9][^_\n]*)__/g)].map(m => m[1]);
-      const textoSemMarcador = limpa.replace(/__([^_\n]*[a-zA-ZÀ-ÿ0-9][^_\n]*)__/g, '$1');
+    } else if (/__.+?__/.test(limpa)) {
+      const segmentosSublinhar = [...limpa.matchAll(/__(.+?)__/g)].map(m => m[1]);
+      const textoSemMarcador = limpa.replace(/__(.+?)__/g, '$1');
       const linhasSublinhadas = doc.splitTextToSize(textoSemMarcador, maxW);
       linhasSublinhadas.forEach((lq, li) => {
         doc.text(lq, ml, y + li * altLinha);
@@ -16851,7 +16365,7 @@ async function carregarAlunosAdaptacaoClinica() {
 }
 
 async function carregarAlunosGestao() {
-  const { data } = await db.from('alunos').select('*').eq('organizacao_id', window._organizacaoId).order('nome');
+  const { data } = await db.from('alunos').select('*').order('nome');
   alunosCad = data || [];
   const el = document.getElementById('gestao-alunos-lista');
   if (!el) return;
@@ -16859,37 +16373,20 @@ async function carregarAlunosGestao() {
     el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👤</div><div class="empty-text">Nenhum aluno cadastrado.<br>Clique em "+ Cadastrar aluno".</div></div>`;
     return;
   }
-  const alunosAtivos = alunosCad.filter(a => a.ativo !== false);
-  el.innerHTML = alunosAtivos.map(a => {
+  el.innerHTML = alunosCad.map(a => {
     const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
     const tags = (a.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('');
     return `<div class="item-card">
-      <div class="ic-nome">${a.nome} ${a.codigo?`<span style="font-size:10.5px;font-weight:600;color:#9CA3AF">· ${a.codigo}</span>`:''}</div>
+      <div class="ic-nome">${a.nome}</div>
       <div class="ic-meta">${meta}</div>
       <div class="ic-tags">${tags}</div>
       ${a.observacoes?`<div style="font-size:11.5px;color:var(--gr400);margin-top:6px">${a.observacoes.slice(0,80)}…</div>`:''}
       <div style="display:flex;gap:6px;margin-top:10px">
         <button class="btn-sm" style="font-size:12px;padding:5px 12px" onclick='editarAluno(${JSON.stringify(a).replace(/'/g,"&#39;")})'>Editar</button>
-        <button class="btn-sm-ghost" onclick="desativarAluno('${a.id}','${(a.nome||'').replace(/'/g,"&#39;")}')">Desativar</button>
         <button class="btn-danger" onclick="excluirAluno('${a.id}','${(a.nome||'').replace(/'/g,"&#39;")}')">Excluir</button>
       </div>
     </div>`;
   }).join('');
-}
-
-async function desativarAluno(id, nome) {
-  if (!confirm(`Desativar "${nome}"? Ele some das listas de trabalho, mas o histórico (adaptações, laudos, monitoramento) continua salvo. A vaga contratada não é liberada — para reativar, use "Editar" em "Alunos inativos".`)) return;
-  const { error } = await db.from('alunos').update({ ativo: false }).eq('id', id);
-  if (error) return toast('Erro ao desativar: ' + error.message, 'error');
-  toast('Aluno desativado.', 'success');
-  carregarAlunosGestao();
-}
-
-async function reativarAluno(id) {
-  const { error } = await db.from('alunos').update({ ativo: true }).eq('id', id);
-  if (error) return toast('Erro ao reativar: ' + error.message, 'error');
-  toast('Aluno reativado.', 'success');
-  carregarAlunosGestao();
 }
 
 function renderAlunosLista() {
@@ -17143,6 +16640,27 @@ async function abrirPerfilAluno(a) {
     peisEl.innerHTML  = '<span style="color:var(--gr400)">Erro ao carregar</span>';
   }
 }
+  function adicionarBnccCad() {
+    const inp = document.getElementById('cad-bncc-inp');
+    const val = (inp?.value || '').trim().toUpperCase();
+    if (!val) return;
+    if (!window._cadBnccCodigos) window._cadBnccCodigos = [];
+    if (!window._cadBnccCodigos.includes(val)) window._cadBnccCodigos.push(val);
+    inp.value = '';
+    renderizarBnccTagsCad();
+  }
+  function removerBnccCad(codigo) {
+    window._cadBnccCodigos = (window._cadBnccCodigos || []).filter(c => c !== codigo);
+    renderizarBnccTagsCad();
+  }
+  function renderizarBnccTagsCad() {
+    const el = document.getElementById('cad-bncc-tags');
+    if (!el) return;
+    el.innerHTML = (window._cadBnccCodigos || []).map(c =>
+      `<span class="mat-tag">${c} <span onclick="removerBnccCad('${c}')" style="cursor:pointer">×</span></span>`
+    ).join('');
+  }
+
   async function abrirModalCad() {
   ['cad-nome','cad-obs','cad-nasc','cad-pai','cad-pai-tel','cad-pai-email','cad-mae','cad-mae-tel','cad-mae-email',
    'cad-clinica-nome','cad-clinica-tel','cad-clinica-email','cad-clinica-end','cad-prof-inp']
@@ -17156,8 +16674,10 @@ async function abrirPerfilAluno(a) {
   const docsList = document.getElementById('cad-docs-list');
   if (docsList) docsList.innerHTML = '';
   window._cadDocs = [];
-  window._cadProfessoresIds = [];
-  const selProf = document.getElementById('cad-professores-sel');
+  const at_nome = document.getElementById('cad-at-nome')?.value.trim() ||
+                  document.getElementById('cad-at-id')?.selectedOptions[0]?.text || null;
+
+  if (!nome) return toast('Informe o nome.', 'error');
   const tagProf = document.getElementById('cad-professores-tags');
   if (selProf) selProf.value = '';
   if (tagProf) tagProf.innerHTML = '';
@@ -17169,9 +16689,9 @@ async function abrirPerfilAluno(a) {
 async function popularDropdownProfessoresCad() {
   const sel = document.getElementById('cad-professores-sel');
   if (!sel) return;
-  const { data } = await db.from('profiles').select('id, nome, email').eq('role', 'professor').eq('organizacao_id', window._organizacaoId).order('nome');
+  const { data } = await db.from('professores').select('id, nome').order('nome');
   sel.innerHTML = '<option value="">Selecione um professor</option>' +
-    (data||[]).map(p => `<option value="${p.id}">${p.nome || p.email}</option>`).join('');
+    (data||[]).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
 }
 function adicionarProfessorCad() {
   const sel = document.getElementById('cad-professores-sel');
@@ -17226,7 +16746,6 @@ function handleDocsDrop(e) {
 function processDocFile(f) {
   if (f.type !== 'application/pdf') return toast('Apenas PDFs são aceitos.', 'error');
   if (f.size > 5 * 1024 * 1024) return toast(`"${f.name}" excede 5 MB.`, 'error');
-  if (/[^\x00-\x7F]/.test(f.name)) toast(`"${f.name}" tem acento ou caractere especial no nome — o sistema vai ajustar automaticamente para conseguir salvar. Se preferir, renomeie o arquivo sem acentos antes de anexar.`, 'error');
   if (!window._cadDocs) window._cadDocs = [];
   window._cadDocs.push(f);
   renderDocsListAluno();
@@ -17358,25 +16877,17 @@ async function salvarAluno() {
   const at_id   = document.getElementById('cad-at-id')?.value || null;
   const at_nome = document.getElementById('cad-at-nome')?.value.trim() ||
                   document.getElementById('cad-at-id')?.selectedOptions[0]?.text || null;
+  const bncc_codigos = window._cadBnccCodigos?.length ? [...window._cadBnccCodigos] : [];
 
   if (!nome) return toast('Informe o nome.', 'error');
   if (!lgpdValidar('aluno')) return;
 
-  let novoCodigo = null;
   if (!_editAlunoId) {
-    const { count: countAtivos } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('organizacao_id', window._organizacaoId).eq('ativo', true);
+    const { count } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     const limite = limitesAtuais().alunos;
-    if ((countAtivos||0) >= limite) {
+    if ((count||0) >= limite) {
       return toast(`Limite de ${limite} alunos contratados atingido. Fale com o suporte para contratar mais.`, 'error');
     }
-    const umAnoAtras = new Date(); umAnoAtras.setFullYear(umAnoAtras.getFullYear() - 1);
-    const { count: countHistorico12m } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('organizacao_id', window._organizacaoId).gte('created_at', umAnoAtras.toISOString());
-    const limiteRotatividade = Math.ceil(limite * 1.2);
-    if ((countHistorico12m||0) >= limiteRotatividade) {
-      return toast(`Você atingiu o limite de novos cadastros deste ano (${limiteRotatividade} para um plano de ${limite} alunos). Fale com o suporte se precisar de mais vagas.`, 'error');
-    }
-    const { count: countTotalHistorico } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('organizacao_id', window._organizacaoId);
-    novoCodigo = 'LM' + String((countTotalHistorico||0) + 1).padStart(3, '0');
   }
 
   let data, error;
@@ -17384,17 +16895,14 @@ async function salvarAluno() {
     ({ data, error } = await db.from('alunos').update({
       nome, idade, nasc, serie, metodo, perfis, observacoes,
       pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
-      clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs,
-      at_id: at_id || null, at_nome: at_nome || null,
-      professores_ids: window._cadProfessoresIds?.length ? [...window._cadProfessoresIds] : []
+      clinica_nome, clinica_tel, clinica_email, clinica_end, bncc_codigos
     }).eq('id', _editAlunoId).select('id').single());
     _editAlunoId = null;
   } else {
     ({ data, error } = await db.from('alunos').insert({
-      user_id: user.id, organizacao_id: window._organizacaoId, codigo: novoCodigo, ativo: true,
-      nome, idade, nasc, serie, metodo, perfis, observacoes,
+      user_id: user.id, nome, idade, nasc, serie, metodo, perfis, observacoes,
       pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
-      clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs,
+      clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs, bncc_codigos,
       at_id: at_id || null, at_nome: at_nome || null,
       professores_ids: window._cadProfessoresIds?.length ? [...window._cadProfessoresIds] : []
     }).select('id').single());
@@ -17404,14 +16912,10 @@ async function salvarAluno() {
   // Upload de PDFs para Supabase Storage
   const docs = window._cadDocs || [];
   if (docs.length && !window._devMode) {
-    const falhas = [];
     for (const f of docs) {
-      const nomeSanitizado = f.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
-      const path = `laudos/${data.id}/${Date.now()}_${nomeSanitizado}`;
-      const { error: erroUpload } = await db.storage.from('documentos-alunos').upload(path, f, { upsert: false });
-      if (erroUpload) { console.error('Erro ao subir documento:', f.name, erroUpload); falhas.push(f.name); }
+      const path = `laudos/${data.id}/${Date.now()}_${f.name.replace(/\s+/g,'_')}`;
+      await db.storage.from('documentos-alunos').upload(path, f, { upsert: false });
     }
-    if (falhas.length) toast(`Atenção: falha ao subir o(s) documento(s): ${falhas.join(', ')}. O aluno foi salvo, mas o(s) laudo(s) não.`, 'error');
   }
 
   await lgpdRegistrarConsentimento('aluno', data?.id, ['pedagogico','clinico','autorizacao_legal']);
@@ -20573,35 +20077,6 @@ function analisarProgressaoPraticaGuiada(regs) {
   return { nivel: 'manter', cor: '#92400E', fundo: '#FEF3C7', titulo: 'Sugestão: manter o nível atual', motivo: `Resultados mistos nos últimos registros de Prática Guiada (${Math.round(media*100)}% de acerto médio) — ainda sem padrão claro de domínio.` };
 }
 
-function definirPeriodoMonitoramento(p) {
-  window._monPeriodo = p;
-  carregarMonitoramento();
-}
-
-function filtrarRegsPorPeriodo(regs, campoData) {
-  const periodo = window._monPeriodo || '30d';
-  if (periodo === 'tudo') return regs;
-  const dias = { '30d': 30, '3m': 90, '6m': 180 }[periodo] || 30;
-  const limite = new Date(); limite.setDate(limite.getDate() - dias); limite.setHours(0,0,0,0);
-  return (regs||[]).filter(r => new Date(r[campoData]) >= limite);
-}
-
-function agruparPontosPorSemana(pontos) {
-  const grupos = {};
-  pontos.forEach(p => {
-    const d = new Date(p.data);
-    const inicioSemana = new Date(d);
-    inicioSemana.setDate(d.getDate() - d.getDay());
-    inicioSemana.setHours(0,0,0,0);
-    const chaveGrupo = inicioSemana.toISOString().slice(0,10) + '|' + (p.chave || '');
-    if (!grupos[chaveGrupo]) grupos[chaveGrupo] = { data: inicioSemana, chave: p.chave, valores: [] };
-    grupos[chaveGrupo].valores.push(p.valor);
-  });
-  return Object.values(grupos)
-    .map(g => ({ data: g.data, chave: g.chave, valor: g.valores.reduce((a,b) => a+b, 0) / g.valores.length }))
-    .sort((a,b) => a.data - b.data);
-}
-
 async function carregarMonitoramento() {
   const id   = document.getElementById('mon-aluno-sel')?.value;
   const body = document.getElementById('mon-body');
@@ -20620,15 +20095,7 @@ async function carregarMonitoramento() {
       <p style="font-size:11.5px;color:${sugestaoProgressao.cor};opacity:.8;margin:6px 0 0">Sugestão baseada nos últimos registros de Prática Guiada — a decisão final é sempre do profissional.</p>
     </div>` : ''}
     <div class="clinic-card" style="margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-        <div class="clinic-card-title" style="margin:0">📈 Evolução</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="subrole-btn ${(window._monPeriodo||'30d')==='30d'?'active':''}" onclick="definirPeriodoMonitoramento('30d')">30 dias</button>
-          <button class="subrole-btn ${(window._monPeriodo||'30d')==='3m'?'active':''}" onclick="definirPeriodoMonitoramento('3m')">3 meses</button>
-          <button class="subrole-btn ${(window._monPeriodo||'30d')==='6m'?'active':''}" onclick="definirPeriodoMonitoramento('6m')">6 meses</button>
-          <button class="subrole-btn ${(window._monPeriodo||'30d')==='tudo'?'active':''}" onclick="definirPeriodoMonitoramento('tudo')">Tudo</button>
-        </div>
-      </div>
+      <div class="clinic-card-title">📈 Evolução</div>
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para montar o gráfico — o gráfico aparece a partir do 2º registro.</div></div>' : '<canvas id="mon-grafico" height="90"></canvas>'}
     </div>
     <div class="clinic-card" style="margin-bottom:16px">
@@ -20735,34 +20202,34 @@ let _chartAutonomia = null;
 function renderizarGraficoAutonomia(regs) {
   const canvas = document.getElementById('mon-grafico-autonomia');
   if (!canvas || typeof Chart === 'undefined') return;
-  const periodo = window._monPeriodo || '30d';
-  const regsFiltrados = filtrarRegsPorPeriodo(regs, 'created_at');
-  let regsComAjuda = [...regsFiltrados]
+  const regsComAjuda = [...(regs||[])]
     .filter(r => /^(Prática Guiada|Nova Adaptação|Material Terapêutico)/i.test(r.observacoes||''))
     .map(r => ({ data: r.created_at, score: calcularScoreAutonomia(r.observacoes) }))
     .filter(r => r.score !== null)
     .sort((a,b) => new Date(a.data) - new Date(b.data));
   if (regsComAjuda.length < 2) return;
-
-  let pontosFinais = regsComAjuda.map(r => ({ data: r.data, valor: r.score }));
-  if (periodo === '6m' || periodo === 'tudo') {
-    pontosFinais = agruparPontosPorSemana(pontosFinais);
-  }
-  const dataLabels = pontosFinais.map(p => new Date(p.data).toLocaleDateString('pt-BR'));
+  const dataLabels = regsComAjuda.map(r => new Date(r.data).toLocaleDateString('pt-BR'));
   if (_chartAutonomia) _chartAutonomia.destroy();
   _chartAutonomia = new Chart(canvas, {
-    type: 'line',
+    type: 'bar',
     data: { labels: dataLabels, datasets: [{
       label: 'Autonomia (nível de ajuda)',
-      data: pontosFinais.map(p => p.valor),
-      borderColor: '#0F766E',
-      backgroundColor: '#5EEAD4',
-      tension: 0.3,
-      pointRadius: 4,
-      pointBackgroundColor: '#0F766E',
-      fill: false,
+      data: regsComAjuda.map(r => r.score),
+      backgroundColor: ctx => {
+        const { chart, dataIndex } = ctx;
+        const { ctx: c, chartArea } = chart;
+        if (!chartArea) return '#5EEAD4';
+        const ultimo = dataIndex === regsComAjuda.length - 1;
+        const gradient = c.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        if (ultimo) { gradient.addColorStop(0, '#4ADE80'); gradient.addColorStop(1, '#15803D'); }
+        else { gradient.addColorStop(0, '#5EEAD4'); gradient.addColorStop(1, '#0F766E'); }
+        return gradient;
+      },
+      borderRadius: 6,
+      borderSkipped: false,
+      maxBarThickness: 48,
     }] },
-    options: { scales: { y: { min: 0, max: 110, ticks: { stepSize: 10, callback: v => v <= 100 ? v + '%' : '' }, grid: { color: '#F1F1F4' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
   });
 }
 
@@ -20772,39 +20239,25 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   if (!canvas || typeof Chart === 'undefined') return;
   const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
   const VALOR = { ok: 100, parcial: 50, nao: 0 };
-  const periodo = window._monPeriodo || '30d';
-  const regsFiltrados = filtrarRegsPorPeriodo(regs, 'created_at');
-  const ordenados = [...regsFiltrados].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  const ordenados = [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  const dataLabels = ordenados.map(r => new Date(r.created_at).toLocaleDateString('pt-BR'));
   const areasComDados = new Set();
   ordenados.forEach(r => Object.keys(r.resultados||{}).forEach(k => areasComDados.add(k)));
-  const agregarSemana = periodo === '6m' || periodo === 'tudo';
-
-  let dataLabels;
-  const datasets = areas.filter(a => areasComDados.has(a)).map(a => {
-    const pontosArea = ordenados
-      .filter(r => r.resultados && r.resultados[a] !== undefined)
-      .map(r => ({ data: r.created_at, valor: Math.max(VALOR[r.resultados[a]], 2) }));
-    const pontosFinais = agregarSemana ? agruparPontosPorSemana(pontosArea) : pontosArea;
-    if (!dataLabels) dataLabels = pontosFinais.map(p => new Date(p.data).toLocaleDateString('pt-BR'));
-    return {
-      label: labels[a].replace(/^\S+\s/, ''),
-      data: pontosFinais.map(p => p.valor),
-      borderColor: CORES[a],
-      backgroundColor: CORES[a],
-      spanGaps: true,
-      tension: 0.3,
-      pointRadius: 4,
-      fill: false,
-    };
-  });
-  if (!dataLabels) dataLabels = [];
+  const datasets = areas.filter(a => areasComDados.has(a)).map(a => ({
+    label: labels[a].replace(/^\S+\s/, ''),
+    data: ordenados.map(r => r.resultados && r.resultados[a] !== undefined ? Math.max(VALOR[r.resultados[a]], 2) : null),
+    backgroundColor: CORES[a],
+    borderRadius: 6,
+    borderSkipped: false,
+    maxBarThickness: 36,
+  }));
   if (_chartMonitoramento) _chartMonitoramento.destroy();
   _chartMonitoramento = new Chart(canvas, {
-    type: 'line',
+    type: 'bar',
     data: { labels: dataLabels, datasets },
     options: {
       scales: {
-        y: { min: 0, max: 110, ticks: { stepSize: 10, callback: v => v <= 100 ? v + '%' : '' }, grid: { color: '#F1F1F4' } },
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } },
         x: { grid: { display: false } },
       },
       plugins: { legend: { position: 'bottom' } },
