@@ -10068,7 +10068,7 @@ function renderPages() {
         </div>
       </div>
 
-      <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial/Helvetica)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>       </div>       <!-- Opções de saída -->
+      <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial/Helvetica)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>         <div>           <label class="flabel">Cor do PDF</label>           <div id="inp-cor-tema-swatches" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;max-width:220px">             <div class="cor-swatch selected" data-cor="1E3A8A" onclick="selecionarCorTema('1E3A8A',this)" style="width:22px;height:22px;border-radius:50%;background:#1E3A8A;cursor:pointer;border:2px solid #1E3A8A;box-shadow:0 0 0 2px #fff, 0 0 0 3px #1E3A8A" title="Azul LouMind (padrão)"></div>             <div class="cor-swatch" data-cor="2563EB" onclick="selecionarCorTema('2563EB',this)" style="width:22px;height:22px;border-radius:50%;background:#2563EB;cursor:pointer;border:2px solid transparent" title="Azul-claro"></div>             <div class="cor-swatch" data-cor="0F766E" onclick="selecionarCorTema('0F766E',this)" style="width:22px;height:22px;border-radius:50%;background:#0F766E;cursor:pointer;border:2px solid transparent" title="Petróleo"></div>             <div class="cor-swatch" data-cor="166534" onclick="selecionarCorTema('166534',this)" style="width:22px;height:22px;border-radius:50%;background:#166534;cursor:pointer;border:2px solid transparent" title="Verde-escuro"></div>             <div class="cor-swatch" data-cor="4D7C0F" onclick="selecionarCorTema('4D7C0F',this)" style="width:22px;height:22px;border-radius:50%;background:#4D7C0F;cursor:pointer;border:2px solid transparent" title="Verde-musgo"></div>             <div class="cor-swatch" data-cor="A16207" onclick="selecionarCorTema('A16207',this)" style="width:22px;height:22px;border-radius:50%;background:#A16207;cursor:pointer;border:2px solid transparent" title="Amarelo-mostarda"></div>             <div class="cor-swatch" data-cor="C2410C" onclick="selecionarCorTema('C2410C',this)" style="width:22px;height:22px;border-radius:50%;background:#C2410C;cursor:pointer;border:2px solid transparent" title="Laranja-queimado"></div>             <div class="cor-swatch" data-cor="EA580C" onclick="selecionarCorTema('EA580C',this)" style="width:22px;height:22px;border-radius:50%;background:#EA580C;cursor:pointer;border:2px solid transparent" title="Laranja-forte"></div>             <div class="cor-swatch" data-cor="B91C1C" onclick="selecionarCorTema('B91C1C',this)" style="width:22px;height:22px;border-radius:50%;background:#B91C1C;cursor:pointer;border:2px solid transparent" title="Vermelho"></div>             <div class="cor-swatch" data-cor="9F1239" onclick="selecionarCorTema('9F1239',this)" style="width:22px;height:22px;border-radius:50%;background:#9F1239;cursor:pointer;border:2px solid transparent" title="Vinho"></div>             <div class="cor-swatch" data-cor="BE185D" onclick="selecionarCorTema('BE185D',this)" style="width:22px;height:22px;border-radius:50%;background:#BE185D;cursor:pointer;border:2px solid transparent" title="Rosa-escuro"></div>             <div class="cor-swatch" data-cor="6D28D9" onclick="selecionarCorTema('6D28D9',this)" style="width:22px;height:22px;border-radius:50%;background:#6D28D9;cursor:pointer;border:2px solid transparent" title="Roxo"></div>             <div class="cor-swatch" data-cor="4338CA" onclick="selecionarCorTema('4338CA',this)" style="width:22px;height:22px;border-radius:50%;background:#4338CA;cursor:pointer;border:2px solid transparent" title="Índigo"></div>             <div class="cor-swatch" data-cor="78350F" onclick="selecionarCorTema('78350F',this)" style="width:22px;height:22px;border-radius:50%;background:#78350F;cursor:pointer;border:2px solid transparent" title="Marrom"></div>             <div class="cor-swatch" data-cor="475569" onclick="selecionarCorTema('475569',this)" style="width:22px;height:22px;border-radius:50%;background:#475569;cursor:pointer;border:2px solid transparent" title="Cinza-azulado"></div>             <div class="cor-swatch" data-cor="1F2937" onclick="selecionarCorTema('1F2937',this)" style="width:22px;height:22px;border-radius:50%;background:#1F2937;cursor:pointer;border:2px solid transparent" title="Preto-suave"></div>           </div>         </div>       </div>       <!-- Opções de saída -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
           <input type="checkbox" id="inp-pictogramas" style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
@@ -12361,7 +12361,7 @@ function renderPagesClinica() {
         </div>
       </div>
 
-      <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial/Helvetica)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>       </div>       <!-- Opções de saída -->
+      <!-- Opções de formatação -->       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">         <div>           <label class="flabel" for="inp-nivel">Nível da atividade</label>           <select id="inp-nivel" class="fselect" style="margin-top:4px">             <option value="basico">🟢 Básico</option>             <option value="intermediario" selected>🟡 Intermediário</option>             <option value="avancado">🔴 Avançado</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tipo">Tipo de fonte</label>           <select id="inp-fonte-tipo" class="fselect" style="margin-top:4px">             <option value="sans">Sem Serifa — padrão (Arial/Helvetica)</option>             <option value="serif">Com Serifa (Times New Roman)</option>             <option value="mono">Monospace (Courier)</option>             <option value="opendyslexic">OpenDyslexic</option>           </select>         </div>         <div>           <label class="flabel" for="inp-fonte-tamanho">Tamanho da fonte</label>           <select id="inp-fonte-tamanho" class="fselect" style="margin-top:4px">             <option value="pequeno">Pequeno (12px)</option>             <option value="medio" selected>Médio (15px)</option>             <option value="grande">Grande (18px)</option>             <option value="extragrande">Extra grande (22px)</option>           </select>         </div>         <div>           <label class="flabel" for="inp-espacamento">Espaçamento</label>           <select id="inp-espacamento" class="fselect" style="margin-top:4px">             <option value="compacto">Compacto</option>             <option value="normal" selected>Normal</option>             <option value="amplo">Amplo</option>           </select>         </div>         <div>           <label class="flabel">Cor do PDF</label>           <div id="inp-cor-tema-swatches" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;max-width:220px">             <div class="cor-swatch selected" data-cor="1E3A8A" onclick="selecionarCorTema('1E3A8A',this)" style="width:22px;height:22px;border-radius:50%;background:#1E3A8A;cursor:pointer;border:2px solid #1E3A8A;box-shadow:0 0 0 2px #fff, 0 0 0 3px #1E3A8A" title="Azul LouMind (padrão)"></div>             <div class="cor-swatch" data-cor="2563EB" onclick="selecionarCorTema('2563EB',this)" style="width:22px;height:22px;border-radius:50%;background:#2563EB;cursor:pointer;border:2px solid transparent" title="Azul-claro"></div>             <div class="cor-swatch" data-cor="0F766E" onclick="selecionarCorTema('0F766E',this)" style="width:22px;height:22px;border-radius:50%;background:#0F766E;cursor:pointer;border:2px solid transparent" title="Petróleo"></div>             <div class="cor-swatch" data-cor="166534" onclick="selecionarCorTema('166534',this)" style="width:22px;height:22px;border-radius:50%;background:#166534;cursor:pointer;border:2px solid transparent" title="Verde-escuro"></div>             <div class="cor-swatch" data-cor="4D7C0F" onclick="selecionarCorTema('4D7C0F',this)" style="width:22px;height:22px;border-radius:50%;background:#4D7C0F;cursor:pointer;border:2px solid transparent" title="Verde-musgo"></div>             <div class="cor-swatch" data-cor="A16207" onclick="selecionarCorTema('A16207',this)" style="width:22px;height:22px;border-radius:50%;background:#A16207;cursor:pointer;border:2px solid transparent" title="Amarelo-mostarda"></div>             <div class="cor-swatch" data-cor="C2410C" onclick="selecionarCorTema('C2410C',this)" style="width:22px;height:22px;border-radius:50%;background:#C2410C;cursor:pointer;border:2px solid transparent" title="Laranja-queimado"></div>             <div class="cor-swatch" data-cor="EA580C" onclick="selecionarCorTema('EA580C',this)" style="width:22px;height:22px;border-radius:50%;background:#EA580C;cursor:pointer;border:2px solid transparent" title="Laranja-forte"></div>             <div class="cor-swatch" data-cor="B91C1C" onclick="selecionarCorTema('B91C1C',this)" style="width:22px;height:22px;border-radius:50%;background:#B91C1C;cursor:pointer;border:2px solid transparent" title="Vermelho"></div>             <div class="cor-swatch" data-cor="9F1239" onclick="selecionarCorTema('9F1239',this)" style="width:22px;height:22px;border-radius:50%;background:#9F1239;cursor:pointer;border:2px solid transparent" title="Vinho"></div>             <div class="cor-swatch" data-cor="BE185D" onclick="selecionarCorTema('BE185D',this)" style="width:22px;height:22px;border-radius:50%;background:#BE185D;cursor:pointer;border:2px solid transparent" title="Rosa-escuro"></div>             <div class="cor-swatch" data-cor="6D28D9" onclick="selecionarCorTema('6D28D9',this)" style="width:22px;height:22px;border-radius:50%;background:#6D28D9;cursor:pointer;border:2px solid transparent" title="Roxo"></div>             <div class="cor-swatch" data-cor="4338CA" onclick="selecionarCorTema('4338CA',this)" style="width:22px;height:22px;border-radius:50%;background:#4338CA;cursor:pointer;border:2px solid transparent" title="Índigo"></div>             <div class="cor-swatch" data-cor="78350F" onclick="selecionarCorTema('78350F',this)" style="width:22px;height:22px;border-radius:50%;background:#78350F;cursor:pointer;border:2px solid transparent" title="Marrom"></div>             <div class="cor-swatch" data-cor="475569" onclick="selecionarCorTema('475569',this)" style="width:22px;height:22px;border-radius:50%;background:#475569;cursor:pointer;border:2px solid transparent" title="Cinza-azulado"></div>             <div class="cor-swatch" data-cor="1F2937" onclick="selecionarCorTema('1F2937',this)" style="width:22px;height:22px;border-radius:50%;background:#1F2937;cursor:pointer;border:2px solid transparent" title="Preto-suave"></div>           </div>         </div>       </div>       <!-- Opções de saída -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gr100)">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);user-select:none">
           <input type="checkbox" id="inp-pictogramas" style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
@@ -13557,6 +13557,17 @@ async function buscarContextoBNCC(codigos) {
   return data.map(h => `${h.codigo}: ${h.descricao}`).join('\n');
 }
 
+window._corTemaSelecionada = '1E3A8A';
+function selecionarCorTema(hex, el) {
+  window._corTemaSelecionada = hex;
+  document.querySelectorAll('#inp-cor-tema-swatches .cor-swatch').forEach(s => {
+    s.style.border = '2px solid transparent';
+    s.style.boxShadow = 'none';
+  });
+  el.style.border = '2px solid #' + hex;
+  el.style.boxShadow = '0 0 0 2px #fff, 0 0 0 3px #' + hex;
+}
+
 async function gerar() {
   let aluno, idade, serie, perfis, obs;
 
@@ -14063,7 +14074,7 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
       }
     }
     ultimaAdapt = textoFinal;
-    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento, bnccCodigos: codigosBncc };
+    dadosUltima = { aluno, idade, serie, materia, tipoAtiv, perfis, obs, alunoId: alunoSelId, usaPictograma, incluiGuia, usaMaiusculas, nivel, fonteTipo, fonteTamanho, espacamento, bnccCodigos: codigosBncc, corTema: window._corTemaSelecionada || '1E3A8A' };
     document.getElementById('result-text').value = textoFinal;
     document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}${codigosBncc.length ? ' · BNCC ' + codigosBncc.join(', ') : ''}`;
     document.getElementById('result-card').classList.add('show');
@@ -14170,6 +14181,7 @@ async function downloadAdaptacaoPDF() {
     fonteTamanho: dadosUltima.fonteTamanho,
     espacamento: dadosUltima.espacamento,
     fonteTipo: dadosUltima.fonteTipo,
+    corTema: dadosUltima.corTema,
     imagensPorItem
   });
 }
@@ -15648,6 +15660,12 @@ function desenharIconeComando(doc, tipo, cx, cy, tam) {
 }
 
 function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
+  const _corTemaHex = (opts.corTema || '1E3A8A').replace('#','');
+  const CT = [
+    parseInt(_corTemaHex.slice(0,2),16),
+    parseInt(_corTemaHex.slice(2,4),16),
+    parseInt(_corTemaHex.slice(4,6),16)
+  ];
   const FAMILIAS_FONTE_ATIV = { sans: 'helvetica', serif: 'times', mono: 'courier' };
   const fonteEscolhidaAtiv = opts.fonteTipo === 'opendyslexic' && window._openDyslexicCarregada
     ? 'OpenDyslexic'
@@ -15694,11 +15712,11 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     y = 30;
   } else {
     // Cabeçalho sem logo — faixa azul fina
-    doc.setFillColor(30, 58, 138);
+    doc.setFillColor(CT[0], CT[1], CT[2]);
     doc.rect(0, 0, W, 3, 'F');
     doc.setFillColor(245, 248, 255);
     doc.rect(0, 3, W, 16, 'F');
-    doc.setTextColor(30, 58, 138);
+    doc.setTextColor(CT[0], CT[1], CT[2]);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.text('ATIVIDADE ADAPTADA', ml, 13);
@@ -15733,7 +15751,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   y += 16;
 
   // ── TÍTULO DA ATIVIDADE ───────────────────────────────────
-  doc.setFillColor(30, 58, 138);
+  doc.setFillColor(CT[0], CT[1], CT[2]);
   doc.roundedRect(ml, y, W - ml - mr, 10, 2, 2, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
@@ -15781,7 +15799,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   if (tituloAtividade) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(fontSize + 2);
-    doc.setTextColor(30, 58, 138);
+    doc.setTextColor(CT[0], CT[1], CT[2]);
     doc.text(sanitizarTexto(tituloAtividade.toUpperCase()), W / 2, y, { align: 'center' });
     y += altLinha + 3;
   }
@@ -15794,7 +15812,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     if (y + altLinha > H - rodapeH) {
       adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
       doc.addPage();
-      doc.setFillColor(30, 58, 138);
+      doc.setFillColor(CT[0], CT[1], CT[2]);
       doc.rect(0, 0, W, 3, 'F');
       y = 24;
       doc.setFont('helvetica', 'normal');
@@ -16074,12 +16092,12 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         y = 24;
       }
       doc.setFillColor(240, 244, 255);
-      doc.setDrawColor(30, 58, 138);
+      doc.setDrawColor(CT[0], CT[1], CT[2]);
       doc.setLineWidth(0.5);
       doc.roundedRect(ml, y, W - ml - mr, altCaixaBloco, 2, 2, 'FD');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(fontSize);
-      doc.setTextColor(30, 58, 138);
+      doc.setTextColor(CT[0], CT[1], CT[2]);
       let yCaixaBloco = y + 6;
       itensCaixaBloco.forEach(it => {
         if (it.tipo === 'imagem') {
@@ -16177,7 +16195,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       } else {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(fontSize + 0.5);
-        doc.setTextColor(30, 58, 138);
+        doc.setTextColor(CT[0], CT[1], CT[2]);
         const linhasTituloAtiv = doc.splitTextToSize(limpa, maxW);
         linhasTituloAtiv.forEach((lt, li) => doc.text(lt, ml, y + li * altLinha));
         y += altLinha * (linhasTituloAtiv.length - 1);
@@ -16239,7 +16257,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     }
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(fontSize);
-    doc.setTextColor(30, 58, 138);
+    doc.setTextColor(CT[0], CT[1], CT[2]);
     doc.text('Apoio visual', ml, y);
     y += altLinha + 2;
     const maxImgSizeFallback = 40;
