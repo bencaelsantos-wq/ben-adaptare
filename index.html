@@ -9979,7 +9979,7 @@ function renderPages() {
       <div class="fcard-title">Matéria e tipo de atividade</div>
       <div class="frow">
         <div><label class="flabel" for="inp-materia">Matéria / Área</label>
-          <select id="inp-materia" class="fselect" onchange="atualizarTemplates()">
+          <select id="inp-materia" class="fselect" onchange="atualizarTemplates();atualizarVisibilidadeTalita()">
             <option value="">Selecione</option>
             <optgroup label="Montessori">
               <option>Educação Cósmica</option><option>Vida Prática</option><option>Linguagem Oral e Escrita (Montessori)</option><option>Matemática (Montessori)</option><option>Sensorial</option><option>Cultura Geral</option><option>Arte e Expressão</option><option>Movimento e Coordenação</option><option>Botânica e Zoologia</option><option>Geografia e Geologia</option><option>História do Universo</option><option>Educação para a Paz</option>
@@ -12300,6 +12300,16 @@ function renderPagesClinica() {
           <option value="funcional-adaptativo">Funcional/Adaptativo (autonomia de vida, leitura funcional)</option>
         </select>
       </div>
+      <div id="gerar-talita-wrap" style="display:none;margin-top:12px">
+        <label class="flabel" for="gerar-talita-inp">Material Montessori — Talita de Almeida / ABEM <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label>
+        <div style="position:relative;margin-top:4px">
+          <input type="text" id="gerar-talita-inp" class="finput" placeholder="Ex: alfabeto móvel, caixas de reconhecimento…" autocomplete="off"
+            oninput="buscarTalitaDropdown()" onfocus="buscarTalitaDropdown()"
+            onblur="setTimeout(()=>{const dd=document.getElementById('gerar-talita-dropdown'); if(dd) dd.style.display='none';},200)">
+          <div id="gerar-talita-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #D1D9F0;border-radius:8px;margin-top:2px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1);scrollbar-width:thin"></div>
+        </div>
+        <div class="mat-tag-list" id="gerar-talita-tags" style="margin-top:8px"></div>
+      </div>
     </div>
 
    <div class="fcard">
@@ -13568,6 +13578,74 @@ function selecionarCorTema(hex, el) {
   el.style.boxShadow = '0 0 0 2px #fff, 0 0 0 3px #' + hex;
 }
 
+window._gerarTalitaTemp = [];
+function atualizarVisibilidadeTalita() {
+  const sel = document.getElementById('inp-materia');
+  const wrap = document.getElementById('gerar-talita-wrap');
+  if (!sel || !wrap) return;
+  const ehMontessoriSel = sel.selectedOptions[0]?.closest('optgroup')?.label === 'Montessori';
+  wrap.style.display = ehMontessoriSel ? 'block' : 'none';
+  if (!ehMontessoriSel) { window._gerarTalitaTemp = []; renderizarTalitaTagsGerar(); }
+}
+function removerTalitaGerar(id) {
+  window._gerarTalitaTemp = (window._gerarTalitaTemp || []).filter(i => !i.startsWith(id + '|||'));
+  renderizarTalitaTagsGerar();
+}
+function renderizarTalitaTagsGerar() {
+  const el = document.getElementById('gerar-talita-tags');
+  if (!el) return;
+  el.innerHTML = (window._gerarTalitaTemp || []).map(item => {
+    const [id, label] = item.split('|||');
+    return `<span class="mat-tag">${label} <span onclick="removerTalitaGerar('${id}')" style="cursor:pointer">×</span></span>`;
+  }).join('');
+}
+window._talitaCache = null;
+async function carregarCacheTalita() {
+  if (window._talitaCache) return window._talitaCache;
+  const { data } = await db.from('talita_materiais').select('id, material, idade, objetivo_direto').order('material').range(0, 999);
+  window._talitaCache = data || [];
+  return window._talitaCache;
+}
+async function buscarTalitaDropdown() {
+  const inp = document.getElementById('gerar-talita-inp');
+  const dd = document.getElementById('gerar-talita-dropdown');
+  if (!inp || !dd) return;
+  const termo = inp.value.trim().toLowerCase();
+  const lista = await carregarCacheTalita();
+  const filtrados = (termo
+    ? lista.filter(m => (m.material||'').toLowerCase().includes(termo) || (m.objetivo_direto||'').toLowerCase().includes(termo))
+    : lista
+  ).slice(0, 25);
+  if (!filtrados.length) {
+    dd.innerHTML = '<div style="padding:8px 10px;font-size:12px;color:#9CA3AF">Nenhum material encontrado</div>';
+    dd.style.display = 'block';
+    return;
+  }
+  dd.innerHTML = filtrados.map(m =>
+    `<div onmousedown="selecionarTalitaDropdown('${m.id}')" style="padding:8px 10px;font-size:12px;cursor:pointer;border-bottom:1px solid #F0F1F5" onmouseover="this.style.background='#F5F7FF'" onmouseout="this.style.background='#fff'">
+       <strong>${m.material}</strong>${m.idade ? ' — ' + m.idade : ''}<br><span style="color:#6B7DBF">${(m.objetivo_direto||'').slice(0,90)}${(m.objetivo_direto||'').length>90?'…':''}</span>
+     </div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+function selecionarTalitaDropdown(id) {
+  const item = (window._talitaCache||[]).find(m => m.id === id);
+  if (!item) return;
+  if (!window._gerarTalitaTemp) window._gerarTalitaTemp = [];
+  if (!window._gerarTalitaTemp.some(x => x.startsWith(id + '|||'))) window._gerarTalitaTemp.push(id + '|||' + item.material);
+  renderizarTalitaTagsGerar();
+  const inp = document.getElementById('gerar-talita-inp');
+  const dd = document.getElementById('gerar-talita-dropdown');
+  if (inp) inp.value = '';
+  if (dd) dd.style.display = 'none';
+}
+async function buscarContextoTalita(ids) {
+  if (!ids || !ids.length) return '';
+  const { data } = await db.from('talita_materiais').select('material, idade, objetivo_direto, objetivo_indireto').in('id', ids);
+  if (!data || !data.length) return '';
+  return data.map(m => `${m.material}${m.idade ? ' (' + m.idade + ')' : ''} — Objetivo direto: ${m.objetivo_direto || 'não informado'}${m.objetivo_indireto ? ' | Objetivo indireto: ' + m.objetivo_indireto : ''}`).join('\n');
+}
+
 async function gerar() {
   let aluno, idade, serie, perfis, obs;
 
@@ -13631,6 +13709,7 @@ async function gerar() {
   }
   const codigosBncc = [...new Set([...codigosCadastroFiltrados, ...(window._gerarBnccTemp||[])])];
   const contextoBNCC = await buscarContextoBNCC(codigosBncc);
+  const contextoTalita = ehMontessori ? await buscarContextoTalita((window._gerarTalitaTemp||[]).map(x => x.split('|||')[0])) : '';
 
   let sugestaoMonitoramento = null;
   try {
@@ -13849,6 +13928,9 @@ ${a.diretrizes_adaptacao}
 ${contextoBNCC ? `HABILIDADE(S) BNCC EM TRABALHO COM ESTE ALUNO (código oficial e descrição — use como referência real do que está sendo desenvolvido, e cite o código exato na linha HABILIDADE/BNCC do guia do professor, sem inventar nem trocar o código):
 ${contextoBNCC}
 ` : ''}
+${contextoTalita ? `MATERIAL MONTESSORI EM TRABALHO (Talita de Almeida / ABEM — use como referência real do material/objetivo, e cite o nome exato do material e a fonte "Talita de Almeida / ABEM" na linha MATERIAL MONTESSORI do guia do professor, sem inventar nome de material):
+${contextoTalita}
+` : ''}
 CONTEÚDO ORIGINAL A ADAPTAR:
 ${conteudo}
 
@@ -14019,6 +14101,8 @@ PERFIL: [1 linha — diagnóstico + barreira principal removida]
 OBJETIVO PEDAGÓGICO: [1 linha — habilidade desenvolvida]
 
 HABILIDADE/BNCC: [se houver HABILIDADE(S) BNCC informada(s) acima, cite exatamente o(s) código(s) e descrição fornecidos; caso contrário, omita esta linha — nunca invente um código]
+
+MATERIAL MONTESSORI: [se houver MATERIAL MONTESSORI informado acima, cite exatamente o nome do material e a fonte "Talita de Almeida / ABEM"; caso contrário, omita esta linha]
 
 BARREIRAS IDENTIFICADAS (até 3 — liste APENAS barreiras realmente sustentadas pelos dados fornecidos acima; se houver evidência clara para só 1 ou 2, liste só essas, NUNCA invente uma terceira para completar a lista; cada barreira em no máximo 8 palavras):
 - [barreira 1]
