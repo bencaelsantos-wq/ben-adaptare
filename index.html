@@ -10007,6 +10007,16 @@ function renderPages() {
           <option value="funcional-adaptativo">Funcional/Adaptativo — exceção para casos como DI moderada/severa (autonomia de vida, leitura funcional)</option>
         </select>
       </div>
+      <div id="gerar-talita-wrap" style="display:none;margin-top:12px">
+        <label class="flabel" for="gerar-talita-inp">Material Montessori — Talita de Almeida / ABEM <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label>
+        <div style="position:relative;margin-top:4px">
+          <input type="text" id="gerar-talita-inp" class="finput" placeholder="Ex: alfabeto móvel, caixas de reconhecimento…" autocomplete="off"
+            oninput="buscarTalitaDropdown()" onfocus="buscarTalitaDropdown()"
+            onblur="setTimeout(()=>{const dd=document.getElementById('gerar-talita-dropdown'); if(dd) dd.style.display='none';},200)">
+          <div id="gerar-talita-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #D1D9F0;border-radius:8px;margin-top:2px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1);scrollbar-width:thin"></div>
+        </div>
+        <div class="mat-tag-list" id="gerar-talita-tags" style="margin-top:8px"></div>
+      </div>
     </div>
 
    <div class="fcard">
