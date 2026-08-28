@@ -16207,6 +16207,11 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         doc.setTextColor(CT[0], CT[1], CT[2]);
         const linhasTituloAtiv = doc.splitTextToSize(limpa, maxW);
         linhasTituloAtiv.forEach((lt, li) => doc.text(lt, ml, y + li * altLinha));
+        const yTracoTitulo = y + (linhasTituloAtiv.length - 1) * altLinha + 1.5;
+        const larguraTracoTitulo = Math.min(maxW, doc.getTextWidth(linhasTituloAtiv[linhasTituloAtiv.length - 1]) + 2);
+        doc.setDrawColor(CT[0], CT[1], CT[2]);
+        doc.setLineWidth(0.6);
+        doc.line(ml, yTracoTitulo, ml + larguraTracoTitulo, yTracoTitulo);
         y += altLinha * (linhasTituloAtiv.length - 1);
       }
       doc.setFont('helvetica', 'normal');
