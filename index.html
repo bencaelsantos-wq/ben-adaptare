@@ -15839,7 +15839,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     const isSep = isDivisor || linhaT === '';
     if (isDivisor) {
       y += 3;
-      doc.setDrawColor(210, 210, 210);
+      doc.setDrawColor(CT[0], CT[1], CT[2]);
       doc.setLineWidth(0.3);
       doc.line(ml, y, ml + maxW, y);
       y += 5;
