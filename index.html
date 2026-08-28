@@ -2924,12 +2924,14 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <!-- ── Seção: Habilidades BNCC ── -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">📘 Habilidades BNCC em trabalho</div>
       <div class="fblock">
-        <label class="flabel" for="cad-bncc-inp">Código(s) da habilidade (ex: EF35LP07)</label>
-        <div class="salas-input-group">
-          <input type="text" id="cad-bncc-inp" class="finput" placeholder="Ex: EF35LP07" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarBnccCad()}">
-          <button class="btn-sm" onclick="adicionarBnccCad()">+ Adicionar</button>
+        <label class="flabel" for="cad-bncc-inp">Buscar habilidade (digite o código ou parte da descrição)</label>
+        <div style="position:relative">
+          <input type="text" id="cad-bncc-inp" class="finput" placeholder="Ex: EF35LP07 ou 'pontuação'" autocomplete="off"
+            oninput="buscarBnccDropdown('cad')" onfocus="buscarBnccDropdown('cad')"
+            onblur="setTimeout(()=>{const dd=document.getElementById('cad-bncc-dropdown'); if(dd) dd.style.display='none';},200)">
+          <div id="cad-bncc-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #D1D9F0;border-radius:8px;margin-top:2px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
         </div>
-        <div class="mat-tag-list" id="cad-bncc-tags"></div>
+        <div class="mat-tag-list" id="cad-bncc-tags" style="margin-top:8px"></div>
         <div style="font-size:11px;color:#9CA3AF;margin-top:4px">A Lou usa a descrição oficial dessas habilidades como referência ao gerar adaptações para este aluno.</div>
       </div>
 
@@ -3316,12 +3318,14 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         </div>
         <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px">📘 Habilidades BNCC em trabalho</div>
         <div class="fblock">
-          <label class="flabel" for="cc-bncc-inp">Código(s) da habilidade (ex: EF35LP07)</label>
-          <div class="salas-input-group">
-            <input type="text" id="cc-bncc-inp" class="finput" placeholder="Ex: EF35LP07" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarBnccCC()}">
-            <button class="btn-sm" onclick="adicionarBnccCC()">+ Adicionar</button>
+          <label class="flabel" for="cc-bncc-inp">Buscar habilidade (digite o código ou parte da descrição)</label>
+          <div style="position:relative">
+            <input type="text" id="cc-bncc-inp" class="finput" placeholder="Ex: EF35LP07 ou 'pontuação'" autocomplete="off"
+              oninput="buscarBnccDropdown('cc')" onfocus="buscarBnccDropdown('cc')"
+              onblur="setTimeout(()=>{const dd=document.getElementById('cc-bncc-dropdown'); if(dd) dd.style.display='none';},200)">
+            <div id="cc-bncc-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #D1D9F0;border-radius:8px;margin-top:2px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
           </div>
-          <div class="mat-tag-list" id="cc-bncc-tags"></div>
+          <div class="mat-tag-list" id="cc-bncc-tags" style="margin-top:8px"></div>
           <div style="font-size:11px;color:#9CA3AF;margin-top:4px">A Lou usa a descrição oficial dessas habilidades como referência ao gerar adaptações para este perfil.</div>
         </div>
 
@@ -10054,6 +10058,16 @@ function renderPages() {
         </div>
         <div style="margin-top:12px">
           <label class="flabel" for="gerar-bncc-inp">Código(s) BNCC desta atividade <span style="font-weight:400;color:#6B7DBF">(além dos já cadastrados no perfil, vale só para esta geração)</span></label>
+          <div style="position:relative;margin-top:4px">
+            <input type="text" id="gerar-bncc-inp" class="finput" placeholder="Ex: EF35LP07 ou 'pontuação'" autocomplete="off"
+              oninput="buscarBnccDropdown('gerar')" onfocus="buscarBnccDropdown('gerar')"
+              onblur="setTimeout(()=>{const dd=document.getElementById('gerar-bncc-dropdown'); if(dd) dd.style.display='none';},200)">
+            <div id="gerar-bncc-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #D1D9F0;border-radius:8px;margin-top:2px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
+          </div>
+          <div class="mat-tag-list" id="gerar-bncc-tags" style="margin-top:8px"></div>
+        </div>
+        <div style="margin-top:12px">
+          <label class="flabel" for="gerar-bncc-inp">Código(s) BNCC desta atividade <span style="font-weight:400;color:#6B7DBF">(além dos já cadastrados no perfil, vale só para esta geração)</span></label>
           <div class="salas-input-group" style="margin-top:4px">
             <input type="text" id="gerar-bncc-inp" class="finput" placeholder="Ex: EF35LP07" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarBnccGerar()}">
             <button class="btn-sm" onclick="adicionarBnccGerar()">+ Adicionar</button>
@@ -13476,6 +13490,63 @@ function renderizarBnccTagsGerar() {
   ).join('');
 }
 
+function removerBnccGerar(codigo) {
+  window._gerarBnccTemp = (window._gerarBnccTemp || []).filter(c => c !== codigo);
+  renderizarBnccTagsGerar();
+}
+function renderizarBnccTagsGerar() {
+  const el = document.getElementById('gerar-bncc-tags');
+  if (!el) return;
+  el.innerHTML = (window._gerarBnccTemp || []).map(c =>
+    `<span class="mat-tag">${c} <span onclick="removerBnccGerar('${c}')" style="cursor:pointer">×</span></span>`
+  ).join('');
+}
+
+window._bnccCache = null;
+async function carregarCacheBNCC() {
+  if (window._bnccCache) return window._bnccCache;
+  const { data } = await db.from('bncc_habilidades').select('codigo, descricao').order('codigo');
+  window._bnccCache = data || [];
+  return window._bnccCache;
+}
+const BNCC_CTX = {
+  cad:   { get arr(){ return window._cadBnccCodigos ||= []; },   render: () => renderizarBnccTagsCad() },
+  cc:    { get arr(){ return window._ccBnccCodigos ||= []; },    render: () => renderizarBnccTagsCC() },
+  gerar: { get arr(){ return window._gerarBnccTemp ||= []; },    render: () => renderizarBnccTagsGerar() },
+};
+async function buscarBnccDropdown(prefixo) {
+  const inp = document.getElementById(`${prefixo}-bncc-inp`);
+  const dd = document.getElementById(`${prefixo}-bncc-dropdown`);
+  if (!inp || !dd) return;
+  const termo = inp.value.trim().toLowerCase();
+  const lista = await carregarCacheBNCC();
+  const filtrados = (termo
+    ? lista.filter(h => h.codigo.toLowerCase().includes(termo) || h.descricao.toLowerCase().includes(termo))
+    : lista
+  ).slice(0, 25);
+  if (!filtrados.length) {
+    dd.innerHTML = '<div style="padding:8px 10px;font-size:12px;color:#9CA3AF">Nenhuma habilidade encontrada</div>';
+    dd.style.display = 'block';
+    return;
+  }
+  dd.innerHTML = filtrados.map(h =>
+    `<div onmousedown="selecionarBnccDropdown('${prefixo}','${h.codigo}')" style="padding:8px 10px;font-size:12px;cursor:pointer;border-bottom:1px solid #F0F1F5" onmouseover="this.style.background='#F5F7FF'" onmouseout="this.style.background='#fff'">
+       <strong>${h.codigo}</strong> — ${h.descricao.slice(0,100)}${h.descricao.length>100?'…':''}
+     </div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+function selecionarBnccDropdown(prefixo, codigo) {
+  const ctx = BNCC_CTX[prefixo];
+  if (!ctx) return;
+  if (!ctx.arr.includes(codigo)) ctx.arr.push(codigo);
+  ctx.render();
+  const inp = document.getElementById(`${prefixo}-bncc-inp`);
+  const dd = document.getElementById(`${prefixo}-bncc-dropdown`);
+  if (inp) inp.value = '';
+  if (dd) dd.style.display = 'none';
+}
+
 async function buscarContextoBNCC(codigos) {
   if (!codigos || !codigos.length) return '';
   const { data } = await db.from('bncc_habilidades').select('codigo, descricao').in('codigo', codigos);
@@ -16694,15 +16765,15 @@ async function abrirPerfilAluno(a) {
     peisEl.innerHTML  = '<span style="color:var(--gr400)">Erro ao carregar</span>';
   }
 }
-  function adicionarBnccCad() {
-    const inp = document.getElementById('cad-bncc-inp');
-    const val = (inp?.value || '').trim().toUpperCase();
-    if (!val) return;
-    if (!window._cadBnccCodigos) window._cadBnccCodigos = [];
-    if (!window._cadBnccCodigos.includes(val)) window._cadBnccCodigos.push(val);
-    inp.value = '';
-    renderizarBnccTagsCad();
-  }
+function adicionarBnccCC() {
+  const inp = document.getElementById('cc-bncc-inp');
+  const val = (inp?.value || '').trim().toUpperCase();
+  if (!val) return;
+  if (!window._ccBnccCodigos) window._ccBnccCodigos = [];
+  if (!window._ccBnccCodigos.includes(val)) window._ccBnccCodigos.push(val);
+  inp.value = '';
+  renderizarBnccTagsCC();
+}
   function removerBnccCad(codigo) {
     window._cadBnccCodigos = (window._cadBnccCodigos || []).filter(c => c !== codigo);
     renderizarBnccTagsCad();
