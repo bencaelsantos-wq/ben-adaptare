@@ -13505,8 +13505,9 @@ function renderizarBnccTagsGerar() {
 window._bnccCache = null;
 async function carregarCacheBNCC() {
   if (window._bnccCache) return window._bnccCache;
-  const { data } = await db.from('bncc_habilidades').select('codigo, descricao').order('codigo');
-  window._bnccCache = data || [];
+  const { data: parte1 } = await db.from('bncc_habilidades').select('codigo, descricao').order('codigo').range(0, 999);
+  const { data: parte2 } = await db.from('bncc_habilidades').select('codigo, descricao').order('codigo').range(1000, 1999);
+  window._bnccCache = [...(parte1||[]), ...(parte2||[])];
   return window._bnccCache;
 }
 const BNCC_CTX = {
