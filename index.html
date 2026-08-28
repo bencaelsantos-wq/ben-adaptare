@@ -15892,9 +15892,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         y = 24;
       }
       y += 3;
-      doc.setFillColor(176, 141, 87);
+      doc.setFillColor(CT[0], CT[1], CT[2]);
       doc.rect(ml, y, maxW - 8, altBanner, 'F');
-      doc.setFillColor(176, 141, 87);
+      doc.setFillColor(CT[0], CT[1], CT[2]);
       doc.triangle(ml + maxW - 8, y, ml + maxW, y + altBanner / 2, ml + maxW - 8, y + altBanner, 'F');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(fontSize + 1);
@@ -15933,7 +15933,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const circEsqX = colEsqX + larguraMaxEsq + 8;
       const colDirX = circEsqX + 26;
       const colDirW = Math.max(20, maxW - (colDirX - ml) - 6);
-      doc.setDrawColor(30, 58, 138);
+      doc.setDrawColor(CT[0], CT[1], CT[2]);
       doc.setLineWidth(0.4);
       for (let r = 0; r < numLinhasLigar; r++) {
         const rowY = y + r * alturaLinhaLigar;
