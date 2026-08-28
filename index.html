@@ -13620,7 +13620,16 @@ async function gerar() {
   ])].join('\n\n');
 
   const aprendizadoTexto = await buscarAprendizadoAluno(alunoSelId);
-  const codigosBncc = [...new Set([...(a.bncc_codigos||[]), ...(window._gerarBnccTemp||[])])];
+  const normalizarBncc = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  let codigosCadastroFiltrados = [];
+  if (a.bncc_codigos?.length) {
+    const { data: infoCadBncc } = await db.from('bncc_habilidades').select('codigo, componente').in('codigo', a.bncc_codigos);
+    const materiaNorm = normalizarBncc(materia);
+    codigosCadastroFiltrados = (infoCadBncc||[])
+      .filter(h => { const c = normalizarBncc(h.componente); return c && materiaNorm && (c.includes(materiaNorm) || materiaNorm.includes(c)); })
+      .map(h => h.codigo);
+  }
+  const codigosBncc = [...new Set([...codigosCadastroFiltrados, ...(window._gerarBnccTemp||[])])];
   const contextoBNCC = await buscarContextoBNCC(codigosBncc);
 
   let sugestaoMonitoramento = null;
