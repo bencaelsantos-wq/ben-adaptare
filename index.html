@@ -13720,7 +13720,6 @@ async function gerar() {
   const codigosBncc = [...new Set([...codigosCadastroFiltrados, ...(window._gerarBnccTemp||[])])];
   const contextoBNCC = await buscarContextoBNCC(codigosBncc);
   const contextoTalita = ehMontessori ? await buscarContextoTalita((window._gerarTalitaTemp||[]).map(x => x.split('|||')[0])) : '';
-  const contextoTalita = ehMontessori ? await buscarContextoTalita((window._gerarTalitaTemp||[]).map(x => x.split('|||')[0])) : '';
 
   let sugestaoMonitoramento = null;
   try {
