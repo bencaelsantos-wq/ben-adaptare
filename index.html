@@ -15858,10 +15858,10 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   // ── TÍTULO DA ATIVIDADE ───────────────────────────────────
   doc.setFillColor(CT[0], CT[1], CT[2]);
   doc.roundedRect(ml, y, W - ml - mr, 10, 2, 2, 'F');
-  doc.setFont('helvetica', 'bold');
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(11);
   doc.setTextColor(255, 255, 255);
-  doc.text(((opts.subtitulo || opts.titulo || 'Atividade Adaptada').split(/\s*[—–-]{1,2}\s*/)[0]).toUpperCase(), ml + 5, y + 7);
+  doc.text(((opts.subtitulo || opts.titulo || 'Atividade Adaptada').split(/\s*[—–-]{1,2}\s*/)[0]).toUpperCase(), W / 2, y + 7, { align: 'center' });
   y += 20;
 
   // ── CONTEÚDO DA FOLHA DO ALUNO ────────────────────────────
