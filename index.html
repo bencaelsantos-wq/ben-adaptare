@@ -12282,7 +12282,7 @@ function renderPagesClinica() {
       <div class="fcard-title">Matéria e tipo de atividade</div>
       <div class="frow">
         <div><label class="flabel" for="inp-materia">Matéria / Área</label>
-          <select id="inp-materia" class="fselect" onchange="atualizarTemplates()">
+          <select id="inp-materia" class="fselect" onchange="atualizarTemplates();atualizarVisibilidadeTalita()">
             <option value="">Selecione</option>
             <optgroup label="Montessori">
               <option>Educação Cósmica</option><option>Vida Prática</option><option>Linguagem Oral e Escrita (Montessori)</option><option>Matemática (Montessori)</option><option>Sensorial</option><option>Cultura Geral</option><option>Arte e Expressão</option><option>Movimento e Coordenação</option><option>Botânica e Zoologia</option><option>Geografia e Geologia</option><option>História do Universo</option><option>Educação para a Paz</option>
@@ -13720,6 +13720,7 @@ async function gerar() {
   const codigosBncc = [...new Set([...codigosCadastroFiltrados, ...(window._gerarBnccTemp||[])])];
   const contextoBNCC = await buscarContextoBNCC(codigosBncc);
   const contextoTalita = ehMontessori ? await buscarContextoTalita((window._gerarTalitaTemp||[]).map(x => x.split('|||')[0])) : '';
+  const contextoTalita = ehMontessori ? await buscarContextoTalita((window._gerarTalitaTemp||[]).map(x => x.split('|||')[0])) : '';
 
   let sugestaoMonitoramento = null;
   try {
@@ -14111,6 +14112,8 @@ PERFIL: [1 linha — diagnóstico + barreira principal removida]
 OBJETIVO PEDAGÓGICO: [1 linha — habilidade desenvolvida]
 
 HABILIDADE/BNCC: [se houver HABILIDADE(S) BNCC informada(s) acima, cite exatamente o(s) código(s) e descrição fornecidos; caso contrário, omita esta linha — nunca invente um código]
+
+MATERIAL MONTESSORI: [se houver MATERIAL MONTESSORI informado acima, cite exatamente o nome do material e a fonte "Talita de Almeida / ABEM"; caso contrário, omita esta linha]
 
 MATERIAL MONTESSORI: [se houver MATERIAL MONTESSORI informado acima, cite exatamente o nome do material e a fonte "Talita de Almeida / ABEM"; caso contrário, omita esta linha]
 
