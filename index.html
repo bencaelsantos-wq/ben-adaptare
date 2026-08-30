@@ -16974,10 +16974,10 @@ function adicionarBnccCC() {
   const docsList = document.getElementById('cad-docs-list');
   if (docsList) docsList.innerHTML = '';
   window._cadDocs = [];
-  const at_nome = document.getElementById('cad-at-nome')?.value.trim() ||
-                  document.getElementById('cad-at-id')?.selectedOptions[0]?.text || null;
-
-  if (!nome) return toast('Informe o nome.', 'error');
+  window._cadProfessoresIds = [];
+  window._cadBnccCodigos = [];
+  renderizarBnccTagsCad();
+  const selProf = document.getElementById('cad-professores-sel');
   const tagProf = document.getElementById('cad-professores-tags');
   if (selProf) selProf.value = '';
   if (tagProf) tagProf.innerHTML = '';
