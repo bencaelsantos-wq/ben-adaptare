@@ -8053,6 +8053,10 @@ function editarAluno(a) {
     });
     window._cadBnccCodigos = a.bncc_codigos ? [...a.bncc_codigos] : [];
     renderizarBnccTagsCad();
+    window._cadProfessoresIds = a.professores_ids ? [...a.professores_ids] : [];
+    window._cadProfs = a.clinica_profs ? [...a.clinica_profs] : [];
+    const atSelEdit = document.getElementById('cad-at-id');
+    if (atSelEdit && a.at_id) atSelEdit.value = a.at_id;
     const titulo = document.querySelector('#modal-cad h2');
     if (titulo) titulo.textContent = 'Editar Aluno';
   }, 50);
