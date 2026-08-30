@@ -16975,7 +16975,7 @@ function adicionarBnccCC() {
   abrirModal('modal-cad');
 }
 
-aasync function popularDropdownProfessoresCad() {
+async function popularDropdownProfessoresCad() {
   const sel = document.getElementById('cad-professores-sel');
   if (!sel) return;
   const { data } = await db.from('profiles').select('id, nome').eq('role', 'professor').eq('organizacao_id', window._organizacaoId).order('nome');
