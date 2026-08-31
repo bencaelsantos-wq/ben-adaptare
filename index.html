@@ -10203,6 +10203,57 @@ function renderPages() {
       </div>
     </div>
 
+    <div class="fcard">
+      <div class="fcard-title">Formatação do PDF</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        <div>
+          <label class="flabel" for="cic-fonte-tipo">Tipo de fonte</label>
+          <select id="cic-fonte-tipo" class="fselect" style="margin-top:4px">
+            <option value="opendyslexic" selected>OpenDyslexic</option>
+            <option value="sans">Sem Serifa (Arial/Helvetica)</option>
+            <option value="serif">Com Serifa (Times New Roman)</option>
+            <option value="mono">Monospace (Courier)</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel" for="cic-fonte-tamanho">Tamanho da fonte</label>
+          <select id="cic-fonte-tamanho" class="fselect" style="margin-top:4px">
+            <option value="pequeno">Pequeno (12px)</option>
+            <option value="medio" selected>Médio (15px)</option>
+            <option value="grande">Grande (18px)</option>
+            <option value="extragrande">Extra grande (22px)</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel" for="cic-espacamento">Espaçamento</label>
+          <select id="cic-espacamento" class="fselect" style="margin-top:4px">
+            <option value="compacto">Compacto</option>
+            <option value="normal" selected>Normal</option>
+            <option value="amplo">Amplo</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Cor do PDF</label>
+          <div id="cic-cor-tema-swatches" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;max-width:220px">
+            <div class="cor-swatch selected" data-cor="1E3A8A" onclick="selecionarCorTemaCiclo('1E3A8A',this)" style="width:22px;height:22px;border-radius:50%;background:#1E3A8A;cursor:pointer;border:2px solid #1E3A8A;box-shadow:0 0 0 2px #fff, 0 0 0 3px #1E3A8A" title="Azul LouMind (padrão)"></div>
+            <div class="cor-swatch" data-cor="2563EB" onclick="selecionarCorTemaCiclo('2563EB',this)" style="width:22px;height:22px;border-radius:50%;background:#2563EB;cursor:pointer;border:2px solid transparent" title="Azul-claro"></div>
+            <div class="cor-swatch" data-cor="0F766E" onclick="selecionarCorTemaCiclo('0F766E',this)" style="width:22px;height:22px;border-radius:50%;background:#0F766E;cursor:pointer;border:2px solid transparent" title="Petróleo"></div>
+            <div class="cor-swatch" data-cor="166534" onclick="selecionarCorTemaCiclo('166534',this)" style="width:22px;height:22px;border-radius:50%;background:#166534;cursor:pointer;border:2px solid transparent" title="Verde-escuro"></div>
+            <div class="cor-swatch" data-cor="A16207" onclick="selecionarCorTemaCiclo('A16207',this)" style="width:22px;height:22px;border-radius:50%;background:#A16207;cursor:pointer;border:2px solid transparent" title="Amarelo-mostarda"></div>
+            <div class="cor-swatch" data-cor="C2410C" onclick="selecionarCorTemaCiclo('C2410C',this)" style="width:22px;height:22px;border-radius:50%;background:#C2410C;cursor:pointer;border:2px solid transparent" title="Laranja-queimado"></div>
+            <div class="cor-swatch" data-cor="B91C1C" onclick="selecionarCorTemaCiclo('B91C1C',this)" style="width:22px;height:22px;border-radius:50%;background:#B91C1C;cursor:pointer;border:2px solid transparent" title="Vermelho"></div>
+            <div class="cor-swatch" data-cor="6D28D9" onclick="selecionarCorTemaCiclo('6D28D9',this)" style="width:22px;height:22px;border-radius:50%;background:#6D28D9;cursor:pointer;border:2px solid transparent" title="Roxo"></div>
+            <div class="cor-swatch" data-cor="475569" onclick="selecionarCorTemaCiclo('475569',this)" style="width:22px;height:22px;border-radius:50%;background:#475569;cursor:pointer;border:2px solid transparent" title="Cinza-azulado"></div>
+            <div class="cor-swatch" data-cor="1F2937" onclick="selecionarCorTemaCiclo('1F2937',this)" style="width:22px;height:22px;border-radius:50%;background:#1F2937;cursor:pointer;border:2px solid transparent" title="Preto-suave"></div>
+          </div>
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);margin-top:12px">
+        <input type="checkbox" id="cic-maiusculas" style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+        <span>🔠 Ciclo em CAIXA ALTA</span>
+      </label>
+    </div>
+
     <button class="btn-gerar" id="btn-gerar-ciclo" onclick="gerarCicloTrabalho()">
       <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
       Gerar Ciclo de Trabalho com a Lou
@@ -10221,8 +10272,15 @@ function renderPages() {
       <div class="fblock"><label class="flabel">Avançado (+ Fazer Mais)</label><textarea class="result-text" id="ciclo-avancado" style="width:100%;min-height:110px"></textarea></div>
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarCicloTrabalho()">Salvar</button>
+        <button class="btn-copy" onclick="detectarImagensCiclo()">🖼️ Detectar imagens do ciclo</button>
         <button class="btn-copy" onclick="baixarPDFCiclo()">Baixar PDF</button>
       </div>
+    </div>
+
+    <div class="fcard" id="cic-img-painel" style="display:none;margin-top:16px">
+      <div class="fcard-title">Imagens do ciclo</div>
+      <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, escolha uma imagem pra cada um. As imagens entram no PDF ao lado do texto correspondente.</p>
+      <div id="cic-img-itens"></div>
     </div>
   </div>
 
@@ -13911,6 +13969,84 @@ AVANCADO:
   }
   btn.disabled = false;
   document.getElementById('gen-ciclo-box').classList.remove('show');
+}
+function selecionarCorTemaCiclo(hex, el) {
+  window._corTemaSelecionada = hex;
+  document.querySelectorAll('#cic-cor-tema-swatches .cor-swatch').forEach(s => {
+    s.style.border = '2px solid transparent';
+    s.style.boxShadow = 'none';
+  });
+  el.style.border = '2px solid #' + hex;
+  el.style.boxShadow = '0 0 0 2px #fff, 0 0 0 3px #' + hex;
+}
+function detectarImagensCiclo() {
+  if (!window._ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
+  window._imgListaId = 'cic-img-itens';
+  window._imgPrefixo = 'cic';
+  const textoTotal = [
+    document.getElementById('ciclo-basico')?.value,
+    document.getElementById('ciclo-intermediario')?.value,
+    document.getElementById('ciclo-avancado')?.value
+  ].join('\n');
+  const itens = typeof extrairItensParaIlustrar === 'function' ? extrairItensParaIlustrar(textoTotal) : [];
+  window._imgItens = itens.length ? itens : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
+  document.getElementById('cic-img-painel').style.display = '';
+  renderizarPainelImagens();
+  document.getElementById('cic-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+async function baixarPDFCiclo() {
+  if (!window._ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
+  const c = window._ultimoCiclo;
+  const objetivos = document.getElementById('ciclo-objetivos')?.value.trim();
+  const aquecimento = document.getElementById('ciclo-aquecimento')?.value.trim();
+  const basico = document.getElementById('ciclo-basico')?.value.trim();
+  const intermediario = document.getElementById('ciclo-intermediario')?.value.trim();
+  const avancado = document.getElementById('ciclo-avancado')?.value.trim();
+
+  const itensComImagem = (window._imgItens || []).filter(i => i.urlEscolhida);
+  const imagensPorItem = {};
+  if (itensComImagem.length) {
+    toast('Montando PDF…', 'success');
+    for (const item of itensComImagem) {
+      try { imagensPorItem[(item.chave ?? item.termo).trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida); }
+      catch(e) { console.warn('Falha ao carregar imagem de', item.termo, e); }
+    }
+  }
+
+  const conteudo = `Nome: _______________ | Data: ___/___/___
+
+[BANNER: OBJETIVOS]
+${objetivos}
+
+[BANNER: PARA AQUECER]
+${aquecimento}
+
+[BANNER: BÁSICO]
+${basico}
+
+[BANNER: INTERMEDIÁRIO]
+${intermediario}
+
+[BANNER: AVANÇADO]
+${avancado}`;
+
+  const usaMaiusculasCiclo = document.getElementById('cic-maiusculas')?.checked || false;
+
+  gerarPDFDocumento({
+    tipo: 'CICLO DE TRABALHO',
+    titulo: 'Ciclo de Trabalho',
+    subtitulo: c.materia + ' — ' + c.tema + (c.bnccCodigos?.length ? ' — BNCC ' + c.bnccCodigos.join(', ') : ''),
+    aluno: c.aluno.nome,
+    professor: window._profNomeDB || '',
+    conteudo: usaMaiusculasCiclo ? conteudo.toUpperCase() : conteudo,
+    nomeArquivo: 'Ciclo_de_Trabalho_' + c.aluno.nome.replace(/\s+/g,'_') + '_' + c.materia.replace(/\s+/g,'_'),
+    isAtividade: true,
+    corTema: window._corTemaSelecionada,
+    fonteTipo: document.getElementById('cic-fonte-tipo')?.value,
+    fonteTamanho: document.getElementById('cic-fonte-tamanho')?.value,
+    espacamento: document.getElementById('cic-espacamento')?.value,
+    imagensPorItem
+  });
 }
 async function salvarCicloTrabalho() {
   if (!window._ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
