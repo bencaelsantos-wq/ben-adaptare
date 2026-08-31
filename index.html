@@ -17214,10 +17214,14 @@ async function salvarAluno() {
   // Upload de PDFs para Supabase Storage
   const docs = window._cadDocs || [];
   if (docs.length && !window._devMode) {
+    const falhasUpload = [];
     for (const f of docs) {
-      const path = `laudos/${data.id}/${Date.now()}_${f.name.replace(/\s+/g,'_')}`;
-      await db.storage.from('documentos-alunos').upload(path, f, { upsert: false });
+      const nomeSanitizado = f.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `laudos/${data.id}/${Date.now()}_${nomeSanitizado}`;
+      const { error: erroUpload } = await db.storage.from('documentos-alunos').upload(path, f, { upsert: false });
+      if (erroUpload) { console.error('Falha ao subir documento:', f.name, erroUpload); falhasUpload.push(f.name); }
     }
+    if (falhasUpload.length) toast(`Atenção: falha ao subir ${falhasUpload.length} documento(s): ${falhasUpload.join(', ')}. Tente subir novamente pela edição do aluno.`, 'error');
   }
 
   await lgpdRegistrarConsentimento('aluno', data?.id, ['pedagogico','clinico','autorizacao_legal']);
