@@ -17046,6 +17046,7 @@ function handleDocsDrop(e) {
 function processDocFile(f) {
   if (f.type !== 'application/pdf') return toast('Apenas PDFs são aceitos.', 'error');
   if (f.size > 5 * 1024 * 1024) return toast(`"${f.name}" excede 5 MB.`, 'error');
+  if (/[^\x00-\x7F]/.test(f.name)) toast(`Atenção: "${f.name}" tem acento/caractere especial no nome — será renomeado automaticamente ao salvar para evitar erro de upload.`, 'success');
   if (!window._cadDocs) window._cadDocs = [];
   window._cadDocs.push(f);
   renderDocsListAluno();
