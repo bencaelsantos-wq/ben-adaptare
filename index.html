@@ -19583,6 +19583,7 @@ async function gerarPraticaGuiada() {
 
   const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
   const objTexto = obj?.[area] || '';
+  const contextoBNCCPratica = area === 'academico' ? await buscarContextoBNCC(p.bncc_codigos || []) : '';
   const btn = document.getElementById('btn-gerar-pratica');
   btn.textContent = '⏳ Gerando com a Lou…'; btn.disabled = true;
 
@@ -19596,6 +19597,9 @@ FUNÇÕES COMPROMETIDAS: ${p.comprometidas||'—'}
 
 OBJETIVO TERAPÊUTICO (${LABELS_AREA[area]}): ${objTexto || 'Não definido — use o perfil geral do paciente'}
 ${contexto ? `CONTEXTO/CONTEÚDO A TRABALHAR: ${contexto}` : ''}
+${contextoBNCCPratica ? `HABILIDADE(S) BNCC EM TRABALHO COM ESTE PACIENTE (código oficial e descrição — use como referência real do que está sendo desenvolvido academicamente):
+${contextoBNCCPratica}
+` : ''}
 
 Gere EXATAMENTE ${qtdPerguntas} pergunta${qtdPerguntas>1?'s':''} de múltipla escolha trabalhando o objetivo e o contexto acima, com dificuldade adequada ao perfil do paciente. Cada pergunta mostra UMA imagem no enunciado (o estímulo a ser observado/contado/lido/reconhecido) e pede pra escolher a alternativa certa entre 3 opções.
 
@@ -19724,7 +19728,7 @@ function detectarImagensPraticaGuiada() {
 
 async function baixarPraticaGuiadaPDF() {
   if (!ultimaPraticaGuiada) return toast('Gere uma atividade primeiro.', 'error');
-  const { titulo, textoApoio, perguntas, paciente } = ultimaPraticaGuiada;
+  const { titulo, textoApoio, perguntas, paciente, area } = ultimaPraticaGuiada;
 
   const todosItens = window._imgItens || [];
   const itensComImagem = todosItens.filter(i => i.urlEscolhida);
@@ -19761,7 +19765,7 @@ async function baixarPraticaGuiadaPDF() {
     doc.setFont('helvetica','normal');
     doc.setFontSize(9);
     doc.setTextColor(80,80,80);
-    doc.text('Paciente: ' + sanitizarTexto(paciente.nome), ml, y);
+    doc.text('Paciente: ' + sanitizarTexto(paciente.nome) + (paciente.bncc_codigos?.length && area === 'academico' ? ' — BNCC ' + paciente.bncc_codigos.join(', ') : ''), ml, y);
     y += 10;
 
     if (textoApoio) {
