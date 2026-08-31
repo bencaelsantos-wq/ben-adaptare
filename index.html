@@ -13653,6 +13653,7 @@ const BNCC_CTX = {
   cad:   { get arr(){ return window._cadBnccCodigos ||= []; },   render: () => renderizarBnccTagsCad() },
   cc:    { get arr(){ return window._ccBnccCodigos ||= []; },    render: () => renderizarBnccTagsCC() },
   gerar: { get arr(){ return window._gerarBnccTemp ||= []; },    render: () => renderizarBnccTagsGerar() },
+  ciclo: { get arr(){ return window._cicloBnccTemp ||= []; },    render: () => renderizarBnccTagsCiclo() },
 };
 async function buscarBnccDropdown(prefixo) {
   const inp = document.getElementById(`${prefixo}-bncc-inp`);
@@ -13773,8 +13774,154 @@ async function buscarContextoTalita(ids) {
   return data.map(m => `${m.material}${m.idade ? ' (' + m.idade + ')' : ''} — Objetivo direto: ${m.objetivo_direto || 'não informado'}${m.objetivo_indireto ? ' | Objetivo indireto: ' + m.objetivo_indireto : ''}`).join('\n');
 }
 
-async function gerar() {
-  let aluno, idade, serie, perfis, obs;
+function filtrarAlSelCiclo() {
+  const q = (document.getElementById('cic-aluno-search')?.value || '').toLowerCase();
+  const lista = alunosCad.filter(a => a.nome.toLowerCase().includes(q));
+  const el = document.getElementById('cic-aluno-lista-sel');
+  if (!el) return;
+  if (!lista.length) { el.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:var(--gr400)">Nenhum aluno encontrado. Cadastre em "Meus alunos".</div>`; return; }
+  el.innerHTML = lista.map(a => {
+    const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+    return `<div class="aluno-opt ${window._cicloAlunoId===a.id?'selected':''}" onclick="selecionarAlunoCiclo('${a.id}')">
+      <div class="aluno-opt-nome">${a.nome}</div>
+      <div class="aluno-opt-meta">${meta}</div>
+    </div>`;
+  }).join('');
+}
+function selecionarAlunoCiclo(id) {
+  const a = alunosCad.find(x => x.id === id);
+  if (!a) return;
+  window._cicloAlunoId = id;
+  window._cicloAlunoObj = a;
+  const serieEl = document.getElementById('cic-serie');
+  if (serieEl && a.serie) serieEl.value = a.serie;
+  const info = document.getElementById('cic-aluno-sel-info');
+  const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+  info.style.display = 'block';
+  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}`;
+  filtrarAlSelCiclo();
+  const searchEl = document.getElementById('cic-aluno-search');
+  if (searchEl) searchEl.value = a.nome;
+}
+window._cicloBnccTemp = [];
+function removerBnccCiclo(codigo) {
+  window._cicloBnccTemp = (window._cicloBnccTemp || []).filter(c => c !== codigo);
+  renderizarBnccTagsCiclo();
+}
+function renderizarBnccTagsCiclo() {
+  const el = document.getElementById('ciclo-bncc-tags');
+  if (!el) return;
+  el.innerHTML = (window._cicloBnccTemp || []).map(c =>
+    `<span class="mat-tag">${c} <span onclick="removerBnccCiclo('${c}')" style="cursor:pointer">×</span></span>`
+  ).join('');
+}
+async function gerarCicloTrabalho() {
+  const a = window._cicloAlunoObj;
+  if (!a || !window._cicloAlunoId) return toast('Selecione um aluno.', 'error');
+  const materia = document.getElementById('cic-materia')?.value;
+  const serie = document.getElementById('cic-serie')?.value.trim();
+  const tema = document.getElementById('cic-tema')?.value.trim();
+  const contexto = document.getElementById('cic-contexto')?.value.trim();
+  if (!materia) return toast('Selecione a matéria.', 'error');
+  if (!tema) return toast('Informe o tema do ciclo.', 'error');
+
+  const codigosBnccCiclo = [...(window._cicloBnccTemp || [])];
+  const contextoBnccCiclo = await buscarContextoBNCC(codigosBnccCiclo);
+
+  const btn = document.getElementById('btn-gerar-ciclo');
+  btn.disabled = true;
+  document.getElementById('gen-ciclo-box').classList.add('show');
+  document.getElementById('ciclo-result-card').classList.remove('show');
+
+  const prompt = `Você é uma equipe pedagógica especializada em criar Ciclos de Trabalho — planos de estudo autônomos e progressivos que o aluno realiza ao longo de vários dias, em seu próprio ritmo, riscando uma checklist conforme avança.
+
+DADOS:
+Aluno: ${a.nome} | Idade: ${a.idade || ''} | Série: ${serie || a.serie || ''}
+Matéria: ${materia}
+Tema do ciclo: ${tema}
+${contexto ? `Contexto adicional informado pelo professor: ${contexto}` : ''}
+${contextoBnccCiclo ? `HABILIDADE(S) BNCC EM TRABALHO (cite o código exato ao final do objetivo correspondente, no formato "— CODIGO", sem inventar nenhum código além destes):
+${contextoBnccCiclo}` : ''}
+
+IMPORTANTE — o que você NÃO deve fazer:
+- NUNCA cite página de livro didático, nome de livro específico, nome de site ou link — o professor vai adicionar essas referências manualmente depois. Escreva as tarefas de forma genérica (pesquisar, produzir, escrever, montar, responder, desenhar, apresentar), sem "consulte a página X do livro Y".
+- NUNCA use emojis, NUNCA use markdown (sem **negrito** nem #titulo).
+
+FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos, cada um seguido de dois-pontos e o conteúdo (sem nada antes de "OBJETIVOS:"):
+
+OBJETIVOS:
+- [objetivo 1, claro e mensurável]${contextoBnccCiclo ? ' — CODIGO' : ''}
+- [objetivo 2]
+- [objetivo 3, se fizer sentido]
+
+AQUECIMENTO:
+[2 a 3 linhas — pode ser perguntas de reflexão/curiosidade para responder no caderno, OU uma atividade introdutória curta prática. Escolha o que combinar melhor com o tema.]
+
+BASICO:
+( ) [tarefa 1, genérica, sem citar livro/página]
+( ) [tarefa 2]
+( ) [tarefa 3]
+
+INTERMEDIARIO:
+( ) [tarefa 1, um pouco mais desafiadora que o básico, mesma habilidade]
+( ) [tarefa 2]
+( ) [tarefa 3]
+
+AVANCADO:
+( ) [tarefa 1, mais autônoma/aprofundada]
+( ) [tarefa 2]
+( ) FAZER MAIS: [um desafio bônus opcional, específico e criativo para este tema]`;
+
+  try {
+    const maxTokensCiclo = 1800 + codigosBnccCiclo.length * 100;
+    const txt = await chamarClaude({ prompt, maxTokens: maxTokensCiclo, modulo: 'ciclo_trabalho' });
+    const pega = (rotulo, proximo) => {
+      const re = new RegExp(rotulo + ':\\s*([\\s\\S]*?)(?=\\n' + proximo + ':|$)', 'i');
+      const m = txt.match(re);
+      return m ? m[1].trim() : '';
+    };
+    const objetivos = pega('OBJETIVOS', 'AQUECIMENTO');
+    const aquecimento = pega('AQUECIMENTO', 'BASICO');
+    const basico = pega('BASICO', 'INTERMEDIARIO');
+    const intermediario = pega('INTERMEDIARIO', 'AVANCADO');
+    const avancadoMatch = txt.match(/AVANCADO:\s*([\s\S]*)$/i);
+    const avancado = avancadoMatch ? avancadoMatch[1].trim() : '';
+    if (!objetivos && !basico) {
+      console.warn('Ciclo de Trabalho — resposta não interpretada:', txt);
+      toast('Não foi possível interpretar o ciclo gerado. Tente novamente.', 'error');
+    } else {
+      document.getElementById('ciclo-objetivos').value = objetivos;
+      document.getElementById('ciclo-aquecimento').value = aquecimento;
+      document.getElementById('ciclo-basico').value = basico;
+      document.getElementById('ciclo-intermediario').value = intermediario;
+      document.getElementById('ciclo-avancado').value = avancado;
+      document.getElementById('ciclo-result-badge').textContent = [materia, serie || a.serie].filter(Boolean).join(' · ') + (codigosBnccCiclo.length ? ' · BNCC ' + codigosBnccCiclo.join(', ') : '');
+      document.getElementById('ciclo-result-card').classList.add('show');
+      window._ultimoCiclo = { aluno: a, materia, serie: serie || a.serie, tema, objetivos, aquecimento, basico, intermediario, avancado, bnccCodigos: codigosBnccCiclo };
+      toast('Ciclo de Trabalho gerado!', 'success');
+    }
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  }
+  btn.disabled = false;
+  document.getElementById('gen-ciclo-box').classList.remove('show');
+}
+async function salvarCicloTrabalho() {
+  if (!window._ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
+  const c = window._ultimoCiclo;
+  const objetivos = document.getElementById('ciclo-objetivos')?.value.trim();
+  const aquecimento = document.getElementById('ciclo-aquecimento')?.value.trim();
+  const nivel_basico = document.getElementById('ciclo-basico')?.value.trim();
+  const nivel_intermediario = document.getElementById('ciclo-intermediario')?.value.trim();
+  const nivel_avancado = document.getElementById('ciclo-avancado')?.value.trim();
+  const { error } = await db.from('ciclos_trabalho').insert({
+    user_id: user.id, aluno_id: c.aluno.id, aluno_nome: c.aluno.nome,
+    materia: c.materia, tema: c.tema, serie: c.serie,
+    objetivos, aquecimento, nivel_basico, nivel_intermediario, nivel_avancado
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Ciclo salvo!', 'success');
+} 
 
   if (!alunoSelId) return toast('Selecione um aluno cadastrado pela gestão.', 'error');
   const a = alunosCad.find(x => x.id === alunoSelId);
