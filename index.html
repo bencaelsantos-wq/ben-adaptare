@@ -10154,6 +10154,78 @@ function renderPages() {
     </div>
   </div>
 
+  <!-- CICLO DE TRABALHO -->
+  <div id="page-ciclo-trabalho" class="page">
+    <h1 class="page-title">Ciclo de Trabalho</h1>
+    <p class="page-sub">Monte a estrutura de um ciclo de trabalho progressivo (objetivos, aquecimento e 3 níveis) para um aluno. Referências a livro/página você adiciona depois manualmente.</p>
+
+    <div class="fcard">
+      <div class="fcard-title">Aluno</div>
+      <div class="fblock"><label class="flabel" for="cic-aluno-search">Buscar aluno</label>
+        <div class="aluno-selector">
+          <input class="aluno-search" id="cic-aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSelCiclo()">
+          <div id="cic-aluno-lista-sel"></div>
+        </div>
+      </div>
+      <div class="aluno-sel-info" id="cic-aluno-sel-info"></div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">Matéria e tema do ciclo</div>
+      <div class="frow">
+        <div><label class="flabel" for="cic-materia">Matéria / Área</label>
+          <select id="cic-materia" class="fselect">
+            <option value="">Selecione</option>
+            <optgroup label="Montessori">
+              <option>Educação Cósmica</option><option>Vida Prática</option><option>Linguagem Oral e Escrita (Montessori)</option><option>Matemática (Montessori)</option><option>Sensorial</option><option>Cultura Geral</option><option>Arte e Expressão</option><option>Movimento e Coordenação</option><option>Botânica e Zoologia</option><option>Geografia e Geologia</option><option>História do Universo</option><option>Educação para a Paz</option>
+            </optgroup>
+            <optgroup label="Convencional">
+              <option>Língua Portuguesa</option><option>Matemática</option><option>Ciências da Natureza</option><option>História</option><option>Geografia</option><option>Artes</option><option>Educação Física</option><option>Língua Inglesa</option><option>Filosofia</option><option>Sociologia</option><option>Biologia</option><option>Física</option><option>Química</option><option>Ensino Religioso</option><option>Redação e Produção Textual</option>
+            </optgroup>
+            <optgroup label="Outros">
+              <option>Projeto de Vida / Protagonismo</option><option>Tecnologia e Computação</option><option>Música</option><option>Teatro e Expressão Dramática</option><option>Atividade Multidisciplinar</option>
+            </optgroup>
+          </select>
+        </div>
+        <div><label class="flabel" for="cic-serie">Série</label><input type="text" id="cic-serie" class="finput" placeholder="Ex: 6º ano, 3º EM"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="cic-tema">Tema do ciclo</label><input type="text" id="cic-tema" class="finput" placeholder="Ex: Geometria Analítica: Circunferência"></div>
+      <div class="fblock"><label class="flabel" for="cic-contexto">Contexto adicional <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="cic-contexto" class="ftarea sm" placeholder="Ex: foco em situações do cotidiano, ligar com o tema do bimestre passado…"></textarea></div>
+      <div style="margin-top:12px">
+        <label class="flabel" for="ciclo-bncc-inp">Código(s) BNCC deste ciclo <span style="font-weight:400;color:#6B7DBF">(opcional)</span></label>
+        <div style="position:relative;margin-top:4px">
+          <input type="text" id="ciclo-bncc-inp" class="finput" placeholder="Ex: EM13MAT512 ou 'circunferência'" autocomplete="off"
+            oninput="buscarBnccDropdown('ciclo')" onfocus="buscarBnccDropdown('ciclo')"
+            onblur="setTimeout(()=>{const dd=document.getElementById('ciclo-bncc-dropdown'); if(dd) dd.style.display='none';},200)">
+          <div id="ciclo-bncc-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #D1D9F0;border-radius:8px;margin-top:2px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1);scrollbar-width:thin"></div>
+        </div>
+        <div class="mat-tag-list" id="ciclo-bncc-tags" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar-ciclo" onclick="gerarCicloTrabalho()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar Ciclo de Trabalho com a Lou
+    </button>
+    <div class="gen-box" id="gen-ciclo-box"><div class="spin"></div><span>Lou montando o ciclo de trabalho…</span></div>
+
+    <div class="result-card" id="ciclo-result-card">
+      <div class="result-header">
+        <div class="result-title">Ciclo de Trabalho gerado</div>
+        <div class="result-badge" id="ciclo-result-badge">—</div>
+      </div>
+      <div class="fblock"><label class="flabel">Objetivos</label><textarea class="result-text" id="ciclo-objetivos" style="width:100%;min-height:90px"></textarea></div>
+      <div class="fblock"><label class="flabel">Para aquecer</label><textarea class="result-text" id="ciclo-aquecimento" style="width:100%;min-height:80px"></textarea></div>
+      <div class="fblock"><label class="flabel">Básico</label><textarea class="result-text" id="ciclo-basico" style="width:100%;min-height:110px"></textarea></div>
+      <div class="fblock"><label class="flabel">Intermediário</label><textarea class="result-text" id="ciclo-intermediario" style="width:100%;min-height:110px"></textarea></div>
+      <div class="fblock"><label class="flabel">Avançado (+ Fazer Mais)</label><textarea class="result-text" id="ciclo-avancado" style="width:100%;min-height:110px"></textarea></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarCicloTrabalho()">Salvar</button>
+        <button class="btn-copy" onclick="baixarPDFCiclo()">Baixar PDF</button>
+      </div>
+    </div>
+  </div>
+
   <!-- HISTÓRICO -->
   <div id="page-historico" class="page">
     <h1 class="page-title">Histórico de adaptações</h1>
