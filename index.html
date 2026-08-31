@@ -13921,7 +13921,10 @@ async function salvarCicloTrabalho() {
   });
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
   toast('Ciclo salvo!', 'success');
-} 
+}
+
+async function gerar() {
+  let aluno, idade, serie, perfis, obs;
 
   if (!alunoSelId) return toast('Selecione um aluno cadastrado pela gestão.', 'error');
   const a = alunosCad.find(x => x.id === alunoSelId);
