@@ -13825,6 +13825,9 @@ async function gerarCicloTrabalho() {
   if (!materia) return toast('Selecione a matéria.', 'error');
   if (!tema) return toast('Informe o tema do ciclo.', 'error');
 
+  const perfisTexto = (a.perfis || []).join(', ');
+  const diretrizesTexto = a.diretrizes_adaptacao || '';
+
   const codigosBnccCiclo = [...(window._cicloBnccTemp || [])];
   const contextoBnccCiclo = await buscarContextoBNCC(codigosBnccCiclo);
 
@@ -13839,7 +13842,10 @@ DADOS:
 Aluno: ${a.nome} | Idade: ${a.idade || ''} | Série: ${serie || a.serie || ''}
 Matéria: ${materia}
 Tema do ciclo: ${tema}
-${contexto ? `Contexto adicional informado pelo professor: ${contexto}` : ''}
+${perfisTexto ? `Diagnóstico/perfis cadastrados: ${perfisTexto}` : ''}
+${a.observacoes ? `Observações clínicas cadastradas: ${a.observacoes}` : ''}
+${diretrizesTexto ? `Diretrizes de adaptação cadastradas para este aluno (seguir com prioridade): ${diretrizesTexto}` : ''}
+${contexto ? `Contexto adicional informado pelo professor (extra, além do que já está cadastrado): ${contexto}` : ''}
 ${contextoBnccCiclo ? `HABILIDADE(S) BNCC EM TRABALHO (cite o código exato ao final do objetivo correspondente, no formato "— CODIGO", sem inventar nenhum código além destes):
 ${contextoBnccCiclo}` : ''}
 
