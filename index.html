@@ -13885,6 +13885,8 @@ function selecionarAlunoCiclo(id) {
   filtrarAlSelCiclo();
   const searchEl = document.getElementById('cic-aluno-search');
   if (searchEl) searchEl.value = a.nome;
+  const ctxDiagCiclo = document.getElementById('cic-ctx-diagnostico');
+  if (ctxDiagCiclo) ctxDiagCiclo.value = (a.diagnostico || a.hipotese) ? [a.diagnostico, a.hipotese].filter(Boolean).join(' — ') : (a.perfis || []).join(', ');
 }
 window._cicloBnccTemp = [];
 function removerBnccCiclo(codigo) {
