@@ -13226,9 +13226,6 @@ async function selecionarAluno(id) {
   const a = alunosCad.find(x => x.id === id);
   if (!a) return;
 
-  const inpCtxDiag = document.getElementById('inp-ctx-diagnostico');
-  if (inpCtxDiag) inpCtxDiag.value = (a.perfis || []).join(', ');
-
   window._gerarBnccTemp = [];
   renderizarBnccTagsGerar();
 
@@ -13272,7 +13269,7 @@ async function selecionarAluno(id) {
   const ctxLim  = document.getElementById('inp-ctx-limitacoes');
   const ctxPot  = document.getElementById('inp-ctx-potencialidades');
   const ctxObs  = document.getElementById('inp-ctx-obs');
-  if (ctxDiag) ctxDiag.value = [a.diagnostico, a.hipotese].filter(Boolean).join(' — ') || '';
+  if (ctxDiag) ctxDiag.value = (a.diagnostico || a.hipotese) ? [a.diagnostico, a.hipotese].filter(Boolean).join(' — ') : (a.perfis || []).join(', ');
   if (ctxLim)  ctxLim.value  = a.comprometidas || '';
   if (ctxPot)  ctxPot.value  = a.preservadas || '';
   if (ctxObs)  ctxObs.value  = [a.comportamento, a.observacoes].filter(Boolean).join('\n') || '';
