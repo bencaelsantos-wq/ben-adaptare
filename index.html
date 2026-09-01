@@ -13226,6 +13226,9 @@ async function selecionarAluno(id) {
   const a = alunosCad.find(x => x.id === id);
   if (!a) return;
 
+  const inpCtxDiag = document.getElementById('inp-ctx-diagnostico');
+  if (inpCtxDiag) inpCtxDiag.value = (a.perfis || []).join(', ');
+
   window._gerarBnccTemp = [];
   renderizarBnccTagsGerar();
 
