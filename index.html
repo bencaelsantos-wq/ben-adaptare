@@ -10230,6 +10230,14 @@ function renderPages() {
       <div class="fcard-title">Formatação do PDF</div>
       <div style="display:flex;flex-wrap:wrap;gap:12px">
         <div>
+          <label class="flabel" for="cic-nivel">Nível da atividade</label>
+          <select id="cic-nivel" class="fselect" style="margin-top:4px">
+            <option value="basico">🟢 Básico</option>
+            <option value="intermediario" selected>🟡 Intermediário</option>
+            <option value="avancado">🔴 Avançado</option>
+          </select>
+        </div>
+        <div>
           <label class="flabel" for="cic-fonte-tipo">Tipo de fonte</label>
           <select id="cic-fonte-tipo" class="fselect" style="margin-top:4px">
             <option value="opendyslexic" selected>OpenDyslexic</option>
@@ -13912,6 +13920,7 @@ async function gerarCicloTrabalho() {
   const materia = document.getElementById('cic-materia')?.value;
   const serie = document.getElementById('cic-serie')?.value.trim();
   const tema = document.getElementById('cic-tema')?.value.trim();
+  const nivelGeralCiclo = document.getElementById('cic-nivel')?.value || 'intermediario';
   const ctxDiagnosticoCiclo = document.getElementById('cic-ctx-diagnostico')?.value.trim() || '';
   const ctxLimitacoesCiclo = document.getElementById('cic-ctx-limitacoes')?.value.trim() || '';
   const ctxPotencialidadesCiclo = document.getElementById('cic-ctx-potencialidades')?.value.trim() || '';
@@ -13942,6 +13951,7 @@ DADOS:
 Aluno: ${a.nome} | Idade: ${a.idade || ''} | Série: ${serie || a.serie || ''}
 Matéria: ${materia}
 Tema do ciclo: ${tema}
+Nível geral deste ciclo: ${nivelGeralCiclo === 'basico' ? 'Básico' : nivelGeralCiclo === 'avancado' ? 'Avançado' : 'Intermediário'} — calibre TODA a progressão interna (Básico/Intermediário/Avançado do ciclo) relativa a este nível geral. Ex: se o nível geral é "Básico", até a etapa "Avançado" do ciclo deve ficar mais simples e acessível do que seria num ciclo de nível geral "Avançado" — a progressão interna continua existindo, mas todo o patamar de dificuldade sobe ou desce junto com o nível geral escolhido.
 ${perfisTexto ? `Diagnóstico/perfis cadastrados: ${perfisTexto}` : ''}
 ${a.observacoes ? `Observações clínicas cadastradas: ${a.observacoes}` : ''}
 ${diretrizesTexto ? `Diretrizes de adaptação cadastradas para este aluno (seguir com prioridade): ${diretrizesTexto}` : ''}
