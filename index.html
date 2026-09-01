@@ -12547,24 +12547,24 @@ function renderPagesClinica() {
       <div style="margin-top:16px;padding:16px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:12px">
         <div style="font-size:13px;font-weight:700;color:#1E3A8A;margin-bottom:12px;display:flex;align-items:center;gap:8px">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#1E3A8A" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round"/></svg>
-          Contexto do Paciente para a IA <span style="font-weight:400;font-size:11px;color:#6B7DBF">(preenchido automaticamente pelo Perfil Clínico do paciente selecionado — não editável aqui)</span>
+          Contexto do Paciente para a IA <span style="font-weight:400;font-size:11px;color:#6B7DBF">(Diagnóstico vem do cadastro; os demais campos são editáveis)</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div>
-            <label class="flabel" for="inp-ctx-diagnostico">Diagnóstico / CID</label>
+            <label class="flabel" for="inp-ctx-diagnostico">Diagnóstico / CID <span style="font-weight:400;color:#9CA3AF">(do cadastro)</span></label>
             <input type="text" id="inp-ctx-diagnostico" class="finput" placeholder="Selecione um paciente acima" style="margin-top:4px;background:var(--gr50);color:var(--gr600)" readonly>
           </div>
           <div>
             <label class="flabel" for="inp-ctx-limitacoes">Limitações</label>
-            <textarea id="inp-ctx-limitacoes" class="ftarea" rows="2" placeholder="Selecione um paciente acima" style="margin-top:4px;min-height:56px;background:var(--gr50);color:var(--gr600)" readonly></textarea>
+            <textarea id="inp-ctx-limitacoes" class="ftarea" rows="2" placeholder="Ex: dificuldade de concentração por mais de 10 min, não lê textos longos, dificuldade motora fina…" style="margin-top:4px;min-height:56px"></textarea>
           </div>
           <div>
             <label class="flabel" for="inp-ctx-potencialidades">Potencialidades</label>
-            <textarea id="inp-ctx-potencialidades" class="ftarea" rows="2" placeholder="Selecione um paciente acima" style="margin-top:4px;min-height:56px;background:var(--gr50);color:var(--gr600)" readonly></textarea>
+            <textarea id="inp-ctx-potencialidades" class="ftarea" rows="2" placeholder="Ex: boa memória visual, interesse por animais, responde bem a histórias e jogos…" style="margin-top:4px;min-height:56px"></textarea>
           </div>
           <div>
             <label class="flabel" for="inp-ctx-obs">Outras observações</label>
-            <textarea id="inp-ctx-obs" class="ftarea" rows="2" placeholder="Selecione um paciente acima" style="margin-top:4px;min-height:56px;background:var(--gr50);color:var(--gr600)" readonly></textarea>
+            <textarea id="inp-ctx-obs" class="ftarea" rows="2" placeholder="Ex: usa CAA, tem apoio de AT em sala, prefere trabalhar em dupla…" style="margin-top:4px;min-height:56px"></textarea>
           </div>
         </div>
         <div style="margin-top:12px">
@@ -13885,8 +13885,6 @@ function selecionarAlunoCiclo(id) {
   filtrarAlSelCiclo();
   const searchEl = document.getElementById('cic-aluno-search');
   if (searchEl) searchEl.value = a.nome;
-  const ctxDiagCiclo = document.getElementById('cic-ctx-diagnostico');
-  if (ctxDiagCiclo) ctxDiagCiclo.value = (a.perfis || []).join(', ');
 }
 window._cicloBnccTemp = [];
 function removerBnccCiclo(codigo) {
