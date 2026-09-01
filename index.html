@@ -16460,7 +16460,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     const matchBanner = limpa.match(/^\[BANNER:\s*(.+)\]$/i);
     if (matchBanner) {
       const altBanner = 12;
-      if (y + altBanner > H - rodapeH) {
+      if (y + altBanner + 20 > H - rodapeH) {
         adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
         doc.addPage();
         y = 24;
