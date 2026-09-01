@@ -13947,6 +13947,12 @@ IMPORTANTE — o que você NÃO deve fazer:
 - NUNCA cite página de livro didático, nome de livro específico, nome de site ou link — o professor vai adicionar essas referências manualmente depois. Escreva as tarefas de forma genérica (pesquisar, produzir, escrever, montar, responder, desenhar, apresentar), sem "consulte a página X do livro Y".
 - NUNCA use emojis, NUNCA use markdown (sem **negrito** nem #titulo).
 
+REGRA DE ADAPTAÇÃO AO PERFIL — obrigatória, sem exceção:
+- Use o diagnóstico/observações/diretrizes informados acima para calibrar cada tarefa, não só o "Contexto adicional".
+- Se o perfil indicar dificuldade de atenção, memória operacional ou necessidade de apoio estruturado (ex: TDAH, TEA, dificuldade de concentração em atividades longas), quebre qualquer tarefa que exigiria mais de uma ação em sub-passos "( )" separados, em vez de uma tarefa só e densa.
+- Nunca escreva uma tarefa como parágrafo de mais de 2 linhas corridas — se precisar de mais instrução, quebre em itens menores.
+- Logo após CADA tarefa que exigir mais de um passo mental (não tarefas triviais de 1 ação), inclua uma linha "[DICA: instrução curta e prática de como fazer]" — específica daquela tarefa, nunca genérica repetida.
+
 FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos, cada um seguido de dois-pontos e o conteúdo (sem nada antes de "OBJETIVOS:"):
 
 OBJETIVOS:
@@ -14049,6 +14055,10 @@ async function baixarPDFCiclo() {
     }
   }
 
+  const fazerMaisMatch = avancado.match(/\(\s*\)\s*FAZER MAIS:?\s*([\s\S]*)$/i);
+  const fazerMais = fazerMaisMatch ? fazerMaisMatch[1].trim() : '';
+  const avancadoSemFazerMais = fazerMaisMatch ? avancado.slice(0, fazerMaisMatch.index).trim() : avancado;
+
   const conteudo = `Nome: _______________ | Data: ___/___/___
 
 ${c.tema.toUpperCase()}
@@ -14068,7 +14078,8 @@ ${basico}
 ${intermediario}
 
 [BANNER: AVANÇADO]
-${avancado}`;
+${avancadoSemFazerMais}
+${fazerMais ? `\n[BANNER: FAZER MAIS]\n( ) ${fazerMais}` : ''}`;
 
   const usaMaiusculasCiclo = document.getElementById('cic-maiusculas')?.checked || false;
 
@@ -16446,7 +16457,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(fontSize + 1);
       doc.setTextColor(255, 255, 255);
-      doc.text(sanitizarTexto(matchBanner[1].toUpperCase()), ml + 5, y + altBanner / 2 + 1.5);
+      doc.text(sanitizarTexto(matchBanner[1].toUpperCase()), ml + (maxW - 8) / 2, y + altBanner / 2 + 1.5, { align: 'center' });
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(fontSize);
       doc.setTextColor(25, 25, 25);
