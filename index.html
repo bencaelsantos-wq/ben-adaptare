@@ -10079,8 +10079,8 @@ function renderPages() {
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div>
-            <label class="flabel" for="inp-ctx-diagnostico">Diagnóstico / CID</label>
-            <input type="text" id="inp-ctx-diagnostico" class="finput" placeholder="Ex: TEA (F84.0), TDAH (F90), Dislexia…" style="margin-top:4px">
+            <label class="flabel" for="inp-ctx-diagnostico">Diagnóstico / CID <span style="font-weight:400;color:#9CA3AF">(do cadastro)</span></label>
+            <input type="text" id="inp-ctx-diagnostico" class="finput" placeholder="Selecione um aluno acima" style="margin-top:4px;background:var(--gr50);color:var(--gr600)" readonly>
           </div>
           <div>
             <label class="flabel" for="inp-ctx-limitacoes">Limitações</label>
@@ -10197,8 +10197,8 @@ function renderPages() {
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div>
-            <label class="flabel" for="cic-ctx-diagnostico">Diagnóstico / CID</label>
-            <input type="text" id="cic-ctx-diagnostico" class="finput" placeholder="Ex: TEA (F84.0), TDAH (F90), Dislexia…" style="margin-top:4px">
+            <label class="flabel" for="cic-ctx-diagnostico">Diagnóstico / CID <span style="font-weight:400;color:#9CA3AF">(do cadastro)</span></label>
+            <input type="text" id="cic-ctx-diagnostico" class="finput" placeholder="Selecione um aluno acima" style="margin-top:4px;background:var(--gr50);color:var(--gr600)" readonly>
           </div>
           <div>
             <label class="flabel" for="cic-ctx-limitacoes">Limitações</label>
@@ -13256,6 +13256,8 @@ async function selecionarAluno(id) {
 
   const inpAluno = document.getElementById('inp-aluno');
   if (inpAluno) inpAluno.value = a.nome || '';
+  const inpCtxDiag = document.getElementById('inp-ctx-diagnostico');
+  if (inpCtxDiag) inpCtxDiag.value = (a.perfis || []).join(', ');
   const inpIdade = document.getElementById('inp-idade');
   if (inpIdade && a.idade) {
     const opt = [...inpIdade.options].find(o => o.value === a.idade || o.text === a.idade);
@@ -13883,6 +13885,8 @@ function selecionarAlunoCiclo(id) {
   filtrarAlSelCiclo();
   const searchEl = document.getElementById('cic-aluno-search');
   if (searchEl) searchEl.value = a.nome;
+  const ctxDiagCiclo = document.getElementById('cic-ctx-diagnostico');
+  if (ctxDiagCiclo) ctxDiagCiclo.value = (a.perfis || []).join(', ');
 }
 window._cicloBnccTemp = [];
 function removerBnccCiclo(codigo) {
