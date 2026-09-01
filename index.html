@@ -10190,7 +10190,30 @@ function renderPages() {
         <div><label class="flabel" for="cic-serie">Série</label><input type="text" id="cic-serie" class="finput" placeholder="Ex: 6º ano, 3º EM"></div>
       </div>
       <div class="fblock"><label class="flabel" for="cic-tema">Tema do ciclo</label><input type="text" id="cic-tema" class="finput" placeholder="Ex: Geometria Analítica: Circunferência"></div>
-      <div class="fblock"><label class="flabel" for="cic-contexto">Contexto adicional <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="cic-contexto" class="ftarea sm" placeholder="Ex: foco em situações do cotidiano, ligar com o tema do bimestre passado…"></textarea></div>
+      <div style="margin-top:12px;padding:16px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:12px">
+        <div style="font-size:13px;font-weight:700;color:#1E3A8A;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#1E3A8A" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round"/></svg>
+          Contexto do Aluno para a IA <span style="font-weight:400;font-size:11px;color:#6B7DBF">(opcional — o sistema já usa o diagnóstico/observações/diretrizes cadastrados; preencha aqui só se quiser complementar)</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label class="flabel" for="cic-ctx-diagnostico">Diagnóstico / CID</label>
+            <input type="text" id="cic-ctx-diagnostico" class="finput" placeholder="Ex: TEA (F84.0), TDAH (F90), Dislexia…" style="margin-top:4px">
+          </div>
+          <div>
+            <label class="flabel" for="cic-ctx-limitacoes">Limitações</label>
+            <textarea id="cic-ctx-limitacoes" class="ftarea" rows="2" placeholder="Ex: dificuldade de concentração por mais de 10 min, não lê textos longos…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+          <div>
+            <label class="flabel" for="cic-ctx-potencialidades">Potencialidades</label>
+            <textarea id="cic-ctx-potencialidades" class="ftarea" rows="2" placeholder="Ex: boa memória visual, interesse por animais…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+          <div>
+            <label class="flabel" for="cic-ctx-obs">Outras observações</label>
+            <textarea id="cic-ctx-obs" class="ftarea" rows="2" placeholder="Ex: usa CAA, tem apoio de AT em sala…" style="margin-top:4px;min-height:56px"></textarea>
+          </div>
+        </div>
+      </div>
       <div style="margin-top:12px">
         <label class="flabel" for="ciclo-bncc-inp">Código(s) BNCC deste ciclo <span style="font-weight:400;color:#6B7DBF">(opcional)</span></label>
         <div style="position:relative;margin-top:4px">
@@ -13879,7 +13902,16 @@ async function gerarCicloTrabalho() {
   const materia = document.getElementById('cic-materia')?.value;
   const serie = document.getElementById('cic-serie')?.value.trim();
   const tema = document.getElementById('cic-tema')?.value.trim();
-  const contexto = document.getElementById('cic-contexto')?.value.trim();
+  const ctxDiagnosticoCiclo = document.getElementById('cic-ctx-diagnostico')?.value.trim() || '';
+  const ctxLimitacoesCiclo = document.getElementById('cic-ctx-limitacoes')?.value.trim() || '';
+  const ctxPotencialidadesCiclo = document.getElementById('cic-ctx-potencialidades')?.value.trim() || '';
+  const ctxObsCiclo = document.getElementById('cic-ctx-obs')?.value.trim() || '';
+  const contexto = [
+    ctxDiagnosticoCiclo ? `Diagnóstico/CID adicional: ${ctxDiagnosticoCiclo}` : '',
+    ctxLimitacoesCiclo ? `Limitações: ${ctxLimitacoesCiclo}` : '',
+    ctxPotencialidadesCiclo ? `Potencialidades: ${ctxPotencialidadesCiclo}` : '',
+    ctxObsCiclo ? `Observações adicionais: ${ctxObsCiclo}` : '',
+  ].filter(Boolean).join('\n');
   if (!materia) return toast('Selecione a matéria.', 'error');
   if (!tema) return toast('Informe o tema do ciclo.', 'error');
 
