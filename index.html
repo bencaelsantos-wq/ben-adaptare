@@ -12819,7 +12819,7 @@ function renderPagesClinica() {
     <p class="page-sub">Gere uma atividade de múltipla escolha a partir do perfil e dos objetivos terapêuticos do paciente, aplique com ele e registre o resultado em 1 clique — o desempenho entra automaticamente no histórico de Monitoramento do paciente, sem precisar preencher nada manualmente depois.</p>
 
     <div class="frow" style="margin-bottom:14px">
-      <div><label class="flabel" for="pg-aluno-sel">Paciente</label><select class="fselect" id="pg-aluno-sel" style="max-width:320px"><option value="">Selecione um paciente</option></select></div>
+      <div><label class="flabel" for="pg-aluno-sel">Paciente</label><select class="fselect" id="pg-aluno-sel" style="max-width:320px" onchange="pgAoTrocarPacienteSelecionado()"><option value="">Selecione um paciente</option></select></div>
       <div><label class="flabel" for="pg-area-sel">Objetivo terapêutico trabalhado</label><select class="fselect" id="pg-area-sel" style="max-width:220px">
         <option value="cognitivo">Cognitivo</option>
         <option value="comunicacao">Comunicação</option>
@@ -19906,12 +19906,19 @@ function filtrarHistoricoPraticaGuiada() {
   }).join('');
 }
 
+window._pgPendentesRaw = [];
 async function carregarPendentesPraticaGuiada() {
+  const { data } = await db.from('praticas_guiadas').select('id, titulo, area, criado_em, perfil_id, perfis_clinicos(nome)').eq('status', 'pendente').order('criado_em', { ascending: false });
+  window._pgPendentesRaw = data || [];
+  renderizarPendentesPraticaGuiada();
+}
+function renderizarPendentesPraticaGuiada() {
   const painel = document.getElementById('pg-pendentes-painel');
   const lista = document.getElementById('pg-pendentes-lista');
   if (!painel || !lista) return;
-  const { data } = await db.from('praticas_guiadas').select('id, titulo, area, criado_em, perfis_clinicos(nome)').eq('status', 'pendente').order('criado_em', { ascending: false });
-  if (!data || !data.length) { painel.style.display = 'none'; return; }
+  const pacienteSelId = document.getElementById('pg-aluno-sel')?.value;
+  const data = pacienteSelId ? window._pgPendentesRaw.filter(r => r.perfil_id === pacienteSelId) : window._pgPendentesRaw;
+  if (!data.length) { painel.style.display = 'none'; return; }
   painel.style.display = '';
   lista.innerHTML = data.map(r => `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
@@ -19921,6 +19928,14 @@ async function carregarPendentesPraticaGuiada() {
       </div>
       <button class="btn-sm" onclick="reabrirPraticaGuiada('${r.id}')">Abrir para registrar</button>
     </div>`).join('');
+}
+function pgAoTrocarPacienteSelecionado() {
+  const sel = document.getElementById('pg-aluno-sel');
+  const nome = sel?.selectedOptions[0]?.text || '';
+  const q = document.getElementById('pg-hist-q');
+  if (q) q.value = sel?.value ? nome : '';
+  filtrarHistoricoPraticaGuiada();
+  renderizarPendentesPraticaGuiada();
 }
 
 async function reabrirPraticaGuiada(id) {
