@@ -15088,7 +15088,7 @@ function baixarFolhaRegistro(alunoOverride, nomeAtividadeOverride, perguntasOver
 
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
   const aluno = alunoOverride || dadosUltima?.aluno;
-  const nomeAtividade = nomeAtividadeOverride || (dadosUltima?.tipoAtiv || dadosUltima?.materia || '').replace(/\b\w/g, c => c.toUpperCase());
+  const nomeAtividade = nomeAtividadeOverride || (dadosUltima?.tipoAtiv || dadosUltima?.materia || '').replace(/(^|\s)\S/g, c => c.toUpperCase());
 
   doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
   doc.text('IDENTIFICAÇÃO', ml, y); y += 7;
