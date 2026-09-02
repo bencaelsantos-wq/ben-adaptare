@@ -20233,7 +20233,7 @@ async function baixarPraticaGuiadaPDF() {
     const espacoEstimadoQuestao = 140;
     const precisaNovaPagina = qi === 0 || (y + espacoEstimadoQuestao > H - 20);
     if (precisaNovaPagina) {
-      if (qi > 0) doc.addPage();
+      if (qi > 0) { adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages()); doc.addPage(); }
       doc.setFillColor(30, 58, 138);
       doc.rect(0, 0, W, 18, 'F');
       doc.setTextColor(255,255,255);
@@ -20319,10 +20319,9 @@ async function baixarPraticaGuiadaPDF() {
       doc.text(linhasAlt.slice(0,2), ml + 20, y + boxH/2 - (linhasAlt.length>1?3:0) + 1.5);
       y += boxH + 6;
     });
-
-    adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
   });
 
+  adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
   doc.addPage();
   doc.setFillColor(30, 58, 138);
   doc.rect(0, 0, W, 18, 'F');
