@@ -15131,6 +15131,16 @@ function baixarFolhaRegistro(alunoOverride, nomeAtividadeOverride, perguntasOver
   garantirEspacoRegistro(40);
   doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30,58,138);
   doc.text('CONTEXTO GERAL DA APLICAÇÃO', ml, y); y += 7;
+
+  if (!perguntasOverride || !perguntasOverride.length) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(25,25,25);
+    doc.text('Resultado geral:', ml, y);
+    y = desenharChecklistRegistro(doc, ml + doc.getTextWidth('Resultado geral: ') + 2, y, maxX, ['Independente','Com apoio','Não conseguiu']);
+    y += 2;
+    y = desenharEscala0a4Registro(doc, ml, y, 'AUTONOMIA (0=dependente · 4=autônomo)', maxX);
+    y += 4;
+  }
+
   doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(25,25,25);
   doc.text('Observações gerais:', ml, y); y += 6;
   doc.setDrawColor(180,180,180); doc.setLineWidth(0.2);
