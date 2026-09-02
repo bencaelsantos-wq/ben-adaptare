@@ -12818,19 +12818,6 @@ function renderPagesClinica() {
     <h1 class="page-title">Prática Guiada</h1>
     <p class="page-sub">Gere uma atividade de múltipla escolha a partir do perfil e dos objetivos terapêuticos do paciente, aplique com ele e registre o resultado em 1 clique — o desempenho entra automaticamente no histórico de Monitoramento do paciente, sem precisar preencher nada manualmente depois.</p>
 
-    <div class="fcard" id="pg-pendentes-painel" style="margin-bottom:16px;display:none">
-      <div class="fcard-title">Atividades pendentes de registro</div>
-      <p class="page-sub" style="margin:0 0 10px">Geradas mas ainda não aplicadas/registradas — fica reservado no perfil do paciente até você voltar e marcar o resultado.</p>
-      <div id="pg-pendentes-lista"></div>
-    </div>
-
-    <div class="fcard" id="pg-historico-painel" style="margin-bottom:16px">
-      <div class="fcard-title">Histórico de atividades geradas</div>
-      <p class="page-sub" style="margin:0 0 10px">Todas as atividades já geradas, aplicadas ou não — clique em "Abrir" para rever ou baixar o PDF de novo.</p>
-      <div class="fblock" style="margin-bottom:10px"><input class="finput" id="pg-hist-q" placeholder="Buscar por paciente..." oninput="filtrarHistoricoPraticaGuiada()"></div>
-      <div id="pg-historico-lista"></div>
-    </div>
-
     <div class="frow" style="margin-bottom:14px">
       <div><label class="flabel" for="pg-aluno-sel">Paciente</label><select class="fselect" id="pg-aluno-sel" style="max-width:320px"><option value="">Selecione um paciente</option></select></div>
       <div><label class="flabel" for="pg-area-sel">Objetivo terapêutico trabalhado</label><select class="fselect" id="pg-area-sel" style="max-width:220px">
@@ -12903,6 +12890,19 @@ function renderPagesClinica() {
       <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF.</p>
       <div id="pg-img-itens"></div>
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
+    </div>
+
+    <div class="fcard" id="pg-pendentes-painel" style="margin-top:24px;display:none">
+      <div class="fcard-title">Atividades pendentes de registro</div>
+      <p class="page-sub" style="margin:0 0 10px">Geradas mas ainda não aplicadas/registradas — fica reservado no perfil do paciente até você voltar e marcar o resultado.</p>
+      <div id="pg-pendentes-lista"></div>
+    </div>
+
+    <div class="fcard" id="pg-historico-painel" style="margin-top:16px">
+      <div class="fcard-title">Histórico de atividades geradas</div>
+      <p class="page-sub" style="margin:0 0 10px">Todas as atividades já geradas, aplicadas ou não — clique em "Abrir" para rever ou baixar o PDF de novo.</p>
+      <div class="fblock" style="margin-bottom:10px"><input class="finput" id="pg-hist-q" placeholder="Buscar por paciente..." oninput="filtrarHistoricoPraticaGuiada()"></div>
+      <div id="pg-historico-lista"></div>
     </div>
   </div>
 
