@@ -7660,18 +7660,30 @@ async function reativarOrganizacaoDev(orgId) {
 
 async function carregarConteudoDev() {
   const tabs = [
-    { label:'Alunos',             table:'alunos',               icon:'👧' },
-    { label:'Adaptações',         table:'adaptacoes',           icon:'🎯' },
-    { label:'PEIs',               table:'peis',                 icon:'📋' },
-    { label:'Relatórios',         table:'relatorios',           icon:'📄' },
-    { label:'Perfis Clínicos',    table:'perfis_clinicos',      icon:'🏥' },
-    { label:'Monitoramentos',     table:'monitoramentos',       icon:'📈' },
-    { label:'Obj. Terapêuticos',  table:'objetivos_terapeuticos',icon:'🎯'},
-    { label:'Professores',        table:'professores',          icon:'👩‍🏫' },
-    { label:'Usuários',           table:'profiles',             icon:'👥' },
+    { label:'Alunos',                table:'alunos',                  icon:'👧' },
+    { label:'Adaptações',            table:'adaptacoes',              icon:'🎯' },
+    { label:'Prática Guiada',        table:'praticas_guiadas',        icon:'⭐' },
+    { label:'Ciclos de Trabalho',    table:'ciclos_trabalho',         icon:'🔄' },
+    { label:'Planejamento Anual',    table:'planejamento_anual',      icon:'🗓️' },
+    { label:'Materiais Terapêuticos',table:'materiais_terapeuticos',  icon:'🧩' },
+    { label:'Estudos de Caso',       table:'estudos_caso',            icon:'🔎' },
+    { label:'Devolutivas Clínicas',  table:'devolutivas_clinicas',    icon:'✅' },
+    { label:'PEIs',                  table:'peis',                    icon:'📋' },
+    { label:'Relatórios',            table:'relatorios',              icon:'📄' },
+    { label:'Perfis Clínicos',       table:'perfis_clinicos',         icon:'🏥' },
+    { label:'Monitoramentos',        table:'monitoramentos',          icon:'📈' },
+    { label:'Obj. Terapêuticos',     table:'objetivos_terapeuticos',  icon:'🎯' },
+    { label:'Diário do Aluno',       table:'diarios_aluno',           icon:'📝' },
+    { label:'Diário do AT',          table:'diarios_at',              icon:'📝' },
+    { label:'Solicitações Externas', table:'solicitacoes_externas',   icon:'📨' },
+    { label:'Professores',           table:'professores',             icon:'👩‍🏫' },
+    { label:'Usuários',              table:'profiles',                icon:'👥' },
   ];
   const grid = document.getElementById('dev-conteudo-grid');
   if (!grid) return;
+  grid.style.display = 'grid';
+  grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(90px, 1fr))';
+  grid.style.gap = '8px';
   grid.innerHTML = '<div style="grid-column:1/-1;font-size:13px;color:#9CA3AF">Carregando…</div>';
   const cards = [];
   for (const t of tabs) {
@@ -7681,10 +7693,9 @@ async function carregarConteudoDev() {
     } catch(e) { cards.push({ ...t, count: '—' }); }
   }
   grid.innerHTML = cards.map(c =>
-    `<div class="dash-card" style="text-align:center">
-      <div style="font-size:26px;margin-bottom:6px">${c.icon}</div>
-      <div style="font-size:28px;font-weight:800;color:#1E3A8A">${c.count}</div>
-      <div style="font-size:12px;color:#6B7280;margin-top:3px">${c.label}</div>
+    `<div class="dash-card" style="text-align:center;padding:8px 4px">
+      <div style="font-size:16px;font-weight:800;color:#1E3A8A">${c.count}</div>
+      <div style="font-size:9px;color:#6B7280;margin-top:2px;line-height:1.2">${c.label}</div>
     </div>`
   ).join('');
 }
