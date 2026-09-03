@@ -10061,9 +10061,10 @@ function renderPages() {
       </div>
       <div class="fblock" style="margin-top:12px">
         <label class="flabel" for="inp-qtd-questoes">Quantidade de questões</label>
-        <select id="inp-qtd-questoes" class="fselect" style="max-width:160px">
+        <select id="inp-qtd-questoes" class="fselect" style="max-width:220px">
+          <option value="auto" selected>Mesma quantidade do conteúdo original</option>
           <option value="3">3</option>
-          <option value="4" selected>4</option>
+          <option value="4">4</option>
           <option value="5">5</option>
           <option value="6">6</option>
           <option value="7">7</option>
@@ -12547,9 +12548,10 @@ function renderPagesClinica() {
       </div>
       <div class="fblock" style="margin-top:12px">
         <label class="flabel" for="inp-qtd-questoes">Quantidade de questões</label>
-        <select id="inp-qtd-questoes" class="fselect" style="max-width:160px">
+        <select id="inp-qtd-questoes" class="fselect" style="max-width:220px">
+          <option value="auto" selected>Mesma quantidade do conteúdo original</option>
           <option value="3">3</option>
-          <option value="4" selected>4</option>
+          <option value="4">4</option>
           <option value="5">5</option>
           <option value="6">6</option>
           <option value="7">7</option>
@@ -14193,7 +14195,8 @@ async function gerar() {
   const tipoAtiv     = tipoLivre || tplSelecionado || 'atividade pedagógica';
   const usaPictograma = document.getElementById('inp-pictogramas')?.checked || false;
   const incluiGuia    = document.getElementById('inp-guia-prof')?.checked !== false;
-  const usaMaiusculas = document.getElementById('inp-maiusculas')?.checked || false;   const nivel        = document.getElementById('inp-nivel')?.value || 'intermediario';   const fonteTipo    = document.getElementById('inp-fonte-tipo')?.value || 'opendyslexic';   const fonteTamanho = document.getElementById('inp-fonte-tamanho')?.value || 'medio';   const espacamento  = document.getElementById('inp-espacamento')?.value || 'normal';   const ehMontessori = document.getElementById('inp-materia')?.selectedOptions[0]?.closest('optgroup')?.label === 'Montessori';   const qtdQuestoes = parseInt(document.getElementById('inp-qtd-questoes')?.value || '4', 10);
+  const usaMaiusculas = document.getElementById('inp-maiusculas')?.checked || false;   const nivel        = document.getElementById('inp-nivel')?.value || 'intermediario';   const fonteTipo    = document.getElementById('inp-fonte-tipo')?.value || 'opendyslexic';   const fonteTamanho = document.getElementById('inp-fonte-tamanho')?.value || 'medio';   const espacamento  = document.getElementById('inp-espacamento')?.value || 'normal';   const ehMontessori = document.getElementById('inp-materia')?.selectedOptions[0]?.closest('optgroup')?.label === 'Montessori';   const qtdQuestoesRaw = document.getElementById('inp-qtd-questoes')?.value || 'auto';
+const qtdQuestoes = qtdQuestoesRaw === 'auto' ? null : parseInt(qtdQuestoesRaw, 10);
 
   const ctxDiagnostico    = document.getElementById('inp-ctx-diagnostico')?.value.trim() || '';
   const ctxLimitacoes     = document.getElementById('inp-ctx-limitacoes')?.value.trim() || '';
@@ -14583,8 +14586,8 @@ Como foi esta atividade?
 ( ) Consegui sozinho  ( ) Precisei de ajuda  ( ) Quero tentar de novo
 
 REGRAS MECÂNICAS DE FORMATAÇÃO (sempre seguir, sem exceção — é o que garante que o PDF renderize corretamente):
-- Gere exatamente ${qtdQuestoes} questões nesta atividade — nem menos, nem mais. Se o conteúdo original tiver menos itens que isso, desdobre/aprofunde os existentes até chegar em ${qtdQuestoes}, mantendo a mesma habilidade curricular; se tiver mais itens que isso, ainda assim adapte todos (a regra de nunca remover item do original continua valendo).
-- Máximo aproximadamente ${qtdQuestoes * 90} palavras no total (ajuste o nível de detalhe de cada questão pra caber nesse espaço, sem cortar questão no meio)
+${qtdQuestoes ? `- Gere exatamente ${qtdQuestoes} questões nesta atividade — nem menos, nem mais. Se o conteúdo original tiver menos itens que isso, desdobre/aprofunde os existentes até chegar em ${qtdQuestoes}, mantendo a mesma habilidade curricular; se tiver mais itens que isso, ainda assim adapte todos (a regra de nunca remover item do original continua valendo).
+- Máximo aproximadamente ${qtdQuestoes * 90} palavras no total (ajuste o nível de detalhe de cada questão pra caber nesse espaço, sem cortar questão no meio)` : `- Adapte TODOS os itens/questões presentes no conteúdo original, mantendo exatamente a mesma quantidade de questões que ele já tem — nunca invente itens extras, nunca remova nenhum. Ajuste o nível de detalhe de cada um para caber num total de até 250 palavras aproximadamente.`}
 - NUNCA use emojis
 - NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso não renderiza isso
 - NUNCA escreva dentro de [ESPAÇO PARA DESENHO]. Use esse marcador SOMENTE quando o original pede explicitamente "desenhe" ou "ilustre livremente" — nunca no mesmo item que já usa [IMAGEM: nome-do-item] (são mutuamente exclusivos)
@@ -14679,7 +14682,7 @@ GENERALIZAÇÃO (1 linha, máx 15 palavras): [como estimular essa habilidade for
 NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
 
   try {
-    const maxTokensAdapt = (incluiGuia ? 3500 : 1200) + qtdQuestoes * 300;
+    const maxTokensAdapt = (incluiGuia ? 3500 : 1200) + (qtdQuestoes || 6) * 300;
     const textoBruto = await chamarClaude({ prompt, maxTokens: maxTokensAdapt, modulo: 'adaptacao', imagensBase64: usarVisaoImagensOriginais ? window._imagensPDFOriginal : [] });
     let texto = corrigirAlternativasColadas(corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '')));
     const idxNome = texto.search(/Nome\s*:\s*_{2,}/i);
