@@ -10083,7 +10083,7 @@ function renderPages() {
             <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 7l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             Importar PDF ou Word
           </button>
-          <input type="file" id="inp-arquivo-adaptacao" accept=".pdf,.doc,.docx" style="display:none" onchange="processarArquivoAdaptacao(this)">
+          <input type="file" id="inp-arquivo-adaptacao" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none" onchange="processarArquivoAdaptacao(this)">
         </div>
         <div id="upload-status" style="display:none;font-size:12px;color:#2563EB;margin-bottom:6px;padding:6px 10px;background:#EEF2FF;border-radius:6px"></div>
         <div id="upload-imagens-toggle" style="display:none;margin-bottom:10px;padding:10px 12px;background:#F8FAFF;border:1px solid #DBEAFE;border-radius:8px">
@@ -12569,7 +12569,7 @@ function renderPagesClinica() {
             <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 7l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             Importar PDF ou Word
           </button>
-          <input type="file" id="inp-arquivo-adaptacao" accept=".pdf,.doc,.docx" style="display:none" onchange="processarArquivoAdaptacao(this)">
+          <input type="file" id="inp-arquivo-adaptacao" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none" onchange="processarArquivoAdaptacao(this)">
         </div>
         <div id="upload-status" style="display:none;font-size:12px;color:#2563EB;margin-bottom:6px;padding:6px 10px;background:#EEF2FF;border-radius:6px"></div>
         <div id="upload-imagens-toggle" style="display:none;margin-bottom:10px;padding:10px 12px;background:#F8FAFF;border:1px solid #DBEAFE;border-radius:8px">
@@ -13337,9 +13337,25 @@ function uploadArquivoAdaptacao() {
   document.getElementById('inp-arquivo-adaptacao').click();
 }
 
+async function extrairTextoImagemComIA(file) {
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Erro ao ler a imagem.'));
+    reader.readAsDataURL(file);
+  });
+  const prompt = `Você vai receber a foto de uma página de material didático. Transcreva TODO o texto legível da imagem, mantendo a estrutura (títulos, parágrafos, itens numerados, perguntas) o mais fiel possível à ordem original. Não resuma, não corrija, não comente — apenas transcreva o texto exatamente como aparece. Se houver elementos visuais que não podem virar texto (gráfico, mapa, diagrama), descreva brevemente entre colchetes o que aparece ali, sem inventar nenhum dado que não esteja claramente legível na imagem.`;
+  return await chamarClaude({ prompt, maxTokens: 2500, modulo: 'ocr-imagem-adaptacao', imagensBase64: [base64] });
+}
+
 async function processarArquivoAdaptacao(input) {
   const file = input.files[0];
   if (!file) return;
+  const ehImagemAdaptacao = /\.(jpe?g|png)$/i.test(file.name);
+  if (ehImagemAdaptacao) {
+    const continuarComImagem = confirm('Para melhor funcionamento e menor gasto de tokens, dê preferência a arquivos PDF ou Word.\n\nDeseja continuar mesmo assim com esta imagem?');
+    if (!continuarComImagem) { input.value = ''; return; }
+  }
   const status = document.getElementById('upload-status');
   const campo = document.getElementById('inp-conteudo');
   const toggleBox = document.getElementById('upload-imagens-toggle');
@@ -13352,7 +13368,10 @@ async function processarArquivoAdaptacao(input) {
   if (preview) preview.innerHTML = '';
   try {
     let texto = '';
-    if (file.name.endsWith('.pdf')) {
+    if (ehImagemAdaptacao) {
+      status.textContent = 'Lendo o texto da imagem com a Lou…';
+      texto = await extrairTextoImagemComIA(file);
+    } else if (file.name.endsWith('.pdf')) {
       texto = await extrairTextoPDF(file);
       if (!texto.trim()) { status.textContent = 'Documento sem texto — aplicando OCR…'; texto = await extrairTextoPDFComOCR(file, status); }
       try { window._imagensPDFOriginal = await extrairImagensPDF(file); } catch(e) { console.warn('Falha ao extrair imagens do PDF', e); }
