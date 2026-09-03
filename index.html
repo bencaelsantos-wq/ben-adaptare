@@ -3629,7 +3629,33 @@ async function entrar() {
   }
   // Ler perfil do banco — define role e subrole reais
   try { await lerPerfilDobanco(); } catch(e) { return; }
+
+  // Trava de sessão única — derruba qualquer login anterior desta conta
+  window._sessaoId = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
+  try {
+    localStorage.setItem('loumind_sessao_id', window._sessaoId);
+    await db.from('profiles').update({ sessao_ativa_id: window._sessaoId }).eq('id', user.id);
+  } catch(e) { console.warn('Sessão única: falha ao registrar', e); }
+  iniciarSessaoUnicaWatcher();
+
   iniciarApp();
+}
+
+function iniciarSessaoUnicaWatcher() {
+  if (window._sessaoUnicaInterval) clearInterval(window._sessaoUnicaInterval);
+  window._sessaoUnicaInterval = setInterval(async () => {
+    if (!user || !window._sessaoId) return;
+    try {
+      const { data } = await db.from('profiles').select('sessao_ativa_id').eq('id', user.id).maybeSingle();
+      if (data && data.sessao_ativa_id && data.sessao_ativa_id !== window._sessaoId) {
+        clearInterval(window._sessaoUnicaInterval);
+        await db.auth.signOut();
+        localStorage.removeItem('loumind_sessao_id');
+        alert('Sua conta foi acessada em outro dispositivo. Esta sessão foi encerrada por segurança.');
+        location.reload();
+      }
+    } catch(e) { /* falha de rede pontual — tenta de novo no próximo ciclo */ }
+  }, 20000);
 }
 
 /* Criar conta */
