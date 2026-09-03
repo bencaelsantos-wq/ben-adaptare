@@ -13346,8 +13346,8 @@ async function extrairTextoImagemComIA(file) {
     reader.onerror = () => reject(new Error('Erro ao ler a imagem.'));
     reader.readAsDataURL(file);
   });
-  const prompt = `Você vai receber a foto de uma página de material didático. Transcreva TODO o texto legível da imagem, mantendo a estrutura (títulos, parágrafos, itens numerados, perguntas) o mais fiel possível à ordem original. Não resuma, não corrija, não comente — apenas transcreva o texto exatamente como aparece. Se houver elementos visuais que não podem virar texto (gráfico, mapa, diagrama), descreva brevemente entre colchetes o que aparece ali, sem inventar nenhum dado que não esteja claramente legível na imagem.`;
-  return await chamarClaude({ prompt, maxTokens: 2500, modulo: 'ocr-imagem-adaptacao', imagensBase64: [base64] });
+  const prompt = `Você vai receber a foto de uma ou mais páginas de material didático (pode ser uma página só, ou duas páginas lado a lado numa folha dupla). Transcreva TODO o texto legível da imagem, de TODAS as páginas/colunas visíveis, mantendo a estrutura (títulos, parágrafos, itens numerados, perguntas) o mais fiel possível à ordem original. Se houver duas páginas lado a lado, transcreva primeiro a da esquerda por completo, depois a da direita por completo — nunca pare após a primeira página/coluna, mesmo que o conteúdo seja longo. Não resuma, não corrija, não comente — apenas transcreva o texto exatamente como aparece. Se houver elementos visuais que não podem virar texto (gráfico, mapa, diagrama), descreva brevemente entre colchetes o que aparece ali, sem inventar nenhum dado que não esteja claramente legível na imagem.`;
+  return await chamarClaude({ prompt, maxTokens: 6000, modulo: 'ocr-imagem-adaptacao', imagensBase64: [base64] });
 }
 
 async function processarArquivoAdaptacao(input) {
