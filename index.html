@@ -5003,7 +5003,7 @@ async function carregarBancoImagens() {
   if (!lista.length) { grid.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhuma imagem cadastrada ainda.</p>'; return; }
   grid.innerHTML = lista.map(img => `
     <div class="item-card">
-      <img src="${img.url}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">
+      <img src="${img.url}" style="width:100%;height:56px;object-fit:cover;border-radius:6px;margin-bottom:6px" onerror="this.style.display='none'">
       <div class="ic-tags">${(img.tags||[]).map(t=>`<span class="ic-tag">${t}</span>`).join('')}</div>
       <button class="btn-danger" style="margin-top:8px" onclick="excluirImagemBanco('${img.id}')">Excluir</button>
     </div>
@@ -6703,7 +6703,7 @@ function renderPagesDeveloper() {
         <button class="btn-sm" style="margin-top:8px" onclick="adicionarImagemBanco()">+ Adicionar por link</button>
       </div>
 
-      <div class="cards-grid" id="dev-banco-imagens-grid" style="margin-top:16px"></div>
+      <div class="cards-grid" id="dev-banco-imagens-grid" style="margin-top:16px;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:8px"></div>
     </div>
   </div>
 
