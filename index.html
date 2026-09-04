@@ -6440,17 +6440,6 @@ function renderPagesDeveloper() {
     <p class="page-sub">Visão completa e em tempo real de toda a plataforma LouMind.</p>
 
     <!-- KPI CARDS -->
-    <div id="dev-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
-      <div class="dev-kpi" id="kpi-usuarios"><div class="kpi-val">—</div><div class="kpi-lbl">Usuários cadastrados</div></div>
-      <div class="dev-kpi" id="kpi-alunos"><div class="kpi-val">—</div><div class="kpi-lbl">Alunos cadastrados</div></div>
-      <div class="dev-kpi" id="kpi-relatorios"><div class="kpi-val">—</div><div class="kpi-lbl">Relatórios gerados</div></div>
-      <div class="dev-kpi" id="kpi-adaptacoes"><div class="kpi-val">—</div><div class="kpi-lbl">Adaptações geradas</div></div>
-      <div class="dev-kpi" id="kpi-peis"><div class="kpi-val">—</div><div class="kpi-lbl">PEIs elaborados</div></div>
-      <div class="dev-kpi" id="kpi-perfis-clinicos"><div class="kpi-val">—</div><div class="kpi-lbl">Perfis clínicos</div></div>
-      <div class="dev-kpi" id="kpi-monitoramentos"><div class="kpi-val">—</div><div class="kpi-lbl">Monitoramentos</div></div>
-      <div class="dev-kpi" id="kpi-acessos"><div class="kpi-val">—</div><div class="kpi-lbl">Acessos registrados</div></div>
-    </div>
-
     <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));gap:10px;margin-bottom:24px" id="dev-conteudo-grid"></div>
 
     <!-- PERFIS POR PAPEL -->
@@ -7679,6 +7668,7 @@ async function carregarConteudoDev() {
     { label:'Solicitações Externas', table:'solicitacoes_externas',   icon:'📨' },
     { label:'Professores',           table:'professores',             icon:'👩‍🏫' },
     { label:'Usuários',              table:'profiles',                icon:'👥' },
+    { label:'Acessos',               table:'logs_acesso' },
   ];
   const grid = document.getElementById('dev-conteudo-grid');
   if (!grid) return;
