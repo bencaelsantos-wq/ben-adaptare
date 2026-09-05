@@ -7673,8 +7673,8 @@ async function carregarConteudoDev() {
   const grid = document.getElementById('dev-conteudo-grid');
   if (!grid) return;
   grid.style.display = 'grid';
-  grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(90px, 1fr))';
-  grid.style.gap = '8px';
+  grid.style.gridTemplateColumns = 'repeat(6, 1fr)';
+  grid.style.gap = '14px';
   grid.innerHTML = '<div style="grid-column:1/-1;font-size:13px;color:#9CA3AF">Carregando…</div>';
   const cards = [];
   for (const t of tabs) {
