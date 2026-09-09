@@ -5897,33 +5897,49 @@ async function carregarPraticasAluno() {
   const avalMap = {};
   (avals||[]).forEach(av => { avalMap[`${av.tabela_origem}_${av.registro_id}`] = av; });
 
-  body.innerHTML = itens.map(it => {
+  const CORES_STATUS = {
+    funcionou: { cor: '#059669', bg: '#D1FAE5', label: '✔ Funcionou bem' },
+    parcial: { cor: '#D97706', bg: '#FEF3C7', label: '⚠ Funcionou parcialmente' },
+    nao_funcionou: { cor: '#DC2626', bg: '#FEE2E2', label: '✗ Não funcionou' }
+  };
+  const legenda = `<div style="display:flex;gap:14px;align-items:center;padding:8px 10px;background:var(--gr50,#F9FAFB);border-radius:8px;margin-bottom:14px;font-size:11.5px;color:var(--gr500);flex-wrap:wrap">
+    <span><span style="color:#059669;font-weight:700">●</span> Funcionou bem — pode repetir</span>
+    <span><span style="color:#D97706;font-weight:700">●</span> Funcionou parcialmente — precisou de ajustes</span>
+    <span><span style="color:#DC2626;font-weight:700">●</span> Não funcionou — precisa de nova abordagem</span>
+  </div>`;
+
+  body.innerHTML = legenda + itens.map(it => {
     const av = avalMap[`${it.tipo}_${it.id}`];
-    const marcado = av && av.funcionou;
+    const st = av ? CORES_STATUS[av.status || 'funcionou'] : null;
     return `
-    <div class="rel-card" style="${marcado ? 'border-left:3px solid #059669' : ''}">
+    <div class="rel-card" style="${st ? `border-left:3px solid ${st.cor}` : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div>
           <div style="font-size:11.5px;font-weight:700;color:var(--gr500);text-transform:uppercase">${it.tipoLabel}</div>
           <div style="font-size:13.5px;font-weight:600;color:var(--gr800);margin-top:2px">${it.materia||''} ${it.tema ? '— ' + it.tema : ''}</div>
           <div class="rel-meta" style="margin-top:3px">${new Date(it.created_at).toLocaleDateString('pt-BR')}</div>
-          ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:5px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
+          ${st ? `<div style="font-size:11.5px;font-weight:600;color:${st.cor};margin-top:5px">${st.label}</div>` : ''}
+          ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
         </div>
-        <button class="btn-sm" style="white-space:nowrap;${marcado ? 'background:#D1FAE5;color:#065F46' : ''}" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}')">${marcado ? '✔ Funcionou bem' : 'Marcar: funcionou bem'}</button>
+        <div class="mon-btn-group" style="flex-shrink:0">
+          <button class="mon-btn ok" title="Funcionou bem" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','funcionou')">✔</button>
+          <button class="mon-btn parcial" title="Funcionou parcialmente" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','parcial')">⚠</button>
+          <button class="mon-btn nao" title="Não funcionou" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','nao_funcionou')">✗</button>
+        </div>
       </div>
     </div>`;
   }).join('');
 }
 
-async function marcarFuncionouPratica(tabelaOrigem, registroId, alunoId) {
-  const nota = prompt('Nota rápida (opcional) — o que funcionou bem?', '');
+async function marcarFuncionouPratica(tabelaOrigem, registroId, alunoId, status) {
+  const nota = prompt('Nota rápida (opcional)', '');
   if (nota === null) return;
   const { error } = await db.from('avaliacoes_praticas').insert({
     tabela_origem: tabelaOrigem, registro_id: registroId, aluno_id: alunoId,
-    avaliado_por: user.id, funcionou: true, nota_rapida: nota.trim() || null
+    avaliado_por: user.id, funcionou: status === 'funcionou', status, nota_rapida: nota.trim() || null
   });
   if (error) return toast('Erro: ' + error.message, 'error');
-  toast('Marcado como prática que funcionou!', 'success');
+  toast('Avaliação registrada!', 'success');
   carregarPraticasAluno();
 }
 
@@ -5948,33 +5964,49 @@ async function carregarPraticasClinica() {
   const avalMap = {};
   (avals||[]).forEach(av => { avalMap[`${av.tabela_origem}_${av.registro_id}`] = av; });
 
-  body.innerHTML = itens.map(it => {
+  const CORES_STATUS_C = {
+    funcionou: { cor: '#059669', label: '✔ Funcionou bem' },
+    parcial: { cor: '#D97706', label: '⚠ Funcionou parcialmente' },
+    nao_funcionou: { cor: '#DC2626', label: '✗ Não funcionou' }
+  };
+  const legendaC = `<div style="display:flex;gap:14px;align-items:center;padding:8px 10px;background:var(--gr50,#F9FAFB);border-radius:8px;margin-bottom:14px;font-size:11.5px;color:var(--gr500);flex-wrap:wrap">
+    <span><span style="color:#059669;font-weight:700">●</span> Funcionou bem — pode repetir</span>
+    <span><span style="color:#D97706;font-weight:700">●</span> Funcionou parcialmente — precisou de ajustes</span>
+    <span><span style="color:#DC2626;font-weight:700">●</span> Não funcionou — precisa de nova abordagem</span>
+  </div>`;
+
+  body.innerHTML = legendaC + itens.map(it => {
     const av = avalMap[`${it.tipo}_${it.id}`];
-    const marcado = av && av.funcionou;
+    const st = av ? CORES_STATUS_C[av.status || 'funcionou'] : null;
     return `
-    <div class="rel-card" style="${marcado ? 'border-left:3px solid #059669' : ''}">
+    <div class="rel-card" style="${st ? `border-left:3px solid ${st.cor}` : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div>
           <div style="font-size:11.5px;font-weight:700;color:var(--gr500);text-transform:uppercase">${it.tipoLabel}</div>
           <div style="font-size:13.5px;font-weight:600;color:var(--gr800);margin-top:2px">${it.titulo||''} ${LABELS_AREA[it.area] ? '— ' + LABELS_AREA[it.area] : ''}</div>
           <div class="rel-meta" style="margin-top:3px">${new Date(it.created_at).toLocaleDateString('pt-BR')}</div>
-          ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:5px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
+          ${st ? `<div style="font-size:11.5px;font-weight:600;color:${st.cor};margin-top:5px">${st.label}</div>` : ''}
+          ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
         </div>
-        <button class="btn-sm" style="white-space:nowrap;${marcado ? 'background:#D1FAE5;color:#065F46' : ''}" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}')">${marcado ? '✔ Funcionou bem' : 'Marcar: funcionou bem'}</button>
+        <div class="mon-btn-group" style="flex-shrink:0">
+          <button class="mon-btn ok" title="Funcionou bem" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','funcionou')">✔</button>
+          <button class="mon-btn parcial" title="Funcionou parcialmente" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','parcial')">⚠</button>
+          <button class="mon-btn nao" title="Não funcionou" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','nao_funcionou')">✗</button>
+        </div>
       </div>
     </div>`;
   }).join('');
 }
 
-async function marcarFuncionouPraticaClinica(tabelaOrigem, registroId, perfilId) {
-  const nota = prompt('Nota rápida (opcional) — o que funcionou bem?', '');
+async function marcarFuncionouPraticaClinica(tabelaOrigem, registroId, perfilId, status) {
+  const nota = prompt('Nota rápida (opcional)', '');
   if (nota === null) return;
   const { error } = await db.from('avaliacoes_praticas').insert({
     tabela_origem: tabelaOrigem, registro_id: registroId, perfil_id: perfilId,
-    avaliado_por: user.id, funcionou: true, nota_rapida: nota.trim() || null
+    avaliado_por: user.id, funcionou: status === 'funcionou', status, nota_rapida: nota.trim() || null
   });
   if (error) return toast('Erro: ' + error.message, 'error');
-  toast('Marcado como prática que funcionou!', 'success');
+  toast('Avaliação registrada!', 'success');
   carregarPraticasClinica();
 }
 
