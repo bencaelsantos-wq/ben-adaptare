@@ -5879,13 +5879,13 @@ async function carregarPraticasAluno() {
   body.innerHTML = '<p style="font-size:13px;color:var(--gr500)">Carregando…</p>';
 
   const [{ data: adapts }, { data: ciclos }, { data: avals }] = await Promise.all([
-    db.from('adaptacoes').select('id,materia,tema,created_at').eq('aluno_id', id).order('created_at', { ascending: false }),
+    db.from('adaptacoes').select('id,materia,tipo_atividade,created_at').eq('aluno_id', id).order('created_at', { ascending: false }),
     db.from('ciclos_trabalho').select('id,materia,tema,created_at').eq('aluno_id', id).order('created_at', { ascending: false }),
     db.from('avaliacoes_praticas').select('*').eq('aluno_id', id)
   ]);
 
   const itens = [
-    ...(adapts||[]).map(a => ({ ...a, tipo: 'adaptacoes', tipoLabel: 'Adaptação' })),
+    ...(adapts||[]).map(a => ({ ...a, tema: a.tipo_atividade, tipo: 'adaptacoes', tipoLabel: 'Adaptação' })),
     ...(ciclos||[]).map(c => ({ ...c, tipo: 'ciclos_trabalho', tipoLabel: 'Ciclo de Trabalho' }))
   ].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 
