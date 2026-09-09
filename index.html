@@ -5922,9 +5922,9 @@ async function carregarPraticasAluno() {
           ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
         </div>
         <div class="mon-btn-group" style="flex-shrink:0">
-          <button class="mon-btn ok" title="Funcionou bem" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','funcionou')">✔</button>
-          <button class="mon-btn parcial" title="Funcionou parcialmente" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','parcial')">⚠</button>
-          <button class="mon-btn nao" title="Não funcionou" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','nao_funcionou')">✗</button>
+          <button class="mon-btn ok" title="Funcionou bem" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','funcionou')">✔</button>
+          <button class="mon-btn parcial" title="Funcionou parcialmente" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','parcial')">⚠</button>
+          <button class="mon-btn nao" title="Não funcionou" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouPratica('${it.tipo}','${it.id}','${id}','nao_funcionou')">✗</button>
         </div>
       </div>
     </div>`;
