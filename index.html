@@ -5922,6 +5922,7 @@ async function carregarPraticasAluno() {
           ${st ? `<div style="font-size:11.5px;font-weight:600;color:${st.cor};margin-top:5px">${st.label}</div>` : ''}
           ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
           <button class="btn-copy" style="margin-top:8px;font-size:11.5px;padding:4px 10px" onclick="verConteudoPratica('${it.tipo}','${it.id}','${boxId}')">Ver conteúdo completo</button>
+          ${it.tipo === 'adaptacoes' ? `<button class="btn-copy" style="margin-top:8px;margin-left:6px;font-size:11.5px;padding:4px 10px" onclick="baixarPDFAdaptacaoSalva('${it.id}')">Baixar PDF</button>` : ''}
           <div id="${boxId}" style="display:none;margin-top:8px;padding:10px;background:var(--gr50,#F9FAFB);border-radius:8px;font-size:12.5px;color:var(--gr700);white-space:pre-wrap;max-height:300px;overflow-y:auto"></div>
         </div>
         <div class="mon-btn-group" style="flex-shrink:0">
@@ -5944,6 +5945,55 @@ async function marcarFuncionouPratica(tabelaOrigem, registroId, alunoId, status)
   if (error) return toast('Erro: ' + error.message, 'error');
   toast('Avaliação registrada!', 'success');
   carregarPraticasAluno();
+}
+
+async function verConteudoPratica(tabelaOrigem, registroId, boxId) {
+  const box = document.getElementById(boxId);
+  if (!box) return;
+  if (box.style.display === 'block') { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.textContent = 'Carregando…';
+  if (tabelaOrigem === 'adaptacoes') {
+    const { data } = await db.from('adaptacoes').select('adaptacao').eq('id', registroId).maybeSingle();
+    box.textContent = data?.adaptacao || 'Conteúdo não encontrado.';
+  } else if (tabelaOrigem === 'ciclos_trabalho') {
+    const { data } = await db.from('ciclos_trabalho').select('objetivos,aquecimento,nivel_basico,nivel_intermediario,nivel_avancado').eq('id', registroId).maybeSingle();
+    box.textContent = data ? [
+      'OBJETIVOS:\n' + (data.objetivos||''),
+      'AQUECIMENTO:\n' + (data.aquecimento||''),
+      'BÁSICO:\n' + (data.nivel_basico||''),
+      'INTERMEDIÁRIO:\n' + (data.nivel_intermediario||''),
+      'AVANÇADO:\n' + (data.nivel_avancado||'')
+    ].join('\n\n') : 'Conteúdo não encontrado.';
+  }
+}
+
+async function baixarPDFAdaptacaoSalva(registroId) {
+  const { data, error } = await db.from('adaptacoes').select('*').eq('id', registroId).maybeSingle();
+  if (error || !data) return toast('Não foi possível carregar essa adaptação.', 'error');
+
+  const separador = /\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i;
+  const partes = (data.adaptacao || '').split(separador);
+  const folhaAluno = partes[0].trim();
+  const guiaProf = partes[1] ? partes[1].trim() : null;
+
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+
+  gerarPDFDocumento({
+    tipo: 'ATIVIDADE ADAPTADA',
+    titulo: 'Atividade Adaptada',
+    subtitulo: (data.materia||'') + (data.tipo_atividade ? ' — ' + data.tipo_atividade : ''),
+    aluno: data.aluno_nome || 'Aluno',
+    professor: profNome,
+    conteudo: folhaAluno + (guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
+    nomeArquivo: 'Adaptacao_' + (data.aluno_nome||'aluno').replace(/\s+/g,'_') + '_' + (data.materia||'').replace(/\s+/g,'_'),
+    isAtividade: true,
+    guiaProf: guiaProf,
+    fonteTamanho: data.fonte_tamanho,
+    espacamento: data.espacamento,
+    fonteTipo: data.fonte_tipo,
+    corTema: data.cor_tema
+  });
 }
 
 async function carregarPraticasClinica() {
@@ -15446,7 +15496,11 @@ async function salvarAdapt() {
     tipo_ativ:  dadosUltima.tipoAtiv || null,
     perfis:     dadosUltima.perfis   || [],
     observacoes:dadosUltima.obs      || null,
-    adaptacao:  ultimaAdapt
+    adaptacao:  ultimaAdapt,
+    fonte_tamanho: dadosUltima.fonteTamanho || null,
+    espacamento:   dadosUltima.espacamento  || null,
+    fonte_tipo:    dadosUltima.fonteTipo    || null,
+    cor_tema:      dadosUltima.corTema      || null
   }).select('id').single();
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
   if (data?.id) dadosUltima.adaptacaoId = data.id;
@@ -15467,7 +15521,11 @@ async function salvarAdaptAutomatico() {
       tipo_ativ:  dadosUltima.tipoAtiv || null,
       perfis:     dadosUltima.perfis   || [],
       observacoes:dadosUltima.obs      || null,
-      adaptacao:  ultimaAdapt
+      adaptacao:  ultimaAdapt,
+      fonte_tamanho: dadosUltima.fonteTamanho || null,
+      espacamento:   dadosUltima.espacamento  || null,
+      fonte_tipo:    dadosUltima.fonteTipo    || null,
+      cor_tema:      dadosUltima.corTema      || null
     }).select('id').single();
     if (!error && data?.id) { dadosUltima.adaptacaoId = data.id; carregarAdaptacoes(); }
   } catch(_) {}
