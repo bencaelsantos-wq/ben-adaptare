@@ -5946,27 +5946,6 @@ async function marcarFuncionouPratica(tabelaOrigem, registroId, alunoId, status)
   carregarPraticasAluno();
 }
 
-async function verConteudoPratica(tabelaOrigem, registroId, boxId) {
-  const box = document.getElementById(boxId);
-  if (!box) return;
-  if (box.style.display === 'block') { box.style.display = 'none'; return; }
-  box.style.display = 'block';
-  box.textContent = 'Carregando…';
-  if (tabelaOrigem === 'adaptacoes') {
-    const { data } = await db.from('adaptacoes').select('adaptacao').eq('id', registroId).maybeSingle();
-    box.textContent = data?.adaptacao || 'Conteúdo não encontrado.';
-  } else if (tabelaOrigem === 'ciclos_trabalho') {
-    const { data } = await db.from('ciclos_trabalho').select('objetivos,aquecimento,nivel_basico,nivel_intermediario,nivel_avancado').eq('id', registroId).maybeSingle();
-    box.textContent = data ? [
-      'OBJETIVOS:\n' + (data.objetivos||''),
-      'AQUECIMENTO:\n' + (data.aquecimento||''),
-      'BÁSICO:\n' + (data.nivel_basico||''),
-      'INTERMEDIÁRIO:\n' + (data.nivel_intermediario||''),
-      'AVANÇADO:\n' + (data.nivel_avancado||'')
-    ].join('\n\n') : 'Conteúdo não encontrado.';
-  }
-}
-
 async function carregarPraticasClinica() {
   const id = document.getElementById('prat-clinica-sel')?.value;
   const body = document.getElementById('prat-clinica-body');
@@ -6002,6 +5981,7 @@ async function carregarPraticasClinica() {
   body.innerHTML = legendaC + itens.map(it => {
     const av = avalMap[`${it.tipo}_${it.id}`];
     const st = av ? CORES_STATUS_C[av.status || 'funcionou'] : null;
+    const boxId = `conteudo-c-${it.tipo}-${it.id}`;
     return `
     <div class="rel-card" style="${st ? `border-left:3px solid ${st.cor}` : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
@@ -6011,11 +5991,13 @@ async function carregarPraticasClinica() {
           <div class="rel-meta" style="margin-top:3px">${new Date(it.created_at).toLocaleDateString('pt-BR')}</div>
           ${st ? `<div style="font-size:11.5px;font-weight:600;color:${st.cor};margin-top:5px">${st.label}</div>` : ''}
           ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
+          <button class="btn-copy" style="margin-top:8px;font-size:11.5px;padding:4px 10px" onclick="verConteudoPraticaClinica('${it.id}','${boxId}')">Ver conteúdo completo</button>
+          <div id="${boxId}" style="display:none;margin-top:8px;padding:10px;background:var(--gr50,#F9FAFB);border-radius:8px;font-size:12.5px;color:var(--gr700);white-space:pre-wrap;max-height:300px;overflow-y:auto"></div>
         </div>
         <div class="mon-btn-group" style="flex-shrink:0">
-          <button class="mon-btn ok" title="Funcionou bem" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','funcionou')">✔</button>
-          <button class="mon-btn parcial" title="Funcionou parcialmente" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','parcial')">⚠</button>
-          <button class="mon-btn nao" title="Não funcionou" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','nao_funcionou')">✗</button>
+          <button class="mon-btn ok" title="Funcionou bem" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','funcionou')">✔</button>
+          <button class="mon-btn parcial" title="Funcionou parcialmente" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','parcial')">⚠</button>
+          <button class="mon-btn nao" title="Não funcionou" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouPraticaClinica('${it.tipo}','${it.id}','${id}','nao_funcionou')">✗</button>
         </div>
       </div>
     </div>`;
@@ -6032,6 +6014,23 @@ async function marcarFuncionouPraticaClinica(tabelaOrigem, registroId, perfilId,
   if (error) return toast('Erro: ' + error.message, 'error');
   toast('Avaliação registrada!', 'success');
   carregarPraticasClinica();
+}
+
+async function verConteudoPraticaClinica(registroId, boxId) {
+  const box = document.getElementById(boxId);
+  if (!box) return;
+  if (box.style.display === 'block') { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.textContent = 'Carregando…';
+  const { data } = await db.from('praticas_guiadas').select('texto_apoio,perguntas').eq('id', registroId).maybeSingle();
+  if (!data) { box.textContent = 'Conteúdo não encontrado.'; return; }
+  const partes = [];
+  if (data.texto_apoio) partes.push('TEXTO DE APOIO:\n' + data.texto_apoio);
+  (data.perguntas || []).forEach((q, i) => {
+    const alts = (q.alternativas || []).map(a => `  ${a.letra}) ${a.texto}${a.letra === q.correta ? '  ← correta' : ''}`).join('\n');
+    partes.push(`QUESTÃO ${i + 1}: ${q.pergunta}\n${alts}`);
+  });
+  box.textContent = partes.join('\n\n');
 }
 
 let _chartEvolucaoPedagogica = null;
