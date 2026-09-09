@@ -12850,6 +12850,13 @@ function renderPagesClinica() {
       <div id="ap-img-itens"></div>
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
     </div>
+  </div>
+
+  <div id="page-praticas-aluno" class="page">
+    <h1 class="page-title">Banco de Práticas</h1>
+    <p class="page-sub">Tudo que já foi gerado para este aluno — adaptações e ciclos de trabalho — para quem assumir o acompanhamento continuar de onde parou.</p>
+    <div style="margin-bottom:16px"><select class="fselect" id="prat-aluno-sel" onchange="carregarPraticasAluno()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
+    <div id="prat-body"></div>
   </div>` : ''}
 
   <div id="page-clinica-perfil" class="page">
