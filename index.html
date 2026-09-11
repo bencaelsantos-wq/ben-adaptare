@@ -10301,7 +10301,9 @@ function showPage(id) {
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'ponte-objetivos' && userRole === 'gestao') carregarObjetivosGestao();
   if (id === 'ponte-tradutor') inicializarTradutorGestao();
-  if (id === 'dev-feedback') carregarFeedbacksDev();}
+  if (id === 'dev-feedback') carregarFeedbacksDev();
+  if (id === 'clinica-devolutiva') attachEditarIA('dc-conteudo');
+}
 // ⚠️ CRÍTICO — expõe showPage em window ANTES do patch em ~linha 7411.
 // NUNCA remova esta linha — sem ela a navegação para de funcionar.
 window.showPage = showPage;
@@ -20921,6 +20923,7 @@ CARTAO: [nome-imagem] | [texto curto]`;
     ultimoMaterialTerapeutico = { tipo, texto: txt.trim(), paciente: p, contexto };
     document.getElementById('material-result-text').textContent = txt.trim();
     document.getElementById('material-result-card').classList.add('show');
+    attachEditarIA('material-result-text');
     const { data: matSalvo, error: erroMatSalvar } = await db.from('materiais_terapeuticos_gerados').insert({
       user_id: user.id, perfil_id: p.id, tipo, contexto, texto: txt.trim(), por_folha: parseInt(document.getElementById('mat-porfolha')?.value,10)||6
     }).select('id').single();
