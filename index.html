@@ -20080,6 +20080,10 @@ Responda EXATAMENTE neste formato de texto simples, sem markdown, sem JSON, usan
     document.getElementById('plano-clinica').textContent     = planoGerado.clinica || '—';
     document.getElementById('plano-indicadores').textContent = planoGerado.indicadores || '—';
     document.getElementById('plano-result').style.display    = 'block';
+    attachEditarIA('plano-escola');
+    attachEditarIA('plano-at');
+    attachEditarIA('plano-clinica');
+    attachEditarIA('plano-indicadores');
     planoGerado._aluno = p;
     toast('Plano gerado com sucesso!', 'success');
   } catch(e) { toast('Erro ao gerar plano: ' + e.message, 'error'); }
