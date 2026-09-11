@@ -21341,12 +21341,19 @@ function baixarPDFPlanoIntervencao() {
   let y = 22;
 
   function novaPaginaPlano() {
-    adicionarRodapePagina(docPdf, W, H, ml, mr, docPdf.internal.getNumberOfPages());
     docPdf.addPage();
     y = 22;
   }
   function garantirEspacoPlano(altura) {
-    if (y + altura > H - 20) novaPaginaPlano();
+    if (y + altura > H - 24) novaPaginaPlano();
+  }
+
+  if (window._nomeInstituicao) {
+    docPdf.setFont('helvetica', 'normal');
+    docPdf.setFontSize(9);
+    docPdf.setTextColor(90, 90, 90);
+    docPdf.text(window._nomeInstituicao, W / 2, y, { align: 'center' });
+    y += 7;
   }
 
   docPdf.setFont('helvetica', 'bold');
@@ -21410,7 +21417,28 @@ function baixarPDFPlanoIntervencao() {
     y += 6;
   });
 
-  adicionarRodapePagina(docPdf, W, H, ml, mr, docPdf.internal.getNumberOfPages());
+  garantirEspacoPlano(30);
+  y += 8;
+  docPdf.setDrawColor(60, 60, 60);
+  docPdf.setLineWidth(0.3);
+  docPdf.line(ml, y, ml + 80, y);
+  docPdf.setFont('helvetica', 'normal');
+  docPdf.setFontSize(9);
+  docPdf.setTextColor(60, 60, 60);
+  docPdf.text('Assinatura do profissional responsável', ml, y + 5);
+  docPdf.line(ml + 100, y, ml + maxW, y);
+  docPdf.text('Data', ml + 100, y + 5);
+
+  const totalPaginasPlano = docPdf.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPaginasPlano; i++) {
+    docPdf.setPage(i);
+    docPdf.setFont('helvetica', 'normal');
+    docPdf.setFontSize(8);
+    docPdf.setTextColor(140, 140, 140);
+    docPdf.text('LouMind — Plataforma de Integração Clínica-Pedagógica | loumind.ia.br', ml, H - 10);
+    docPdf.text('Página ' + i + ' de ' + totalPaginasPlano, W - mr, H - 10, { align: 'right' });
+  }
+
   docPdf.save('Plano_Intervencao_' + (p.nome || 'aluno').replace(/\s+/g, '_') + '.pdf');
   toast('PDF gerado com sucesso!', 'success');
 }
