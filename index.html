@@ -16775,7 +16775,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     doc.setTextColor(CT[0], CT[1], CT[2]);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    doc.text('ATIVIDADE ADAPTADA', ml, 13);
+    doc.text((opts.tipo || 'ATIVIDADE ADAPTADA').toUpperCase(), ml, 13);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(100, 120, 160);
