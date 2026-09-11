@@ -480,6 +480,19 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .btn-editar-ia-flutuante{position:absolute;z-index:5000;background:#1E3A8A;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.18);display:none}
 .btn-editar-ia-flutuante:hover{background:#1E40AF}
 
+.editia-popover{position:absolute;z-index:5001;background:#fff;border:1px solid #E5E7EB;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.18);width:290px;padding:12px;display:none;font-family:inherit}
+.editia-popover-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.editia-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#2563EB);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+.editia-nome{font-size:13px;font-weight:700;color:#1E293B;flex:1}
+.editia-fechar{background:none;border:none;cursor:pointer;color:#9CA3AF;font-size:17px;line-height:1;padding:2px}
+.editia-trecho{font-size:11px;color:#6B7280;font-style:italic;background:#F9FAFB;border-radius:8px;padding:6px 8px;margin-bottom:9px;max-height:50px;overflow-y:auto}
+.editia-input-row{display:flex;gap:6px}
+.editia-input{flex:1;border:1.5px solid #E5E7EB;border-radius:8px;padding:7px 10px;font-size:12.5px;font-family:inherit}
+.editia-input:focus{outline:none;border-color:#7C3AED}
+.editia-enviar{background:#1E3A8A;color:#fff;border:none;border-radius:8px;padding:0 12px;font-size:13px;cursor:pointer;flex-shrink:0}
+.editia-enviar:disabled{opacity:.5;cursor:not-allowed}
+.editia-status{font-size:11.5px;color:#7C3AED;margin-top:8px;display:none}
+
 /* LOADING */
 .gen-box{display:none;align-items:center;gap:12px;padding:13px 17px;background:linear-gradient(135deg,#EEF2FF,#F5F0FF);border:1px solid rgba(37,99,235,.15);border-radius:var(--rmd);margin-top:13px;font-size:13px;color:var(--p-navy)}
 .gen-box.show{display:flex}
@@ -8906,7 +8919,7 @@ function attachEditarIA(id) {
           btn.style.left = (rect.right - 150 + window.scrollX) + 'px';
           btn.style.top = (rect.top - 36 + window.scrollY) + 'px';
           btn.style.display = 'block';
-          btn.onclick = () => executarEdicaoIA(el, true, savedStart, savedEnd, null);
+          btn.onclick = () => abrirChatEditarIA(el, true, savedStart, savedEnd, null, rect.right - 290 + window.scrollX, rect.top - 40 + window.scrollY + 30);
         } else esconderBotaoEditarIA();
       } else {
         const sel = window.getSelection();
@@ -8917,7 +8930,7 @@ function attachEditarIA(id) {
           btn.style.left = (rect.right - 60 + window.scrollX) + 'px';
           btn.style.top = (rect.top - 36 + window.scrollY) + 'px';
           btn.style.display = 'block';
-          btn.onclick = () => executarEdicaoIA(el, false, null, null, savedRange);
+          btn.onclick = () => abrirChatEditarIA(el, false, null, null, savedRange, rect.right - 290 + window.scrollX, rect.top - 40 + window.scrollY + 30);
         } else esconderBotaoEditarIA();
       }
     }, 10);
@@ -8934,13 +8947,61 @@ function attachEditarIA(id) {
   }
 }
 
-async function executarEdicaoIA(el, isTextarea, start, end, range) {
+function getPopoverEditIA() {
+  let pop = document.getElementById('editia-popover');
+  if (!pop) {
+    pop = document.createElement('div');
+    pop.id = 'editia-popover';
+    pop.className = 'editia-popover';
+    pop.innerHTML = `
+      <div class="editia-popover-head">
+        <div class="editia-avatar">L</div>
+        <div class="editia-nome">Lou</div>
+        <button type="button" class="editia-fechar" id="editia-fechar-btn">×</button>
+      </div>
+      <div class="editia-trecho" id="editia-trecho-preview"></div>
+      <div class="editia-input-row">
+        <input type="text" class="editia-input" id="editia-input" placeholder="Ex: deixe mais curto…">
+        <button type="button" class="editia-enviar" id="editia-enviar-btn">Enviar</button>
+      </div>
+      <div class="editia-status" id="editia-status">Lou está ajustando…</div>
+    `;
+    document.body.appendChild(pop);
+    document.getElementById('editia-fechar-btn').onclick = () => { pop.style.display = 'none'; };
+  }
+  return pop;
+}
+
+function abrirChatEditarIA(el, isTextarea, start, end, range, x, y) {
   const textoOriginal = isTextarea ? el.value.substring(start, end) : range.toString();
   if (!textoOriginal.trim()) return;
-  const instrucao = prompt('O que você quer ajustar nesse trecho?\n(ex: "deixe mais curto", "troque o exemplo por algo de futebol", "simplifique a linguagem")', '');
   const btnFlut = document.getElementById('btn-editar-ia-flutuante');
   if (btnFlut) btnFlut.style.display = 'none';
+
+  const pop = getPopoverEditIA();
+  pop.style.left = x + 'px';
+  pop.style.top = y + 'px';
+  pop.style.display = 'block';
+  document.getElementById('editia-trecho-preview').textContent = '"' + textoOriginal.trim().slice(0, 140) + (textoOriginal.trim().length > 140 ? '…' : '') + '"';
+  document.getElementById('editia-status').style.display = 'none';
+  const input = document.getElementById('editia-input');
+  input.value = '';
+  setTimeout(() => input.focus(), 50);
+
+  const enviar = document.getElementById('editia-enviar-btn');
+  const handler = () => executarEdicaoIA(el, isTextarea, start, end, range, textoOriginal, input.value.trim());
+  enviar.onclick = handler;
+  input.onkeydown = (e) => { if (e.key === 'Enter') handler(); };
+}
+
+async function executarEdicaoIA(el, isTextarea, start, end, range, textoOriginal, instrucao) {
   if (!instrucao) return;
+  const status = document.getElementById('editia-status');
+  const enviar = document.getElementById('editia-enviar-btn');
+  const input = document.getElementById('editia-input');
+  status.style.display = 'block';
+  enviar.disabled = true;
+  input.disabled = true;
 
   const promptEdicao = `Reescreva SOMENTE o trecho abaixo, aplicando este ajuste: "${instrucao}".
 Mantenha o mesmo formato/estrutura do trecho original (marcadores, quebras de linha, etc). Responda APENAS com o trecho reescrito, sem nenhum comentário antes ou depois.
@@ -8962,10 +9023,14 @@ ${textoOriginal}`;
       sel.addRange(range);
       document.execCommand('insertText', false, textoLimpo);
     }
-    toast('Trecho atualizado!', 'success');
+    document.getElementById('editia-popover').style.display = 'none';
+    toast('Trecho atualizado pela Lou!', 'success');
   } catch(e) {
     toast('Erro ao editar: ' + (e.message || 'tente novamente'), 'error');
   }
+  status.style.display = 'none';
+  enviar.disabled = false;
+  input.disabled = false;
 }
 
 async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral', imagensBase64 = [] }) {
