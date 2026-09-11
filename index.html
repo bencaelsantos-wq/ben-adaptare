@@ -16839,7 +16839,14 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   let tituloAtividade = '';
   let corpoInicioIdx = 0;
   for (let i = 0; i < linhasFolhaTmp.length; i++) {
-    if (linhasFolhaTmp[i].trim()) { tituloAtividade = linhasFolhaTmp[i].trim().replace(/\*\*/g,'').replace(/^#{1,6}\s*/,''); corpoInicioIdx = i + 1; break; }
+    if (linhasFolhaTmp[i].trim()) {
+      const primeiraLinhaTmp = linhasFolhaTmp[i].trim();
+      if (!/^\[BANNER:/i.test(primeiraLinhaTmp)) {
+        tituloAtividade = primeiraLinhaTmp.replace(/\*\*/g,'').replace(/^#{1,6}\s*/,'');
+        corpoInicioIdx = i + 1;
+      }
+      break;
+    }
   }
   const folhaSemTitulo = linhasFolhaTmp.slice(corpoInicioIdx).join('\n').trim();
 
