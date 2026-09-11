@@ -13165,9 +13165,10 @@ function renderPagesClinica() {
         <div class="clinic-card"><div class="clinic-card-title"> Estratégias Clínicas</div><div id="plano-clinica" style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line"></div></div>
       </div>
       <div class="clinic-card"><div class="clinic-card-title"> Indicadores de Evolução</div><div id="plano-indicadores" style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line"></div></div>
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button class="btn-sm" onclick="enviarRelatorioEscola()"> Enviar para Escola</button>
-        <button class="btn-sm" onclick="enviarRelatorioAT()"> Enviar para AT</button>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="enviarRelatorioEscola()"> Disponibilizar para a Escola</button>
+        <button class="btn-sm" onclick="enviarRelatorioAT()"> Disponibilizar para o AT</button>
+        <button class="btn-copy" onclick="baixarPDFPlanoIntervencao()">Baixar PDF</button>
         <button class="btn-sm-ghost" onclick="copiarPlano()">Copiar tudo</button>
       </div>
     </div>
@@ -21312,6 +21313,34 @@ function copiarPlano() {
   const txt = `PLANO DE INTERVENÇÃO INTEGRADO — ${planoGerado._aluno?.nome||''}\n\nPARA A ESCOLA:\n${planoGerado.escola}\n\nPARA O AT:\n${planoGerado.at}\n\nESTRATÉGIAS CLÍNICAS:\n${planoGerado.clinica}\n\nINDICADORES DE EVOLUÇÃO:\n${planoGerado.indicadores}`;
   navigator.clipboard.writeText(txt);
   toast('Plano copiado!', 'success');
+}
+
+function baixarPDFPlanoIntervencao() {
+  if (!planoGerado._aluno) return toast('Gere o plano primeiro.', 'error');
+  const p = planoGerado._aluno;
+  const partes = [];
+  if (planoGerado.escola && planoGerado.escola !== '—') partes.push('[BANNER: PARA A ESCOLA]\n' + planoGerado.escola);
+  if (planoGerado.at && planoGerado.at !== '—') partes.push('[BANNER: PARA O AT]\n' + planoGerado.at);
+  if (planoGerado.clinica && planoGerado.clinica !== '—') partes.push('[BANNER: ESTRATÉGIAS CLÍNICAS]\n' + planoGerado.clinica);
+  if (planoGerado.indicadores && planoGerado.indicadores !== '—') partes.push('[BANNER: INDICADORES DE EVOLUÇÃO]\n' + planoGerado.indicadores);
+  if (!partes.length) return toast('Nenhuma área gerada ainda.', 'error');
+
+  const profNome = window._profNomeDB || (window._professoresList||[]).find(pf => pf.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+
+  gerarPDFDocumento({
+    tipo: 'PLANO DE INTERVENÇÃO',
+    titulo: 'Plano de Intervenção Integrado',
+    subtitulo: p.nome,
+    aluno: p.nome,
+    professor: profNome,
+    conteudo: partes.join('\n\n'),
+    nomeArquivo: 'Plano_Intervencao_' + p.nome.replace(/\s+/g,'_'),
+    isAtividade: true,
+    guiaProf: null,
+    fonteTamanho: 'medio',
+    espacamento: 'normal',
+    fonteTipo: 'sans'
+  });
 }
 
 // MONITORAMENTO
