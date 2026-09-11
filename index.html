@@ -15140,6 +15140,7 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
     document.getElementById('result-badge').textContent = `${[idade, serie, materia].filter(Boolean).join(' · ')}${isMontessori ? ' · 🌱 Montessori' : ''}${codigosBncc.length ? ' · BNCC ' + codigosBncc.join(', ') : ''}`;
     document.getElementById('result-card').classList.add('show');
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    attachEditarIA('result-text');
     salvarAdaptAutomatico();
 
     const avisos = [];
