@@ -21383,10 +21383,26 @@ function baixarPDFPlanoIntervencao() {
     docPdf.setTextColor(30, 30, 30);
     const paragrafos = sec.texto.split('\n').filter(l => l.trim());
     paragrafos.forEach(par => {
-      const linhasPar = docPdf.splitTextToSize(par.trim(), maxW);
-      linhasPar.forEach(l => {
+      const parLimpo = par.trim();
+      const matchSubtitulo = parLimpo.match(/^\*{1,3}\s*(.+?)\s*\*{1,3}$/);
+      if (matchSubtitulo) {
+        garantirEspacoPlano(10);
+        y += 2;
+        docPdf.setFont('helvetica', 'bold');
+        docPdf.setFontSize(10.5);
+        docPdf.setTextColor(50, 60, 90);
+        docPdf.text(matchSubtitulo[1].toUpperCase(), ml, y);
+        y += 6;
+        docPdf.setFont('helvetica', 'normal');
+        docPdf.setFontSize(10.5);
+        docPdf.setTextColor(30, 30, 30);
+        return;
+      }
+      const textoSemMarcacao = parLimpo.replace(/\*\*/g, '');
+      const linhasPar = docPdf.splitTextToSize('•  ' + textoSemMarcacao, maxW - 3);
+      linhasPar.forEach((l, li) => {
         garantirEspacoPlano(6);
-        docPdf.text(l, ml, y);
+        docPdf.text(l, ml + (li === 0 ? 0 : 4), y);
         y += 5.5;
       });
       y += 2;
