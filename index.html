@@ -14418,6 +14418,7 @@ async function gerarCicloTrabalho() {
   const serie = document.getElementById('cic-serie')?.value.trim();
   const tema = document.getElementById('cic-tema')?.value.trim();
   const nivelGeralCiclo = document.getElementById('cic-nivel')?.value || 'intermediario';
+  const qtdSessoes = parseInt(document.getElementById('cic-qtd-sessoes')?.value, 10) || 1;
   const ctxDiagnosticoCiclo = document.getElementById('cic-ctx-diagnostico')?.value.trim() || '';
   const ctxLimitacoesCiclo = document.getElementById('cic-ctx-limitacoes')?.value.trim() || '';
   const ctxPotencialidadesCiclo = document.getElementById('cic-ctx-potencialidades')?.value.trim() || '';
@@ -14441,13 +14442,17 @@ async function gerarCicloTrabalho() {
   btn.disabled = true;
   document.getElementById('gen-ciclo-box').classList.add('show');
   document.getElementById('ciclo-result-card').classList.remove('show');
+  document.getElementById('ciclo-sessoes-container').style.display = 'none';
 
-  const prompt = `Você é uma equipe pedagógica especializada em criar Ciclos de Trabalho — planos de estudo autônomos e progressivos que o aluno realiza ao longo de vários dias, em seu próprio ritmo, riscando uma checklist conforme avança.
+  function montarPrompt(numSessao, resumoAnterior) {
+    return `Você é uma equipe pedagógica especializada em criar Ciclos de Trabalho — planos de estudo autônomos e progressivos que o aluno realiza ao longo de vários dias, em seu próprio ritmo, riscando uma checklist conforme avança.
 
 DADOS:
 Aluno: ${a.nome} | Idade: ${a.idade || ''} | Série: ${serie || a.serie || ''}
 Matéria: ${materia}
 Tema do ciclo: ${tema}
+${qtdSessoes > 1 ? `Esta é a SESSÃO ${numSessao} de ${qtdSessoes} deste ciclo de trabalho sobre o mesmo tema. As sessões devem ter progressão real entre si — cada uma avança em relação à anterior, sem repetir literalmente as mesmas tarefas.` : ''}
+${resumoAnterior ? `Resumo do que já foi trabalhado nas sessões anteriores (não repita, continue a partir daqui): ${resumoAnterior}` : ''}
 Nível geral deste ciclo: ${nivelGeralCiclo === 'basico' ? 'Básico' : nivelGeralCiclo === 'avancado' ? 'Avançado' : 'Intermediário'} — calibre TODA a progressão interna (Básico/Intermediário/Avançado do ciclo) relativa a este nível geral. Ex: se o nível geral é "Básico", até a etapa "Avançado" do ciclo deve ficar mais simples e acessível do que seria num ciclo de nível geral "Avançado" — a progressão interna continua existindo, mas todo o patamar de dificuldade sobe ou desce junto com o nível geral escolhido.
 ${perfisTexto ? `Diagnóstico/perfis cadastrados: ${perfisTexto}` : ''}
 ${a.observacoes ? `Observações clínicas cadastradas: ${a.observacoes}` : ''}
@@ -14490,40 +14495,169 @@ AVANCADO:
 ( ) [tarefa 1, mais autônoma/aprofundada]
 ( ) [tarefa 2]
 ( ) FAZER MAIS: [um desafio bônus opcional, específico e criativo para este tema]`;
+  }
+
+  const pega = (txt, rotulo, proximo) => {
+    const re = new RegExp(rotulo + ':\\s*([\\s\\S]*?)(?=\\n' + proximo + ':|$)', 'i');
+    const m = txt.match(re);
+    return m ? m[1].trim() : '';
+  };
 
   try {
-    const maxTokensCiclo = 1800 + codigosBnccCiclo.length * 100;
-    const txt = await chamarClaude({ prompt, maxTokens: maxTokensCiclo, modulo: 'ciclo_trabalho' });
-    const pega = (rotulo, proximo) => {
-      const re = new RegExp(rotulo + ':\\s*([\\s\\S]*?)(?=\\n' + proximo + ':|$)', 'i');
-      const m = txt.match(re);
-      return m ? m[1].trim() : '';
-    };
-    const objetivos = pega('OBJETIVOS', 'AQUECIMENTO');
-    const aquecimento = pega('AQUECIMENTO', 'BASICO');
-    const basico = pega('BASICO', 'INTERMEDIARIO');
-    const intermediario = pega('INTERMEDIARIO', 'AVANCADO');
-    const avancadoMatch = txt.match(/AVANCADO:\s*([\s\S]*)$/i);
-    const avancado = avancadoMatch ? avancadoMatch[1].trim() : '';
-    if (!objetivos && !basico) {
-      console.warn('Ciclo de Trabalho — resposta não interpretada:', txt);
-      toast('Não foi possível interpretar o ciclo gerado. Tente novamente.', 'error');
+    if (qtdSessoes <= 1) {
+      const maxTokensCiclo = 1800 + codigosBnccCiclo.length * 100;
+      const txt = await chamarClaude({ prompt: montarPrompt(1, ''), maxTokens: maxTokensCiclo, modulo: 'ciclo_trabalho' });
+      const objetivos = pega(txt, 'OBJETIVOS', 'AQUECIMENTO');
+      const aquecimento = pega(txt, 'AQUECIMENTO', 'BASICO');
+      const basico = pega(txt, 'BASICO', 'INTERMEDIARIO');
+      const intermediario = pega(txt, 'INTERMEDIARIO', 'AVANCADO');
+      const avancadoMatch = txt.match(/AVANCADO:\s*([\s\S]*)$/i);
+      const avancado = avancadoMatch ? avancadoMatch[1].trim() : '';
+      if (!objetivos && !basico) {
+        console.warn('Ciclo de Trabalho — resposta não interpretada:', txt);
+        toast('Não foi possível interpretar o ciclo gerado. Tente novamente.', 'error');
+      } else {
+        document.getElementById('ciclo-objetivos').value = objetivos;
+        document.getElementById('ciclo-aquecimento').value = aquecimento;
+        document.getElementById('ciclo-basico').value = basico;
+        document.getElementById('ciclo-intermediario').value = intermediario;
+        document.getElementById('ciclo-avancado').value = avancado;
+        document.getElementById('ciclo-result-badge').textContent = [materia, serie || a.serie].filter(Boolean).join(' · ') + (codigosBnccCiclo.length ? ' · BNCC ' + codigosBnccCiclo.join(', ') : '');
+        document.getElementById('ciclo-result-card').classList.add('show');
+        attachEditarIA('ciclo-objetivos');
+        attachEditarIA('ciclo-aquecimento');
+        attachEditarIA('ciclo-basico');
+        attachEditarIA('ciclo-intermediario');
+        attachEditarIA('ciclo-avancado');
+        window._ultimoCiclo = { aluno: a, materia, serie: serie || a.serie, tema, objetivos, aquecimento, basico, intermediario, avancado, bnccCodigos: codigosBnccCiclo };
+        toast('Ciclo de Trabalho gerado!', 'success');
+      }
     } else {
-      document.getElementById('ciclo-objetivos').value = objetivos;
-      document.getElementById('ciclo-aquecimento').value = aquecimento;
-      document.getElementById('ciclo-basico').value = basico;
-      document.getElementById('ciclo-intermediario').value = intermediario;
-      document.getElementById('ciclo-avancado').value = avancado;
-      document.getElementById('ciclo-result-badge').textContent = [materia, serie || a.serie].filter(Boolean).join(' · ') + (codigosBnccCiclo.length ? ' · BNCC ' + codigosBnccCiclo.join(', ') : '');
-      document.getElementById('ciclo-result-card').classList.add('show');
-      window._ultimoCiclo = { aluno: a, materia, serie: serie || a.serie, tema, objetivos, aquecimento, basico, intermediario, avancado, bnccCodigos: codigosBnccCiclo };
-      toast('Ciclo de Trabalho gerado!', 'success');
+      const sessoes = [];
+      let resumoAnterior = '';
+      for (let n = 1; n <= qtdSessoes; n++) {
+        toast(`Gerando sessão ${n} de ${qtdSessoes}…`, 'success');
+        const maxTokensCiclo = 1400 + codigosBnccCiclo.length * 100;
+        const txt = await chamarClaude({ prompt: montarPrompt(n, resumoAnterior), maxTokens: maxTokensCiclo, modulo: 'ciclo_trabalho' });
+        const objetivos = pega(txt, 'OBJETIVOS', 'AQUECIMENTO');
+        const aquecimento = pega(txt, 'AQUECIMENTO', 'BASICO');
+        const basico = pega(txt, 'BASICO', 'INTERMEDIARIO');
+        const intermediario = pega(txt, 'INTERMEDIARIO', 'AVANCADO');
+        const avancadoMatch = txt.match(/AVANCADO:\s*([\s\S]*)$/i);
+        const avancado = avancadoMatch ? avancadoMatch[1].trim() : '';
+        sessoes.push({ numero: n, objetivos, aquecimento, basico, intermediario, avancado });
+        resumoAnterior = (resumoAnterior ? resumoAnterior + ' | ' : '') + `Sessão ${n}: ${objetivos.slice(0, 150)}`;
+      }
+      window._ultimoCiclo = { aluno: a, materia, serie: serie || a.serie, tema, bnccCodigos: codigosBnccCiclo, sessoes };
+      renderizarSessoesCiclo();
+      toast('Ciclo de Trabalho com ' + qtdSessoes + ' sessões gerado!', 'success');
     }
   } catch(e) {
     toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
   }
   btn.disabled = false;
   document.getElementById('gen-ciclo-box').classList.remove('show');
+}
+
+function renderizarSessoesCiclo() {
+  const c = window._ultimoCiclo;
+  const cont = document.getElementById('ciclo-sessoes-container');
+  cont.innerHTML = `<p style="font-size:13px;color:#1E3A8A;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 12px;margin:0 0 12px;font-weight:600">💡 Selecione um trecho de qualquer sessão para editar só aquela parte com a Lou.</p>` +
+    c.sessoes.map(s => `
+    <div class="result-card show" style="margin-bottom:14px">
+      <div class="result-header"><div class="result-title">Sessão ${s.numero} de ${c.sessoes.length}</div></div>
+      <div class="fblock"><label class="flabel">Objetivos</label><textarea class="result-text" id="ciclo-sessao-${s.numero}-objetivos" style="width:100%;min-height:70px">${s.objetivos}</textarea></div>
+      <div class="fblock"><label class="flabel">Para aquecer</label><textarea class="result-text" id="ciclo-sessao-${s.numero}-aquecimento" style="width:100%;min-height:60px">${s.aquecimento}</textarea></div>
+      <div class="fblock"><label class="flabel">Básico</label><textarea class="result-text" id="ciclo-sessao-${s.numero}-basico" style="width:100%;min-height:90px">${s.basico}</textarea></div>
+      <div class="fblock"><label class="flabel">Intermediário</label><textarea class="result-text" id="ciclo-sessao-${s.numero}-intermediario" style="width:100%;min-height:90px">${s.intermediario}</textarea></div>
+      <div class="fblock"><label class="flabel">Avançado (+ Fazer Mais)</label><textarea class="result-text" id="ciclo-sessao-${s.numero}-avancado" style="width:100%;min-height:90px">${s.avancado}</textarea></div>
+    </div>`).join('') +
+    `<div class="result-actions" style="margin-top:8px">
+      <button class="btn-sm" onclick="salvarSessoesCiclo()">Salvar todas as sessões</button>
+      <button class="btn-copy" onclick="baixarPDFSessoesCiclo()">Baixar PDF (todas as sessões)</button>
+    </div>`;
+  cont.style.display = 'block';
+  c.sessoes.forEach(s => {
+    ['objetivos','aquecimento','basico','intermediario','avancado'].forEach(campo => attachEditarIA(`ciclo-sessao-${s.numero}-${campo}`));
+  });
+}
+
+async function salvarSessoesCiclo() {
+  const c = window._ultimoCiclo;
+  if (!c?.sessoes) return toast('Gere o ciclo primeiro.', 'error');
+  const periodoId = crypto.randomUUID();
+  for (const s of c.sessoes) {
+    const objetivos = document.getElementById(`ciclo-sessao-${s.numero}-objetivos`)?.value.trim();
+    const aquecimento = document.getElementById(`ciclo-sessao-${s.numero}-aquecimento`)?.value.trim();
+    const nivel_basico = document.getElementById(`ciclo-sessao-${s.numero}-basico`)?.value.trim();
+    const nivel_intermediario = document.getElementById(`ciclo-sessao-${s.numero}-intermediario`)?.value.trim();
+    const nivel_avancado = document.getElementById(`ciclo-sessao-${s.numero}-avancado`)?.value.trim();
+    const { error } = await db.from('ciclos_trabalho').insert({
+      user_id: user.id, aluno_id: c.aluno.id, aluno_nome: c.aluno.nome,
+      materia: c.materia, tema: c.tema, serie: c.serie,
+      objetivos, aquecimento, nivel_basico, nivel_intermediario, nivel_avancado,
+      periodo_id: periodoId, numero_sessao: s.numero
+    });
+    if (error) return toast('Erro ao salvar sessão ' + s.numero + ': ' + error.message, 'error');
+  }
+  toast('Todas as sessões foram salvas!', 'success');
+}
+
+async function baixarPDFSessoesCiclo() {
+  const c = window._ultimoCiclo;
+  if (!c?.sessoes) return toast('Gere o ciclo primeiro.', 'error');
+  const usaMaiusculasCiclo = document.getElementById('cic-maiusculas')?.checked || false;
+
+  const blocosSessoes = c.sessoes.map(s => {
+    const objetivos = document.getElementById(`ciclo-sessao-${s.numero}-objetivos`)?.value.trim() || '';
+    const aquecimento = document.getElementById(`ciclo-sessao-${s.numero}-aquecimento`)?.value.trim() || '';
+    const basico = document.getElementById(`ciclo-sessao-${s.numero}-basico`)?.value.trim() || '';
+    const intermediario = document.getElementById(`ciclo-sessao-${s.numero}-intermediario`)?.value.trim() || '';
+    const avancado = document.getElementById(`ciclo-sessao-${s.numero}-avancado`)?.value.trim() || '';
+    const fazerMaisMatch = avancado.match(/\(\s*\)\s*FAZER MAIS:?\s*([\s\S]*)$/i);
+    const fazerMais = fazerMaisMatch ? fazerMaisMatch[1].trim() : '';
+    const avancadoSemFazerMais = fazerMaisMatch ? avancado.slice(0, fazerMaisMatch.index).trim() : avancado;
+    return `[BANNER: SESSÃO ${s.numero} DE ${c.sessoes.length}]
+
+[BANNER: OBJETIVOS]
+${objetivos}
+
+[BANNER: PARA AQUECER]
+${aquecimento}
+
+[BANNER: BÁSICO]
+${basico}
+
+[BANNER: INTERMEDIÁRIO]
+${intermediario}
+
+[BANNER: AVANÇADO]
+${avancadoSemFazerMais}
+${fazerMais ? `\n[BANNER: FAZER MAIS]\n( ) ${fazerMais}` : ''}`;
+  }).join('\n\n');
+
+  const conteudo = `Nome: _______________ | Data: ___/___/___
+
+${c.tema.toUpperCase()}
+
+---
+
+${blocosSessoes}`;
+
+  gerarPDFDocumento({
+    tipo: 'CICLO DE TRABALHO',
+    titulo: 'Ciclo de Trabalho',
+    subtitulo: c.materia + ' — ' + c.tema + (c.bnccCodigos?.length ? ' — BNCC ' + c.bnccCodigos.join(', ') : ''),
+    aluno: c.aluno.nome,
+    professor: window._profNomeDB || '',
+    conteudo: usaMaiusculasCiclo ? conteudo.toUpperCase() : conteudo,
+    nomeArquivo: 'Ciclo_de_Trabalho_' + c.aluno.nome.replace(/\s+/g,'_') + '_' + c.materia.replace(/\s+/g,'_'),
+    isAtividade: true,
+    corTema: window._corTemaSelecionada,
+    fonteTipo: document.getElementById('cic-fonte-tipo')?.value,
+    fonteTamanho: document.getElementById('cic-fonte-tamanho')?.value,
+    espacamento: document.getElementById('cic-espacamento')?.value
+  });
 }
 function selecionarCorTemaCiclo(hex, el) {
   window._corTemaSelecionada = hex;
