@@ -20076,7 +20076,7 @@ ${perfilTexto}
 
 Com base no perfil acima, ${area.instrucao}
 Responda em texto simples, sem markdown, direto ao ponto, sem repetir os dados do perfil na resposta.`;
-      const txt = await chamarClaude({ prompt, maxTokens: 900, modulo: 'plano_intervencao' });
+      const txt = await chamarClaude({ prompt, maxTokens: 1600, modulo: 'plano_intervencao' });
       planoGerado[area.key] = txt.trim();
       document.getElementById(area.divId).textContent = txt.trim();
       attachEditarIA(area.divId);
@@ -21325,29 +21325,78 @@ function copiarPlano() {
 function baixarPDFPlanoIntervencao() {
   if (!planoGerado._aluno) return toast('Gere o plano primeiro.', 'error');
   const p = planoGerado._aluno;
-  const partes = [];
-  if (planoGerado.escola && planoGerado.escola !== '—') partes.push('[BANNER: PARA A ESCOLA]\n' + planoGerado.escola);
-  if (planoGerado.at && planoGerado.at !== '—') partes.push('[BANNER: PARA O AT]\n' + planoGerado.at);
-  if (planoGerado.clinica && planoGerado.clinica !== '—') partes.push('[BANNER: ESTRATÉGIAS CLÍNICAS]\n' + planoGerado.clinica);
-  if (planoGerado.indicadores && planoGerado.indicadores !== '—') partes.push('[BANNER: INDICADORES DE EVOLUÇÃO]\n' + planoGerado.indicadores);
-  if (!partes.length) return toast('Nenhuma área gerada ainda.', 'error');
+  const secoes = [];
+  if (planoGerado.escola && planoGerado.escola !== '—') secoes.push({ titulo: 'Estratégias para a Escola', texto: planoGerado.escola });
+  if (planoGerado.at && planoGerado.at !== '—') secoes.push({ titulo: 'Roteiro para o Acompanhante Terapêutico', texto: planoGerado.at });
+  if (planoGerado.clinica && planoGerado.clinica !== '—') secoes.push({ titulo: 'Estratégias Clínicas', texto: planoGerado.clinica });
+  if (planoGerado.indicadores && planoGerado.indicadores !== '—') secoes.push({ titulo: 'Indicadores de Evolução', texto: planoGerado.indicadores });
+  if (!secoes.length) return toast('Nenhuma área gerada ainda.', 'error');
 
   const profNome = window._profNomeDB || (window._professoresList||[]).find(pf => pf.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
 
-  gerarPDFDocumento({
-    tipo: 'PLANO DE INTERVENÇÃO',
-    titulo: 'Plano de Intervenção Integrado',
-    subtitulo: p.nome,
-    aluno: p.nome,
-    professor: profNome,
-    conteudo: partes.join('\n\n'),
-    nomeArquivo: 'Plano_Intervencao_' + p.nome.replace(/\s+/g,'_'),
-    isAtividade: true,
-    guiaProf: null,
-    fonteTamanho: 'medio',
-    espacamento: 'normal',
-    fonteTipo: 'sans'
+  const { jsPDF } = window.jspdf;
+  const docPdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, H = 297, ml = 20, mr = 20;
+  const maxW = W - ml - mr;
+  let y = 22;
+
+  function novaPaginaPlano() {
+    adicionarRodapePagina(docPdf, W, H, ml, mr, docPdf.internal.getNumberOfPages());
+    docPdf.addPage();
+    y = 22;
+  }
+  function garantirEspacoPlano(altura) {
+    if (y + altura > H - 20) novaPaginaPlano();
+  }
+
+  docPdf.setFont('helvetica', 'bold');
+  docPdf.setFontSize(15);
+  docPdf.setTextColor(20, 20, 20);
+  docPdf.text('PLANO DE INTERVENÇÃO INTEGRADO', W / 2, y, { align: 'center' });
+  y += 10;
+  docPdf.setDrawColor(180, 180, 180);
+  docPdf.setLineWidth(0.3);
+  docPdf.line(ml, y, ml + maxW, y);
+  y += 8;
+
+  docPdf.setFont('helvetica', 'normal');
+  docPdf.setFontSize(10.5);
+  docPdf.setTextColor(40, 40, 40);
+  docPdf.text('Paciente/Aluno: ' + (p.nome || ''), ml, y); y += 6;
+  docPdf.text('Profissional responsável: ' + (profNome || '—'), ml, y); y += 6;
+  docPdf.text('Data de emissão: ' + new Date().toLocaleDateString('pt-BR'), ml, y); y += 10;
+
+  secoes.forEach(sec => {
+    garantirEspacoPlano(16);
+    docPdf.setFont('helvetica', 'bold');
+    docPdf.setFontSize(12);
+    docPdf.setTextColor(20, 20, 20);
+    docPdf.text(sec.titulo, ml, y);
+    y += 5;
+    docPdf.setDrawColor(210, 210, 210);
+    docPdf.setLineWidth(0.2);
+    docPdf.line(ml, y, ml + maxW, y);
+    y += 6;
+
+    docPdf.setFont('helvetica', 'normal');
+    docPdf.setFontSize(10.5);
+    docPdf.setTextColor(30, 30, 30);
+    const paragrafos = sec.texto.split('\n').filter(l => l.trim());
+    paragrafos.forEach(par => {
+      const linhasPar = docPdf.splitTextToSize(par.trim(), maxW);
+      linhasPar.forEach(l => {
+        garantirEspacoPlano(6);
+        docPdf.text(l, ml, y);
+        y += 5.5;
+      });
+      y += 2;
+    });
+    y += 6;
   });
+
+  adicionarRodapePagina(docPdf, W, H, ml, mr, docPdf.internal.getNumberOfPages());
+  docPdf.save('Plano_Intervencao_' + (p.nome || 'aluno').replace(/\s+/g, '_') + '.pdf');
+  toast('PDF gerado com sucesso!', 'success');
 }
 
 // MONITORAMENTO
