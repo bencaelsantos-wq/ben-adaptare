@@ -8870,6 +8870,104 @@ async function verificarOrcamentoIA(modulo) {
   return { ok: limiteBRL === Infinity || gastoBRL < limiteBRL, gastoBRL, limiteBRL };
 }
 
+function attachEditarIA(id) {
+  const el = document.getElementById(id);
+  if (!el || el._editIAAttached) return;
+  el._editIAAttached = true;
+  const isTextarea = el.tagName === 'TEXTAREA';
+  if (!isTextarea) el.setAttribute('contenteditable', 'true');
+
+  let savedStart = null, savedEnd = null, savedRange = null;
+
+  function getBotao() {
+    let btn = document.getElementById('btn-editar-ia-flutuante');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'btn-editar-ia-flutuante';
+      btn.className = 'btn-editar-ia-flutuante';
+      btn.textContent = '✨ Editar com IA';
+      document.body.appendChild(btn);
+    }
+    return btn;
+  }
+  function esconderBotaoEditarIA() {
+    const btn = document.getElementById('btn-editar-ia-flutuante');
+    if (btn) btn.style.display = 'none';
+  }
+
+  el.addEventListener('mouseup', () => {
+    setTimeout(() => {
+      if (isTextarea) {
+        savedStart = el.selectionStart;
+        savedEnd = el.selectionEnd;
+        if (savedEnd > savedStart) {
+          const rect = el.getBoundingClientRect();
+          const btn = getBotao();
+          btn.style.left = (rect.right - 150 + window.scrollX) + 'px';
+          btn.style.top = (rect.top - 36 + window.scrollY) + 'px';
+          btn.style.display = 'block';
+          btn.onclick = () => executarEdicaoIA(el, true, savedStart, savedEnd, null);
+        } else esconderBotaoEditarIA();
+      } else {
+        const sel = window.getSelection();
+        if (sel && sel.toString().trim().length > 0 && el.contains(sel.anchorNode)) {
+          savedRange = sel.getRangeAt(0).cloneRange();
+          const rect = savedRange.getBoundingClientRect();
+          const btn = getBotao();
+          btn.style.left = (rect.right - 60 + window.scrollX) + 'px';
+          btn.style.top = (rect.top - 36 + window.scrollY) + 'px';
+          btn.style.display = 'block';
+          btn.onclick = () => executarEdicaoIA(el, false, null, null, savedRange);
+        } else esconderBotaoEditarIA();
+      }
+    }, 10);
+  });
+
+  if (!window._editIADocListenerAtivo) {
+    window._editIADocListenerAtivo = true;
+    document.addEventListener('mousedown', (e) => {
+      if (e.target.id !== 'btn-editar-ia-flutuante') {
+        const btn = document.getElementById('btn-editar-ia-flutuante');
+        if (btn) btn.style.display = 'none';
+      }
+    });
+  }
+}
+
+async function executarEdicaoIA(el, isTextarea, start, end, range) {
+  const textoOriginal = isTextarea ? el.value.substring(start, end) : range.toString();
+  if (!textoOriginal.trim()) return;
+  const instrucao = prompt('O que você quer ajustar nesse trecho?\n(ex: "deixe mais curto", "troque o exemplo por algo de futebol", "simplifique a linguagem")', '');
+  const btnFlut = document.getElementById('btn-editar-ia-flutuante');
+  if (btnFlut) btnFlut.style.display = 'none';
+  if (!instrucao) return;
+
+  const promptEdicao = `Reescreva SOMENTE o trecho abaixo, aplicando este ajuste: "${instrucao}".
+Mantenha o mesmo formato/estrutura do trecho original (marcadores, quebras de linha, etc). Responda APENAS com o trecho reescrito, sem nenhum comentário antes ou depois.
+
+TRECHO ORIGINAL:
+${textoOriginal}`;
+
+  try {
+    const novoTexto = await chamarClaude({ prompt: promptEdicao, maxTokens: 600, modulo: 'editar-trecho-ia' });
+    const textoLimpo = novoTexto.trim();
+    if (isTextarea) {
+      el.value = el.value.slice(0, start) + textoLimpo + el.value.slice(end);
+      el.focus();
+      el.selectionStart = start;
+      el.selectionEnd = start + textoLimpo.length;
+    } else {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.execCommand('insertText', false, textoLimpo);
+    }
+    toast('Trecho atualizado!', 'success');
+  } catch(e) {
+    toast('Erro ao editar: ' + (e.message || 'tente novamente'), 'error');
+  }
+}
+
 async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral', imagensBase64 = [] }) {
   if (user) {
     const orc = await verificarOrcamentoIA(modulo);
