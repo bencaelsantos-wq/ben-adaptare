@@ -14617,7 +14617,7 @@ async function baixarPDFSessoesCiclo() {
     const fazerMaisMatch = avancado.match(/\(\s*\)\s*FAZER MAIS:?\s*([\s\S]*)$/i);
     const fazerMais = fazerMaisMatch ? fazerMaisMatch[1].trim() : '';
     const avancadoSemFazerMais = fazerMaisMatch ? avancado.slice(0, fazerMaisMatch.index).trim() : avancado;
-    return `[BANNER: SESSÃO ${s.numero} DE ${c.sessoes.length}]
+    return `${s.numero > 1 ? '[NOVAPAGINA]\n\n' : ''}SESSÃO ${s.numero} DE ${c.sessoes.length}
 
 [BANNER: OBJETIVOS]
 ${objetivos}
