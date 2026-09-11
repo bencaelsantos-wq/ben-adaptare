@@ -17081,6 +17081,12 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       y += altDesenho + 4;
       continue;
     }
+    if (/^\[NOVAPAGINA\]$/i.test(limpa)) {
+      adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+      doc.addPage();
+      y = 24;
+      continue;
+    }
     const matchBanner = limpa.match(/^\[BANNER:\s*(.+)\]$/i);
     if (matchBanner) {
       const altBanner = 12;
