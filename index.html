@@ -14575,6 +14575,7 @@ function renderizarSessoesCiclo() {
     </div>`).join('') +
     `<div class="result-actions" style="margin-top:8px">
       <button class="btn-sm" onclick="salvarSessoesCiclo()">Salvar todas as sessões</button>
+      <button class="btn-copy" onclick="detectarImagensCiclo()">🖼️ Detectar imagens do ciclo</button>
       <button class="btn-copy" onclick="baixarPDFSessoesCiclo()">Baixar PDF (todas as sessões)</button>
     </div>`;
   cont.style.display = 'block';
@@ -14608,6 +14609,16 @@ async function baixarPDFSessoesCiclo() {
   const c = window._ultimoCiclo;
   if (!c?.sessoes) return toast('Gere o ciclo primeiro.', 'error');
   const usaMaiusculasCiclo = document.getElementById('cic-maiusculas')?.checked || false;
+
+  const itensComImagemCiclo = (window._imgItens || []).filter(i => i.urlEscolhida);
+  const imagensPorItemCiclo = {};
+  if (itensComImagemCiclo.length) {
+    toast('Montando PDF…', 'success');
+    for (const item of itensComImagemCiclo) {
+      try { imagensPorItemCiclo[(item.chave ?? item.termo).trim().toLowerCase()] = await imagemParaBase64(item.urlEscolhida); }
+      catch(e) { console.warn('Falha ao carregar imagem de', item.termo, e); }
+    }
+  }
 
   const blocosSessoes = c.sessoes.map(s => {
     const objetivos = document.getElementById(`ciclo-sessao-${s.numero}-objetivos`)?.value.trim() || '';
@@ -14657,7 +14668,8 @@ ${blocosSessoes}`;
     corTema: window._corTemaSelecionada,
     fonteTipo: document.getElementById('cic-fonte-tipo')?.value,
     fonteTamanho: document.getElementById('cic-fonte-tamanho')?.value,
-    espacamento: document.getElementById('cic-espacamento')?.value
+    espacamento: document.getElementById('cic-espacamento')?.value,
+    imagensPorItem: imagensPorItemCiclo
   });
 }
 function selecionarCorTemaCiclo(hex, el) {
@@ -14673,11 +14685,17 @@ function detectarImagensCiclo() {
   if (!window._ultimoCiclo) return toast('Gere um ciclo primeiro.', 'error');
   window._imgListaId = 'cic-img-itens';
   window._imgPrefixo = 'cic';
-  const textoTotal = [
-    document.getElementById('ciclo-basico')?.value,
-    document.getElementById('ciclo-intermediario')?.value,
-    document.getElementById('ciclo-avancado')?.value
-  ].join('\n');
+  const textoTotal = window._ultimoCiclo.sessoes
+    ? window._ultimoCiclo.sessoes.map(s => [
+        document.getElementById(`ciclo-sessao-${s.numero}-basico`)?.value,
+        document.getElementById(`ciclo-sessao-${s.numero}-intermediario`)?.value,
+        document.getElementById(`ciclo-sessao-${s.numero}-avancado`)?.value
+      ].join('\n')).join('\n')
+    : [
+        document.getElementById('ciclo-basico')?.value,
+        document.getElementById('ciclo-intermediario')?.value,
+        document.getElementById('ciclo-avancado')?.value
+      ].join('\n');
   const itens = typeof extrairItensParaIlustrar === 'function' ? extrairItensParaIlustrar(textoTotal) : [];
   window._imgItens = itens.length ? itens : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
   document.getElementById('cic-img-painel').style.display = '';
