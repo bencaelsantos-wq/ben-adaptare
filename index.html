@@ -17108,7 +17108,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     }
     const matchBanner = limpa.match(/^\[BANNER:\s*(.+)\]$/i);
     if (matchBanner) {
-      const altBanner = 12;
+      const altBanner = 9;
       if (y + altBanner + 20 > H - rodapeH) {
         adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
         doc.addPage();
@@ -17116,13 +17116,11 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       }
       y += 3;
       doc.setFillColor(CT[0], CT[1], CT[2]);
-      doc.rect(ml, y, maxW - 8, altBanner, 'F');
-      doc.setFillColor(CT[0], CT[1], CT[2]);
-      doc.triangle(ml + maxW - 8, y, ml + maxW, y + altBanner / 2, ml + maxW - 8, y + altBanner, 'F');
+      doc.roundedRect(ml, y, maxW, altBanner, 2.5, 2.5, 'F');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(fontSize + 1);
       doc.setTextColor(255, 255, 255);
-      doc.text(sanitizarTexto(matchBanner[1].toUpperCase()), ml + (maxW - 8) / 2, y + altBanner / 2 + 1.5, { align: 'center' });
+      doc.text(sanitizarTexto(matchBanner[1].toUpperCase()), ml + maxW / 2, y + altBanner / 2 + 1.5, { align: 'center' });
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(fontSize);
       doc.setTextColor(25, 25, 25);
