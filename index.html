@@ -14504,6 +14504,15 @@ AVANCADO:
     return m ? m[1].trim() : '';
   };
 
+  const formatarDicasSoltas = (texto) => (texto || '').split('\n').map(l => {
+    const t = l.trim();
+    if (!t) return l;
+    if (/^\(/.test(t)) return l;
+    if (/^\[/.test(t)) return l;
+    if (/^[a-zà-úâ-ûã-õç]/.test(t)) return '[DICA: ' + t.charAt(0).toUpperCase() + t.slice(1) + ']';
+    return l;
+  }).join('\n');
+
   try {
     if (qtdSessoes <= 1) {
       const maxTokensCiclo = 1800 + codigosBnccCiclo.length * 100;
@@ -14520,9 +14529,9 @@ AVANCADO:
       } else {
         document.getElementById('ciclo-objetivos').value = objetivos;
         document.getElementById('ciclo-aquecimento').value = aquecimento;
-        document.getElementById('ciclo-basico').value = basico;
-        document.getElementById('ciclo-intermediario').value = intermediario;
-        document.getElementById('ciclo-avancado').value = avancado;
+        document.getElementById('ciclo-basico').value = formatarDicasSoltas(basico);
+        document.getElementById('ciclo-intermediario').value = formatarDicasSoltas(intermediario);
+        document.getElementById('ciclo-avancado').value = formatarDicasSoltas(avancado);
         document.getElementById('ciclo-result-badge').textContent = [materia, serie || a.serie].filter(Boolean).join(' · ') + (codigosBnccCiclo.length ? ' · BNCC ' + codigosBnccCiclo.join(', ') : '');
         document.getElementById('ciclo-result-card').classList.add('show');
         attachEditarIA('ciclo-objetivos');
@@ -14546,7 +14555,7 @@ AVANCADO:
         const intermediario = pega(txt, 'INTERMEDIARIO', 'AVANCADO');
         const avancadoMatch = txt.match(/AVANCADO:\s*([\s\S]*)$/i);
         const avancado = avancadoMatch ? avancadoMatch[1].trim() : '';
-        sessoes.push({ numero: n, objetivos, aquecimento, basico, intermediario, avancado });
+        sessoes.push({ numero: n, objetivos, aquecimento, basico: formatarDicasSoltas(basico), intermediario: formatarDicasSoltas(intermediario), avancado: formatarDicasSoltas(avancado) });
         resumoAnterior = (resumoAnterior ? resumoAnterior + ' | ' : '') + `Sessão ${n}: ${objetivos.slice(0, 150)}`;
       }
       window._ultimoCiclo = { aluno: a, materia, serie: serie || a.serie, tema, bnccCodigos: codigosBnccCiclo, sessoes };
