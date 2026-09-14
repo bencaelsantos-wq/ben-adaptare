@@ -16952,22 +16952,24 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
 
   // ── DADOS DO ALUNO (compacto) ─────────────────────────────
   doc.setFillColor(240, 244, 255);
-  doc.roundedRect(ml, y, W - ml - mr, 12, 1.5, 1.5, 'F');
+  doc.roundedRect(ml, y, W - ml - mr, 14, 1.5, 1.5, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
+  doc.setFontSize(9);
   doc.setTextColor(50, 70, 140);
-  doc.text('ALUNO:', ml + 3, y + 6);
+  doc.text('ALUNO:', ml + 4, y + 8.5);
   doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(20, 20, 60);
+  doc.text((opts.aluno || '').toUpperCase(), ml + 21, y + 8.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(50, 70, 140);
+  doc.text('DATA:', W / 2, y + 8.5);
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(20, 20, 60);
-  doc.text((opts.aluno || '').toUpperCase(), ml + 18, y + 6);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(50, 70, 140);
-  doc.text('DATA:', W / 2, y + 6);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(20, 20, 60);
-  doc.text('_____ / _____ / _______', W / 2 + 14, y + 6);
-  y += 16;
+  doc.text('_____ / _____ / _______', W / 2 + 15, y + 8.5);
+  y += 18;
 
   // ── TÍTULO DA ATIVIDADE ───────────────────────────────────
   doc.setFillColor(CT[0], CT[1], CT[2]);
@@ -17103,7 +17105,16 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     if (/^\[NOVAPAGINA\]$/i.test(limpa)) {
       adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
       doc.addPage();
-      y = 24;
+      doc.setFillColor(CT[0], CT[1], CT[2]);
+      doc.rect(0, 0, W, 3, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(90, 90, 90);
+      doc.text('Aluno: ' + (opts.aluno || '').toUpperCase(), ml, 14);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      y = 22;
       continue;
     }
     const matchBanner = limpa.match(/^\[BANNER:\s*(.+)\]$/i);
