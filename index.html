@@ -17239,7 +17239,8 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       if (restante) itens[itens.length - 1].rotulo = (itens[itens.length - 1].rotulo + ' ' + restante).trim();
 
       const ehLigarAssociar = itens.length === 1 && /\u00BB|->/.test(itens[0].rotulo || '');
-      const maxImgW = 55, maxImgH = 55;
+      const ehCicloTrabalhoImg = opts.tipo === 'CICLO DE TRABALHO';
+      const maxImgW = ehCicloTrabalhoImg ? 78 : 55, maxImgH = ehCicloTrabalhoImg ? 78 : 55;
 
       if (ehLigarAssociar) {
         const item = itens[0];
@@ -17248,9 +17249,10 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         if (b64) {
           try {
             const props = doc.getImageProperties(b64);
-            imgW = Math.min(34, maxImgW);
+            const limiteLigar = ehCicloTrabalhoImg ? 52 : 34;
+            imgW = Math.min(limiteLigar, maxImgW);
             imgH = imgW * (props.height / props.width);
-            if (imgH > 34) { imgH = 34; imgW = imgH * (props.width / props.height); }
+            if (imgH > limiteLigar) { imgH = limiteLigar; imgW = imgH * (props.width / props.height); }
             imgFormato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
           } catch(e) { imgW = 0; imgH = 0; }
         }
