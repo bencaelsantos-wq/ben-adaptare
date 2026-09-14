@@ -14707,7 +14707,9 @@ function detectarImagensCiclo() {
         document.getElementById('ciclo-avancado')?.value
       ].join('\n');
   const itens = typeof extrairItensParaIlustrar === 'function' ? extrairItensParaIlustrar(textoTotal) : [];
-  window._imgItens = itens.length ? itens : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
+  window._imgItens = itens.length
+    ? itens.map(t => ({ termo: t, chave: t, fonte: 'proprio', resultados: [], urlEscolhida: null }))
+    : [{ termo: '', chave: '', fonte: 'proprio', resultados: [], urlEscolhida: null }];
   document.getElementById('cic-img-painel').style.display = '';
   renderizarPainelImagens();
   document.getElementById('cic-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
