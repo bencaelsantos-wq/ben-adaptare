@@ -20245,7 +20245,7 @@ async function baixarFichaRegistroABA(perfilIdParam, nomeParam) {
   doc.line(ml, y, maxX, y); y += 8;
 
   doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(40,40,40);
-  doc.text('Paciente/Aluno: ' + (ctx.nome || ''), ml, y); y += 10;
+  doc.text('Paciente/Aluno: ' + (nome || ''), ml, y); y += 10;
 
   areasComTexto.forEach(a => {
     garantirEspacoAba(60);
@@ -20286,7 +20286,7 @@ async function baixarFichaRegistroABA(perfilIdParam, nomeParam) {
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
   doc.text('I - Independente     A - Acerto com dica     E - Erro', ml + 4, y + 14);
 
-  doc.save('Ficha_Registro_ABA_' + (ctx.nome || 'aluno').replace(/\s+/g, '_') + '.pdf');
+  doc.save('Ficha_Registro_ABA_' + (nome || 'aluno').replace(/\s+/g, '_') + '.pdf');
   toast('Ficha de Registro ABA gerada!', 'success');
 }
 
