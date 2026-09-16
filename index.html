@@ -14833,6 +14833,7 @@ async function gerar() {
   const incluiGuia    = document.getElementById('inp-guia-prof')?.checked !== false;
   const usaMaiusculas = document.getElementById('inp-maiusculas')?.checked || false;   const nivel        = document.getElementById('inp-nivel')?.value || 'intermediario';   const fonteTipo    = document.getElementById('inp-fonte-tipo')?.value || 'opendyslexic';   const fonteTamanho = document.getElementById('inp-fonte-tamanho')?.value || 'medio';   const espacamento  = document.getElementById('inp-espacamento')?.value || 'normal';   const ehMontessori = document.getElementById('inp-materia')?.selectedOptions[0]?.closest('optgroup')?.label === 'Montessori';   const qtdQuestoesRaw = document.getElementById('inp-qtd-questoes')?.value || 'auto';
 const qtdQuestoes = qtdQuestoesRaw === 'auto' ? null : parseInt(qtdQuestoesRaw, 10);
+  const estiloAdaptacao = document.getElementById('inp-estilo-adaptacao')?.value || '';
 
   const ctxDiagnostico    = document.getElementById('inp-ctx-diagnostico')?.value.trim() || '';
   const ctxLimitacoes     = document.getElementById('inp-ctx-limitacoes')?.value.trim() || '';
@@ -14930,6 +14931,13 @@ const qtdQuestoes = qtdQuestoesRaw === 'auto' ? null : parseInt(qtdQuestoesRaw, 
     'funcional-adaptativo': `PERFIL DE ADAPTAÇÃO: Funcional/Adaptativo. ATENÇÃO — este perfil é EXCEÇÃO, usado apenas quando a equipe (escola + clínica) já decidiu, por avaliação prévia, que para ESTE aluno específico as habilidades acadêmicas da série não são a prioridade pedagógica no momento — situação comum em casos de Deficiência Intelectual moderada/severa ou quadros similares, onde o foco terapêutico-pedagógico é autonomia e participação na vida diária, não o currículo típico da idade/série. NUNCA escolha este enfoque por padrão ou por suposição do diagnóstico informado — ele só deve ser aplicado porque o profissional selecionou este perfil explicitamente, confiando que essa decisão já foi tomada pela equipe responsável pelo aluno. Priorize habilidades de vida prática e autonomia — leitura de rótulos, placas, sinalização de banheiro, lista de mercado, sequências de rotina. Use o tema da atividade original apenas como pretexto, se fizer sentido; o objetivo real é a aplicação funcional no dia a dia.`
   };
   const INSTRUCAO_PERFIL = PERFIS_ADAPTACAO_TEXTOS[perfilAdaptacao] || '';
+
+  const ESTILOS_ADAPTACAO_TEXTOS = {
+    'visual': `ESTILO DE ADAPTAÇÃO: Mais visual. Sempre que fizer sentido dentro das regras de formatação já estabelecidas acima (marcadores [IMAGEM:], [LIGAR], etc.), priorize apoio visual em vez de texto longo — prefira frases mais curtas e use [IMAGEM: nome-do-item] com mais frequência nos itens em que uma imagem real ajudaria a identificar o conceito. Isso é uma preferência de ênfase, nunca uma licença para quebrar nenhuma regra de formatação, estrutura ou conteúdo já definida acima.`,
+    'palavra-chave': `ESTILO DE ADAPTAÇÃO: Foco em palavra-chave. Sempre que fizer sentido dentro das regras já estabelecidas acima, destaque o termo-chave de cada enunciado usando MAIÚSCULAS só nessa palavra (nunca a frase inteira), e prefira frases curtas e diretas, cortando palavras de ligação desnecessárias. Isso é uma preferência de ênfase, nunca uma licença para quebrar nenhuma regra de formatação, estrutura ou conteúdo já definida acima.`,
+    'jogo': `ESTILO DE ADAPTAÇÃO: Formato de jogo. Sempre que o conteúdo permitir SEM violar a REGRA INEGOCIÁVEL nem remover nenhum item do original, apresente os exercícios com uma moldura lúdica (ex: "Desafio 1", "Missão", pontuação simbólica ao final de cada bloco) — usando só texto simples, nunca tabelas ou desenhos com caracteres. Se o conteúdo não se prestar a isso, mantenha o formato padrão sem forçar. Isso é uma preferência de ênfase, nunca uma licença para quebrar nenhuma regra de formatação, estrutura ou conteúdo já definida acima.`
+  };
+  const INSTRUCAO_ESTILO = ESTILOS_ADAPTACAO_TEXTOS[estiloAdaptacao] || '';
 
   const qtdImagensOriginais = (window._imagensPDFOriginal||[]).length;
   const usarVisaoImagensOriginais = window._usarImagensOriginais === true && qtdImagensOriginais > 0;
@@ -15174,6 +15182,8 @@ Gere APENAS a folha do aluno, pronta para imprimir e entregar. Não use emojis �
 ${INSTRUCAO_METODO}
 
 ${INSTRUCAO_PERFIL}
+
+${INSTRUCAO_ESTILO}
 
 ${INSTRUCAO_IMAGENS_ORIGINAIS}
 
