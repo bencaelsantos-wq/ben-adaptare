@@ -13126,6 +13126,7 @@ function renderPagesClinica() {
           <textarea id="ap-obs-livre" class="ftarea" placeholder="Dificuldades e avanços percebidos…"></textarea>
         </div>
         <button class="btn-sm" onclick="salvarRegistroAdaptacao()">Salvar registro</button>
+        <button class="btn-copy" onclick="baixarFichaRegistroABA(alunoSelId, (alunosCad.find(x=>x.id===alunoSelId)||{}).nome)">📋 Ficha de Registro ABA</button>
       </div>
     </div>
 
@@ -13281,6 +13282,7 @@ function renderPagesClinica() {
           <textarea id="mat-obs-livre" class="ftarea" placeholder="Dificuldades e avanços percebidos…"></textarea>
         </div>
         <button class="btn-sm" onclick="salvarRegistroMaterialTerapeutico()">Salvar registro</button>
+        <button class="btn-copy" onclick="baixarFichaRegistroABA(document.getElementById('mat-terapeutico-aluno-sel')?.value, (perfisClinicaList.find(x=>x.id===document.getElementById('mat-terapeutico-aluno-sel')?.value)||{}).nome)">📋 Ficha de Registro ABA</button>
       </div>
     </div>
 
@@ -13360,6 +13362,7 @@ function renderPagesClinica() {
           <textarea id="pg-obs-livre" class="ftarea" placeholder="Ex: Teve mais dificuldade nas perguntas com estímulo sonoro; avançou bem nas visuais…"></textarea>
         </div>
         <button class="btn-sm" style="margin-top:10px" onclick="salvarRegistroPraticaGuiada()">Salvar registro</button>
+        <button class="btn-copy" style="margin-top:10px" onclick="baixarFichaRegistroABA(document.getElementById('pg-aluno-sel')?.value, (perfisClinicaList.find(x=>x.id===document.getElementById('pg-aluno-sel')?.value)||{}).nome)">📋 Ficha de Registro ABA</button>
       </div>
     </div>
 
@@ -20197,13 +20200,28 @@ async function carregarObjetivos() {
     </div>`;
 }
 
-function baixarFichaRegistroABA() {
-  const ctx = window._objAbaAtual;
-  if (!ctx) return toast('Selecione um aluno primeiro.', 'error');
-  const areasComTexto = ctx.areas
-    .map(a => ({ ...a, texto: document.getElementById(`obj-${a.key}`)?.value.trim() || ctx.obj[a.key] || '' }))
-    .filter(a => a.texto);
-  if (!areasComTexto.length) return toast('Cadastre pelo menos um objetivo antes de gerar a ficha.', 'error');
+async function baixarFichaRegistroABA(perfilIdParam, nomeParam) {
+  const areasDef = [
+    { key:'cognitivo', label:'Cognitivo' },
+    { key:'comunicacao', label:'Comunicação' },
+    { key:'social', label:'Social' },
+    { key:'comportamental', label:'Comportamental' },
+    { key:'academico', label:'Acadêmico' },
+  ];
+  let nome = nomeParam, obj = null;
+  if (perfilIdParam) {
+    if (!nome) return toast('Paciente não encontrado.', 'error');
+    const { data } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', perfilIdParam).maybeSingle();
+    obj = data || {};
+  } else {
+    const ctx = window._objAbaAtual;
+    if (!ctx) return toast('Selecione um aluno primeiro.', 'error');
+    nome = ctx.nome;
+    obj = {};
+    ctx.areas.forEach(a => { obj[a.key] = document.getElementById(`obj-${a.key}`)?.value.trim() || ctx.obj[a.key] || ''; });
+  }
+  const areasComTexto = areasDef.map(a => ({ ...a, texto: obj[a.key] || '' })).filter(a => a.texto);
+  if (!areasComTexto.length) return toast('Este paciente ainda não tem objetivos terapêuticos cadastrados.', 'error');
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -20232,10 +20250,9 @@ function baixarFichaRegistroABA() {
   areasComTexto.forEach(a => {
     garantirEspacoAba(60);
     doc.setDrawColor(60,60,60); doc.setLineWidth(0.3);
-    const labelLimpo = a.label.replace(/^[^\w]+/u, '').trim();
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(20,20,20);
-    doc.text('Objetivo de ensino: ' + labelLimpo, ml, y); y += 6;
+    doc.text('Objetivo de ensino: ' + a.label, ml, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
     const linhasObj = doc.splitTextToSize(a.texto, maxX - ml);
     linhasObj.forEach(l => { garantirEspacoAba(6); doc.text(l, ml, y); y += 5; });
