@@ -6015,7 +6015,15 @@ async function baixarPDFAdaptacaoSalva(registroId) {
 
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
 
+  const imagensPorItem = {};
+  if (data.imagens_urls) {
+    for (const [chave, url] of Object.entries(data.imagens_urls)) {
+      try { imagensPorItem[chave] = await imagemParaBase64(url); } catch(e) { console.warn('Falha ao carregar imagem salva', chave, e); }
+    }
+  }
+
   gerarPDFDocumento({
+    imagensPorItem,
     tipo: 'ATIVIDADE ADAPTADA',
     titulo: 'Atividade Adaptada',
     subtitulo: (data.materia||'') + (data.tipo_atividade ? ' — ' + data.tipo_atividade : ''),
@@ -15433,6 +15441,25 @@ function downloadAdaptacaoWord() {
   URL.revokeObjectURL(url);
 }
 
+async function salvarImagensAdaptacao(adaptacaoId, itensComImagem) {
+  const mapaUrls = {};
+  for (const item of itensComImagem) {
+    try {
+      const resp = await fetch(item.urlEscolhida);
+      const blob = await resp.blob();
+      const ext = (blob.type.split('/')[1] || 'jpg').split('+')[0];
+      const path = `adaptacoes/${adaptacaoId}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const { error: errUpload } = await db.storage.from('imagens-atividades').upload(path, blob, { upsert: false, contentType: blob.type });
+      if (errUpload) continue;
+      const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
+      mapaUrls[(item.chave ?? item.termo).trim().toLowerCase()] = urlData.publicUrl;
+    } catch(e) { console.warn('Falha ao salvar imagem permanente de', item.termo, e); }
+  }
+  if (Object.keys(mapaUrls).length) {
+    await db.from('adaptacoes').update({ imagens_urls: mapaUrls }).eq('id', adaptacaoId);
+  }
+}
+
 async function downloadAdaptacaoPDF() {
   if (!ultimaAdapt) return toast('Gere uma adaptação primeiro.', 'error');
   ultimaAdapt = document.getElementById('result-text').value || ultimaAdapt;
@@ -15464,6 +15491,7 @@ async function downloadAdaptacaoPDF() {
         console.warn('Falha ao carregar imagem de', item.termo, e);
       }
     }
+    if (dadosUltima.adaptacaoId) salvarImagensAdaptacao(dadosUltima.adaptacaoId, itensComImagem);
   }
 
   // Gerar PDF da folha do aluno
