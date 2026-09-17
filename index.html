@@ -15450,13 +15450,17 @@ async function salvarImagensAdaptacao(adaptacaoId, itensComImagem) {
       const ext = (blob.type.split('/')[1] || 'jpg').split('+')[0];
       const path = `adaptacoes/${adaptacaoId}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
       const { error: errUpload } = await db.storage.from('imagens-atividades').upload(path, blob, { upsert: false, contentType: blob.type });
-      if (errUpload) continue;
+      if (errUpload) { toast('Falha ao guardar imagem "' + item.termo + '": ' + errUpload.message, 'error'); continue; }
       const { data: urlData } = db.storage.from('imagens-atividades').getPublicUrl(path);
       mapaUrls[(item.chave ?? item.termo).trim().toLowerCase()] = urlData.publicUrl;
-    } catch(e) { console.warn('Falha ao salvar imagem permanente de', item.termo, e); }
+    } catch(e) { toast('Falha ao guardar imagem "' + item.termo + '": ' + e.message, 'error'); }
   }
   if (Object.keys(mapaUrls).length) {
-    await db.from('adaptacoes').update({ imagens_urls: mapaUrls }).eq('id', adaptacaoId);
+    const { error: errUpdate } = await db.from('adaptacoes').update({ imagens_urls: mapaUrls }).eq('id', adaptacaoId);
+    if (errUpdate) toast('Imagens guardadas, mas falhou ao vincular à adaptação: ' + errUpdate.message, 'error');
+    else toast('Imagens salvas permanentemente nesta adaptação (' + Object.keys(mapaUrls).length + ').', 'success');
+  } else {
+    toast('Nenhuma imagem foi salva permanentemente — veja os avisos acima.', 'error');
   }
 }
 
@@ -15492,6 +15496,7 @@ async function downloadAdaptacaoPDF() {
       }
     }
     if (dadosUltima.adaptacaoId) salvarImagensAdaptacao(dadosUltima.adaptacaoId, itensComImagem);
+    else toast('Aviso: esta adaptação ainda não foi salva no histórico — as imagens não puderam ser guardadas permanentemente.', 'error');
   }
 
   // Gerar PDF da folha do aluno
