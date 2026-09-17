@@ -17411,20 +17411,20 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         doc.addPage();
         y = 24;
       }
-      doc.setFillColor(240, 244, 255);
-      doc.setDrawColor(CT[0], CT[1], CT[2]);
-      doc.setLineWidth(0.5);
-      doc.roundedRect(ml, y, W - ml - mr, altCaixaBloco, 2, 2, 'FD');
-      doc.setFont('helvetica', 'bold');
+      doc.setFillColor(247, 248, 251);
+      doc.roundedRect(ml, y, W - ml - mr, altCaixaBloco, 2, 2, 'F');
+      doc.setFillColor(CT[0], CT[1], CT[2]);
+      doc.roundedRect(ml, y, 1.4, altCaixaBloco, 0.7, 0.7, 'F');
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(fontSize);
-      doc.setTextColor(CT[0], CT[1], CT[2]);
+      doc.setTextColor(55, 55, 60);
       let yCaixaBloco = y + 6;
       itensCaixaBloco.forEach(it => {
         if (it.tipo === 'imagem') {
-          try { doc.addImage(it.b64, it.formato, ml + 5, yCaixaBloco - 4, it.w, it.h); } catch(e) {}
+          try { doc.addImage(it.b64, it.formato, ml + 6, yCaixaBloco - 4, it.w, it.h); } catch(e) {}
           yCaixaBloco += it.h + 3;
         } else {
-          doc.text(it.texto, ml + 5, yCaixaBloco);
+          doc.text(it.texto, ml + 6, yCaixaBloco);
           yCaixaBloco += altLinha;
         }
       });
@@ -17444,14 +17444,14 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         doc.addPage();
         y = 24;
       }
-      doc.setFillColor(240, 244, 255);
-      doc.setDrawColor(30, 58, 138);
-      doc.setLineWidth(0.5);
-      doc.roundedRect(ml, y, W - ml - mr, altCaixa, 2, 2, 'FD');
-      doc.setFont('helvetica', 'bold');
+      doc.setFillColor(247, 248, 251);
+      doc.roundedRect(ml, y, W - ml - mr, altCaixa, 2, 2, 'F');
+      doc.setFillColor(CT[0], CT[1], CT[2]);
+      doc.roundedRect(ml, y, 1.4, altCaixa, 0.7, 0.7, 'F');
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(fontSize);
-      doc.setTextColor(30, 58, 138);
-      linhasCaixa.forEach((l, li) => doc.text(l, ml + 5, y + 6 + li * altLinha));
+      doc.setTextColor(55, 55, 60);
+      linhasCaixa.forEach((l, li) => doc.text(l, ml + 6, y + 6 + li * altLinha));
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(fontSize);
       doc.setTextColor(25, 25, 25);
