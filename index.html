@@ -2843,6 +2843,16 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📋 Observações clínicas</div>
         <div id="perfil-aluno-obs" style="font-size:13px;color:var(--gr600);line-height:1.7;background:var(--gr50);border-radius:var(--rsm);padding:10px 12px"></div>
       </div>
+      <!-- Resumo semanal para a família -->
+      <div style="margin-bottom:16px;padding:14px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📨 Resumo semanal para a família</div>
+        <p style="font-size:12px;color:var(--gr500);margin:0 0 10px">Gera um recado curto e simples, sem termos técnicos, sobre o que foi trabalhado nos últimos 7 dias — pronto para copiar e enviar por WhatsApp ou e-mail.</p>
+        <button class="btn-sm" id="btn-gerar-resumo-familia" onclick="gerarResumoSemanalFamilia()">Gerar resumo da semana com a Lou</button>
+        <div id="resumo-familia-box" style="display:none;margin-top:10px">
+          <textarea id="resumo-familia-texto" class="ftarea" style="min-height:120px"></textarea>
+          <button class="btn-copy" style="margin-top:6px" onclick="navigator.clipboard.writeText(document.getElementById('resumo-familia-texto').value);toast('Copiado!','success')">Copiar texto</button>
+        </div>
+      </div>
       <!-- Progresso (IPA) -->
       <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📈 Evolução — Atenção, Regulação e Autonomia</div>
       <div id="perfil-progresso-aluno" style="margin-bottom:16px">Carregando…</div>
@@ -6437,6 +6447,50 @@ async function carregarDashboardClinica() {
       if(np&&nr) s.push('✅ Você tem perfis e demandas. Use o Plano de Intervenção para estratégias integradas.');
       acoes.innerHTML=s.length?s.map(x=>'<div style="margin-bottom:4px">'+x+'</div>').join(''):'✅ Tudo em dia!'; }
   } catch(e){ console.error('carregarDashboardClinica:',e); }
+}
+
+async function gerarResumoSemanalFamilia() {
+  const a = window._perfilAlunoAtual;
+  if (!a?.id) return toast('Aluno não identificado.', 'error');
+  const btn = document.getElementById('btn-gerar-resumo-familia');
+  btn.disabled = true; btn.textContent = '⏳ Gerando com a Lou…';
+  try {
+    const desde = new Date(Date.now() - 7 * 86400000).toISOString();
+    const [{ data: adapts }, { data: ciclos }] = await Promise.all([
+      db.from('adaptacoes').select('materia,tipo_atividade,created_at').eq('aluno_id', a.id).gte('created_at', desde).order('created_at', { ascending: false }),
+      db.from('ciclos_trabalho').select('materia,tema,created_at').eq('aluno_id', a.id).gte('created_at', desde).order('created_at', { ascending: false })
+    ]);
+    const itens = [
+      ...(adapts || []).map(x => `Adaptação de ${x.materia || ''}${x.tipo_atividade ? ' — ' + x.tipo_atividade : ''}`),
+      ...(ciclos || []).map(x => `Ciclo de Trabalho de ${x.materia || ''}${x.tema ? ' — ' + x.tema : ''}`)
+    ];
+    const box = document.getElementById('resumo-familia-box');
+    const texto = document.getElementById('resumo-familia-texto');
+    if (!itens.length) {
+      box.style.display = 'block';
+      texto.value = 'Nenhuma atividade registrada para este aluno nos últimos 7 dias.';
+      return;
+    }
+    const prompt = `Você é uma professora escrevendo um recado curto e acolhedor para a família de um aluno, sobre o que foi trabalhado com ele/ela na última semana na escola.
+
+REGRAS OBRIGATÓRIAS:
+- Linguagem simples, calorosa, sem nenhum termo técnico pedagógico ou clínico (nunca diga "adaptação curricular", "BNCC", "PEI", diagnóstico ou nome de transtorno).
+- Máximo 4 frases curtas.
+- Foque no que a criança trabalhou e, se possível, um ponto positivo genérico de incentivo.
+- Nunca invente informação que não está na lista abaixo.
+
+Nome da criança: ${a.nome}
+
+O que foi trabalhado nesta semana:
+${itens.map(i => '- ' + i).join('\n')}`;
+    const textoGerado = await chamarClaude({ prompt, maxTokens: 300, modulo: 'resumo-familia' });
+    box.style.display = 'block';
+    texto.value = textoGerado.trim();
+  } catch (e) {
+    toast('Erro ao gerar resumo: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Gerar resumo da semana com a Lou';
+  }
 }
 
 function renderizarAlunosDashboardClinica(lista) {
@@ -18274,6 +18328,8 @@ async function carregarProgressoAluno(alunoId) {
 }
 
 async function abrirPerfilAluno(a) {
+  window._perfilAlunoAtual = a;
+  document.getElementById('resumo-familia-box').style.display = 'none';
   // Avatar
   const cores = ['#2563EB','#7C3AED','#059669','#0891B2','#D97706'];
   const cor = cores[(a.nome||'').charCodeAt(0) % cores.length];
