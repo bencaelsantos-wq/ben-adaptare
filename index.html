@@ -10644,6 +10644,7 @@ function renderPages() {
         <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
+        <button class="btn-copy" id="btn-ouvir-result-text" onclick="ouvirAtividade('result-text')">🔊 Ouvir atividade</button>
         <button class="btn-copy" onclick="downloadAdaptacaoWord()">📝 Baixar Word</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
         <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
@@ -13165,6 +13166,7 @@ function renderPagesClinica() {
         <button class="btn-sm" onclick="salvarAdapt()">Salvar no histórico</button>
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
+        <button class="btn-copy" id="btn-ouvir-result-text" onclick="ouvirAtividade('result-text')">🔊 Ouvir atividade</button>
         <button class="btn-copy" onclick="downloadAdaptacaoWord()">📝 Baixar Word</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
 
@@ -15470,6 +15472,40 @@ function downloadAdaptacaoWord() {
   aEl.href = url; aEl.download = `Adaptacao_${nomeAlunoW.replace(/\s+/g,'_')}.doc`;
   document.body.appendChild(aEl); aEl.click(); document.body.removeChild(aEl);
   URL.revokeObjectURL(url);
+}
+
+let _speechAtual = null;
+function ouvirAtividade(elId) {
+  if (!('speechSynthesis' in window)) return toast('Seu navegador n\u00e3o suporta leitura em voz alta.', 'error');
+  const btn = document.getElementById('btn-ouvir-' + elId);
+  if (_speechAtual) {
+    window.speechSynthesis.cancel();
+    _speechAtual = null;
+    if (btn) btn.textContent = '\ud83d\udd0a Ouvir atividade';
+    return;
+  }
+  const el = document.getElementById(elId);
+  let texto = (el?.value !== undefined ? el.value : el?.textContent) || '';
+  texto = texto
+    .replace(/\[IMAGEM:[^\]]*\]/gi, '')
+    .replace(/\[BANNER:[^\]]*\]/gi, '')
+    .replace(/\[\/?CAIXA\]/gi, '')
+    .replace(/\[CAIXA:\s*([^\]]*)\]/gi, '$1.')
+    .replace(/\[DICA:\s*([^\]]*)\]/gi, 'Dica: $1.')
+    .replace(/\[\/?LIGAR\]/gi, '')
+    .replace(/\[LINHA NUMERICA:[^\]]*\]/gi, '')
+    .replace(/\[NOVAPAGINA\]/gi, '')
+    .replace(/_{2,}/g, '')
+    .replace(/\(\s?\)/g, '')
+    .trim();
+  if (!texto) return toast('Nada para ler ainda.', 'error');
+  const utter = new SpeechSynthesisUtterance(texto);
+  utter.lang = 'pt-BR';
+  utter.rate = 0.95;
+  utter.onend = () => { _speechAtual = null; if (btn) btn.textContent = '\ud83d\udd0a Ouvir atividade'; };
+  window.speechSynthesis.speak(utter);
+  _speechAtual = utter;
+  if (btn) btn.textContent = '\u23f9\ufe0f Parar leitura';
 }
 
 async function salvarImagensAdaptacao(adaptacaoId, itensComImagem) {
