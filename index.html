@@ -2634,6 +2634,20 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <button class="btn-p" style="width:100%;padding:14px;font-size:15px" onclick="enviarRespostaPublica()">Enviar Devolutiva</button>
       </div>
 
+<div id="page-publica-audio" style="display:none;min-height:100vh;background:#F8FAFC;font-family:inherit;align-items:center;justify-content:center">
+  <div style="max-width:480px;margin:0 auto;padding:32px 16px;text-align:center">
+    <div style="font-size:32px;margin-bottom:6px">🔊</div>
+    <h1 style="font-size:20px;font-weight:700;color:#1E293B;margin:0">Ouvir Atividade</h1>
+    <p style="font-size:13px;color:#64748B;margin-top:4px">Plataforma LouMind</p>
+    <div id="audio-pub-erro" style="display:none;margin-top:24px;color:#991B1B;font-size:14px"></div>
+    <div id="audio-pub-conteudo" style="display:none;margin-top:24px;background:#fff;border-radius:14px;padding:28px 24px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+      <div style="font-size:12px;color:#94A3B8;font-weight:600;letter-spacing:.06em;margin-bottom:8px">ALUNO</div>
+      <div style="font-size:18px;font-weight:700;color:#1E293B;margin-bottom:20px" id="audio-pub-aluno"></div>
+      <button class="btn-p" id="audio-pub-btn" style="width:100%;padding:16px;font-size:16px" onclick="tocarAudioPublico()">🔊 Tocar atividade</button>
+    </div>
+  </div>
+</div>
+
       <p style="font-size:11px;color:#94A3B8;text-align:center">Este link é pessoal e intransferível. Os dados são protegidos conforme a LGPD.</p>
     </div>
   </div>
@@ -8685,6 +8699,15 @@ let _pubUrgencia = 'rotina';
 
 async function verificarRotaPublica() {
   const params = new URLSearchParams(window.location.search);
+
+  const audioId = params.get('audio');
+  if (audioId) {
+    document.getElementById('login-screen')?.style && (document.getElementById('login-screen').style.display = 'none');
+    document.getElementById('app-screen')?.style && (document.getElementById('app-screen').style.display = 'none');
+    await carregarAudioPublico(audioId);
+    return true;
+  }
+
   const token = params.get('s');
   if (!token) return false;
 
@@ -8695,6 +8718,39 @@ async function verificarRotaPublica() {
 
   await carregarSolicitacaoPublica(token);
   return true;
+}
+
+async function carregarAudioPublico(id) {
+  document.getElementById('page-publica-audio').style.display = 'flex';
+  const { data, error } = await dbAnon.from('links_audio').select('*').eq('id', id).maybeSingle();
+  if (error || !data) {
+    document.getElementById('audio-pub-erro').style.display = 'block';
+    document.getElementById('audio-pub-erro').textContent = 'Link inválido ou não encontrado.';
+    return;
+  }
+  window._audioPubTexto = data.texto;
+  document.getElementById('audio-pub-aluno').textContent = data.aluno_nome || 'Atividade';
+  document.getElementById('audio-pub-conteudo').style.display = 'block';
+}
+
+function tocarAudioPublico() {
+  if (!('speechSynthesis' in window)) return;
+  const btn = document.getElementById('audio-pub-btn');
+  if (_speechAtual) {
+    window.speechSynthesis.cancel();
+    _speechAtual = null;
+    if (btn) btn.textContent = '🔊 Tocar atividade';
+    return;
+  }
+  const texto = window._audioPubTexto || '';
+  if (!texto) return;
+  const utter = new SpeechSynthesisUtterance(texto);
+  utter.lang = 'pt-BR';
+  utter.rate = 0.95;
+  utter.onend = () => { _speechAtual = null; if (btn) btn.textContent = '🔊 Tocar atividade'; };
+  window.speechSynthesis.speak(utter);
+  _speechAtual = utter;
+  if (btn) btn.textContent = '⏹️ Pausar leitura';
 }
 
 async function carregarSolicitacaoPublica(token) {
@@ -10645,10 +10701,12 @@ function renderPages() {
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
         <button class="btn-copy" id="btn-ouvir-result-text" onclick="ouvirAtividade('result-text')">🔊 Ouvir atividade</button>
+        <button class="btn-copy" onclick="gerarLinkAudio()">🔗 Gerar link de áudio</button>
         <button class="btn-copy" onclick="downloadAdaptacaoWord()">📝 Baixar Word</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
         <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
       </div>
+      <div class="link-audio-box" style="display:none;margin-top:12px;padding:12px;background:#F0F4FF;border:1px solid #C7D7FA;border-radius:10px"></div>
     </div>
 
     <div class="fcard" id="ap-img-painel" style="display:none;margin-top:16px">
@@ -13167,11 +13225,13 @@ function renderPagesClinica() {
         <button class="btn-copy" onclick="copiarAdapt()">Copiar texto</button>
         <button class="btn-copy" onclick="downloadAdaptacaoPDF()">Baixar PDF</button>
         <button class="btn-copy" id="btn-ouvir-result-text" onclick="ouvirAtividade('result-text')">🔊 Ouvir atividade</button>
+        <button class="btn-copy" onclick="gerarLinkAudio()">🔗 Gerar link de áudio</button>
         <button class="btn-copy" onclick="downloadAdaptacaoWord()">📝 Baixar Word</button>
         <button class="btn-copy" onclick="baixarFolhaRegistro()">📋 Folha de Registro</button>
 
         <button class="btn-copy" onclick="detectarItensImagem()">🖼️ Detectar imagens da atividade</button>
       </div>
+      <div class="link-audio-box" style="display:none;margin-top:12px;padding:12px;background:#F0F4FF;border:1px solid #C7D7FA;border-radius:10px"></div>
       <div style="margin-top:18px;border-top:1px solid var(--gr100);padding-top:14px">
         <div class="clinic-card-title" style="margin-bottom:8px">Registrar retorno</div>
         <p class="page-sub" style="margin:0 0 10px">Depois de aplicar a atividade com o paciente, registre o resultado. Isso entra automaticamente no histórico de Monitoramento.</p>
@@ -15475,18 +15535,8 @@ function downloadAdaptacaoWord() {
 }
 
 let _speechAtual = null;
-function ouvirAtividade(elId) {
-  if (!('speechSynthesis' in window)) return toast('Seu navegador n\u00e3o suporta leitura em voz alta.', 'error');
-  const btn = document.getElementById('btn-ouvir-' + elId);
-  if (_speechAtual) {
-    window.speechSynthesis.cancel();
-    _speechAtual = null;
-    if (btn) btn.textContent = '\ud83d\udd0a Ouvir atividade';
-    return;
-  }
-  const el = document.getElementById(elId);
-  let texto = (el?.value !== undefined ? el.value : el?.textContent) || '';
-  texto = texto
+function limparTextoParaAudio(texto) {
+  return (texto || '')
     .replace(/\[IMAGEM:[^\]]*\]/gi, '')
     .replace(/\[BANNER:[^\]]*\]/gi, '')
     .replace(/\[\/?CAIXA\]/gi, '')
@@ -15498,6 +15548,18 @@ function ouvirAtividade(elId) {
     .replace(/_{2,}/g, '')
     .replace(/\(\s?\)/g, '')
     .trim();
+}
+function ouvirAtividade(elId) {
+  if (!('speechSynthesis' in window)) return toast('Seu navegador n\u00e3o suporta leitura em voz alta.', 'error');
+  const btn = document.getElementById('btn-ouvir-' + elId);
+  if (_speechAtual) {
+    window.speechSynthesis.cancel();
+    _speechAtual = null;
+    if (btn) btn.textContent = '\ud83d\udd0a Ouvir atividade';
+    return;
+  }
+  const el = document.getElementById(elId);
+  const texto = limparTextoParaAudio(el?.value !== undefined ? el.value : el?.textContent);
   if (!texto) return toast('Nada para ler ainda.', 'error');
   const utter = new SpeechSynthesisUtterance(texto);
   utter.lang = 'pt-BR';
@@ -15506,6 +15568,35 @@ function ouvirAtividade(elId) {
   window.speechSynthesis.speak(utter);
   _speechAtual = utter;
   if (btn) btn.textContent = '\u23f9\ufe0f Parar leitura';
+}
+
+async function gerarLinkAudio() {
+  if (!ultimaAdapt) return toast('Gere uma adapta\u00e7\u00e3o primeiro.', 'error');
+  const texto = limparTextoParaAudio(document.getElementById('result-text')?.value || ultimaAdapt);
+  if (!texto) return toast('Nada para gerar link de \u00e1udio.', 'error');
+  const { data, error } = await db.from('links_audio').insert({
+    aluno_nome: dadosUltima.aluno || null,
+    texto,
+    adaptacao_id: dadosUltima.adaptacaoId || null,
+    created_by: user.id
+  }).select('id').single();
+  if (error || !data) return toast('Erro ao gerar link: ' + (error?.message || ''), 'error');
+  const url = window.location.origin + window.location.pathname + '?audio=' + data.id;
+  window._ultimoLinkAudio = { adaptacaoId: dadosUltima.adaptacaoId || null, url };
+  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(url);
+  document.querySelectorAll('.link-audio-box').forEach(box => {
+    box.style.display = 'block';
+    box.innerHTML = `
+      <div style="font-size:12.5px;font-weight:600;color:#1E3A8A;margin-bottom:8px">\ud83d\udd17 Link de \u00e1udio gerado \u2014 envie ao aluno/fam\u00edlia (sem precisar de login):</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <img src="${qrUrl}" width="90" height="90" style="border-radius:8px;border:1px solid #E2E8F0">
+        <div style="flex:1;min-width:200px">
+          <input readonly value="${url}" style="width:100%;padding:6px 8px;font-size:12px;border:1px solid #E2E8F0;border-radius:6px;box-sizing:border-box" onclick="this.select()">
+          <button class="btn-copy" style="margin-top:6px" onclick="navigator.clipboard.writeText('${url}');toast('Link copiado!','success')">Copiar link</button>
+        </div>
+      </div>
+      <p style="font-size:11.5px;color:#6B7280;margin:8px 0 0">O QR code tamb\u00e9m ser\u00e1 inclu\u00eddo no PDF \u2014 baixe o PDF de novo para gerar com ele.</p>`;
+  });
 }
 
 async function salvarImagensAdaptacao(adaptacaoId, itensComImagem) {
@@ -15566,6 +15657,14 @@ async function downloadAdaptacaoPDF() {
     else toast('Aviso: esta adaptação ainda não foi salva no histórico — as imagens não puderam ser guardadas permanentemente.', 'error');
   }
 
+  let folhaComAudio = folhaAluno;
+  if (window._ultimoLinkAudio && window._ultimoLinkAudio.adaptacaoId && dadosUltima.adaptacaoId && window._ultimoLinkAudio.adaptacaoId === dadosUltima.adaptacaoId) {
+    try {
+      imagensPorItem['qr-audio'] = await imagemParaBase64('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window._ultimoLinkAudio.url));
+      folhaComAudio += '\n\n[BANNER: OUÇA ESTA ATIVIDADE]\n[IMAGEM: qr-audio]\nOu acesse: ' + window._ultimoLinkAudio.url;
+    } catch(e) { console.warn('Falha ao gerar QR no PDF', e); }
+  }
+
   // Gerar PDF da folha do aluno
   gerarPDFDocumento({
     tipo: 'ATIVIDADE ADAPTADA',
@@ -15573,7 +15672,7 @@ async function downloadAdaptacaoPDF() {
     subtitulo: materia + (dadosUltima.tipoAtiv ? ' — ' + dadosUltima.tipoAtiv.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '') + (dadosUltima.bnccCodigos?.length ? ' — BNCC ' + dadosUltima.bnccCodigos.join(', ') : ''),
     aluno: nomeAluno,
     professor: profNome,
-    conteudo: folhaAluno + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
+    conteudo: folhaComAudio + (incluiGuia && guiaProf ? '\n\n\n---USO EXCLUSIVO DO PROFESSOR---\n\n' + guiaProf : ''),
     nomeArquivo: 'Adaptacao_' + nomeAluno.replace(/\s+/g,'_') + '_' + materia.replace(/\s+/g,'_') + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g,'-'),
     isAtividade: true,
     guiaProf: incluiGuia ? guiaProf : null,
