@@ -16299,7 +16299,22 @@ function filtrarHistorico() {
   const grid = document.getElementById('hist-grid');
   if (!grid) return;
   if (!res.length) { grid.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhuma adaptação encontrada.</div></div>`; return; }
-  grid.innerHTML = res.map(r => cardAdaptacao(r)).join('');
+  const grupos = {};
+  res.forEach(r => {
+    const nome = r.aluno || r.aluno_nome || '(sem nome)';
+    (grupos[nome] = grupos[nome] || []).push(r);
+  });
+  const nomesOrdenados = Object.keys(grupos).sort((a,b) => a.localeCompare(b, 'pt-BR'));
+  grid.innerHTML = nomesOrdenados.map(nome => {
+    const itens = grupos[nome].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    return `<div style="grid-column:1/-1;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--gr100)">
+        <span style="font-size:14px;font-weight:700;color:var(--gr800)">${nome}</span>
+        <span style="font-size:11.5px;color:var(--gr400);background:var(--gr50);padding:2px 8px;border-radius:999px">${itens.length}</span>
+      </div>
+      <div class="cards-grid">${itens.map(r => cardAdaptacao(r)).join('')}</div>
+    </div>`;
+  }).join('');
 }
 
 function cardAdaptacao(r, gestao=false) {
