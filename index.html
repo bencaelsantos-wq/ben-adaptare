@@ -5907,6 +5907,24 @@ async function duplicarEAdaptar(id) {
   toast('Formulário pré-preenchido com o mesmo padrão. Só falta a matéria e o novo conteúdo.', 'success');
 }
 
+async function gerarSugestaoPadraoFalhas() {
+  const ctx = window._praticasFalhaAtual;
+  if (!ctx) return;
+  const box = document.getElementById('prat-sugestao-falhas-box');
+  if (box) { box.style.display = 'block'; box.textContent = 'A Lou está analisando…'; }
+  const resumo = ctx.itensFalha.map(t => `- ${t.tipoLabel} de ${t.materia || t.tema || '(sem matéria informada)'}${t.tema && t.materia ? ' — ' + t.tema : ''}: ${t.nota ? t.nota : 'sem nota registrada pelo profissional'}`).join('\n');
+  const prompt = `Você é uma especialista em adaptação pedagógica e inclusão escolar. O aluno ${ctx.nomeAluno} teve as seguintes atividades adaptadas marcadas pelo profissional como "não funcionou":
+${resumo}
+
+Com base nesse padrão (mesmo sem o conteúdo exato de cada atividade), dê no máximo 4 sugestões curtas, objetivas e práticas do que mudar na PRÓXIMA adaptação para este aluno, pra reduzir a chance de repetir os mesmos motivos de insucesso. Cada sugestão em 1-2 frases, direto ao ponto, sem enrolação. Se não houver nota registrada em nenhuma tentativa, diga isso e sugira também registrar uma nota rápida ao marcar o resultado, pra próximas análises serem mais precisas.`;
+  try {
+    const texto = await chamarClaude({ prompt, maxTokens: 500, modulo: 'sugestao-padrao-falhas' });
+    if (box) box.textContent = texto;
+  } catch(e) {
+    if (box) box.textContent = 'Erro ao gerar sugestão: ' + e.message;
+  }
+}
+
 async function carregarPraticasAluno() {
   const id = document.getElementById('prat-aluno-sel')?.value;
   const body = document.getElementById('prat-body');
@@ -5932,6 +5950,19 @@ async function carregarPraticasAluno() {
   const avalMap = {};
   (avals||[]).forEach(av => { avalMap[`${av.tabela_origem}_${av.registro_id}`] = av; });
 
+  const itensFalha = itens.filter(it => avalMap[`${it.tipo}_${it.id}`]?.status === 'nao_funcionou');
+  window._praticasFalhaAtual = {
+    alunoId: id,
+    nomeAluno: document.getElementById('prat-aluno-sel')?.selectedOptions[0]?.text || 'este aluno',
+    itensFalha: itensFalha.map(it => ({ tipoLabel: it.tipoLabel, materia: it.materia, tema: it.tema, nota: avalMap[`${it.tipo}_${it.id}`]?.nota_rapida || '' }))
+  };
+  const bannerFalhas = itensFalha.length >= 2 ? `
+    <div class="info-banner" style="background:#FEF2F2;border-color:#FCA5A5;color:#7F1D1D;margin-bottom:14px">
+      <strong>⚠️ A Lou notou um padrão:</strong> ${itensFalha.length} tentativas marcadas como "não funcionou" para este aluno.
+      <button class="btn-copy" style="margin-left:8px;font-size:11.5px;padding:3px 10px" onclick="gerarSugestaoPadraoFalhas()">Ver sugestões antes da próxima atividade</button>
+      <div id="prat-sugestao-falhas-box" style="display:none;margin-top:8px;padding:10px;background:#fff;border-radius:8px;font-size:12.5px;color:#374151;white-space:pre-wrap"></div>
+    </div>` : '';
+
   const CORES_STATUS = {
     funcionou: { cor: '#059669', bg: '#D1FAE5', label: '✔ Funcionou bem' },
     parcial: { cor: '#D97706', bg: '#FEF3C7', label: '⚠ Funcionou parcialmente' },
@@ -5943,7 +5974,7 @@ async function carregarPraticasAluno() {
     <span><span style="color:#DC2626;font-weight:700">●</span> Não funcionou — precisa de nova abordagem</span>
   </div>`;
 
-  body.innerHTML = legenda + itens.map(it => {
+  body.innerHTML = legenda + bannerFalhas + itens.map(it => {
     const av = avalMap[`${it.tipo}_${it.id}`];
     const st = av ? CORES_STATUS[av.status || 'funcionou'] : null;
     const boxId = `conteudo-${it.tipo}-${it.id}`;
