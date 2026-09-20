@@ -3479,6 +3479,11 @@ const _initHash = new URLSearchParams(window.location.hash.replace(/^#/,''));
 const _isInviteOrRecovery = _initHash.get('type') === 'invite' || _initHash.get('type') === 'recovery';
 
 const db = supabase.createClient(SB_URL, SB_KEY);
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 const dbAnon = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-loumind-anon' } });
 
 // ── DADOS GLOBAIS ────────────────────────────────────────────
@@ -6123,10 +6128,10 @@ async function carregarPraticasAluno() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div>
           <div style="font-size:11.5px;font-weight:700;color:var(--gr500);text-transform:uppercase">${it.tipoLabel}</div>
-          <div style="font-size:13.5px;font-weight:600;color:var(--gr800);margin-top:2px">${it.materia||''} ${it.tema ? '— ' + it.tema : ''}</div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--gr800);margin-top:2px">${escapeHtml(it.materia)} ${it.tema ? '— ' + escapeHtml(it.tema) : ''}</div>
           <div class="rel-meta" style="margin-top:3px">${new Date(it.created_at).toLocaleDateString('pt-BR')}</div>
           ${st ? `<div style="font-size:11.5px;font-weight:600;color:${st.cor};margin-top:5px">${st.label}</div>` : ''}
-          ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
+          ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Nota:</strong> ${escapeHtml(av.nota_rapida)}</div>` : ''}
           <button class="btn-copy" style="margin-top:8px;font-size:11.5px;padding:4px 10px" onclick="verConteudoPratica('${it.tipo}','${it.id}','${boxId}')">Ver conteúdo completo</button>
           ${it.tipo === 'adaptacoes' ? `<button class="btn-copy" style="margin-top:8px;margin-left:6px;font-size:11.5px;padding:4px 10px" onclick="baixarPDFAdaptacaoSalva('${it.id}')">Baixar PDF</button>` : ''}
           ${it.tipo === 'adaptacoes' ? `<button class="btn-copy" style="margin-top:8px;margin-left:6px;font-size:11.5px;padding:4px 10px" onclick="duplicarEAdaptar('${it.id}')">🔁 Gerar parecida</button>` : ''}
@@ -6252,7 +6257,7 @@ async function carregarPraticasClinica() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div>
           <div style="font-size:11.5px;font-weight:700;color:var(--gr500);text-transform:uppercase">${it.tipoLabel}</div>
-          <div style="font-size:13.5px;font-weight:600;color:var(--gr800);margin-top:2px">${it.titulo||''} ${LABELS_AREA[it.area] ? '— ' + LABELS_AREA[it.area] : ''}</div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--gr800);margin-top:2px">${escapeHtml(it.titulo)} ${LABELS_AREA[it.area] ? '— ' + LABELS_AREA[it.area] : ''}</div>
           <div class="rel-meta" style="margin-top:3px">${new Date(it.created_at).toLocaleDateString('pt-BR')}</div>
           ${st ? `<div style="font-size:11.5px;font-weight:600;color:${st.cor};margin-top:5px">${st.label}</div>` : ''}
           ${av?.nota_rapida ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Nota:</strong> ${av.nota_rapida}</div>` : ''}
@@ -6851,12 +6856,12 @@ async function carregarDiarioFamilia() {
     const origem = origemLabel[d.origem] || d.origem || '';
     return `<div class="item-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="font-size:13px;font-weight:700;color:#1E3A8A">${icon} ${d.tipo||''}</span>
+        <span style="font-size:13px;font-weight:700;color:#1E3A8A">${icon} ${escapeHtml(d.tipo)}</span>
         <span style="font-size:11px;color:#9CA3AF">${dt}</span>
       </div>
-      ${d.area ? `<div style="font-size:11px;color:#7C3AED;font-weight:600;margin-bottom:4px">${d.area}</div>` : ''}
-      <div style="font-size:13px;color:#374151;line-height:1.6">${d.texto||''}</div>
-      ${origem ? `<div style="margin-top:8px;font-size:11px;color:#9CA3AF">${origem}${d.autor_nome ? ' · '+d.autor_nome : ''}</div>` : ''}
+      ${d.area ? `<div style="font-size:11px;color:#7C3AED;font-weight:600;margin-bottom:4px">${escapeHtml(d.area)}</div>` : ''}
+      <div style="font-size:13px;color:#374151;line-height:1.6">${escapeHtml(d.texto)}</div>
+      ${origem ? `<div style="margin-top:8px;font-size:11px;color:#9CA3AF">${escapeHtml(origem)}${d.autor_nome ? ' · '+escapeHtml(d.autor_nome) : ''}</div>` : ''}
     </div>`;
   };
 
@@ -6886,8 +6891,8 @@ async function carregarConquistasFamilia() {
         const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
         return `<div class="item-card" style="border-left:3px solid #10B981">
           <div style="font-size:20px;margin-bottom:6px">✅</div>
-          <div style="font-size:14px;font-weight:700;color:#1E3A8A;margin-bottom:4px">${d.aluno_nome||''}</div>
-          <div style="font-size:13px;color:#374151;line-height:1.6">${d.texto||''}</div>
+          <div style="font-size:14px;font-weight:700;color:#1E3A8A;margin-bottom:4px">${escapeHtml(d.aluno_nome)}</div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">${escapeHtml(d.texto)}</div>
           <div style="margin-top:8px;font-size:11px;color:#9CA3AF">${dt}</div>
         </div>`;
       }).join('');
@@ -6907,7 +6912,7 @@ function filtrarDiarioFamilia() {
     ? '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum registro encontrado.</div></div>'
     : filtrado.map(d => {
         const dt = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '';
-        return `<div class="item-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;color:#1E3A8A">${tipoIcon[d.tipo]||'📝'} ${d.tipo||''}</span><span style="font-size:11px;color:#9CA3AF">${dt}</span></div><div style="font-size:13px;color:#374151;line-height:1.6">${d.texto||''}</div></div>`;
+        return `<div class="item-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;color:#1E3A8A">${tipoIcon[d.tipo]||'📝'} ${escapeHtml(d.tipo)}</span><span style="font-size:11px;color:#9CA3AF">${dt}</span></div><div style="font-size:13px;color:#374151;line-height:1.6">${escapeHtml(d.texto)}</div></div>`;
       }).join('');
 }
 
@@ -16562,10 +16567,10 @@ function cardAdaptacao(r, gestao=false) {
   const meta = [r.idade, r.serie, r.materia].filter(Boolean).join(' · ');
   const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '';
   return `<div class="item-card" onclick='abrirModalAdapt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
-    <div class="ic-nome">${r.aluno||r.aluno_nome||'(sem nome)'}</div>
-    <div class="ic-meta">${meta}</div>
+    <div class="ic-nome">${escapeHtml(r.aluno||r.aluno_nome)||'(sem nome)'}</div>
+    <div class="ic-meta">${escapeHtml(meta)}</div>
     <div class="ic-tags">${tags}</div>
-    <div class="ic-prev">${(r.texto||'').slice(0,100)}…</div>
+    <div class="ic-prev">${escapeHtml((r.texto||'').slice(0,100))}…</div>
     <div class="ic-date">${dt}</div>
     <button class="btn-sm" style="margin-top:8px" onclick='event.stopPropagation();abrirModalRegistroAtividadeDe(${JSON.stringify(r).replace(/'/g,"&#39;")})'>💾 Registrar Observação</button>
   </div>`;
@@ -18471,8 +18476,8 @@ function renderAlunosLista() {
       <div class="ic-header">
         ${avatar}
         <div class="ic-info">
-          <div class="ic-nome">${a.nome}</div>
-          <div class="ic-meta">${meta}</div>
+          <div class="ic-nome">${escapeHtml(a.nome)}</div>
+          <div class="ic-meta">${escapeHtml(meta)}</div>
         </div>
       </div>
       <div class="ic-tags">${tags}</div>
@@ -20586,12 +20591,12 @@ function renderPerfisClinicaGrid() {
   }
   grid.innerHTML = perfisClinicaList.map(p => `
     <div class="clinic-card" style="cursor:pointer" onclick='abrirPerfilClinico(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
-      <div class="clinic-card-title">🧠 ${p.nome} <span style="font-size:11px;font-weight:400;color:var(--gr400)">${p.idade||''}</span></div>
-      <div style="font-size:12.5px;color:var(--clinic);font-weight:500;margin-bottom:6px">${p.diagnostico||'Sem diagnóstico registrado'}</div>
+      <div class="clinic-card-title">🧠 ${escapeHtml(p.nome)} <span style="font-size:11px;font-weight:400;color:var(--gr400)">${escapeHtml(p.idade)}</span></div>
+      <div style="font-size:12.5px;color:var(--clinic);font-weight:500;margin-bottom:6px">${escapeHtml(p.diagnostico) || 'Sem diagnóstico registrado'}</div>
       <div style="font-size:12px;color:var(--gr400);line-height:1.5">
-        🗣️ ${p.comunicacao||'—'} &nbsp;|&nbsp; 🌀 ${p.sensorio||'—'} &nbsp;|&nbsp; 💢 ${p.regulacao||'—'}
+        🗣️ ${escapeHtml(p.comunicacao) || '—'} &nbsp;|&nbsp; 🌀 ${escapeHtml(p.sensorio) || '—'} &nbsp;|&nbsp; 💢 ${escapeHtml(p.regulacao) || '—'}
       </div>
-      ${p.preservadas ? `<div style="margin-top:8px;font-size:12px;color:var(--gr600)">✅ <strong>Preservadas:</strong> ${p.preservadas.slice(0,80)}${p.preservadas.length>80?'…':''}</div>` : ''}
+      ${p.preservadas ? `<div style="margin-top:8px;font-size:12px;color:var(--gr600)">✅ <strong>Preservadas:</strong> ${escapeHtml(p.preservadas.slice(0,80))}${p.preservadas.length>80?'…':''}</div>` : ''}
       <button class="btn-sm" style="margin-top:10px" onclick='event.stopPropagation();abrirPerfilClinicoView(${JSON.stringify(p).replace(/'/g,"&#39;")})'>👁️ Ver perfil</button>
     </div>`).join('');
 }
