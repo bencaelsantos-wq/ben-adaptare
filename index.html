@@ -4666,7 +4666,7 @@ function renderNavClinica() {
     <div class="nav-item clinic-item" id="nav-clinica-pratica-guiada" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Prática Guiada')" : "showPage('clinica-pratica-guiada')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 10l1.5 1.5L13 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Prática Guiada${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-clinica-pdi" onclick="${!temAddon('pdi') ? "acessarRecursoPremium('PDI')" : "showPage('pdi')"}">
+    <div class="nav-item clinic-item" id="nav-clinica-pdi" onclick="${!temAddon('pdi') ? "acessarRecursoPremium('PDI')" : "showPage('pdi');popularPDISel()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.5 1.8-4 4-4h6c2.2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 10v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>PDI${!temAddon('pdi') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-analise-comp-clinica" onclick="abrirAnaliseComportamental()">
@@ -9426,6 +9426,11 @@ function confirmarCienciaIA() {
 }
 
 // ── ANÁLISE E ESTRATÉGIAS (equipe clínica — plano Singular) ───────────────────
+function listaPacientesAtual() {
+  const papeisClinicos = ['clinica', 'gestao-clinica', 'at'];
+  return papeisClinicos.includes(userRole) ? (perfisClinicaList || []) : (alunosCad || []);
+}
+
 function abrirAnaliseComportamental() {
   if (!temAddon('analise')) {
     return acessarRecursoPremium('Análise e Estratégias');
@@ -9435,7 +9440,7 @@ function abrirAnaliseComportamental() {
     const sel = document.getElementById('ac-aluno-sel');
     if (sel) {
       sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
-        (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+        listaPacientesAtual().map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
     }
     carregarAnalisesComportamentais();
   });
@@ -9449,7 +9454,7 @@ function abrirLinhaDoTempoLaudos() {
   const sel = document.getElementById('lt-aluno-sel');
   if (sel) {
     sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
-      (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+      listaPacientesAtual().map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
   }
   carregarLinhasDoTempo();
 }
@@ -13936,6 +13941,237 @@ function renderPagesClinica() {
       <div class="cards-grid" id="dc-lista-salvas"></div>
     </div>
   </div>
+
+  <div id="page-analise-comp" class="page">
+    <h1 class="page-title">Análise e Estratégias Pedagógicas</h1>
+    <p class="page-sub">Organiza observações do dia a dia em estratégias individualizadas, respeitando o ritmo e as potencialidades do aluno. Não substitui avaliação formal.</p>
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 12px;margin:8px 0 12px;font-size:12.5px;color:#1E3A8A"><strong>Diferença:</strong> parte das suas próprias observações em sala. Já o <strong>Apoio Pedagógico</strong> gera orientações prontas a partir do que a equipe clínica já orientou para o aluno.</div>
+    <div class="pei-legal"><strong>Importante:</strong> esta ferramenta não emite diagnóstico. Todo conteúdo gerado deve ser validado por profissional habilitado (psicólogo, neuropsicólogo, psiquiatra ou médico) antes de qualquer comunicação à família.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios (obrigatório)</div><div class="pei-step-sub">Sem este documento a análise não pode ser gerada — a leitura da equipe clínica já em curso precisa ser respeitada, nunca contornada</div></div></div>
+      <button type="button" class="btn-copy" onclick="document.getElementById('ac-inp-laudo').click()">📎 Anexar PDF ou Word</button>
+      <input type="file" id="ac-inp-laudo" accept=".pdf,.doc,.docx" style="display:none" onchange="processarLaudoAnalise(this)">
+      <div id="ac-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+      <textarea id="ac-laudo-texto" class="ftarea sm" style="margin-top:10px" placeholder="Texto extraído do laudo aparecerá aqui — você pode editar ou colar diretamente"></textarea>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação (opcional)</div><div class="pei-step-sub">Vincule a um aluno já cadastrado para salvar no histórico dele, ou digite o nome manualmente</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-aluno-sel">Aluno cadastrado</label>
+        <select id="ac-aluno-sel" class="fselect" onchange="document.getElementById('ac-aluno').value = listaPacientesAtual().find(a=>a.id===this.value)?.nome || document.getElementById('ac-aluno').value"><option value="">Nenhum — digitar manualmente abaixo</option></select>
+      </div>
+      <div class="fblock"><label class="flabel" for="ac-aluno">Nome do aluno/paciente</label><input type="text" id="ac-aluno" class="finput" placeholder="Ex: João Pedro"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Relato da situação observada</div><div class="pei-step-sub">Descreva livremente — quanto mais detalhado, melhor a análise</div></div></div>
+      <div class="fblock"><label class="flabel" for="ac-relato">O que foi observado (comportamento, frequência, duração)</label><textarea id="ac-relato" class="ftarea" style="min-height:140px" placeholder="Ex: Nas últimas 3 semanas, durante a transição do recreio para a sala, a criança grita e se joga no chão por cerca de 2 minutos, cerca de 3x por semana..."></textarea></div>
+      <div class="frow">
+        <div><label class="flabel" for="ac-gatilho">Contexto/gatilho identificado</label><textarea id="ac-gatilho" class="ftarea sm" placeholder="Ex: sempre após atividades com muito ruído; quando é solicitado a parar uma atividade preferida..."></textarea></div>
+        <div><label class="flabel" for="ac-tentativas">O que já foi tentado</label><textarea id="ac-tentativas" class="ftarea sm" placeholder="Ex: aviso antecipado de 5 min antes da transição; uso de timer visual..."></textarea></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ac-instrumentos">Instrumentos já aplicados (se houver)</label><textarea id="ac-instrumentos" class="ftarea sm" placeholder="Ex: M-CHAT aplicado em [data], escore X; escala Vineland..."></textarea></div>
+    </div>
+
+    <button class="btn-gerar" id="ac-btn-gerar" onclick="gerarAnaliseComportamental()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar análise com a Lou
+    </button>
+
+    <div class="result-card show" id="ac-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Relatório gerado</h3>
+      <div id="ac-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copiarAdapt('ac-resultado-texto')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFAnaliseComp()">Baixar PDF</button>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Análises salvas</h3>
+      <div class="cards-grid" id="ac-lista-salvas"></div>
+    </div>
+  </div>
+
+  <div id="page-linha-laudos" class="page">
+    <h1 class="page-title">Linha do Tempo de Laudos e Avaliações</h1>
+    <p class="page-sub">Consolida vários laudos, relatórios médicos e avaliações ao longo do tempo em um resumo único, com linha do tempo por fonte e data. Traduz o impacto no aprendizado para a equipe pedagógica, e mantém o resumo fiel para a equipe clínica.</p>
+    <div class="pei-legal"><strong>Importante:</strong> este resumo é compilado a partir dos documentos anexados. Consulte sempre os laudos originais para fins legais ou formais.</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Identificação</div><div class="pei-step-sub">Vincule a um aluno já cadastrado para salvar no histórico dele, ou digite o nome manualmente</div></div></div>
+      <div class="fblock"><label class="flabel" for="lt-aluno-sel">Aluno cadastrado</label>
+        <select id="lt-aluno-sel" class="fselect" onchange="document.getElementById('lt-aluno').value = listaPacientesAtual().find(a=>a.id===this.value)?.nome || document.getElementById('lt-aluno').value"><option value="">Nenhum — digitar manualmente abaixo</option></select>
+      </div>
+      <div class="fblock"><label class="flabel" for="lt-aluno">Nome do aluno/paciente</label><input type="text" id="lt-aluno" class="finput" placeholder="Ex: João Pedro"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Laudos e relatórios</div><div class="pei-step-sub">Anexe quantos documentos precisar — PDF ou Word. Cada um é adicionado ao texto abaixo</div></div></div>
+      <button type="button" class="btn-copy" onclick="document.getElementById('lt-inp-laudos').click()">📎 Anexar PDF ou Word</button>
+      <input type="file" id="lt-inp-laudos" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="processarLaudosMultiplos(this)">
+      <div id="lt-laudo-status" style="display:none;margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+      <textarea id="lt-laudo-texto" class="ftarea" style="margin-top:10px;min-height:180px" placeholder="Texto extraído de cada laudo aparecerá aqui, separado por documento — você pode editar ou colar diretamente"></textarea>
+    </div>
+
+    <button class="btn-gerar" id="lt-btn-gerar" onclick="gerarLinhaDoTempoLaudos()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar linha do tempo com a Lou
+    </button>
+
+    <div class="result-card show" id="lt-resultado-box" style="display:none;margin-top:20px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Resumo gerado</h3>
+      <div id="lt-resultado-texto" style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;color:var(--gr800)"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copiarAdapt('lt-resultado-texto')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFLinhaDoTempo()">Baixar PDF</button>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Linhas do tempo salvas</h3>
+      <div class="cards-grid" id="lt-lista-salvas"></div>
+    </div>
+  </div>
+
+  <div id="page-ponte-tradutor" class="page">
+    <div class="bridge-hero">
+      <h2> Tradutor de Linguagem Clínica ↔ Pedagógica</h2>
+      <p>Cole um trecho de laudo, relatório clínico ou objetivo pedagógico. A IA traduz para a linguagem do outro lado — sem perder o significado técnico.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="bridge-tab active" id="ttab-c2p" onclick="setTradutorDir('c2p')"> Clínico → Pedagógico</button>
+      <button class="bridge-tab" id="ttab-p2c" onclick="setTradutorDir('p2c')"> Pedagógico → Clínico</button>
+    </div>
+    <div class="tradutor-box">
+      <div class="tradutor-panel">
+        <div class="tradutor-label" id="trad-label-in">Texto clínico (laudo, relatório)</div>
+        <textarea class="tradutor-textarea" id="trad-input" placeholder="Cole aqui o texto do laudo, avaliação clínica ou relatório terapêutico…&#10;&#10;Ex: 'O paciente apresenta disfunção na integração sensorial com predomínio de hiperresponsividade tátil e auditiva, comprometendo as funções executivas de planejamento e sequenciamento motor, com impacto nas praxias ideomotoras.'"></textarea>
+        <button class="btn-sm" id="btn-traduzir" style="width:100%;justify-content:center" onclick="traduzirTexto()">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style="flex-shrink:0"><path d="M5 5h4M5 8h3M13 6c0 2-1.5 3.5-3 4M13 6c1 2 2.5 3.5 4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Traduzir com IA
+        </button>
+      </div>
+      <div class="tradutor-panel">
+        <div class="tradutor-label" id="trad-label-out">Tradução pedagógica — o que isso significa na sala de aula</div>
+        <div class="tradutor-result" id="trad-output">A tradução aparecerá aqui…</div>
+        <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('trad-output').textContent);toast('Copiado!','success')" id="btn-copiar-trad" style="width:100%;text-align:center">Copiar tradução</button>
+      </div>
+    </div>
+    <div class="gen-box" id="gen-trad-box" style="margin-top:12px;background:var(--bridge-light);border-color:var(--bridge-mid)">
+      <div class="spin" style="border-top-color:var(--bridge)"></div>
+      <span>Traduzindo com IA…</span>
+    </div>
+    <!-- Exemplos rápidos -->
+    <div style="margin-top:20px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gr400);margin-bottom:10px">Exemplos rápidos — clique para carregar</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px" id="trad-exemplos"></div>
+    </div>
+  </div>
+
+  <div id="page-pdi" class="page">
+    <h1 class="page-title">PDI — Plano de Desenvolvimento Individual</h1>
+    <p class="page-sub">Instrumento multiprofissional vinculado ao aluno — LDB art. 59 · LBI art. 28 · Decreto nº 12.686/2025</p>
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 12px;margin:8px 0 12px;font-size:12.5px;color:#1E3A8A"><strong>PEI x PDI x PAEE:</strong> o PDI integra metas pedagógicas e terapêuticas entre escola, clínica e família. O PEI é o plano pedagógico da sala regular. O PAEE é o plano específico da Sala de Recursos/AEE (contraturno).</div>
+    <div class="pei-legal"><strong>Base legal:</strong> O PDI deve ser construído de forma colaborativa entre professor da sala regular, equipe clínica, AT e família. Contempla objetivos pedagógicos e terapêuticos integrados, com metas de curto e longo prazo e revisão periódica obrigatória (LBI, art. 28 · Decreto nº 12.686/2025).</div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Selecione o aluno</div><div class="pei-step-sub">O PDI será elaborado com base nos dados já cadastrados</div></div></div>
+      <div class="fblock"><label class="flabel" for="pdi-aluno-sel">Aluno</label>
+        <select id="pdi-aluno-sel" class="fselect" onchange="carregarDadosPDI()"><option value="">Selecione um aluno cadastrado</option></select>
+      </div>
+      <div id="pdi-aluno-info" style="display:none;margin-top:10px;padding:10px 12px;background:var(--blue-light);border-radius:var(--rsm);font-size:13px;color:var(--p-navy)"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Bloco pedagógico</div><div class="pei-step-sub">Preenchido pelo professor da sala regular</div></div></div>
+      <div class="fblock"><label class="flabel" for="pdi-perfil-ped">Perfil pedagógico atual</label><textarea id="pdi-perfil-ped" class="ftarea sm" placeholder="Ex: Aluno em processo de alfabetização, reconhece sílabas simples, interesse por atividades visuais e musicais…"></textarea></div>
+      <div class="frow">
+        <div><label class="flabel" for="pdi-habilidades">Habilidades presentes</label><textarea id="pdi-habilidades" class="ftarea sm" placeholder="Ex: Boa memória visual, interesse por ciências, habilidade musical…"></textarea></div>
+        <div><label class="flabel" for="pdi-areas-nec">Áreas de necessidade pedagógica</label><textarea id="pdi-areas-nec" class="ftarea sm" placeholder="Ex: Leitura e escrita, sequências matemáticas, permanência em atividade, regulação em grupo…"></textarea></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="pdi-obj-ped">Objetivos pedagógicos individualizados</label><textarea id="pdi-obj-ped" class="ftarea sm" placeholder="Ex: Reconhecer e escrever as letras do alfabeto; realizar adições simples com material concreto…"></textarea></div>
+      <div class="fblock">
+        <label class="flabel" id="label-pdi-estrat">Estratégias pedagógicas em sala</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;margin-bottom:6px" id="pdi-estrat-chips" role="group" aria-labelledby="label-pdi-estrat">
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-estrat-chips')">Rotina visual</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-estrat-chips')">Instruções em passos</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-estrat-chips')">Atividades segmentadas</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-estrat-chips')">Reforço positivo</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-estrat-chips')">Material concreto</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-estrat-chips')">Tempo extra</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-estrat-chips')">Pausas programadas</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-estrat-chips')">Antecipação de mudanças</button>
+        </div>
+        <label class="flabel" for="pdi-estrat-outras">Outras estratégias</label>
+        <textarea id="pdi-estrat-outras" class="ftarea sm" placeholder="Outras estratégias pedagógicas…"></textarea>
+      </div>
+      <div class="fblock"><label class="flabel" for="pdi-adapt-curr">Adaptações curriculares necessárias</label><textarea id="pdi-adapt-curr" class="ftarea sm" placeholder="Ex: Redução de quantidade de atividades; avaliação oral; prova com tempo estendido; conteúdo com apoio visual…"></textarea></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Bloco clínico</div><div class="pei-step-sub">Preenchido pela equipe terapêutica</div></div></div>
+      <div class="fblock"><label class="flabel" for="pdi-perfil-cli">Resumo do perfil clínico</label><textarea id="pdi-perfil-cli" class="ftarea sm" placeholder="Ex: Diagnóstico de TEA nível 1, comunicação verbal presente com dificuldades pragmáticas, hipersensibilidade auditiva…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="pdi-obj-ter">Objetivos terapêuticos</label><textarea id="pdi-obj-ter" class="ftarea sm" placeholder="Ex: Ampliar vocabulário funcional; desenvolver autorregulação; melhorar habilidades de interação social…"></textarea></div>
+      <div class="fblock"><label class="flabel" for="pdi-estrat-ter">Estratégias terapêuticas com impacto escolar</label><textarea id="pdi-estrat-ter" class="ftarea sm" placeholder="Ex: Pausas sensoriais de 5 min a cada 30 min; uso de fone em atividades coletivas; CAA para comunicação de necessidades…"></textarea></div>
+      <div class="fblock">
+        <label class="flabel" id="label-pdi-ta">Tecnologia assistiva indicada</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="pdi-ta-chips" role="group" aria-labelledby="label-pdi-ta">
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-ta-chips')">Prancha CAA</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-ta-chips')">Fone de abafamento</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-ta-chips')">Timer visual</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-ta-chips')">Tablet/app especializado</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-ta-chips')">Objeto de regulação</button>
+          <button type="button" class="chip" aria-pressed="false" onclick="toggleChipPEI(this,'pdi-ta-chips')">Mesa adaptada</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">4</div><div><div class="pei-step-title">Metas e responsáveis</div></div></div>
+      <div class="frow">
+        <div><label class="flabel" for="pdi-metas-curto">Metas de curto prazo (até 3 meses)</label><textarea id="pdi-metas-curto" class="ftarea sm" placeholder="Ex: Reconhecer 15 palavras funcionais; usar prancha CAA em 3 situações do dia escolar…"></textarea></div>
+        <div><label class="flabel" for="pdi-metas-longo">Metas de longo prazo (até 1 ano)</label><textarea id="pdi-metas-longo" class="ftarea sm" placeholder="Ex: Ler textos simples com apoio; participar de atividades coletivas com autonomia…"></textarea></div>
+      </div>
+      <div class="frow">
+        <div><label class="flabel" for="pdi-resp-ped">Responsável pedagógico</label><input type="text" id="pdi-resp-ped" class="finput" placeholder="Nome do professor responsável"></div>
+        <div><label class="flabel" for="pdi-resp-cli">Responsável clínico</label><input type="text" id="pdi-resp-cli" class="finput" placeholder="Nome do profissional clínico"></div>
+      </div>
+      <div class="frow">
+        <div><label class="flabel" for="pdi-resp-at">AT responsável</label><input type="text" id="pdi-resp-at" class="finput" placeholder="Nome do AT (se houver)"></div>
+        <div><label class="flabel" for="pdi-revisao">Próxima revisão do PDI</label><input type="date" id="pdi-revisao" class="finput"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="pdi-familia">Participação e orientação à família</label><textarea id="pdi-familia" class="ftarea sm" placeholder="Ex: Família orientada sobre metas e estratégias; reunião trimestral de acompanhamento; assinatura do PDI pelos responsáveis…"></textarea></div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn-gerar" id="btn-gerar-pdi" onclick="gerarPDI()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Gerar PDI completo com a Lou
+      </button>
+    </div>
+    <div class="gen-box" id="gen-pdi-box" style="margin-top:13px"><div class="spin"></div><span>IA elaborando o PDI…</span></div>
+
+    <div class="result-card" id="pdi-result-card">
+      <div class="result-header">
+        <div class="result-title">📋 PDI gerado pela IA</div>
+        <div class="result-badge" id="pdi-result-badge">—</div>
+      </div>
+      <div class="result-text" id="pdi-result-text"></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarPDI()">Salvar PDI</button>
+        <button class="btn-copy" onclick="copiarAdapt('pdi-result-text')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDIPDF()">Baixar PDF</button>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">PDIs salvos</h3>
+      <div class="cards-grid" id="pdi-lista"></div>
+    </div>
+  </div>
+
   `;
   carregarAlunosClinica();
 }
@@ -17093,7 +17329,7 @@ function popularPDISel() {
   const sel = document.getElementById('pdi-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    alunosCad.map(a=>`<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+    listaPacientesAtual().map(a=>`<option value="${a.id}">${a.nome}${a.serie ? ' — ' + a.serie : ''}</option>`).join('');
 }
 
 function renderPDILista() {
