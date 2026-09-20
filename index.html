@@ -3505,6 +3505,66 @@ const ESTRATEGIAS = {
   'Deficiência Múltipla':'Deficiência Múltipla: planejar com base no perfil específico, priorizar comunicação funcional, foco em vida independente e participação, equipe multiprofissional.'
 };
 
+async function gerarTriagemInicial() {
+  const nome = document.getElementById('tri-nome')?.value.trim() || 'o aluno';
+  const idade = document.getElementById('tri-idade')?.value || '';
+  const serie = document.getElementById('tri-serie')?.value.trim() || '';
+  const obsLivre = document.getElementById('tri-obs-livre')?.value.trim() || '';
+
+  const grupos = ['tri-chips-atencao','tri-chips-comunicacao','tri-chips-social','tri-chips-sensorial','tri-chips-emocional'];
+  const observacoes = grupos.flatMap(id => getChipsAtivos(id));
+
+  if (!observacoes.length && !obsLivre) return toast('Marque pelo menos uma observação ou descreva no campo livre.', 'error');
+
+  const btn = document.getElementById('btn-gerar-triagem');
+  btn.disabled = true;
+  document.getElementById('tri-gen-box').classList.add('show');
+  document.getElementById('tri-result-card').classList.remove('show');
+
+  const baseEstrategias = Object.values(ESTRATEGIAS).join('\n');
+
+  const prompt = `Você é uma equipe pedagógica especializada em educação inclusiva, fazendo uma TRIAGEM INICIAL — não um diagnóstico — de um aluno que ainda não tem nenhum laudo ou avaliação profissional.
+
+DADOS:
+Nome: ${nome} | Idade: ${idade} | Série: ${serie}
+
+Comportamentos observados pelo professor no dia a dia:
+${observacoes.map(o => '- ' + o).join('\n') || '(nenhum marcado)'}
+${obsLivre ? '\nOutras observações livres do professor:\n' + obsLivre : ''}
+
+BASE DE ESTRATÉGIAS DE REFERÊNCIA (use como inspiração de linguagem e vocabulário, sem se limitar só a isso):
+${baseEstrategias}
+
+REGRA ABSOLUTA E INEGOCIÁVEL: você NUNCA pode nomear um diagnóstico específico (nunca diga "isso é TEA", "isso é TDAH" etc.) nem afirmar certeza de qualquer condição. Você só pode falar em termos de "hipótese pedagógica de trabalho" e "possíveis perfis de apoio a considerar", sempre no plural e com linguagem de possibilidade ("pode se beneficiar de", "é comum em perfis que apresentam"), nunca "ele tem".
+
+Gere uma resposta curta e prática, neste formato:
+
+HIPÓTESE PEDAGÓGICA DE TRABALHO (não é diagnóstico):
+[1-2 frases descrevendo o padrão observado em termos funcionais, sem nomear transtorno]
+
+ESTRATÉGIAS SUGERIDAS PARA COMEÇAR JÁ:
+- [estratégia prática 1]
+- [estratégia prática 2]
+- [estratégia prática 3]
+- [estratégia prática 4]
+
+QUANDO BUSCAR AVALIAÇÃO PROFISSIONAL:
+[1 frase objetiva orientando o encaminhamento para avaliação especializada]
+
+Nunca use mais de 150 palavras no total.`;
+
+  try {
+    const texto = await chamarClaude({ prompt, maxTokens: 500, modulo: 'triagem-inicial' });
+    document.getElementById('tri-result-text').value = texto.trim();
+    document.getElementById('tri-result-card').classList.add('show');
+  } catch (e) {
+    toast('Erro ao gerar triagem: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('tri-gen-box').classList.remove('show');
+  }
+}
+
 function detectarTiposExercicio(conteudo) {
   const texto = (conteudo || '').toLowerCase();
   const tipos = [];
@@ -4298,6 +4358,9 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('historico')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
+    <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
+    </div>
     <div class="nav-item" id="nav-ciclo-trabalho" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Ciclo de Trabalho')" : "showPage('ciclo-trabalho');carregarAlunos()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 1 0 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.3l2 1-2 1z" fill="currentColor" stroke="none"/></svg>Ciclo de Trabalho${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -4373,6 +4436,9 @@ function renderNavCoordenacaoPedagogica() {
     </div>
     <div class="nav-item" id="nav-historico" onclick="showPage('historico')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico
+    </div>
+    <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial')">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
     <div class="nav-item" id="nav-estudo-caso" onclick="showPage('estudo-caso');carregarEstudosCaso()">
        <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso
@@ -11021,6 +11087,85 @@ function renderPages() {
       <select class="filter-sel" id="hist-fserie" onchange="filtrarHistorico()"><option value="">Todas as séries</option></select>
     </div>
     <div class="cards-grid" id="hist-grid"></div>
+  </div>
+
+  <!-- TRIAGEM INICIAL -->
+  <div id="page-triagem-inicial" class="page">
+    <h1 class="page-title">Triagem Inicial</h1>
+    <p class="page-sub">Ainda sem laudo? Descreva o que você observa do aluno no dia a dia — a IA sugere um ponto de partida pedagógico.</p>
+    <div class="info-banner" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E"><strong>Importante:</strong> isso é só uma hipótese pedagógica de partida, baseada na sua observação — nunca um diagnóstico. Nada aqui substitui avaliação profissional (psicológica, neuropsicológica, fonoaudiológica etc.).</div>
+
+    <div class="fcard">
+      <div class="fcard-title">Aluno observado</div>
+      <div class="frow">
+        <div><label class="flabel" for="tri-nome">Nome do aluno</label><input type="text" id="tri-nome" class="finput" placeholder="Ex: João Silva"></div>
+        <div><label class="flabel" for="tri-idade">Idade</label><select id="tri-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option></select></div>
+        <div><label class="flabel" for="tri-serie">Série</label><input type="text" id="tri-serie" class="finput" placeholder="Ex: 3º ano"></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">O que você observa no dia a dia (marque o que se aplica)</div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Atenção e concentração</div>
+      <div id="tri-chips-atencao" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Dificuldade de manter atenção por mais de 10 min</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Se distrai facilmente com estímulos do ambiente</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Foca intensamente em temas de interesse</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Esquece instruções dadas há pouco tempo</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Comunicação e linguagem</div>
+      <div id="tri-chips-comunicacao" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Fala pouco ou não fala</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Repete frases ou palavras (ecolalia)</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Dificuldade de iniciar conversas</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Entende bem mas expressa pouco</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Vocabulário muito avançado para a idade</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Interação social</div>
+      <div id="tri-chips-social" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Prefere brincar sozinho</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Dificuldade de entender regras sociais implícitas</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Pouco contato visual</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Busca contato social de forma atípica</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Sensorial e motor</div>
+      <div id="tri-chips-sensorial" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Incomoda-se muito com barulho ou luz</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Busca estímulos sensoriais intensos (balançar, girar)</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Sensibilidade tátil (texturas, roupas)</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Dificuldade de coordenação motora fina</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Movimentos repetitivos (mãos, corpo)</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Emocional e comportamental</div>
+      <div id="tri-chips-emocional" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Baixa tolerância à frustração</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Crises de choro ou birra frequentes</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Ansiedade diante de mudanças de rotina</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Tristeza ou desânimo frequente</button>
+      </div>
+
+      <div class="fblock" style="margin-top:14px">
+        <label class="flabel" for="tri-obs-livre">Outras observações (opcional)</label>
+        <textarea id="tri-obs-livre" class="ftarea sm" placeholder="Qualquer outro comportamento observado que não esteja nas opções acima…"></textarea>
+      </div>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar-triagem" onclick="gerarTriagemInicial()">Gerar hipótese pedagógica com a Lou</button>
+    <div class="gen-box" id="tri-gen-box"><div class="spin"></div><span>IA analisando as observações…</span></div>
+
+    <div class="result-card" id="tri-result-card">
+      <div class="result-header"><div class="result-title">Hipótese pedagógica de partida</div></div>
+      <div class="info-banner" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;margin-bottom:10px"><strong>Lembrete:</strong> isto NÃO é um diagnóstico. É só um ponto de partida pedagógico para orientar a prática enquanto uma avaliação profissional não é feita.</div>
+      <textarea class="result-text" id="tri-result-text" style="width:100%;min-height:220px"></textarea>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('tri-result-text').value);toast('Copiado!','success')">Copiar texto</button>
+      </div>
+    </div>
   </div>
 
   <!-- ESTUDO DE CASO -->
