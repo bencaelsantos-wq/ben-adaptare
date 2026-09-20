@@ -2850,6 +2850,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <div id="resumo-familia-box" style="display:none;margin-top:10px">
           <textarea id="resumo-familia-texto" class="ftarea" style="min-height:120px"></textarea>
           <button class="btn-copy" style="margin-top:6px" onclick="navigator.clipboard.writeText(document.getElementById('resumo-familia-texto').value);toast('Copiado!','success')">Copiar texto</button>
+          <button class="btn-copy" style="margin-top:6px" onclick="enviarResumoParaDiarioFamiliaEscola()">📨 Enviar para o Diário da Família</button>
         </div>
       </div>
       <!-- Progresso (IPA) -->
@@ -2903,6 +2904,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <div id="resumo-familia-cli-box" style="display:none;margin-top:10px">
           <textarea id="resumo-familia-cli-texto" class="ftarea" style="min-height:120px"></textarea>
           <button class="btn-copy" style="margin-top:6px" onclick="navigator.clipboard.writeText(document.getElementById('resumo-familia-cli-texto').value);toast('Copiado!','success')">Copiar texto</button>
+          <button class="btn-copy" style="margin-top:6px" onclick="enviarResumoParaDiarioFamiliaClinica()">📨 Enviar para o Diário da Família</button>
         </div>
       </div>
     </div>
@@ -6561,6 +6563,33 @@ async function carregarDashboardClinica() {
       if(np&&nr) s.push('✅ Você tem perfis e demandas. Use o Plano de Intervenção para estratégias integradas.');
       acoes.innerHTML=s.length?s.map(x=>'<div style="margin-bottom:4px">'+x+'</div>').join(''):'✅ Tudo em dia!'; }
   } catch(e){ console.error('carregarDashboardClinica:',e); }
+}
+
+async function enviarResumoParaDiarioFamiliaEscola() {
+  const a = window._perfilAlunoAtual;
+  if (!a) return toast('Aluno não identificado.', 'error');
+  await enviarResumoParaDiarioFamilia(a.nome, document.getElementById('resumo-familia-texto')?.value.trim(), 'escola');
+}
+
+async function enviarResumoParaDiarioFamiliaClinica() {
+  const p = window._perfilClinicoAtual;
+  if (!p) return toast('Paciente não identificado.', 'error');
+  await enviarResumoParaDiarioFamilia(p.nome, document.getElementById('resumo-familia-cli-texto')?.value.trim(), 'clinica');
+}
+
+async function enviarResumoParaDiarioFamilia(alunoNome, texto, origem) {
+  if (!texto) return toast('Gere o resumo primeiro.', 'error');
+  const autorNome = window._profNomeDB || user?.user_metadata?.nome || user?.email?.split('@')[0] || '';
+  const { error } = await db.from('diario_aluno').insert({
+    aluno_nome: alunoNome || null,
+    tipo: 'comunicado',
+    texto,
+    destinos: ['familia'],
+    origem,
+    autor_nome: autorNome
+  });
+  if (error) return toast('Erro ao enviar: ' + error.message, 'error');
+  toast('Resumo enviado ao Diário da Família!', 'success');
 }
 
 async function gerarResumoSemanalFamilia() {
