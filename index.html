@@ -4381,6 +4381,10 @@ function renderNavProfessor() {
     <div class="nav-item active" id="nav-prof-dashboard" onclick="showPage('prof-dashboard');carregarDashboardProfessor()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Dashboard
     </div>
+    <div class="nav-section">Planejamento</div>
+    <div class="nav-item" id="nav-planejamento-anual-prof" onclick="showPage('planejamento-anual');carregarPlanejamentoAnual()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Planejamento Anual
+    </div>
     <div class="nav-section">Pedagógico</div>
     <div class="nav-item" id="nav-nova" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('nova')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova adaptação${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
