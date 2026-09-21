@@ -4460,6 +4460,10 @@ function renderNavCoordenacaoPedagogica() {
     <div class="nav-item active" id="nav-coord-painel" onclick="showPage('coord-painel');carregarPainelCoordenacao()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Painel de Coordenação
     </div>
+    <div class="nav-section">Planejamento</div>
+    <div class="nav-item" id="nav-planejamento-anual" onclick="showPage('planejamento-anual');carregarPlanejamentoAnual()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Planejamento Anual
+    </div>
     <div class="nav-section">Pedagógico</div>
     <div class="nav-item" id="nav-nova" onclick="showPage('nova')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova adaptação
@@ -11236,6 +11240,46 @@ function renderPages() {
     </div>
   </div>
 
+  <!-- PLANEJAMENTO ANUAL -->
+  <div id="page-planejamento-anual" class="page">
+    <h1 class="page-title">Planejamento Anual</h1>
+    <p class="page-sub">Organize o conteúdo previsto por série/turma e matéria — fica disponível como referência para os outros módulos de geração.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Série, matéria e período</div></div></div>
+      <div class="frow">
+        <div><label class="flabel" for="pa-serie">Série / Turma</label><input type="text" id="pa-serie" class="finput" placeholder="Ex: 6º ano B"></div>
+        <div><label class="flabel" for="pa-materia">Matéria / Área</label><input type="text" id="pa-materia" class="finput" placeholder="Ex: Ciências"></div>
+      </div>
+      <div class="frow">
+        <div><label class="flabel" for="pa-tipo-periodo">Tipo de período</label>
+          <select id="pa-tipo-periodo" class="fselect" onchange="popularPeriodoPA()">
+            <option value="">Selecione</option>
+            <option value="bimestre">Bimestre</option>
+            <option value="trimestre">Trimestre</option>
+            <option value="semestre">Semestre</option>
+            <option value="anual">Ano todo</option>
+          </select>
+        </div>
+        <div><label class="flabel" for="pa-periodo">Período</label>
+          <select id="pa-periodo" class="fselect"><option value="">Selecione o tipo de período primeiro</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Conteúdo previsto</div></div></div>
+      <div class="fblock"><label class="flabel" for="pa-conteudo">O que será trabalhado neste período</label><textarea id="pa-conteudo" class="ftarea sm" placeholder="Ex: Sistema Solar — planetas, movimentos de rotação e translação, estações do ano…"></textarea></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" onclick="salvarPlanejamentoAnual()">Salvar planejamento</button>
+    </div>
+
+    <h2 class="page-title" style="font-size:16px;margin-bottom:10px">Planejamentos salvos</h2>
+    <div class="cards-grid" id="pa-lista-salvos"><p style="color:var(--gr400);font-size:13px">Nenhum planejamento registrado ainda.</p></div>
+  </div>
+
   <!-- ESTUDO DE CASO -->
   <div id="page-estudo-caso" class="page">
     <h1 class="page-title">Estudo de Caso</h1>
@@ -17198,6 +17242,65 @@ async function salvarEstudoCaso() {
   });
   document.getElementById('ec-participacao-familia').checked = false;
   carregarEstudosCaso();
+}
+
+function popularPeriodoPA() {
+  const tipo = document.getElementById('pa-tipo-periodo')?.value;
+  const sel = document.getElementById('pa-periodo');
+  if (!sel) return;
+  const opcoes = {
+    bimestre: ['1º bimestre','2º bimestre','3º bimestre','4º bimestre'],
+    trimestre: ['1º trimestre','2º trimestre','3º trimestre'],
+    semestre: ['1º semestre','2º semestre'],
+    anual: ['Ano todo']
+  };
+  const lista = opcoes[tipo] || [];
+  sel.innerHTML = lista.length
+    ? '<option value="">Selecione</option>' + lista.map(p => `<option value="${p}">${p}</option>`).join('')
+    : '<option value="">Selecione o tipo de período primeiro</option>';
+}
+
+async function carregarPlanejamentoAnual() {
+  const listaEl = document.getElementById('pa-lista-salvos');
+  if (!listaEl) return;
+  const { data, error } = await db.from('planejamento_anual')
+    .select('id, serie, materia, tipo_periodo, periodo, conteudo, updated_at')
+    .order('updated_at', { ascending: false })
+    .limit(30);
+  if (error || !data?.length) { listaEl.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhum planejamento registrado ainda.</p>'; return; }
+  listaEl.innerHTML = data.map(r => `
+    <div class="ic-card">
+      <div class="ic-nome">${r.serie || '(sem série)'} · ${r.materia || ''}</div>
+      <div style="font-size:11px;color:var(--gr400)">${r.periodo || ''} · ${new Date(r.updated_at).toLocaleDateString('pt-BR')}</div>
+      <div style="font-size:12px;margin-top:4px">${(r.conteudo||'').slice(0,100)}${(r.conteudo||'').length>100?'…':''}</div>
+    </div>
+  `).join('');
+}
+
+async function salvarPlanejamentoAnual() {
+  const serie = document.getElementById('pa-serie')?.value.trim();
+  const materia = document.getElementById('pa-materia')?.value.trim();
+  const tipo_periodo = document.getElementById('pa-tipo-periodo')?.value;
+  const periodo = document.getElementById('pa-periodo')?.value;
+  const conteudo = document.getElementById('pa-conteudo')?.value.trim();
+
+  if (!serie || !materia || !tipo_periodo || !periodo) return toast('Preencha série, matéria e período.', 'error');
+  if (!conteudo) return toast('Descreva o conteúdo previsto.', 'error');
+
+  const { error } = await db.from('planejamento_anual').insert({
+    organizacao_id: window._organizacaoId || null,
+    atualizado_por: user.id,
+    serie, materia, tipo_periodo, periodo, conteudo
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Planejamento salvo!', 'success');
+  ['pa-serie','pa-materia','pa-conteudo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('pa-tipo-periodo').value = '';
+  popularPeriodoPA();
+  carregarPlanejamentoAnual();
 }
 
 function renderPeiLista() {
