@@ -4122,7 +4122,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4384,6 +4384,10 @@ function renderNavProfessor() {
     <div class="nav-section">Planejamento</div>
     <div class="nav-item" id="nav-planejamento-anual-prof" onclick="showPage('planejamento-anual');carregarPlanejamentoAnual()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Planejamento Anual
+    </div>
+    <div class="nav-section">Planejamento</div>
+    <div class="nav-item" id="nav-planejamento-anual-prof" onclick="${!temAddon('planejamento_anual') ? "acessarRecursoPremium('Planejamento Anual')" : "showPage('planejamento-anual');carregarPlanejamentoAnual()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Planejamento Anual${!temAddon('planejamento_anual') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Pedagógico</div>
     <div class="nav-item" id="nav-nova" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('nova')"}">
@@ -7983,18 +7987,18 @@ const PRECOS_ADDON = {
   objetivos_terapeuticos: 47, plano_intervencao: 127, materiais_terapeuticos: 147, pratica_guiada: 167,
   pdi: 127, monitoramento: 197, devolutiva: 97, relatorios_escola: 67,
   nova_adaptacao: 147, estudo_caso: 47, pei: 127, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 177,
-  colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 127, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 47, glossario: 47
+  colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 127, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 47, glossario: 47, planejamento_anual: 49.9
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
   pdi:'PDI', monitoramento:'Monitoramento', devolutiva:'Devolutiva Clínica', relatorios_escola:'Relatórios da Escola',
-  nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho',
+  nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
-  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual'],
   compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
@@ -11247,15 +11251,20 @@ function renderPages() {
   <!-- PLANEJAMENTO ANUAL -->
   <div id="page-planejamento-anual" class="page">
     <h1 class="page-title">Planejamento Anual</h1>
-    <p class="page-sub">Organize o conteúdo previsto por série/turma e matéria — fica disponível como referência para os outros módulos de geração.</p>
+    <p class="page-sub">Planejamento individualizado por aluno com NEE — a IA ajuda a montar o conteúdo do período com base no perfil já cadastrado.</p>
 
     <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Série, matéria e período</div></div></div>
-      <div class="frow">
-        <div><label class="flabel" for="pa-serie">Série / Turma</label><input type="text" id="pa-serie" class="finput" placeholder="Ex: 6º ano B"></div>
-        <div><label class="flabel" for="pa-materia">Matéria / Área</label><input type="text" id="pa-materia" class="finput" placeholder="Ex: Ciências"></div>
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Selecione o aluno</div><div class="pei-step-sub">O planejamento será elaborado com base nos dados já cadastrados</div></div></div>
+      <div class="fblock"><label class="flabel" for="pa-aluno-sel">Aluno</label>
+        <select id="pa-aluno-sel" class="fselect" onchange="carregarDadosPlanejamentoAnual()"><option value="">Selecione um aluno cadastrado</option></select>
       </div>
+      <div id="pa-aluno-info" style="display:none;margin-top:10px;padding:10px 12px;background:var(--blue-light);border-radius:var(--rsm);font-size:13px;color:var(--p-navy)"></div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Matéria e período</div></div></div>
       <div class="frow">
+        <div><label class="flabel" for="pa-materia">Matéria / Área</label><input type="text" id="pa-materia" class="finput" placeholder="Ex: Ciências"></div>
         <div><label class="flabel" for="pa-tipo-periodo">Tipo de período</label>
           <select id="pa-tipo-periodo" class="fselect" onchange="popularPeriodoPA()">
             <option value="">Selecione</option>
@@ -11265,23 +11274,41 @@ function renderPages() {
             <option value="anual">Ano todo</option>
           </select>
         </div>
-        <div><label class="flabel" for="pa-periodo">Período</label>
-          <select id="pa-periodo" class="fselect"><option value="">Selecione o tipo de período primeiro</option></select>
-        </div>
+      </div>
+      <div class="fblock"><label class="flabel" for="pa-periodo">Período</label>
+        <select id="pa-periodo" class="fselect"><option value="">Selecione o tipo de período primeiro</option></select>
       </div>
     </div>
 
     <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Conteúdo previsto</div></div></div>
-      <div class="fblock"><label class="flabel" for="pa-conteudo">O que será trabalhado neste período</label><textarea id="pa-conteudo" class="ftarea sm" placeholder="Ex: Sistema Solar — planetas, movimentos de rotação e translação, estações do ano…"></textarea></div>
+      <div class="pei-step-header"><div class="pei-step-num">3</div><div><div class="pei-step-title">Contexto para a IA</div><div class="pei-step-sub">Opcional — quanto mais detalhes, melhor a proposta</div></div></div>
+      <div class="fblock"><label class="flabel" for="pa-conteudo">Conteúdos ou objetivos que pretende trabalhar</label><textarea id="pa-conteudo" class="ftarea sm" placeholder="Ex: Sistema Solar, com apoio visual e vocabulário simplificado; foco em leitura de gráficos simples…"></textarea></div>
     </div>
 
-    <div style="display:flex;gap:8px;margin:16px 0 24px">
-      <button class="btn-gerar" onclick="salvarPlanejamentoAnual()">Salvar planejamento</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn-gerar" id="btn-gerar-pa" onclick="gerarPlanejamentoAnual()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Gerar planejamento com a Lou
+      </button>
+    </div>
+    <div class="gen-box" id="gen-pa-box" style="margin-top:13px"><div class="spin"></div><span>IA elaborando o planejamento…</span></div>
+
+    <div class="result-card" id="pa-result-card">
+      <div class="result-header">
+        <div class="result-title">Planejamento gerado pela IA</div>
+        <div class="result-badge" id="pa-result-badge">—</div>
+      </div>
+      <div class="result-text" id="pa-result-text"></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarPlanejamentoAnual()">Salvar planejamento</button>
+        <button class="btn-copy" onclick="baixarPDFPlanejamentoAnual()">⬇ Baixar PDF</button>
+      </div>
     </div>
 
-    <h2 class="page-title" style="font-size:16px;margin-bottom:10px">Planejamentos salvos</h2>
-    <div class="cards-grid" id="pa-lista-salvos"><p style="color:var(--gr400);font-size:13px">Nenhum planejamento registrado ainda.</p></div>
+    <div style="margin-top:28px">
+      <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Planejamentos salvos</h3>
+      <div class="cards-grid" id="pa-lista-salvos"><p style="color:var(--gr400);font-size:13px">Nenhum planejamento registrado ainda.</p></div>
+    </div>
   </div>
 
   <!-- ESTUDO DE CASO -->
@@ -17264,47 +17291,129 @@ function popularPeriodoPA() {
     : '<option value="">Selecione o tipo de período primeiro</option>';
 }
 
+function carregarDadosPlanejamentoAnual() {
+  const sel = document.getElementById('pa-aluno-sel');
+  const info = document.getElementById('pa-aluno-info');
+  if (!sel || !info) return;
+  const aluno = alunosCad.find(x => x.id === sel.value);
+  if (!aluno) { info.style.display='none'; return; }
+  info.style.display = 'block';
+  info.innerHTML = `<strong>${aluno.nome}</strong>${aluno.serie?' · '+aluno.serie:''}${aluno.perfis?.length?' · '+aluno.perfis.slice(0,2).join(', '):''}`;
+}
+
+function popularPlanejamentoSel() {
+  const sel = document.getElementById('pa-aluno-sel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
+    (alunosCad||[]).map(a=>`<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+}
+
+let planejamentoGerado = null;
+
+async function gerarPlanejamentoAnual() {
+  const alunoId = document.getElementById('pa-aluno-sel')?.value;
+  if (!alunoId) return toast('Selecione um aluno.', 'error');
+  const aluno = alunosCad.find(x => x.id === alunoId);
+  const materia = document.getElementById('pa-materia')?.value?.trim();
+  const tipo_periodo = document.getElementById('pa-tipo-periodo')?.value;
+  const periodo = document.getElementById('pa-periodo')?.value;
+  if (!materia || !tipo_periodo || !periodo) return toast('Preencha matéria e período.', 'error');
+  const conteudo = document.getElementById('pa-conteudo')?.value?.trim();
+
+  const box = document.getElementById('gen-pa-box');
+  const card = document.getElementById('pa-result-card');
+  const btn = document.getElementById('btn-gerar-pa');
+  if (box) { box.style.display='flex'; box.innerHTML='<div class="spin"></div><span>IA elaborando o planejamento…</span>'; }
+  if (card) card.style.display='none';
+  if (btn) { btn.disabled=true; btn.style.opacity='.6'; }
+
+  const prompt = `Elabore um planejamento pedagógico individualizado de ${materia} para o período "${periodo}" (${tipo_periodo}), para o aluno ${aluno?.nome||''}${aluno?.serie?' ('+aluno.serie+')':''}, considerando o perfil e necessidades específicas dele.
+
+PERFIL DO ALUNO:
+- Diagnóstico(s)/perfis: ${aluno?.perfis?.join(', ') || 'não informado'}
+- Observações: ${aluno?.observacoes || 'não informado'}
+
+CONTEÚDOS/OBJETIVOS DESEJADOS PELO PROFESSOR: ${conteudo || 'não informado — sugira conteúdos adequados à série e ao perfil do aluno'}
+
+Gere um planejamento organizado por tópicos, com os conteúdos previstos, adaptações necessárias e sugestões de estratégias pedagógicas específicas para este aluno neste período.`;
+
+  try {
+    const texto = await chamarClaude({ prompt, maxTokens: 1000, modulo: 'planejamento_anual' });
+    planejamentoGerado = texto;
+    window._ultimoPlanejamentoAnual = { aluno: aluno?.nome||'', materia, periodo, texto };
+    if (box) box.style.display='none';
+    if (card) card.style.display='block';
+    const rt = document.getElementById('pa-result-text');
+    const rb = document.getElementById('pa-result-badge');
+    if (rt) rt.textContent = texto;
+    if (rb) rb.textContent = aluno?.nome||'';
+  } catch(e) {
+    if (box) box.style.display='none';
+    toast('Erro ao gerar planejamento: '+(e.message||'Tente novamente.'),'error');
+  } finally {
+    if (btn) { btn.disabled=false; btn.style.opacity='1'; }
+  }
+}
+
 async function carregarPlanejamentoAnual() {
+  popularPlanejamentoSel();
   const listaEl = document.getElementById('pa-lista-salvos');
   if (!listaEl) return;
   const { data, error } = await db.from('planejamento_anual')
-    .select('id, serie, materia, tipo_periodo, periodo, conteudo, updated_at')
+    .select('id, aluno_nome, serie, materia, tipo_periodo, periodo, texto, updated_at')
     .order('updated_at', { ascending: false })
     .limit(30);
   if (error || !data?.length) { listaEl.innerHTML = '<p style="color:var(--gr400);font-size:13px">Nenhum planejamento registrado ainda.</p>'; return; }
   listaEl.innerHTML = data.map(r => `
     <div class="ic-card">
-      <div class="ic-nome">${r.serie || '(sem série)'} · ${r.materia || ''}</div>
-      <div style="font-size:11px;color:var(--gr400)">${r.periodo || ''} · ${new Date(r.updated_at).toLocaleDateString('pt-BR')}</div>
-      <div style="font-size:12px;margin-top:4px">${(r.conteudo||'').slice(0,100)}${(r.conteudo||'').length>100?'…':''}</div>
+      <div class="ic-nome">${r.aluno_nome || '(sem aluno)'}</div>
+      <div class="ic-meta">${r.materia||''} · ${r.periodo || ''}</div>
+      <div style="font-size:11px;color:var(--gr400)">${new Date(r.updated_at).toLocaleDateString('pt-BR')}</div>
+      <div style="font-size:12px;margin-top:4px">${(r.texto||'').slice(0,100)}${(r.texto||'').length>100?'…':''}</div>
     </div>
   `).join('');
 }
 
 async function salvarPlanejamentoAnual() {
-  const serie = document.getElementById('pa-serie')?.value.trim();
-  const materia = document.getElementById('pa-materia')?.value.trim();
+  if (!planejamentoGerado) return toast('Gere o planejamento primeiro.', 'error');
+  const alunoId = document.getElementById('pa-aluno-sel')?.value;
+  const aluno = alunosCad.find(x => x.id === alunoId);
+  const materia = document.getElementById('pa-materia')?.value?.trim();
   const tipo_periodo = document.getElementById('pa-tipo-periodo')?.value;
   const periodo = document.getElementById('pa-periodo')?.value;
-  const conteudo = document.getElementById('pa-conteudo')?.value.trim();
-
-  if (!serie || !materia || !tipo_periodo || !periodo) return toast('Preencha série, matéria e período.', 'error');
-  if (!conteudo) return toast('Descreva o conteúdo previsto.', 'error');
 
   const { error } = await db.from('planejamento_anual').insert({
     organizacao_id: window._organizacaoId || null,
     atualizado_por: user.id,
-    serie, materia, tipo_periodo, periodo, conteudo
+    aluno_id: alunoId || null,
+    aluno_nome: aluno?.nome || '',
+    serie: aluno?.serie || '',
+    materia, tipo_periodo, periodo,
+    conteudo: document.getElementById('pa-conteudo')?.value?.trim() || '',
+    texto: planejamentoGerado
   });
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
   toast('Planejamento salvo!', 'success');
-  ['pa-serie','pa-materia','pa-conteudo'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  document.getElementById('pa-tipo-periodo').value = '';
-  popularPeriodoPA();
+  planejamentoGerado = null;
+  const card = document.getElementById('pa-result-card');
+  if (card) card.style.display='none';
   carregarPlanejamentoAnual();
+}
+
+function baixarPDFPlanejamentoAnual() {
+  const dados = window._ultimoPlanejamentoAnual;
+  if (!dados) return toast('Gere o planejamento primeiro.', 'error');
+  gerarPDFDocumento({
+    tipo: 'PLANEJAMENTO',
+    titulo: 'Planejamento Anual — ' + (dados.materia||''),
+    subtitulo: dados.periodo || '',
+    semAssinatura: true,
+    aluno: dados.aluno || 'Não identificado',
+    professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
+    conteudo: dados.texto,
+    nomeArquivo: 'Planejamento_Anual_' + (dados.aluno||'aluno').replace(/\s+/g,'_'),
+    isAtividade: false
+  });
 }
 
 function renderPeiLista() {
