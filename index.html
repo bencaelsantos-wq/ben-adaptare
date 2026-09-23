@@ -4122,7 +4122,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','evolucao_aluno','banco_praticas_escola','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','banco_praticas_clinica','historico'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -7911,20 +7911,22 @@ async function carregarDashboardDev() {
 
 const PRECOS_ADDON = {
   objetivos_terapeuticos: 47, plano_intervencao: 127, materiais_terapeuticos: 147, pratica_guiada: 167,
-  pdi: 127, monitoramento: 197, devolutiva: 97, relatorios_escola: 67,
-  nova_adaptacao: 147, estudo_caso: 47, pei: 127, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 177,
-  colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 127, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 47, glossario: 47, planejamento_anual: 49.9
+  pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
+  nova_adaptacao: 147, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 177,
+  colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 147, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 47, glossario: 47, planejamento_anual: 79.9,
+  evolucao_aluno: 47, banco_praticas_escola: 47, pauta_multidisciplinar: 127, relatorios_clinica: 47, comunicacao_clinicas: 47, banco_praticas_clinica: 47, historico: 47
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
   pdi:'PDI', monitoramento:'Monitoramento', devolutiva:'Devolutiva Clínica', relatorios_escola:'Relatórios da Escola',
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
-  analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico'
+  analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
+  evolucao_aluno:'Evolução do Aluno', banco_praticas_escola:'Banco de Práticas (Escola)', pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', banco_praticas_clinica:'Banco de Práticas (Clínica)', historico:'Histórico'
 };
 const GRUPOS_ADDON = {
-  clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
-  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual'],
+  clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','banco_praticas_clinica','historico'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','evolucao_aluno','banco_praticas_escola','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas'],
   compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
