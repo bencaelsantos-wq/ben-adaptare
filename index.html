@@ -6258,7 +6258,15 @@ async function carregarEvolucaoAluno() {
   const { data: regs } = await db.from('evolucoes_pedagogicas').select('*').eq('aluno_id', id).order('data_registro', { ascending: false });
   body.innerHTML = `
     <div class="clinic-card" style="margin-bottom:16px">
-      <div class="clinic-card-title">Evolução ao longo do tempo</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div class="clinic-card-title" style="margin:0">Evolução ao longo do tempo</div>
+        <select id="evol-periodo-filtro" class="fselect" style="width:auto;min-width:160px" onchange="aplicarFiltroPeriodoEvolucaoAluno()">
+          <option value="30">Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="180">Últimos 6 meses</option>
+          <option value="0" selected>Todo o período</option>
+        </select>
+      </div>
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para o gráfico — aparece a partir do 2º registro.</div></div>' : '<canvas id="evol-grafico" height="90"></canvas>'}
     </div>
     <div class="clinic-card" style="margin-bottom:16px">
@@ -6318,7 +6326,24 @@ async function carregarEvolucaoAluno() {
           ${r.atencao ? `<div style="font-size:12px;color:var(--gr400);margin-top:3px"><strong>Atenção:</strong> ${r.atencao}</div>` : ''}
         </div>`).join('')}` : ''}`;
   window._evolSelecoes = {};
+  window._evolRegsAtual = regs;
+  window._evolAreasAtual = areas;
+  window._evolLabelsAtual = labels;
   if ((regs||[]).length >= 2) renderizarGraficoEvolucaoPedagogica(regs, areas, labels);
+}
+
+function aplicarFiltroPeriodoEvolucaoAluno() {
+  const dias = parseInt(document.getElementById('evol-periodo-filtro')?.value || '0', 10);
+  const todos = window._evolRegsAtual || [];
+  const filtrados = dias > 0
+    ? todos.filter(r => new Date(r.data_registro + 'T00:00:00') >= new Date(Date.now() - dias * 86400000))
+    : todos;
+  if (filtrados.length >= 2) {
+    renderizarGraficoEvolucaoPedagogica(filtrados, window._evolAreasAtual, window._evolLabelsAtual);
+  } else if (_chartEvolucaoPedagogica) {
+    _chartEvolucaoPedagogica.destroy();
+    _chartEvolucaoPedagogica = null;
+  }
 }
 
 function selEvolBtn(btn, area, val) {
@@ -6444,7 +6469,11 @@ function renderizarGraficoEvolucaoPedagogica(regs, areas, labels) {
   _chartEvolucaoPedagogica = new Chart(canvas, {
     type: 'line',
     data: { labels: dataLabels, datasets },
-    options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }, plugins: { legend: { position: 'bottom' } } },
+    options: {
+      layout: { padding: { top: 12 } },
+      scales: { y: { min: 0, max: 105, ticks: { callback: v => v > 100 ? '' : v + '%' } } },
+      plugins: { legend: { position: 'bottom' } },
+    },
   });
 }
 
@@ -23228,8 +23257,9 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
     type: 'line',
     data: { labels: dataLabels, datasets },
     options: {
+      layout: { padding: { top: 12 } },
       scales: {
-        y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#F1F1F4' } },
+        y: { min: 0, max: 105, ticks: { callback: v => v > 100 ? '' : v + '%' }, grid: { color: '#F1F1F4' } },
         x: { grid: { display: false } },
       },
       plugins: { legend: { position: 'bottom' } },
