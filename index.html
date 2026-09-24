@@ -5930,10 +5930,12 @@ async function carregarPainelCoordenacao() {
   const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
   el('coord-total-alunos','…'); el('coord-peis-pendentes','…'); el('coord-adapt-atrasadas','…');
   try {
-    const [{ data: alunos }, { data: peis }, { data: adapts }] = await Promise.all([
+    const dataCorteAlerta = new Date(Date.now() - 15 * 86400000).toISOString();
+    const [{ data: alunos }, { data: peis }, { data: adapts }, { data: alertasDiario }] = await Promise.all([
       db.from('alunos').select('id,nome'),
       db.from('peis').select('aluno_id'),
-      db.from('adaptacoes').select('aluno_id,created_at').order('created_at', { ascending: false })
+      db.from('adaptacoes').select('aluno_id,created_at').order('created_at', { ascending: false }),
+      db.from('diario_aluno').select('aluno_nome,created_at').eq('tipo','alerta').gte('created_at', dataCorteAlerta)
     ]);
     const totalAlunos = (alunos||[]).length;
     const idsComPEI = new Set((peis||[]).map(p => p.aluno_id).filter(Boolean));
@@ -5946,6 +5948,8 @@ async function carregarPainelCoordenacao() {
       const ultima = ultimaAdaptPorAluno[a.id];
       return !ultima || new Date(ultima) < dataCorte;
     });
+
+    const nomesComAlerta = new Set((alertasDiario||[]).map(d => d.aluno_nome));
 
     el('coord-total-alunos', totalAlunos);
     el('coord-peis-pendentes', alunosSemPEI.length);
@@ -5963,6 +5967,30 @@ async function carregarPainelCoordenacao() {
           return `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${a.nome}</span><span style="font-size:11px;color:var(--gr300)">${ultima ? 'Última: '+ultima.slice(0,10) : 'Nunca adaptado'}</span></div>`;
         }).join('')
       : '<span style="color:var(--gr300)">Nenhuma pendência — todos os alunos com adaptação recente.</span>';
+
+    const ranking = (alunos||[]).map(a => {
+      const sinais = [];
+      let score = 0;
+      if (!idsComPEI.has(a.id)) { sinais.push('Sem PEI'); score += 2; }
+      const ultima = ultimaAdaptPorAluno[a.id];
+      if (!ultima || new Date(ultima) < dataCorte) { sinais.push('Sem adaptação recente'); score += 2; }
+      if (nomesComAlerta.has(a.nome)) { sinais.push('Alerta no Diário'); score += 2; }
+      return { aluno: a, score, sinais };
+    }).filter(r => r.score > 0).sort((a,b) => b.score - a.score);
+
+    const listaRisco = document.getElementById('coord-lista-risco');
+    if (listaRisco) listaRisco.innerHTML = ranking.length
+      ? ranking.slice(0,15).map(r => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--gr100)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-weight:600">${r.aluno.nome}</span>
+            <span style="font-size:11px;font-weight:700;color:${r.score>=4?'#B91C1C':'#B45309'}">${r.score} pts</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">
+            ${r.sinais.map(s => `<span style="font-size:10.5px;padding:2px 8px;border-radius:999px;background:#FEF2F2;color:#B91C1C">${s}</span>`).join('')}
+          </div>
+        </div>`).join('')
+      : '<span style="color:var(--gr300)">Nenhum aluno com sinais de atenção no momento.</span>';
   } catch(e) { console.error(e); }
 }
 
@@ -12281,6 +12309,11 @@ function renderPages() {
       <div class="stat-card"><div class="stat-num" id="coord-total-alunos">—</div><div class="stat-label">Total de alunos</div></div>
       <div class="stat-card"><div class="stat-num" id="coord-peis-pendentes" style="color:#B91C1C">—</div><div class="stat-label">PEIs pendentes</div></div>
       <div class="stat-card"><div class="stat-num" id="coord-adapt-atrasadas" style="color:#B91C1C">—</div><div class="stat-label">Adaptações atrasadas (+10 dias)</div></div>
+    </div>
+    <div class="fcard" style="margin-top:16px">
+      <div class="fcard-title">🚨 Prioridade de Atenção</div>
+      <p class="page-sub" style="margin:0 0 10px">Alunos com mais de um sinal de alerta ao mesmo tempo — sem PEI, sem adaptação recente ou com alerta no Diário do Aluno.</p>
+      <div id="coord-lista-risco" style="font-size:13px;color:var(--gr500)">Carregando…</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
       <div class="fcard">
