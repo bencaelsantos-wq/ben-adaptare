@@ -23021,7 +23021,15 @@ async function carregarMonitoramento() {
       <p style="font-size:11.5px;color:${sugestaoProgressao.cor};opacity:.8;margin:6px 0 0">Sugestão baseada nos últimos registros de Prática Guiada — a decisão final é sempre do profissional.</p>
     </div>` : ''}
     <div class="clinic-card" style="margin-bottom:16px">
-      <div class="clinic-card-title">📈 Evolução</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div class="clinic-card-title" style="margin:0">📈 Evolução</div>
+        <select id="mon-periodo-filtro" class="fselect" style="width:auto;min-width:160px" onchange="aplicarFiltroPeriodoMonitoramento()">
+          <option value="30">Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="180">Últimos 6 meses</option>
+          <option value="0" selected>Todo o período</option>
+        </select>
+      </div>
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para montar o gráfico — o gráfico aparece a partir do 2º registro.</div></div>' : '<canvas id="mon-grafico" height="90"></canvas>'}
     </div>
     <div class="clinic-card" style="margin-bottom:16px">
@@ -23094,9 +23102,28 @@ async function carregarMonitoramento() {
             </div>
           </div>`).join('');
       })()}` : ''}`;
+  window._monRegsAtual = regs;
+  window._monAreasAtual = areas;
+  window._monObjAtual = obj;
+  window._monLabelsAtual = labels;
   if ((regs||[]).length >= 2) renderizarGraficoMonitoramento(regs, areas, obj, labels);
   if ((regs||[]).length >= 2) carregarHistoricoEvolucao(id);
   renderizarGraficoAutonomia(regs);
+}
+
+function aplicarFiltroPeriodoMonitoramento() {
+  const dias = parseInt(document.getElementById('mon-periodo-filtro')?.value || '0', 10);
+  const todos = window._monRegsAtual || [];
+  const filtrados = dias > 0
+    ? todos.filter(r => new Date(r.created_at) >= new Date(Date.now() - dias * 86400000))
+    : todos;
+  if (filtrados.length >= 2) {
+    renderizarGraficoMonitoramento(filtrados, window._monAreasAtual, window._monObjAtual, window._monLabelsAtual);
+  } else if (_chartMonitoramento) {
+    _chartMonitoramento.destroy();
+    _chartMonitoramento = null;
+  }
+  renderizarGraficoAutonomia(filtrados);
 }
 
 function calcularScoreAutonomia(observacoes) {
@@ -23166,20 +23193,39 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
   const VALOR = { ok: 100, parcial: 50, nao: 0 };
   const ordenados = [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-  const dataLabels = ordenados.map(r => new Date(r.created_at).toLocaleDateString('pt-BR'));
+
+  const porData = new Map();
+  ordenados.forEach(r => {
+    const chave = new Date(r.created_at).toLocaleDateString('pt-BR');
+    if (!porData.has(chave)) porData.set(chave, {});
+    const grupo = porData.get(chave);
+    Object.entries(r.resultados||{}).forEach(([area, val]) => {
+      if (!grupo[area]) grupo[area] = [];
+      grupo[area].push(VALOR[val]);
+    });
+  });
+  const dataLabels = [...porData.keys()];
   const areasComDados = new Set();
   ordenados.forEach(r => Object.keys(r.resultados||{}).forEach(k => areasComDados.add(k)));
+
   const datasets = areas.filter(a => areasComDados.has(a)).map(a => ({
     label: labels[a].replace(/^\S+\s/, ''),
-    data: ordenados.map(r => r.resultados && r.resultados[a] !== undefined ? Math.max(VALOR[r.resultados[a]], 2) : null),
+    data: dataLabels.map(dl => {
+      const vals = porData.get(dl)[a];
+      if (!vals || !vals.length) return null;
+      return vals.reduce((s,v) => s+v, 0) / vals.length;
+    }),
+    borderColor: CORES[a],
     backgroundColor: CORES[a],
-    borderRadius: 6,
-    borderSkipped: false,
-    maxBarThickness: 36,
+    tension: 0.3,
+    spanGaps: true,
+    pointRadius: 4,
+    pointHoverRadius: 6,
+    fill: false,
   }));
   if (_chartMonitoramento) _chartMonitoramento.destroy();
   _chartMonitoramento = new Chart(canvas, {
-    type: 'bar',
+    type: 'line',
     data: { labels: dataLabels, datasets },
     options: {
       scales: {
