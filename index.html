@@ -21813,17 +21813,33 @@ async function gerarDossiePaciente() {
     const devs = rDevol.data||[];
     secoes.push(`DEVOLUTIVAS CLÍNICAS NO PERÍODO (${devs.length})\n${devs.length ? devs.map(d=>`- ${fmtData(d.created_at)}${d.autorizado_familia?' (compartilhada com a escola)':''}: ${(d.conteudo||'').slice(0,300)}`).join('\n\n') : 'Nenhuma devolutiva registrada no período.'}`);
 
+    const AREAS_LABEL_DOSSIE = { cognitivo:'Cognitivo', comunicacao:'Comunicação', social:'Social', comportamental:'Comportamental', academico:'Acadêmico' };
+
     const mons = rMon.data||[];
-    secoes.push(`MONITORAMENTO NO PERÍODO (${mons.length} registros)\n${mons.length ? mons.map(m=>{
-      const res = Object.entries(m.resultados||{}).map(([k,v])=>`${k}: ${v}`).join(', ');
-      return `- ${fmtData(m.created_at)} — ${res}${m.observacoes?' | Obs: '+m.observacoes:''}`;
-    }).join('\n') : 'Nenhum registro de monitoramento no período.'}`);
+    const VALOR_MON_DOSSIE = { ok: 100, parcial: 50, nao: 0 };
+    const porAreaMon = {};
+    mons.forEach(m => {
+      Object.entries(m.resultados||{}).forEach(([area, val]) => {
+        if (VALOR_MON_DOSSIE[val] === undefined) return;
+        if (!porAreaMon[area]) porAreaMon[area] = [];
+        porAreaMon[area].push({ val: VALOR_MON_DOSSIE[val], data: m.created_at });
+      });
+    });
+    const resumoAreasMon = Object.keys(porAreaMon).map(area => {
+      const regs = porAreaMon[area].sort((a,b) => new Date(a.data) - new Date(b.data));
+      const media = Math.round(regs.reduce((s,r)=>s+r.val,0) / regs.length);
+      const tendencia = regs.length >= 2
+        ? (regs[regs.length-1].val > regs[0].val ? '↑ evoluindo' : regs[regs.length-1].val < regs[0].val ? '↓ em queda' : '→ estável')
+        : '—';
+      return `- ${AREAS_LABEL_DOSSIE[area]||area}: ${regs.length} registro(s), média de ${media}% (${tendencia})`;
+    }).join('\n');
+    secoes.push(`MONITORAMENTO NO PERÍODO (${mons.length} registros no total)\n${mons.length ? resumoAreasMon : 'Nenhum registro de monitoramento no período.'}`);
 
     const praticas = rPratica.data||[];
-    secoes.push(`PRÁTICA GUIADA NO PERÍODO (${praticas.length})\n${praticas.length ? praticas.map(pr=>`- ${fmtData(pr.criado_em)} — ${pr.titulo||''}${pr.area?' · '+pr.area:''} (${pr.status||''})`).join('\n') : 'Nenhuma prática guiada no período.'}`);
+    secoes.push(`PRÁTICA GUIADA NO PERÍODO (${praticas.length})\n${praticas.length ? praticas.map(pr=>`- ${fmtData(pr.criado_em)} — ${pr.titulo||''}${pr.area?' · '+(AREAS_LABEL_DOSSIE[pr.area]||pr.area):''} (${pr.status==='pendente'?'pendente':'aplicada'})`).join('\n') : 'Nenhuma prática guiada no período.'}`);
 
     const materiais = rMaterial.data||[];
-    secoes.push(`MATERIAIS TERAPÊUTICOS GERADOS NO PERÍODO (${materiais.length})\n${materiais.length ? materiais.map(m=>`- ${fmtData(m.criado_em)} — ${m.tipo||''}${m.contexto?' · '+m.contexto:''}`).join('\n') : 'Nenhum material gerado no período.'}`);
+    secoes.push(`MATERIAIS TERAPÊUTICOS GERADOS NO PERÍODO (${materiais.length})\n${materiais.length ? materiais.map(m=>`- ${fmtData(m.criado_em)} ${new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} — ${DICAS_MATERIAL[m.tipo]?.label||m.tipo||''}${m.contexto?' · '+m.contexto:''}`).join('\n') : 'Nenhum material gerado no período.'}`);
 
     const diarios = rDiario.data||[];
     const conquistas = diarios.filter(d=>d.tipo==='conquista');
