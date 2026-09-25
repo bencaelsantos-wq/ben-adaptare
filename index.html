@@ -13762,11 +13762,16 @@ function renderPagesClinica() {
       </div>
       <div class="clinic-card"><div class="clinic-card-title"> Indicadores de Evolução</div><div id="plano-indicadores" style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line"></div></div>
       <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="salvarPlanoIntervencao()">💾 Salvar Plano</button>
         <button class="btn-sm" onclick="enviarRelatorioEscola()"> Disponibilizar para a Escola</button>
         <button class="btn-sm" onclick="enviarRelatorioAT()"> Disponibilizar para o AT</button>
         <button class="btn-copy" onclick="baixarPDFPlanoIntervencao()">Baixar PDF</button>
         <button class="btn-sm-ghost" onclick="copiarPlano()">Copiar tudo</button>
       </div>
+    </div>
+    <div style="margin-top:20px">
+      <h3 style="font-size:14px;font-weight:600;color:var(--gr800);margin-bottom:10px">Planos salvos</h3>
+      <div id="plano-lista-salvos"></div>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0;padding:10px 12px;background:#F9FAFB;border-radius:8px" id="plano-areas-checkbox">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gr700);cursor:pointer"><input type="checkbox" id="plano-chk-escola" checked> Para a Escola</label>
@@ -21699,6 +21704,49 @@ async function selecionarAlunoPlano() {
       </div>
     </div>`;
   if (btnGerar) btnGerar.style.display = 'inline-flex';
+  carregarPlanosIntervencaoSalvos(id);
+}
+
+async function carregarPlanosIntervencaoSalvos(perfilId) {
+  const cont = document.getElementById('plano-lista-salvos');
+  if (!cont) return;
+  cont.innerHTML = '<p style="font-size:13px;color:var(--gr500)">Carregando…</p>';
+  const { data } = await db.from('planos_intervencao').select('id,created_at').eq('perfil_id', perfilId).order('created_at', { ascending: false });
+  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:13px;color:var(--gr400)">Nenhum plano salvo ainda.</p>'; return; }
+  cont.innerHTML = data.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
+      <span style="font-size:12.5px">${new Date(r.created_at).toLocaleDateString('pt-BR')}</span>
+      <button class="btn-sm" onclick="reabrirPlanoIntervencao('${r.id}')">Abrir</button>
+    </div>`).join('');
+}
+
+async function reabrirPlanoIntervencao(id) {
+  const { data, error } = await db.from('planos_intervencao').select('*').eq('id', id).single();
+  if (error || !data) return toast('Não foi possível abrir esse plano.', 'error');
+  planoGerado = { escola: data.escola, at: data.at, clinica: data.clinica, indicadores: data.indicadores, _aluno: perfisClinicaList.find(x => x.id === data.perfil_id) };
+  const setar = (divId, val) => { const el = document.getElementById(divId); if (el) el.textContent = val || ''; };
+  setar('plano-escola', data.escola);
+  setar('plano-at', data.at);
+  setar('plano-clinica', data.clinica);
+  setar('plano-indicadores', data.indicadores);
+  document.getElementById('plano-result').style.display = 'block';
+  document.getElementById('plano-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function salvarPlanoIntervencao() {
+  const p = planoGerado?._aluno;
+  if (!p) return toast('Gere o plano primeiro.', 'error');
+  const { error } = await db.from('planos_intervencao').insert({
+    perfil_id: p.id,
+    aluno_nome: p.nome,
+    escola: planoGerado.escola || null,
+    at: planoGerado.at || null,
+    clinica: planoGerado.clinica || null,
+    indicadores: planoGerado.indicadores || null
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Plano salvo!', 'success');
+  carregarPlanosIntervencaoSalvos(p.id);
 }
 
 async function gerarPlanoIntervencao() {
