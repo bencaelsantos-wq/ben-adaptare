@@ -4907,34 +4907,6 @@ function renderPagesGestaoClinica() {
     </div>
   </div>
 
-  <div id="page-clinica-dossie" class="page">
-    <h1 class="page-title">Dossiê do Paciente</h1>
-    <p class="page-sub">Reúne tudo que já foi registrado para o paciente num período — objetivos terapêuticos, plano de intervenção, devolutivas, monitoramento, prática guiada, materiais e diário. Pronto para imprimir ou entregar.</p>
-
-    <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Paciente e período</div></div></div>
-      <div class="fblock"><label class="flabel" for="dossie-pac-sel">Paciente</label>
-        <select id="dossie-pac-sel" class="fselect"><option value="">Selecione um paciente cadastrado</option></select>
-      </div>
-      <div class="frow">
-        <div><label class="flabel" for="dossie-pac-data-inicio">Data inicial (opcional)</label><input type="date" id="dossie-pac-data-inicio" class="finput"></div>
-        <div><label class="flabel" for="dossie-pac-data-fim">Data final</label><input type="date" id="dossie-pac-data-fim" class="finput"></div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:8px;margin:16px 0 24px">
-      <button class="btn-gerar" id="btn-gerar-dossie-pac" onclick="gerarDossiePaciente()">Gerar Dossiê</button>
-    </div>
-
-    <div class="result-card" id="dossie-pac-result-card" style="display:none">
-      <div class="result-header"><div class="result-title">Dossiê do Paciente</div></div>
-      <div class="result-text" id="dossie-pac-result-text" style="white-space:pre-wrap"></div>
-      <div class="result-actions">
-        <button class="btn-copy" onclick="baixarPDFDossiePaciente()">⬇ Baixar PDF</button>
-      </div>
-    </div>
-  </div>
-
   <div id="page-analise-comp" class="page">
     <h1 class="page-title">Análise e Estratégias Pedagógicas</h1>
     <p class="page-sub">Organiza observações do dia a dia em estratégias individualizadas, respeitando o ritmo e as potencialidades do aluno. Não substitui avaliação formal.</p>
@@ -14073,6 +14045,34 @@ function renderPagesClinica() {
     <div style="margin-top:28px">
       <h3 style="font-size:15px;font-weight:600;color:var(--gr800);margin-bottom:12px">Devolutivas registradas</h3>
       <div class="cards-grid" id="dc-lista-salvas"></div>
+    </div>
+  </div>
+
+  <div id="page-clinica-dossie" class="page">
+    <h1 class="page-title">Dossiê do Paciente</h1>
+    <p class="page-sub">Reúne tudo que já foi registrado para o paciente num período — objetivos terapêuticos, plano de intervenção, devolutivas, monitoramento, prática guiada, materiais e diário. Pronto para imprimir ou entregar.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Paciente e período</div></div></div>
+      <div class="fblock"><label class="flabel" for="dossie-pac-sel">Paciente</label>
+        <select id="dossie-pac-sel" class="fselect"><option value="">Selecione um paciente cadastrado</option></select>
+      </div>
+      <div class="frow">
+        <div><label class="flabel" for="dossie-pac-data-inicio">Data inicial (opcional)</label><input type="date" id="dossie-pac-data-inicio" class="finput"></div>
+        <div><label class="flabel" for="dossie-pac-data-fim">Data final</label><input type="date" id="dossie-pac-data-fim" class="finput"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" id="btn-gerar-dossie-pac" onclick="gerarDossiePaciente()">Gerar Dossiê</button>
+    </div>
+
+    <div class="result-card" id="dossie-pac-result-card" style="display:none">
+      <div class="result-header"><div class="result-title">Dossiê do Paciente</div></div>
+      <div class="result-text" id="dossie-pac-result-text" style="white-space:pre-wrap"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="baixarPDFDossiePaciente()">⬇ Baixar PDF</button>
+      </div>
     </div>
   </div>
 
