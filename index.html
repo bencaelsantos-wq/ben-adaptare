@@ -4623,6 +4623,9 @@ function renderNavClinica() {
     <div class="nav-item clinic-item" id="nav-clinica-devolutiva" onclick="${!temAddon('devolutiva') ? "acessarRecursoPremium('Devolutiva Clínica')" : "showPage('clinica-devolutiva');carregarDevolutivasClinica()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Devolutiva Clínica${!temAddon('devolutiva') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
+    <div class="nav-item clinic-item" id="nav-clinica-dossie" onclick="showPage('clinica-dossie');popularDossiePacienteSel()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Dossiê do Paciente
+    </div>
     <div class="nav-section">Relatórios</div>
     <div class="nav-item clinic-item" id="nav-clinica-relatorios" onclick="${!temAddon('relatorios_escola') ? "acessarRecursoPremium('Relatórios da Escola')" : "showPage('clinica-relatorios')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M8 4v12M4 8h4M4 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios da Escola${!temAddon('relatorios_escola') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -4901,6 +4904,34 @@ function renderPagesGestaoClinica() {
     </div>
     <div style="margin-top:10px">
       <button class="btn-sm-ghost" onclick="showPage('gc-demandas')">← Voltar às demandas</button>
+    </div>
+  </div>
+
+  <div id="page-clinica-dossie" class="page">
+    <h1 class="page-title">Dossiê do Paciente</h1>
+    <p class="page-sub">Reúne tudo que já foi registrado para o paciente num período — objetivos terapêuticos, plano de intervenção, devolutivas, monitoramento, prática guiada, materiais e diário. Pronto para imprimir ou entregar.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Paciente e período</div></div></div>
+      <div class="fblock"><label class="flabel" for="dossie-pac-sel">Paciente</label>
+        <select id="dossie-pac-sel" class="fselect"><option value="">Selecione um paciente cadastrado</option></select>
+      </div>
+      <div class="frow">
+        <div><label class="flabel" for="dossie-pac-data-inicio">Data inicial (opcional)</label><input type="date" id="dossie-pac-data-inicio" class="finput"></div>
+        <div><label class="flabel" for="dossie-pac-data-fim">Data final</label><input type="date" id="dossie-pac-data-fim" class="finput"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" id="btn-gerar-dossie-pac" onclick="gerarDossiePaciente()">Gerar Dossiê</button>
+    </div>
+
+    <div class="result-card" id="dossie-pac-result-card" style="display:none">
+      <div class="result-header"><div class="result-title">Dossiê do Paciente</div></div>
+      <div class="result-text" id="dossie-pac-result-text" style="white-space:pre-wrap"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="baixarPDFDossiePaciente()">⬇ Baixar PDF</button>
+      </div>
     </div>
   </div>
 
@@ -21731,6 +21762,102 @@ async function reabrirPlanoIntervencao(id) {
   setar('plano-indicadores', data.indicadores);
   document.getElementById('plano-result').style.display = 'block';
   document.getElementById('plano-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function popularDossiePacienteSel() {
+  const sel = document.getElementById('dossie-pac-sel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione um paciente cadastrado</option>' +
+    (perfisClinicaList||[]).map(p=>`<option value="${p.id}">${p.nome} — ${p.diagnostico||''}</option>`).join('');
+  const fim = document.getElementById('dossie-pac-data-fim');
+  if (fim && !fim.value) fim.value = new Date().toISOString().slice(0,10);
+}
+
+let dossiePacienteGerado = null;
+let dossiePacienteAtual = null;
+
+async function gerarDossiePaciente() {
+  const perfilId = document.getElementById('dossie-pac-sel')?.value;
+  if (!perfilId) return toast('Selecione um paciente.', 'error');
+  const p = perfisClinicaList.find(x => x.id === perfilId);
+  const dataInicio = document.getElementById('dossie-pac-data-inicio')?.value;
+  const dataFim = document.getElementById('dossie-pac-data-fim')?.value;
+  const inicioISO = dataInicio ? new Date(dataInicio+'T00:00:00').toISOString() : '1970-01-01T00:00:00.000Z';
+  const fimISO = dataFim ? new Date(dataFim+'T23:59:59').toISOString() : new Date().toISOString();
+
+  const btn = document.getElementById('btn-gerar-dossie-pac');
+  if (btn) { btn.disabled = true; btn.textContent = 'Reunindo registros…'; }
+
+  try {
+    const [rObj, rPlano, rDevol, rMon, rPratica, rMaterial, rDiario] = await Promise.all([
+      db.from('objetivos_terapeuticos').select('*').eq('perfil_id', perfilId).maybeSingle(),
+      db.from('planos_intervencao').select('escola,at,clinica,indicadores,created_at').eq('perfil_id', perfilId).order('created_at', { ascending: false }).limit(1),
+      db.from('devolutivas_clinicas').select('conteudo,autorizado_familia,created_at').eq('aluno_id', perfilId).gte('created_at', inicioISO).lte('created_at', fimISO).order('created_at', { ascending: true }),
+      db.from('monitoramentos').select('resultados,observacoes,created_at').eq('perfil_id', perfilId).gte('created_at', inicioISO).lte('created_at', fimISO).order('created_at', { ascending: true }),
+      db.from('praticas_guiadas').select('titulo,area,status,criado_em').eq('perfil_id', perfilId).gte('criado_em', inicioISO).lte('criado_em', fimISO).order('criado_em', { ascending: true }),
+      db.from('materiais_terapeuticos_gerados').select('tipo,contexto,criado_em').eq('perfil_id', perfilId).gte('criado_em', inicioISO).lte('criado_em', fimISO).order('criado_em', { ascending: true }),
+      db.from('diario_aluno').select('tipo,texto,created_at').eq('aluno_nome', p.nome).gte('created_at', inicioISO).lte('created_at', fimISO).order('created_at', { ascending: true }),
+    ]);
+
+    const fmtData = iso => new Date(iso).toLocaleDateString('pt-BR');
+    const secoes = [];
+
+    secoes.push(`DOSSIÊ DO PACIENTE\n\nNome: ${p.nome}\nIdade: ${p.idade||'não informado'}\nDiagnóstico: ${p.diagnostico||'não informado'}\nPeríodo do dossiê: ${dataInicio?fmtData(inicioISO):'início do histórico'} a ${fmtData(fimISO)}`);
+
+    const obj = rObj.data;
+    secoes.push(`OBJETIVOS TERAPÊUTICOS\n${obj ? `Cognitivo: ${obj.cognitivo||'—'}\nComunicação: ${obj.comunicacao||'—'}\nSocial: ${obj.social||'—'}\nComportamental: ${obj.comportamental||'—'}\nAcadêmico: ${obj.academico||'—'}` : 'Nenhum objetivo terapêutico cadastrado.'}`);
+
+    const plano = (rPlano.data||[])[0];
+    secoes.push(`PLANO DE INTERVENÇÃO (mais recente)\n${plano ? `Para a Escola: ${plano.escola||'—'}\n\nPara o AT: ${plano.at||'—'}\n\nEstratégias Clínicas: ${plano.clinica||'—'}\n\nIndicadores: ${plano.indicadores||'—'}` : 'Nenhum Plano de Intervenção salvo.'}`);
+
+    const devs = rDevol.data||[];
+    secoes.push(`DEVOLUTIVAS CLÍNICAS NO PERÍODO (${devs.length})\n${devs.length ? devs.map(d=>`- ${fmtData(d.created_at)}${d.autorizado_familia?' (compartilhada com a escola)':''}: ${(d.conteudo||'').slice(0,300)}`).join('\n\n') : 'Nenhuma devolutiva registrada no período.'}`);
+
+    const mons = rMon.data||[];
+    secoes.push(`MONITORAMENTO NO PERÍODO (${mons.length} registros)\n${mons.length ? mons.map(m=>{
+      const res = Object.entries(m.resultados||{}).map(([k,v])=>`${k}: ${v}`).join(', ');
+      return `- ${fmtData(m.created_at)} — ${res}${m.observacoes?' | Obs: '+m.observacoes:''}`;
+    }).join('\n') : 'Nenhum registro de monitoramento no período.'}`);
+
+    const praticas = rPratica.data||[];
+    secoes.push(`PRÁTICA GUIADA NO PERÍODO (${praticas.length})\n${praticas.length ? praticas.map(pr=>`- ${fmtData(pr.criado_em)} — ${pr.titulo||''}${pr.area?' · '+pr.area:''} (${pr.status||''})`).join('\n') : 'Nenhuma prática guiada no período.'}`);
+
+    const materiais = rMaterial.data||[];
+    secoes.push(`MATERIAIS TERAPÊUTICOS GERADOS NO PERÍODO (${materiais.length})\n${materiais.length ? materiais.map(m=>`- ${fmtData(m.criado_em)} — ${m.tipo||''}${m.contexto?' · '+m.contexto:''}`).join('\n') : 'Nenhum material gerado no período.'}`);
+
+    const diarios = rDiario.data||[];
+    const conquistas = diarios.filter(d=>d.tipo==='conquista');
+    const alertas = diarios.filter(d=>d.tipo==='alerta');
+    secoes.push(`DIÁRIO DO ALUNO NO PERÍODO\nConquistas (${conquistas.length}):\n${conquistas.length ? conquistas.map(d=>`- ${fmtData(d.created_at)} — ${d.texto||''}`).join('\n') : 'Nenhuma.'}\n\nAlertas (${alertas.length}):\n${alertas.length ? alertas.map(d=>`- ${fmtData(d.created_at)} — ${d.texto||''}`).join('\n') : 'Nenhum.'}`);
+
+    const textoFinal = secoes.join('\n\n' + '─'.repeat(40) + '\n\n');
+    dossiePacienteGerado = textoFinal;
+    dossiePacienteAtual = p;
+
+    const rt = document.getElementById('dossie-pac-result-text');
+    if (rt) rt.textContent = textoFinal;
+    const card = document.getElementById('dossie-pac-result-card');
+    if (card) card.style.display = 'block';
+  } catch(e) {
+    toast('Erro ao gerar dossiê: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Gerar Dossiê'; }
+  }
+}
+
+function baixarPDFDossiePaciente() {
+  if (!dossiePacienteGerado) return toast('Gere o dossiê primeiro.', 'error');
+  gerarPDFDocumento({
+    tipo: 'DOSSIE',
+    titulo: 'Dossiê do Paciente',
+    subtitulo: dossiePacienteAtual?.nome || '',
+    semAssinatura: true,
+    aluno: dossiePacienteAtual?.nome || 'Não identificado',
+    professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
+    conteudo: dossiePacienteGerado,
+    nomeArquivo: 'Dossie_Paciente_' + (dossiePacienteAtual?.nome||'paciente').replace(/\s+/g,'_'),
+    isAtividade: false
+  });
 }
 
 async function salvarPlanoIntervencao() {
