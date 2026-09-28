@@ -7,6 +7,7 @@
 <title>LouMind · Plataforma de Integração Clínica-Pedagógica</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -21774,6 +21775,7 @@ function popularDossiePacienteSel() {
 }
 
 let dossiePacienteGerado = null;
+let dossiePacienteDados = null;
 let dossiePacienteAtual = null;
 
 async function gerarDossiePaciente() {
@@ -21800,20 +21802,11 @@ async function gerarDossiePaciente() {
     ]);
 
     const fmtData = iso => new Date(iso).toLocaleDateString('pt-BR');
-    const secoes = [];
-
-    secoes.push(`DOSSIÊ DO PACIENTE\n\nNome: ${p.nome}\nIdade: ${p.idade||'não informado'}\nDiagnóstico: ${p.diagnostico||'não informado'}\nPeríodo do dossiê: ${dataInicio?fmtData(inicioISO):'início do histórico'} a ${fmtData(fimISO)}`);
+    const AREAS_LABEL_DOSSIE = { cognitivo:'Cognitivo', comunicacao:'Comunicação', social:'Social', comportamental:'Comportamental', academico:'Acadêmico' };
 
     const obj = rObj.data;
-    secoes.push(`OBJETIVOS TERAPÊUTICOS\n${obj ? `Cognitivo: ${obj.cognitivo||'—'}\nComunicação: ${obj.comunicacao||'—'}\nSocial: ${obj.social||'—'}\nComportamental: ${obj.comportamental||'—'}\nAcadêmico: ${obj.academico||'—'}` : 'Nenhum objetivo terapêutico cadastrado.'}`);
-
     const plano = (rPlano.data||[])[0];
-    secoes.push(`PLANO DE INTERVENÇÃO (mais recente)\n${plano ? `Para a Escola: ${plano.escola||'—'}\n\nPara o AT: ${plano.at||'—'}\n\nEstratégias Clínicas: ${plano.clinica||'—'}\n\nIndicadores: ${plano.indicadores||'—'}` : 'Nenhum Plano de Intervenção salvo.'}`);
-
-    const devs = rDevol.data||[];
-    secoes.push(`DEVOLUTIVAS CLÍNICAS NO PERÍODO (${devs.length})\n${devs.length ? devs.map(d=>`- ${fmtData(d.created_at)}${d.autorizado_familia?' (compartilhada com a escola)':''}: ${(d.conteudo||'').slice(0,300)}`).join('\n\n') : 'Nenhuma devolutiva registrada no período.'}`);
-
-    const AREAS_LABEL_DOSSIE = { cognitivo:'Cognitivo', comunicacao:'Comunicação', social:'Social', comportamental:'Comportamental', academico:'Acadêmico' };
+    const devs = (rDevol.data||[]).map(d => ({ data: fmtData(d.created_at), compartilhada: d.autorizado_familia ? 'Sim' : 'Não', conteudo: d.conteudo||'' }));
 
     const mons = rMon.data||[];
     const VALOR_MON_DOSSIE = { ok: 100, parcial: 50, nao: 0 };
@@ -21825,33 +21818,35 @@ async function gerarDossiePaciente() {
         porAreaMon[area].push({ val: VALOR_MON_DOSSIE[val], data: m.created_at });
       });
     });
-    const resumoAreasMon = Object.keys(porAreaMon).map(area => {
+    const resumoMon = Object.keys(porAreaMon).map(area => {
       const regs = porAreaMon[area].sort((a,b) => new Date(a.data) - new Date(b.data));
       const media = Math.round(regs.reduce((s,r)=>s+r.val,0) / regs.length);
       const tendencia = regs.length >= 2
-        ? (regs[regs.length-1].val > regs[0].val ? '↑ evoluindo' : regs[regs.length-1].val < regs[0].val ? '↓ em queda' : '→ estável')
+        ? (regs[regs.length-1].val > regs[0].val ? 'Evoluindo' : regs[regs.length-1].val < regs[0].val ? 'Em queda' : 'Estável')
         : '—';
-      return `- ${AREAS_LABEL_DOSSIE[area]||area}: ${regs.length} registro(s), média de ${media}% (${tendencia})`;
-    }).join('\n');
-    secoes.push(`MONITORAMENTO NO PERÍODO (${mons.length} registros no total)\n${mons.length ? resumoAreasMon : 'Nenhum registro de monitoramento no período.'}`);
+      return { label: AREAS_LABEL_DOSSIE[area]||area, count: regs.length, media, tendencia };
+    });
 
-    const praticas = rPratica.data||[];
-    secoes.push(`PRÁTICA GUIADA NO PERÍODO (${praticas.length})\n${praticas.length ? praticas.map(pr=>`- ${fmtData(pr.criado_em)} — ${pr.titulo||''}${pr.area?' · '+(AREAS_LABEL_DOSSIE[pr.area]||pr.area):''} (${pr.status==='pendente'?'pendente':'aplicada'})`).join('\n') : 'Nenhuma prática guiada no período.'}`);
+    const praticas = (rPratica.data||[]).map(pr => ({ data: fmtData(pr.criado_em), titulo: pr.titulo||'', area: AREAS_LABEL_DOSSIE[pr.area]||pr.area||'', status: pr.status==='pendente'?'Pendente':'Aplicada' }));
 
-    const materiais = rMaterial.data||[];
-    secoes.push(`MATERIAIS TERAPÊUTICOS GERADOS NO PERÍODO (${materiais.length})\n${materiais.length ? materiais.map(m=>`- ${fmtData(m.criado_em)} ${new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} — ${DICAS_MATERIAL[m.tipo]?.label||m.tipo||''}${m.contexto?' · '+m.contexto:''}`).join('\n') : 'Nenhum material gerado no período.'}`);
+    const materiais = (rMaterial.data||[]).map(m => ({ data: fmtData(m.criado_em) + ' ' + new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), tipo: DICAS_MATERIAL[m.tipo]?.label||m.tipo||'', contexto: m.contexto||'' }));
 
-    const diarios = rDiario.data||[];
-    const conquistas = diarios.filter(d=>d.tipo==='conquista');
-    const alertas = diarios.filter(d=>d.tipo==='alerta');
-    secoes.push(`DIÁRIO DO ALUNO NO PERÍODO\nConquistas (${conquistas.length}):\n${conquistas.length ? conquistas.map(d=>`- ${fmtData(d.created_at)} — ${d.texto||''}`).join('\n') : 'Nenhuma.'}\n\nAlertas (${alertas.length}):\n${alertas.length ? alertas.map(d=>`- ${fmtData(d.created_at)} — ${d.texto||''}`).join('\n') : 'Nenhum.'}`);
+    const diarios = (rDiario.data||[]).map(d => ({ data: fmtData(d.created_at), tipo: d.tipo==='conquista'?'Conquista':d.tipo==='alerta'?'Alerta':(d.tipo||''), texto: d.texto||'' }));
 
-    const textoFinal = secoes.join('\n\n' + '─'.repeat(40) + '\n\n');
-    dossiePacienteGerado = textoFinal;
+    dossiePacienteDados = { p, dataInicio, inicioISO, fimISO, obj, plano, devs, resumoMon, totalMon: mons.length, praticas, materiais, diarios };
     dossiePacienteAtual = p;
 
+    const previewPartes = [];
+    previewPartes.push(`${p.nome} · ${p.idade||''} · ${p.diagnostico||'sem diagnóstico'}`);
+    previewPartes.push(`Objetivos terapêuticos: ${obj ? 'cadastrados' : 'nenhum'}`);
+    previewPartes.push(`Plano de Intervenção: ${plano ? 'mais recente incluído' : 'nenhum salvo'}`);
+    previewPartes.push(`Devolutivas no período: ${devs.length}`);
+    previewPartes.push(`Registros de Monitoramento: ${mons.length}`);
+    previewPartes.push(`Prática Guiada no período: ${praticas.length}`);
+    previewPartes.push(`Materiais gerados no período: ${materiais.length}`);
+    previewPartes.push(`Entradas de Diário no período: ${diarios.length}`);
     const rt = document.getElementById('dossie-pac-result-text');
-    if (rt) rt.textContent = textoFinal;
+    if (rt) rt.textContent = previewPartes.join('\n');
     const card = document.getElementById('dossie-pac-result-card');
     if (card) card.style.display = 'block';
   } catch(e) {
@@ -21862,18 +21857,141 @@ async function gerarDossiePaciente() {
 }
 
 function baixarPDFDossiePaciente() {
-  if (!dossiePacienteGerado) return toast('Gere o dossiê primeiro.', 'error');
-  gerarPDFDocumento({
-    tipo: 'DOSSIE',
-    titulo: 'Dossiê do Paciente',
-    subtitulo: dossiePacienteAtual?.nome || '',
-    semAssinatura: true,
-    aluno: dossiePacienteAtual?.nome || 'Não identificado',
-    professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
-    conteudo: dossiePacienteGerado,
-    nomeArquivo: 'Dossie_Paciente_' + (dossiePacienteAtual?.nome||'paciente').replace(/\s+/g,'_'),
-    isAtividade: false
-  });
+  const d = dossiePacienteDados;
+  if (!d) return toast('Gere o dossiê primeiro.', 'error');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, ml = 15, mr = 15;
+  let y = 0;
+  const corAccent = [30, 58, 138];
+  const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+
+  doc.setFillColor(...corAccent);
+  doc.rect(0, 0, W, 4, 'F');
+  doc.setFillColor(245, 248, 255);
+  doc.rect(0, 4, W, 18, 'F');
+  doc.setTextColor(...corAccent);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('DOSSIÊ DO PACIENTE', ml, 15);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 130, 160);
+  doc.text(dataHoje, W - mr, 15, { align: 'right' });
+  y = 28;
+
+  doc.setFillColor(241, 245, 255);
+  doc.roundedRect(ml, y, W - ml - mr, 26, 2, 2, 'F');
+  doc.setDrawColor(...corAccent);
+  doc.setLineWidth(0.8);
+  doc.line(ml, y, ml, y + 26);
+  doc.setTextColor(...corAccent);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text(d.p.nome, ml + 5, y + 8);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(60, 60, 90);
+  doc.text(`Idade: ${d.p.idade || 'não informado'}   ·   Diagnóstico: ${d.p.diagnostico || 'não informado'}`, ml + 5, y + 15);
+  const periodoTxt = d.dataInicio ? `${new Date(d.inicioISO).toLocaleDateString('pt-BR')} a ${new Date(d.fimISO).toLocaleDateString('pt-BR')}` : `Início do histórico a ${new Date(d.fimISO).toLocaleDateString('pt-BR')}`;
+  doc.text(`Período do dossiê: ${periodoTxt}`, ml + 5, y + 21);
+  y += 32;
+
+  function tituloSecao(txt) {
+    if (y > 265) { doc.addPage(); y = 15; }
+    doc.setFillColor(...corAccent);
+    doc.rect(ml, y, 1.2, 6, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.setTextColor(...corAccent);
+    doc.text(txt, ml + 4, y + 5);
+    y += 9;
+  }
+
+  function tabela(head, body, columnStyles) {
+    doc.autoTable({
+      startY: y,
+      head: [head],
+      body,
+      margin: { left: ml, right: mr },
+      styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2.2, textColor: [30,30,30], lineColor: [225,230,240], lineWidth: 0.2 },
+      headStyles: { fillColor: corAccent, textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      alternateRowStyles: { fillColor: [248, 250, 255] },
+      columnStyles: columnStyles || {},
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  let teveConteudo = false;
+
+  if (d.obj) {
+    const areasObj = [
+      ['Cognitivo', d.obj.cognitivo], ['Comunicação', d.obj.comunicacao], ['Social', d.obj.social],
+      ['Comportamental', d.obj.comportamental], ['Acadêmico', d.obj.academico]
+    ].filter(([,v]) => v);
+    if (areasObj.length) { tituloSecao('OBJETIVOS TERAPÊUTICOS'); tabela(['Área', 'Objetivo'], areasObj, { 0: { cellWidth: 32, fontStyle: 'bold' } }); teveConteudo = true; }
+  }
+
+  if (d.plano) {
+    const blocos = [
+      ['Para a Escola', d.plano.escola], ['Para o AT', d.plano.at],
+      ['Estratégias Clínicas', d.plano.clinica], ['Indicadores', d.plano.indicadores]
+    ].filter(([,v]) => v);
+    if (blocos.length) { tituloSecao('PLANO DE INTERVENÇÃO (MAIS RECENTE)'); tabela(['Bloco', 'Conteúdo'], blocos, { 0: { cellWidth: 32, fontStyle: 'bold' } }); teveConteudo = true; }
+  }
+
+  if (d.devs.length) {
+    tituloSecao(`DEVOLUTIVAS CLÍNICAS (${d.devs.length})`);
+    tabela(['Data', 'Compartilhada', 'Conteúdo'], d.devs.map(x=>[x.data, x.compartilhada, x.conteudo]), { 0:{cellWidth:22}, 1:{cellWidth:24} });
+    teveConteudo = true;
+  }
+
+  if (d.resumoMon.length) {
+    tituloSecao(`MONITORAMENTO (${d.totalMon} registros)`);
+    tabela(['Área','Registros','Média','Tendência'], d.resumoMon.map(r=>[r.label, r.count, r.media+'%', r.tendencia]), { 0:{cellWidth:38} });
+    teveConteudo = true;
+  }
+
+  if (d.praticas.length) {
+    tituloSecao(`PRÁTICA GUIADA (${d.praticas.length})`);
+    tabela(['Data','Atividade','Área','Status'], d.praticas.map(x=>[x.data, x.titulo, x.area, x.status]), { 0:{cellWidth:22}, 2:{cellWidth:28}, 3:{cellWidth:22} });
+    teveConteudo = true;
+  }
+
+  if (d.materiais.length) {
+    tituloSecao(`MATERIAIS TERAPÊUTICOS (${d.materiais.length})`);
+    tabela(['Data/Hora','Tipo','Contexto'], d.materiais.map(x=>[x.data, x.tipo, x.contexto]), { 0:{cellWidth:30}, 1:{cellWidth:38} });
+    teveConteudo = true;
+  }
+
+  if (d.diarios.length) {
+    tituloSecao(`DIÁRIO DO ALUNO (${d.diarios.length})`);
+    tabela(['Data','Tipo','Registro'], d.diarios.map(x=>[x.data, x.tipo, x.texto]), { 0:{cellWidth:22}, 1:{cellWidth:24} });
+    teveConteudo = true;
+  }
+
+  if (!teveConteudo) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(100,100,100);
+    doc.text('Nenhum registro encontrado no período selecionado.', ml, y + 4);
+  }
+
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPaginas; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(220,220,220);
+    doc.setLineWidth(0.2);
+    doc.line(ml, 287, W-mr, 287);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(150,150,150);
+    doc.text('LouMind — Plataforma de Integração Clínica-Pedagógica | loumind.ia.br', ml, 292);
+    doc.text('Pág. '+i+' de '+totalPaginas, W-mr, 292, { align:'right' });
+  }
+
+  doc.save('Dossie_Paciente_' + (d.p.nome||'paciente').replace(/\s+/g,'_') + '.pdf');
+  toast('PDF gerado!', 'success');
 }
 
 async function salvarPlanoIntervencao() {
