@@ -21791,14 +21791,15 @@ async function gerarDossiePaciente() {
   if (btn) { btn.disabled = true; btn.textContent = 'Reunindo registros…'; }
 
   try {
-    const [rObj, rPlano, rDevol, rMon, rPratica, rMaterial, rDiario] = await Promise.all([
+    const [rObj, rPlano, rDevol, rMon, rPratica, rMaterial, rDiario, rAval] = await Promise.all([
       db.from('objetivos_terapeuticos').select('*').eq('perfil_id', perfilId).maybeSingle(),
       db.from('planos_intervencao').select('escola,at,clinica,indicadores,created_at').eq('perfil_id', perfilId).order('created_at', { ascending: false }).limit(1),
       db.from('devolutivas_clinicas').select('conteudo,autorizado_familia,created_at').eq('aluno_id', perfilId).gte('created_at', inicioISO).lte('created_at', fimISO).order('created_at', { ascending: true }),
       db.from('monitoramentos').select('resultados,observacoes,created_at').eq('perfil_id', perfilId).gte('created_at', inicioISO).lte('created_at', fimISO).order('created_at', { ascending: true }),
-      db.from('praticas_guiadas').select('titulo,area,status,criado_em').eq('perfil_id', perfilId).gte('criado_em', inicioISO).lte('criado_em', fimISO).order('criado_em', { ascending: true }),
+      db.from('praticas_guiadas').select('id,titulo,area,status,criado_em').eq('perfil_id', perfilId).gte('criado_em', inicioISO).lte('criado_em', fimISO).order('criado_em', { ascending: true }),
       db.from('materiais_terapeuticos_gerados').select('tipo,contexto,criado_em').eq('perfil_id', perfilId).gte('criado_em', inicioISO).lte('criado_em', fimISO).order('criado_em', { ascending: true }),
       db.from('diario_aluno').select('tipo,texto,created_at').eq('aluno_nome', p.nome).gte('created_at', inicioISO).lte('created_at', fimISO).order('created_at', { ascending: true }),
+      db.from('avaliacoes_praticas').select('registro_id,tabela_origem,status,nota_rapida').eq('perfil_id', perfilId).eq('tabela_origem', 'praticas_guiadas'),
     ]);
 
     const fmtData = iso => new Date(iso).toLocaleDateString('pt-BR');
@@ -21827,7 +21828,17 @@ async function gerarDossiePaciente() {
       return { label: AREAS_LABEL_DOSSIE[area]||area, count: regs.length, media, tendencia };
     });
 
-    const praticas = (rPratica.data||[]).map(pr => ({ data: fmtData(pr.criado_em), titulo: pr.titulo||'', area: AREAS_LABEL_DOSSIE[pr.area]||pr.area||'', status: pr.status==='pendente'?'Pendente':'Aplicada' }));
+    const RESULTADO_LABEL = { funcionou: 'Funcionou bem', parcial: 'Funcionou parcial', nao_funcionou: 'Não funcionou' };
+    const avalMapDossie = {};
+    (rAval.data||[]).forEach(av => { avalMapDossie[av.registro_id] = av; });
+    const praticas = (rPratica.data||[]).map(pr => {
+      const av = avalMapDossie[pr.id];
+      return {
+        data: fmtData(pr.criado_em), titulo: pr.titulo||'', area: AREAS_LABEL_DOSSIE[pr.area]||pr.area||'',
+        status: pr.status==='pendente'?'Pendente':'Aplicada',
+        resultado: av ? (RESULTADO_LABEL[av.status] || av.status) + (av.nota_rapida ? ` (${av.nota_rapida})` : '') : '—'
+      };
+    });
 
     const materiais = (rMaterial.data||[]).map(m => ({ data: fmtData(m.criado_em) + ' ' + new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), tipo: DICAS_MATERIAL[m.tipo]?.label||m.tipo||'', contexto: m.contexto||'' }));
 
@@ -21954,7 +21965,7 @@ function baixarPDFDossiePaciente() {
 
   if (d.praticas.length) {
     tituloSecao(`PRÁTICA GUIADA (${d.praticas.length})`);
-    tabela(['Data','Atividade','Área','Status'], d.praticas.map(x=>[x.data, x.titulo, x.area, x.status]), { 0:{cellWidth:22}, 2:{cellWidth:28}, 3:{cellWidth:22} });
+    tabela(['Data','Atividade','Área','Status','Resultado'], d.praticas.map(x=>[x.data, x.titulo, x.area, x.status, x.resultado]), { 0:{cellWidth:20}, 2:{cellWidth:22}, 3:{cellWidth:18} });
     teveConteudo = true;
   }
 
