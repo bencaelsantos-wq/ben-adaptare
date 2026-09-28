@@ -17346,6 +17346,7 @@ function popularDossieSel() {
 
 let dossieGerado = null;
 let dossieAlunoAtual = null;
+let dossieAlunoDados = null;
 
 async function gerarDossieAluno() {
   const alunoId = document.getElementById('dossie-aluno-sel')?.value;
@@ -17370,36 +17371,27 @@ async function gerarDossieAluno() {
     ]);
 
     const fmtData = iso => new Date(iso).toLocaleDateString('pt-BR');
-    const secoes = [];
-
-    secoes.push(`DOSSIÊ DO ALUNO\n\nNome: ${aluno.nome}\nSérie: ${aluno.serie||'não informado'}\nPeríodo do dossiê: ${dataInicio?fmtData(inicioISO):'início do histórico'} a ${fmtData(fimISO)}`);
 
     const pei = (rPei.data||[])[0];
-    secoes.push(`PEI — PLANO EDUCACIONAL INDIVIDUALIZADO\n${pei ? `Período: ${pei.periodo||''} · Status: ${pei.status||''}\n${pei.texto||''}` : 'Nenhum PEI cadastrado.'}`);
-
     const aee = (rAee.data||[])[0];
-    secoes.push(`PLANO DE AEE\n${aee ? `Status: ${aee.status||''}\n${aee.texto || aee.objetivos || ''}` : 'Nenhum Plano de AEE cadastrado.'}`);
+    const adapts = (rAdapt.data||[]).map(a => ({ data: fmtData(a.created_at), materia: a.materia||'', tipo: a.tipo_atividade||'' }));
+    const ciclos = (rCiclo.data||[]).map(c => ({ data: fmtData(c.created_at), materia: c.materia||'', tema: c.tema||'' }));
+    const evols = (rEvol.data||[]).map(e => ({ data: fmtData(e.data_registro+'T00:00:00'), destaque: e.destaque||'', atencao: e.atencao||'' }));
+    const diarios = (rDiario.data||[]).map(d => ({ data: fmtData(d.created_at), tipo: d.tipo==='conquista'?'Conquista':d.tipo==='alerta'?'Alerta':(d.tipo||''), texto: d.texto||'' }));
 
-    const adapts = rAdapt.data||[];
-    secoes.push(`ADAPTAÇÕES NO PERÍODO (${adapts.length})\n${adapts.length ? adapts.map(a=>`- ${fmtData(a.created_at)} — ${a.materia||''}${a.tipo_atividade?' · '+a.tipo_atividade:''}`).join('\n') : 'Nenhuma adaptação registrada no período.'}`);
-
-    const ciclos = rCiclo.data||[];
-    secoes.push(`CICLOS DE TRABALHO NO PERÍODO (${ciclos.length})\n${ciclos.length ? ciclos.map(c=>`- ${fmtData(c.created_at)} — ${c.materia||''}${c.tema?' · '+c.tema:''}`).join('\n') : 'Nenhum ciclo de trabalho registrado no período.'}`);
-
-    const evols = rEvol.data||[];
-    secoes.push(`EVOLUÇÃO PEDAGÓGICA NO PERÍODO (${evols.length} registros)\n${evols.length ? evols.map(e=>`- ${fmtData(e.data_registro+'T00:00:00')}${e.destaque?' | Destaque: '+e.destaque:''}${e.atencao?' | Atenção: '+e.atencao:''}`).join('\n') : 'Nenhum registro de evolução no período.'}`);
-
-    const diarios = rDiario.data||[];
-    const conquistas = diarios.filter(d=>d.tipo==='conquista');
-    const alertas = diarios.filter(d=>d.tipo==='alerta');
-    secoes.push(`DIÁRIO DO ALUNO NO PERÍODO\nConquistas (${conquistas.length}):\n${conquistas.length ? conquistas.map(d=>`- ${fmtData(d.created_at)} — ${d.texto||''}`).join('\n') : 'Nenhuma.'}\n\nAlertas (${alertas.length}):\n${alertas.length ? alertas.map(d=>`- ${fmtData(d.created_at)} — ${d.texto||''}`).join('\n') : 'Nenhum.'}`);
-
-    const textoFinal = secoes.join('\n\n' + '─'.repeat(40) + '\n\n');
-    dossieGerado = textoFinal;
+    dossieAlunoDados = { aluno, dataInicio, inicioISO, fimISO, pei, aee, adapts, ciclos, evols, diarios };
     dossieAlunoAtual = aluno;
 
+    const previewPartes = [];
+    previewPartes.push(`${aluno.nome} · ${aluno.serie||'sem série'}`);
+    previewPartes.push(`PEI: ${pei ? 'mais recente incluído' : 'nenhum cadastrado'}`);
+    previewPartes.push(`Plano de AEE: ${aee ? 'mais recente incluído' : 'nenhum cadastrado'}`);
+    previewPartes.push(`Adaptações no período: ${adapts.length}`);
+    previewPartes.push(`Ciclos de Trabalho no período: ${ciclos.length}`);
+    previewPartes.push(`Evolução Pedagógica no período: ${evols.length}`);
+    previewPartes.push(`Entradas de Diário no período: ${diarios.length}`);
     const rt = document.getElementById('dossie-result-text');
-    if (rt) rt.textContent = textoFinal;
+    if (rt) rt.textContent = previewPartes.join('\n');
     const card = document.getElementById('dossie-result-card');
     if (card) card.style.display = 'block';
   } catch(e) {
@@ -17410,18 +17402,131 @@ async function gerarDossieAluno() {
 }
 
 function baixarPDFDossieAluno() {
-  if (!dossieGerado) return toast('Gere o dossiê primeiro.', 'error');
-  gerarPDFDocumento({
-    tipo: 'DOSSIE',
-    titulo: 'Dossiê do Aluno',
-    subtitulo: dossieAlunoAtual?.nome || '',
-    semAssinatura: true,
-    aluno: dossieAlunoAtual?.nome || 'Não identificado',
-    professor: window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || '',
-    conteudo: dossieGerado,
-    nomeArquivo: 'Dossie_' + (dossieAlunoAtual?.nome||'aluno').replace(/\s+/g,'_'),
-    isAtividade: false
-  });
+  const d = dossieAlunoDados;
+  if (!d) return toast('Gere o dossiê primeiro.', 'error');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, ml = 15, mr = 15;
+  let y = 0;
+  const corAccent = [30, 58, 138];
+  const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+
+  doc.setFillColor(...corAccent);
+  doc.rect(0, 0, W, 4, 'F');
+  doc.setFillColor(245, 248, 255);
+  doc.rect(0, 4, W, 18, 'F');
+  doc.setTextColor(...corAccent);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('DOSSIÊ DO ALUNO', ml, 15);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 130, 160);
+  doc.text(dataHoje, W - mr, 15, { align: 'right' });
+  y = 28;
+
+  doc.setFillColor(241, 245, 255);
+  doc.roundedRect(ml, y, W - ml - mr, 20, 2, 2, 'F');
+  doc.setDrawColor(...corAccent);
+  doc.setLineWidth(0.8);
+  doc.line(ml, y, ml, y + 20);
+  doc.setTextColor(...corAccent);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text(d.aluno.nome, ml + 5, y + 8);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(60, 60, 90);
+  doc.text(`Série: ${d.aluno.serie || 'não informado'}`, ml + 5, y + 15);
+  const periodoTxt = d.dataInicio ? `${new Date(d.inicioISO).toLocaleDateString('pt-BR')} a ${new Date(d.fimISO).toLocaleDateString('pt-BR')}` : `Início do histórico a ${new Date(d.fimISO).toLocaleDateString('pt-BR')}`;
+  doc.text(`Período do dossiê: ${periodoTxt}`, W/2 + 5, y + 15);
+  y += 26;
+
+  function tituloSecao(txt) {
+    if (y > 265) { doc.addPage(); y = 15; }
+    doc.setFillColor(...corAccent);
+    doc.rect(ml, y, 1.2, 6, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.setTextColor(...corAccent);
+    doc.text(txt, ml + 4, y + 5);
+    y += 9;
+  }
+
+  function tabela(head, body, columnStyles) {
+    doc.autoTable({
+      startY: y,
+      head: [head],
+      body,
+      margin: { left: ml, right: mr },
+      styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2.2, textColor: [30,30,30], lineColor: [225,230,240], lineWidth: 0.2 },
+      headStyles: { fillColor: corAccent, textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      alternateRowStyles: { fillColor: [248, 250, 255] },
+      columnStyles: columnStyles || {},
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  let teveConteudo = false;
+
+  if (d.pei) {
+    tituloSecao('PEI — PLANO EDUCACIONAL INDIVIDUALIZADO (MAIS RECENTE)');
+    tabela(['Período', 'Status', 'Conteúdo'], [[d.pei.periodo||'—', d.pei.status||'—', d.pei.texto||'—']], { 0:{cellWidth:24}, 1:{cellWidth:22} });
+    teveConteudo = true;
+  }
+
+  if (d.aee) {
+    tituloSecao('PLANO DE AEE (MAIS RECENTE)');
+    tabela(['Status', 'Conteúdo'], [[d.aee.status||'—', d.aee.texto || d.aee.objetivos || '—']], { 0:{cellWidth:24} });
+    teveConteudo = true;
+  }
+
+  if (d.adapts.length) {
+    tituloSecao(`ADAPTAÇÕES (${d.adapts.length})`);
+    tabela(['Data','Matéria','Tipo de atividade'], d.adapts.map(x=>[x.data, x.materia, x.tipo]), { 0:{cellWidth:24} });
+    teveConteudo = true;
+  }
+
+  if (d.ciclos.length) {
+    tituloSecao(`CICLOS DE TRABALHO (${d.ciclos.length})`);
+    tabela(['Data','Matéria','Tema'], d.ciclos.map(x=>[x.data, x.materia, x.tema]), { 0:{cellWidth:24} });
+    teveConteudo = true;
+  }
+
+  if (d.evols.length) {
+    tituloSecao(`EVOLUÇÃO PEDAGÓGICA (${d.evols.length} registros)`);
+    tabela(['Data','Destaque','Atenção'], d.evols.map(x=>[x.data, x.destaque||'—', x.atencao||'—']), { 0:{cellWidth:22} });
+    teveConteudo = true;
+  }
+
+  if (d.diarios.length) {
+    tituloSecao(`DIÁRIO DO ALUNO (${d.diarios.length})`);
+    tabela(['Data','Tipo','Registro'], d.diarios.map(x=>[x.data, x.tipo, x.texto]), { 0:{cellWidth:22}, 1:{cellWidth:24} });
+    teveConteudo = true;
+  }
+
+  if (!teveConteudo) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(100,100,100);
+    doc.text('Nenhum registro encontrado no período selecionado.', ml, y + 4);
+  }
+
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPaginas; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(220,220,220);
+    doc.setLineWidth(0.2);
+    doc.line(ml, 287, W-mr, 287);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(150,150,150);
+    doc.text('LouMind — Plataforma de Integração Clínica-Pedagógica | loumind.ia.br', ml, 292);
+    doc.text('Pág. '+i+' de '+totalPaginas, W-mr, 292, { align:'right' });
+  }
+
+  doc.save('Dossie_' + (d.aluno.nome||'aluno').replace(/\s+/g,'_') + '.pdf');
+  toast('PDF gerado!', 'success');
 }
 
 function popularPeriodoPA() {
