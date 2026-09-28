@@ -4123,7 +4123,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4555,6 +4555,9 @@ function renderNavGestao() {
     </div>
     <div class="nav-item gestao-item" id="nav-gestao-relatorios" onclick="showPage('gestao-relatorios');carregarGRelatorios()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="15.5" cy="4.5" r="2.5" fill="#059669"/></svg>Relatórios da clínica
+    </div>
+    <div class="nav-item gestao-item" id="nav-gestao-radar" onclick="${!temAddon('radar_divergencia') ? "acessarRecursoPremium('Radar de Divergência')" : "showPage('gestao-radar');popularRadarSel()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="0.8" fill="currentColor"/></svg>Radar de Divergência
     </div>
     <div class="nav-section">Reuniões</div>
     <div class="nav-item gestao-item" id="nav-gestao-pauta" onclick="showPage('gestao-pauta')">
@@ -8008,7 +8011,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
@@ -8016,11 +8019,11 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
-  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia'],
   compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
@@ -13406,6 +13409,27 @@ function renderPagesGestao() {
   <!-- /COMUNICAÇÃO COM CLÍNICAS -->
 
   <!-- ══ GESTÃO EDUCACIONAL: RELATÓRIOS DA CLÍNICA ══ -->
+  <div id="page-gestao-radar" class="page">
+    <h1 class="page-title">Radar de Divergência</h1>
+    <p class="page-sub">Compara o PEI (escola) com os Objetivos Terapêuticos (clínica) do mesmo aluno, usando o vínculo confirmado entre os dois cadastros, e aponta se estão alinhados.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Aluno vinculado</div><div class="pei-step-sub">Só aparecem alunos com vínculo confirmado pela clínica</div></div></div>
+      <div class="fblock"><label class="flabel" for="radar-vinculo-sel">Aluno / Paciente</label>
+        <select id="radar-vinculo-sel" class="fselect"><option value="">Selecione</option></select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" id="btn-gerar-radar" onclick="gerarRadarDivergencia()">Analisar convergência com a Lou</button>
+    </div>
+
+    <div class="result-card" id="radar-result-card">
+      <div class="result-header"><div class="result-title">Análise de convergência</div></div>
+      <div class="result-text" id="radar-result-text"></div>
+    </div>
+  </div>
+
   <div id="page-gestao-relatorios" class="page">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
       <h1 class="page-title">Relatórios da clínica</h1>
@@ -22206,6 +22230,69 @@ async function carregarVinculosPropostos() {
       <div style="font-size:12px;color:var(--gr500);margin-top:3px">${statusTxt}</div>
     </div>`;
   }).join('');
+}
+
+async function popularRadarSel() {
+  const sel = document.getElementById('radar-vinculo-sel');
+  if (!sel) return;
+  const { data } = await db.from('vinculos_aluno_perfil').select('*').eq('confirmado_escola', true).eq('recusado', false);
+  if (!data || !data.length) { sel.innerHTML = '<option value="">Nenhum vínculo confirmado ainda</option>'; return; }
+  sel.innerHTML = '<option value="">Selecione</option>' + data.map(v=>`<option value="${v.id}" data-aluno="${v.aluno_id}" data-perfil="${v.perfil_clinico_id}">${v.aluno_nome} ↔ ${v.paciente_nome}</option>`).join('');
+}
+
+async function gerarRadarDivergencia() {
+  const sel = document.getElementById('radar-vinculo-sel');
+  const opt = sel?.selectedOptions[0];
+  if (!opt || !opt.value) return toast('Selecione um vínculo confirmado.', 'error');
+  const alunoId = opt.dataset.aluno;
+  const perfilId = opt.dataset.perfil;
+
+  const btn = document.getElementById('btn-gerar-radar');
+  if (btn) { btn.disabled = true; btn.textContent = 'Analisando…'; }
+  const card = document.getElementById('radar-result-card');
+  if (card) card.style.display = 'none';
+
+  try {
+    const [rPei, rObj] = await Promise.all([
+      db.from('peis').select('periodo,texto,status,created_at').eq('aluno_id', alunoId).order('created_at', { ascending: false }).limit(1),
+      db.from('objetivos_terapeuticos').select('*').eq('perfil_id', perfilId).maybeSingle(),
+    ]);
+    const pei = (rPei.data||[])[0];
+    const obj = rObj.data;
+
+    if (!pei && !obj) {
+      toast('Nenhum PEI nem Objetivo Terapêutico cadastrado ainda para esse vínculo.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Analisar convergência com a Lou'; }
+      return;
+    }
+
+    const prompt = `Você é especialista em integração clínico-pedagógica inclusiva. Compare os dois planos abaixo, do MESMO aluno, um feito pela escola e outro pela clínica, e avalie o grau de convergência entre eles.
+
+PEI (ESCOLA):
+${pei ? (pei.texto || 'Sem texto detalhado.') : 'Nenhum PEI cadastrado.'}
+
+OBJETIVOS TERAPÊUTICOS (CLÍNICA):
+${obj ? `Cognitivo: ${obj.cognitivo||'—'}\nComunicação: ${obj.comunicacao||'—'}\nSocial: ${obj.social||'—'}\nComportamental: ${obj.comportamental||'—'}\nAcadêmico: ${obj.academico||'—'}` : 'Nenhum objetivo terapêutico cadastrado.'}
+
+Se um dos dois lados estiver vazio, aponte isso claramente como o principal ponto de atenção (não dá pra avaliar convergência sem os dois lados preenchidos).
+
+Responda em texto simples, sem markdown, seguindo exatamente este formato:
+
+CLASSIFICAÇÃO: [Alinhados / Parcialmente alinhados / Sem conexão aparente / Dados insuficientes]
+
+RESUMO: [2-3 frases explicando o motivo da classificação]
+
+PONTOS DE ATENÇÃO: [o que a escola e a clínica deveriam alinhar entre si, em tópicos curtos]`;
+
+    const texto = await chamarClaude({ prompt, maxTokens: 800, modulo: 'radar_divergencia' });
+    const rt = document.getElementById('radar-result-text');
+    if (rt) rt.textContent = texto;
+    if (card) card.style.display = 'block';
+  } catch(e) {
+    toast('Erro ao analisar: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Analisar convergência com a Lou'; }
+  }
 }
 
 async function salvarPlanoIntervencao() {
