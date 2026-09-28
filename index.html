@@ -5937,9 +5937,35 @@ function mudarTabGuiaEns(btn, tab) {
 
 // ── DASHBOARDS POR PERFIL ────────────────────────────────────
 
+async function carregarVinculosPendentesCoord() {
+  const cont = document.getElementById('coord-lista-vinculos');
+  if (!cont) return;
+  const { data } = await db.from('vinculos_aluno_perfil').select('*').eq('confirmado_escola', false).eq('recusado', false).order('created_at', { ascending: false });
+  if (!data || !data.length) { cont.innerHTML = '<span style="color:var(--gr300)">Nenhum vínculo pendente.</span>'; return; }
+  cont.innerHTML = data.map(v => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
+      <span>Paciente <strong>${v.paciente_nome}</strong> ↔ aluno <strong>${v.aluno_nome}</strong></span>
+      <div style="display:flex;gap:6px">
+        <button class="btn-sm" onclick="responderVinculo('${v.id}', true)">Confirmar</button>
+        <button class="btn-sm-ghost" onclick="responderVinculo('${v.id}', false)">Recusar</button>
+      </div>
+    </div>`).join('');
+}
+
+async function responderVinculo(id, aceitar) {
+  const payload = aceitar
+    ? { confirmado_escola: true, confirmado_em: new Date().toISOString(), confirmado_por: user.id }
+    : { recusado: true };
+  const { error } = await db.from('vinculos_aluno_perfil').update(payload).eq('id', id);
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast(aceitar ? 'Vínculo confirmado!' : 'Vínculo recusado.', 'success');
+  carregarVinculosPendentesCoord();
+}
+
 async function carregarPainelCoordenacao() {
   const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
   el('coord-total-alunos','…'); el('coord-peis-pendentes','…'); el('coord-adapt-atrasadas','…');
+  carregarVinculosPendentesCoord();
   try {
     const dataCorteAlerta = new Date(Date.now() - 15 * 86400000).toISOString();
     const [{ data: alunos }, { data: peis }, { data: adapts }, { data: alertasDiario }] = await Promise.all([
@@ -12349,6 +12375,11 @@ function renderPages() {
       <div class="stat-card"><div class="stat-num" id="coord-total-alunos">—</div><div class="stat-label">Total de alunos</div></div>
       <div class="stat-card"><div class="stat-num" id="coord-peis-pendentes" style="color:#B91C1C">—</div><div class="stat-label">PEIs pendentes</div></div>
       <div class="stat-card"><div class="stat-num" id="coord-adapt-atrasadas" style="color:#B91C1C">—</div><div class="stat-label">Adaptações atrasadas (+10 dias)</div></div>
+    </div>
+    <div class="fcard" style="margin-top:16px">
+      <div class="fcard-title">🔗 Vínculos pendentes com a Clínica</div>
+      <p class="page-sub" style="margin:0 0 10px">Clínicas propuseram vincular pacientes delas a alunos daqui — confirme só se reconhecer o vínculo.</p>
+      <div id="coord-lista-vinculos" style="font-size:13px;color:var(--gr500)">Carregando…</div>
     </div>
     <div class="fcard" style="margin-top:16px">
       <div class="fcard-title">🚨 Prioridade de Atenção</div>
