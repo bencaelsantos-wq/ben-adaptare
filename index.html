@@ -5833,67 +5833,17 @@ async function carregarMuralAluno(id) {
   const mural = document.getElementById('colab-mural');
   const vazio = document.getElementById('colab-vazio');
   if (!id) { mural.style.display='none'; vazio.style.display='block'; return; }
-
-  const sel = document.getElementById('colab-aluno-sel');
-  const nomeAluno = sel?.selectedOptions[0]?.dataset?.nome || '';
-
-  mural.style.display='block'; vazio.style.display='none';
-
-  const [{ data: diario }, { data: planos }, { data: obj }] = await Promise.all([
-    db.from('diario_aluno').select('*').eq('aluno_id', id).order('data', {ascending:false}).limit(1),
-    db.from('relatorios').select('*').eq('aluno_nome', nomeAluno).order('created_at', {ascending:false}).limit(1),
-    db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle()
-  ]);
-
-  const dEl = document.getElementById('colab-diario');
-  const ultimo = diario?.[0];
-  dEl.innerHTML = ultimo
-    ? `<div style="font-size:11px;color:var(--gr400);margin-bottom:4px">${new Date(ultimo.data).toLocaleDateString('pt-BR')} · ${ultimo.tipo||'Registro'}</div><div style="background:var(--bg2);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.6">${(ultimo.conteudo||'').slice(0,200)}${(ultimo.conteudo||'').length>200?'…':''}</div>`
-    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">📓</div><div class="empty-text">Sem registros ainda</div></div>`;
-
-  const pEl = document.getElementById('colab-plano');
-  const ultimoP = planos?.[0];
-  pEl.innerHTML = ultimoP
-    ? `<div style="font-size:11px;color:var(--gr400);margin-bottom:4px">${new Date(ultimoP.created_at).toLocaleDateString('pt-BR')} · ${ultimoP.origem==='clinica'?'🏥 Clínica':'🏫 Escola'}</div><div style="background:var(--bg2);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.6">${(ultimoP.conteudo||'').slice(0,200)}${(ultimoP.conteudo||'').length>200?'…':''}</div>`
-    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🔬</div><div class="empty-text">Sem plano enviado ainda</div></div>`;
-
-  const oEl = document.getElementById('colab-obj');
-  oEl.innerHTML = obj
-    ? ['cognitivo','comunicacao','social','comportamental','academico'].filter(k=>obj[k]).map(k=>`<div style="margin-bottom:5px"><span style="font-size:10.5px;font-weight:600;color:var(--gr500);text-transform:uppercase;letter-spacing:.04em">${k}</span><div style="font-size:12.5px;color:var(--gr700);line-height:1.5">${obj[k]}</div></div>`).join('')||'<span style="color:var(--gr400)">Nenhum objetivo cadastrado</span>'
-    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🎯</div><div class="empty-text">Sem objetivos cadastrados</div></div>`;
-
-  const acEl = document.getElementById('colab-acoes');
-  const acoes = [
-    { label:'📓 Ver Diário completo', page: userRole==='professor'?'diario-aluno':userRole==='gestao'?'gestao-diario':'ponte-diario' },
-    { label:'📋 Gerar pauta de reunião', page:'gestao-pauta' },
-    { label:'🔬 Ver plano de intervenção', page:'clinica-plano', roles:['clinica','gestao-clinica','gestao'] },
-    { label:'📄 Ver PEI do aluno', page: userRole==='gestao'?'gestao-peis':'pei' },
-    { label:'🎯 Objetivos convergentes', page:'ponte-objetivos' },
-  ].filter(a => !a.roles || a.roles.includes(userRole));
-  acEl.innerHTML = acoes.map(a=>`<button class="btn-sm" style="justify-content:flex-start;gap:8px;padding:9px 12px;font-size:12.5px;text-align:left;height:auto;white-space:normal" onclick="showPage('${a.page}')">${a.label}</button>`).join('');
-}
-
-// ── COLABORAÇÃO — MURAL DE CASOS ────────────────────────────
-async function carregarColaboracao() {
-  const sel = document.getElementById('colab-aluno-sel');
-  if (!sel) return;
-  const { data } = await db.from('alunos').select('id,nome,serie').order('nome');
-  sel.innerHTML = '<option value="">— Selecione um aluno —</option>' +
-    (data||[]).map(a => `<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' · '+a.serie:''}</option>`).join('');
-}
-
-async function carregarMuralAluno(id) {
-  const mural = document.getElementById('colab-mural');
-  const vazio = document.getElementById('colab-vazio');
-  if (!id) { mural.style.display='none'; vazio.style.display='block'; return; }
   const sel = document.getElementById('colab-aluno-sel');
   const nomeAluno = sel?.selectedOptions[0]?.dataset?.nome || '';
   mural.style.display='block'; vazio.style.display='none';
-  const [{ data: diario }, { data: planos }, { data: obj }] = await Promise.all([
+  const [{ data: diario }, { data: planos }, { data: vinculo }] = await Promise.all([
     db.from('diario_aluno').select('*').eq('aluno_id', id).order('data', {ascending:false}).limit(1),
     db.from('relatorios').select('*').eq('aluno_nome', nomeAluno).order('created_at', {ascending:false}).limit(1),
-    db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle()
+    db.from('vinculos_aluno_perfil').select('perfil_clinico_id').eq('aluno_id', id).eq('confirmado_escola', true).eq('recusado', false).maybeSingle()
   ]);
+  const obj = vinculo?.perfil_clinico_id
+    ? (await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', vinculo.perfil_clinico_id).maybeSingle()).data
+    : null;
   const dEl = document.getElementById('colab-diario');
   const ultimo = diario?.[0];
   dEl.innerHTML = ultimo
@@ -5907,7 +5857,9 @@ async function carregarMuralAluno(id) {
   const oEl = document.getElementById('colab-obj');
   oEl.innerHTML = obj
     ? ['cognitivo','comunicacao','social','comportamental','academico'].filter(k=>obj[k]).map(k=>`<div style="margin-bottom:5px"><span style="font-size:10.5px;font-weight:600;color:var(--gr500);text-transform:uppercase;letter-spacing:.04em">${k}</span><div style="font-size:12.5px;color:var(--gr700);line-height:1.5">${obj[k]}</div></div>`).join('')||'<span style="color:var(--gr400)">Nenhum objetivo cadastrado</span>'
-    : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🎯</div><div class="empty-text">Sem objetivos cadastrados</div></div>`;
+    : vinculo?.perfil_clinico_id
+      ? `<div class="empty" style="padding:16px 0"><div class="empty-icon">🎯</div><div class="empty-text">Sem objetivos cadastrados</div></div>`
+      : `<div class="empty" style="padding:16px 0"><div class="empty-icon">🔗</div><div class="empty-text">Aluno ainda não vinculado ao cadastro clínico</div></div>`;
   const acEl = document.getElementById('colab-acoes');
   const acoes = [
     { label:'📓 Ver Diário completo', page: userRole==='professor'?'diario-aluno':userRole==='gestao'?'gestao-diario':'ponte-diario' },
@@ -6735,36 +6687,6 @@ async function carregarDashboardAT() {
       if(na&&nr) s.push('✅ Você tem alunos e relatórios. Use o Roteiro de Atuação para gerar estratégias.');
       acoes.innerHTML=s.length?s.map(x=>'<div style="margin-bottom:4px">'+x+'</div>').join(''):'✅ Tudo em dia!'; }
   } catch(e){ console.error('carregarDashboardAT:',e); }
-}
-
-async function carregarColaboracao() {
-  // Carrega histórico de pautas no hub de colaboração
-  const el = document.getElementById('colab-historico-pautas');
-  if (!el) return;
-  el.innerHTML = '<div style="font-size:13px;color:var(--gr400)">Carregando…</div>';
-  try {
-    const { data } = await db.from('pautas_reuniao').select('*')
-      .order('data_reuniao', { ascending: false }).limit(5);
-    const tipoLabel = {
-      rotina:'📅 Rotina', crise:'🚨 Crise', inicio:'🌱 Início',
-      revisao_paee:'📋 Rev. PAEE', revisao_pei:'📄 Rev. PEI',
-      transicao:'🚀 Transição', familia:'👨‍👩‍👧 Família'
-    };
-    if (!data?.length) {
-      el.innerHTML = '<div class="empty" style="padding:24px 0"><div class="empty-icon">📅</div><div class="empty-text">Nenhuma pauta salva ainda.<br><button class="btn-sm" style="margin-top:8px" onclick="showPage(\'gestao-pauta\')">Gerar primeira pauta</button></div></div>';
-      return;
-    }
-    el.innerHTML = data.map(p => `
-      <div style="padding:8px 0;border-bottom:1px solid var(--gr100);cursor:pointer" onclick="verPautaSalva('${p.id}')">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;font-weight:600;color:var(--gr800)">${p.data_reuniao ? new Date(p.data_reuniao+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</span>
-          <span style="font-size:10px;background:#EEF2FF;color:#3730A3;padding:2px 7px;border-radius:20px;font-weight:600">${tipoLabel[p.tipo]||p.tipo||'Reunião'}</span>
-        </div>
-        <div style="font-size:11.5px;color:var(--gr400);margin-top:2px">👤 ${p.alunos_nomes||'—'}</div>
-      </div>`).join('');
-  } catch(e) {
-    el.innerHTML = '<span style="font-size:12px;color:var(--gr300)">Erro ao carregar pautas.</span>';
-  }
 }
 
 async function carregarDashboardGC() {
@@ -13133,145 +13055,6 @@ function renderPagesGestao() {
     </div>
   </div>
 
-  <!-- ══ COLABORAÇÃO MULTIPROFISSIONAL ══ -->
-  <div id="page-colaboracao" class="page">
-    <h1 class="page-title"> Colaboração Multiprofissional</h1>
-    <p class="page-sub">O hub onde escola e clínica atuam juntas — encaminhamentos, pautas e ações coordenadas em torno de cada criança.</p>
-
-    <!-- Banner conceitual -->
-       <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1.5px solid #C7D2FE;border-radius:14px;padding:16px 18px;margin-bottom:18px">
-      <div style="font-size:10.5px;font-weight:700;color:#6366F1;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">O ciclo que funciona</div>
-      <div style="display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:2px">
-
-        <div style="flex:1;min-width:80px;background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:10px 0 0 10px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px">
-          <div style="font-size:10.5px;font-weight:700;color:#1D4ED8">Professor</div>
-          <div style="font-size:11px;color:#3B82F6;line-height:1.4">Observa e registra no Diário</div>
-        </div>
-
-        <div style="display:flex;align-items:center;padding:0 4px;color:#94A3B8;font-size:14px;font-weight:300;flex-shrink:0">›</div>
-
-        <div style="flex:1;min-width:80px;background:#F5F3FF;border:1.5px solid #DDD6FE;border-top:none;border-bottom:none;border-right:none;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px">
-          <div style="font-size:10.5px;font-weight:700;color:#7C3AED">Gestão</div>
-          <div style="font-size:11px;color:#8B5CF6;line-height:1.4">Aciona a equipe clínica</div>
-        </div>
-
-        <div style="display:flex;align-items:center;padding:0 4px;color:#94A3B8;font-size:14px;font-weight:300;flex-shrink:0">›</div>
-
-        <div style="flex:1;min-width:80px;background:#FDF4FF;border:1.5px solid #E9D5FF;border-top:none;border-bottom:none;border-right:none;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px">
-          <div style="font-size:10.5px;font-weight:700;color:#9333EA">Clínica</div>
-          <div style="font-size:11px;color:#A855F7;line-height:1.4">Avalia e gera plano de intervenção</div>
-        </div>
-
-        <div style="display:flex;align-items:center;padding:0 4px;color:#94A3B8;font-size:14px;font-weight:300;flex-shrink:0">›</div>
-
-        <div style="flex:1;min-width:80px;background:#F0FDF4;border:1.5px solid #BBF7D0;border-top:none;border-bottom:none;border-right:none;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px">
-          <div style="font-size:10.5px;font-weight:700;color:#15803D">AT</div>
-          <div style="font-size:11px;color:#22C55E;line-height:1.4">Aplica estratégias em sala</div>
-        </div>
-
-        <div style="display:flex;align-items:center;padding:0 4px;color:#94A3B8;font-size:14px;font-weight:300;flex-shrink:0">›</div>
-
-        <div style="flex:1;min-width:80px;background:#FFF7ED;border:1.5px solid #FED7AA;border-top:none;border-bottom:none;border-right:none;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px">
-          <div style="font-size:10.5px;font-weight:700;color:#C2410C">Família</div>
-          <div style="font-size:11px;color:#EA580C;line-height:1.4">Reforça em casa</div>
-        </div>
-
-        <div style="display:flex;align-items:center;padding:0 4px;color:#94A3B8;font-size:14px;font-weight:300;flex-shrink:0">›</div>
-
-        <div style="flex:1;min-width:80px;background:#FFFBEB;border:1.5px solid #FDE68A;border-top:none;border-bottom:none;border-right:none;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px">
-          <div style="font-size:10.5px;font-weight:700;color:#B45309">Gestão</div>
-          <div style="font-size:11px;color:#D97706;line-height:1.4">Monitora e reúne a equipe</div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Grid: instrumentos + histórico -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-
-      <!-- Instrumentos de colaboração -->
-      <div class="fcard">
-        <div class="fcard-title">🛠️ Instrumentos de colaboração</div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
-          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('ponte-diario')">
-            <div style="font-size:18px;flex-shrink:0"></div>
-            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Diário do Aluno</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Professor registra observações → clínica lê com contexto pedagógico</div></div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('gestao-pauta')">
-            <div style="font-size:18px;flex-shrink:0"></div>
-            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Pauta Multidisciplinar</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">IA sintetiza registros e gera pauta estruturada para a reunião de equipe</div></div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('ponte-objetivos')">
-            <div style="font-size:18px;flex-shrink:0"></div>
-            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Objetivos Convergentes</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Alinha metas pedagógicas e terapêuticas em torno do mesmo aluno</div></div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('ponte-tradutor')">
-            <div style="font-size:18px;flex-shrink:0"></div>
-            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Tradutor Escola ↔ Clínica</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Traduz termos clínicos para linguagem pedagógica e vice-versa</div></div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="showPage('clinica-plano')">
-            <div style="font-size:18px;flex-shrink:0"></div>
-            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Plano de Intervenção Integrado</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Clínica gera estratégias para escola, AT e sessões clínicas simultaneamente</div></div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg2);border-radius:10px;cursor:pointer" onclick="userRole==='gestao'?showPage('guia-gestao'):showPage('guia')">
-            <div style="font-size:18px;flex-shrink:0"></div>
-            <div><div style="font-size:13px;font-weight:600;color:var(--gr800)">Guia de Perfis</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Referência rápida sobre diagnósticos, características e estratégias de suporte</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Histórico de pautas -->
-      <div class="fcard">
-        <div class="fcard-title" style="display:flex;justify-content:space-between;align-items:center">
-           Pautas de reunião salvas
-          <button class="btn-sm" style="font-size:11px;padding:3px 10px" onclick="showPage('gestao-pauta')">+ Nova pauta</button>
-        </div>
-        <div id="colab-historico-pautas" style="margin-top:8px">
-          <div class="empty" style="padding:24px 0"><div class="empty-icon"></div><div class="empty-text">Nenhuma pauta salva ainda.</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quem faz o quê -->
-    <div class="fcard" style="margin-top:16px">
-      <div class="fcard-title"> Responsabilidades por papel</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px">
-        <div style="background:#F8FAFF;border:1px solid #DBEAFE;border-radius:10px;padding:12px">
-          <div style="font-size:12px;font-weight:700;color:#1E3A8A;margin-bottom:6px"> Professor</div>
-          <ul style="margin:0;padding-left:14px;font-size:12px;color:var(--gr600);line-height:1.8">
-            <li>Registra observações no Diário</li>
-            <li>Elabora adaptações pedagógicas</li>
-            <li>Aplica estratégias da clínica em sala</li>
-            <li>Elabora o PEI com suporte da IA</li>
-          </ul>
-        </div>
-        <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:12px">
-          <div style="font-size:12px;font-weight:700;color:#6D28D9;margin-bottom:6px"> Equipe Clínica</div>
-          <ul style="margin:0;padding-left:14px;font-size:12px;color:var(--gr600);line-height:1.8">
-            <li>Recebe demandas da escola</li>
-            <li>Avalia com contexto clínico</li>
-            <li>Gera plano de intervenção integrado</li>
-            <li>Define objetivos terapêuticos</li>
-          </ul>
-        </div>
-        <div style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:10px;padding:12px">
-          <div style="font-size:12px;font-weight:700;color:#0F766E;margin-bottom:6px"> AT +  Gestão</div>
-          <ul style="margin:0;padding-left:14px;font-size:12px;color:var(--gr600);line-height:1.8">
-            <li>AT aplica roteiro em sala de aula</li>
-            <li>Gestão coordena as reuniões</li>
-            <li>Gestão monitora PEIs e adaptações</li>
-            <li>Todos participam da pauta multidisciplinar</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Nota legal -->
-    <div style="margin-top:14px;padding:12px 16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;font-size:12px;color:#78350F;line-height:1.7">
-      <strong> Base legal:</strong> A colaboração multiprofissional é exigida pelo <strong>Decreto nº 12.686/2025</strong> (art. 14 — planos pedagógicos individualizados com participação da equipe de saúde), pela <strong>LBI, art. 28</strong> (elaboração do PEI por equipe multidisciplinar) e pelas diretrizes do <strong>CFP, CFFa e COFFITO</strong> para integração clínica-pedagógica.
-    </div>
-  </div>
-  <!-- /COLABORAÇÃO -->
 
   <!-- ══ GESTÃO EDUCACIONAL: COMUNICAÇÃO COM CLÍNICAS ══ -->
   <div id="page-gestao-comunicacao" class="page">
