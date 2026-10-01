@@ -2679,7 +2679,11 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div class="modal-title" id="lt-nome">Linha do Tempo</div>
       <button class="modal-close" onclick="fecharModal('modal-linha-tempo')">×</button>
     </div>
-    <div class="modal-body" id="lt-body" style="max-height:60vh;overflow-y:auto"></div>
+    <div style="padding:0 0 10px"><select id="lt-filtro" class="fselect" onchange="filtrarLinhaTempo(this.value)" style="width:100%"><option value="">Todos os registros</option></select></div>
+    <div class="modal-body" id="lt-body" style="max-height:55vh;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn-copy" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A" onclick="baixarPDFLinhaTempo()">⬇ Baixar PDF</button>
+    </div>
   </div>
 </div>
 
@@ -17278,12 +17282,32 @@ async function gerarDossieAluno() {
   }
 }
 
+const CATEGORIAS_LINHA_TEMPO = {
+  pei: 'PEI/AEE', adaptacao: 'Adaptação', ciclo: 'Ciclo de Trabalho', evolucao: 'Evolução Pedagógica', diario: 'Diário',
+  devolutiva: 'Devolutiva Clínica', pratica: 'Prática Guiada', material: 'Material Terapêutico'
+};
+let linhaTempoItensAtuais = [];
+let linhaTempoTituloAtual = '';
+
 function montarLinhaTempo(itens) {
   return itens.filter(x => x && x._raw).sort((a,b) => new Date(b._raw) - new Date(a._raw));
 }
 function renderizarLinhaTempo(titulo, itens) {
+  linhaTempoItensAtuais = itens;
+  linhaTempoTituloAtual = titulo;
   const nomeEl = document.getElementById('lt-nome');
   if (nomeEl) nomeEl.textContent = titulo;
+  const categoriasPresentes = [...new Set(itens.map(it => it.cat))];
+  const filtroEl = document.getElementById('lt-filtro');
+  if (filtroEl) {
+    filtroEl.innerHTML = '<option value="">Todos os registros</option>' +
+      categoriasPresentes.map(c => `<option value="${c}">${CATEGORIAS_LINHA_TEMPO[c]||c}</option>`).join('');
+    filtroEl.value = '';
+  }
+  renderizarListaLinhaTempo(itens);
+  abrirModal('modal-linha-tempo');
+}
+function renderizarListaLinhaTempo(itens) {
   const body = document.getElementById('lt-body');
   if (!body) return;
   body.innerHTML = itens.length ? itens.map(it => `
@@ -17295,7 +17319,31 @@ function renderizarLinhaTempo(titulo, itens) {
         </div>
       </div>`).join('')
     : '<div class="empty" style="padding:24px 0"><div class="empty-icon">📅</div><div class="empty-text">Nenhum registro no período selecionado.</div></div>';
-  abrirModal('modal-linha-tempo');
+}
+function filtrarLinhaTempo(cat) {
+  renderizarListaLinhaTempo(cat ? linhaTempoItensAtuais.filter(it => it.cat === cat) : linhaTempoItensAtuais);
+}
+function baixarPDFLinhaTempo() {
+  if (!linhaTempoItensAtuais.length) return toast('Nenhum registro para exportar.', 'error');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const corAccent = [30, 58, 138];
+  doc.setFillColor(...corAccent);
+  doc.rect(0, 0, 210, 4, 'F');
+  doc.setTextColor(...corAccent);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(linhaTempoTituloAtual, 15, 16);
+  doc.autoTable({
+    startY: 24,
+    head: [['Data', 'Tipo', 'Resumo']],
+    body: linhaTempoItensAtuais.map(it => [new Date(it._raw).toLocaleDateString('pt-BR'), CATEGORIAS_LINHA_TEMPO[it.cat]||it.titulo, it.resumo||'']),
+    headStyles: { fillColor: corAccent, fontSize: 9 },
+    bodyStyles: { fontSize: 8.5 },
+    alternateRowStyles: { fillColor: [248, 250, 255] },
+    columnStyles: { 0: { cellWidth: 24 }, 1: { cellWidth: 38 } },
+  });
+  doc.save(linhaTempoTituloAtual.replace(/[^\w\s-]/g,'').replace(/\s+/g,'_') + '.pdf');
 }
 
 function abrirLinhaTempoAluno() {
@@ -17303,12 +17351,12 @@ function abrirLinhaTempoAluno() {
   const d = dossieAlunoDados;
   if (!d) return toast('Gere o Dossiê primeiro.', 'error');
   const itens = [];
-  if (d.pei) itens.push({ _raw: d.pei.created_at, icone:'📄', titulo:'PEI atualizado', resumo: d.pei.periodo||'' });
-  if (d.aee) itens.push({ _raw: d.aee.created_at, icone:'📘', titulo:'Plano de AEE atualizado', resumo: (d.aee.objetivos||'').slice(0,120) });
-  d.adapts.forEach(a => itens.push({ _raw: a._raw, icone:'🧩', titulo:'Adaptação — '+(a.materia||''), resumo: a.tipo||'' }));
-  d.ciclos.forEach(c => itens.push({ _raw: c._raw, icone:'🔁', titulo:'Ciclo de Trabalho — '+(c.materia||''), resumo: c.tema||'' }));
-  d.evols.forEach(e => itens.push({ _raw: e._raw, icone:'📈', titulo:'Evolução Pedagógica', resumo: [e.destaque,e.atencao].filter(Boolean).join(' · ').slice(0,150) }));
-  d.diarios.forEach(dd => itens.push({ _raw: dd._raw, icone: dd.tipo==='Conquista'?'🌟':dd.tipo==='Alerta'?'⚠️':'📓', titulo:'Diário — '+(dd.tipo||'Registro'), resumo: (dd.texto||'').slice(0,150) }));
+  if (d.pei) itens.push({ _raw: d.pei.created_at, cat:'pei', icone:'📄', titulo:'PEI atualizado', resumo: d.pei.periodo||'' });
+  if (d.aee) itens.push({ _raw: d.aee.created_at, cat:'pei', icone:'📘', titulo:'Plano de AEE atualizado', resumo: (d.aee.objetivos||'').slice(0,120) });
+  d.adapts.forEach(a => itens.push({ _raw: a._raw, cat:'adaptacao', icone:'🧩', titulo:'Adaptação — '+(a.materia||''), resumo: a.tipo||'' }));
+  d.ciclos.forEach(c => itens.push({ _raw: c._raw, cat:'ciclo', icone:'🔁', titulo:'Ciclo de Trabalho — '+(c.materia||''), resumo: c.tema||'' }));
+  d.evols.forEach(e => itens.push({ _raw: e._raw, cat:'evolucao', icone:'📈', titulo:'Evolução Pedagógica', resumo: [e.destaque,e.atencao].filter(Boolean).join(' · ').slice(0,150) }));
+  d.diarios.forEach(dd => itens.push({ _raw: dd._raw, cat:'diario', icone: dd.tipo==='Conquista'?'🌟':dd.tipo==='Alerta'?'⚠️':'📓', titulo:'Diário — '+(dd.tipo||'Registro'), resumo: (dd.texto||'').slice(0,150) }));
   renderizarLinhaTempo(`Linha do Tempo — ${d.aluno.nome}`, montarLinhaTempo(itens));
 }
 
@@ -21888,10 +21936,10 @@ function abrirLinhaTempoPaciente() {
   const d = dossiePacienteDados;
   if (!d) return toast('Gere o Dossiê primeiro.', 'error');
   const itens = [];
-  d.devs.forEach(dv => itens.push({ _raw: dv._raw, icone:'🔬', titulo:'Devolutiva Clínica', resumo: (dv.conteudo||'').slice(0,150) }));
-  d.praticas.forEach(pr => itens.push({ _raw: pr._raw, icone:'🎯', titulo:'Prática Guiada — '+(pr.titulo||''), resumo: `${pr.area||''} · ${pr.status||''}${pr.resultado&&pr.resultado!=='—'?' · '+pr.resultado:''}` }));
-  d.materiais.forEach(m => itens.push({ _raw: m._raw, icone:'🧰', titulo:'Material Terapêutico — '+(m.tipo||''), resumo: (m.contexto||'').slice(0,120) }));
-  d.diarios.forEach(dd => itens.push({ _raw: dd._raw, icone: dd.tipo==='Conquista'?'🌟':dd.tipo==='Alerta'?'⚠️':'📓', titulo:'Diário — '+(dd.tipo||'Registro'), resumo: (dd.texto||'').slice(0,150) }));
+  d.devs.forEach(dv => itens.push({ _raw: dv._raw, cat:'devolutiva', icone:'🔬', titulo:'Devolutiva Clínica', resumo: (dv.conteudo||'').slice(0,150) }));
+  d.praticas.forEach(pr => itens.push({ _raw: pr._raw, cat:'pratica', icone:'🎯', titulo:'Prática Guiada — '+(pr.titulo||''), resumo: `${pr.area||''} · ${pr.status||''}${pr.resultado&&pr.resultado!=='—'?' · '+pr.resultado:''}` }));
+  d.materiais.forEach(m => itens.push({ _raw: m._raw, cat:'material', icone:'🧰', titulo:'Material Terapêutico — '+(m.tipo||''), resumo: (m.contexto||'').slice(0,120) }));
+  d.diarios.forEach(dd => itens.push({ _raw: dd._raw, cat:'diario', icone: dd.tipo==='Conquista'?'🌟':dd.tipo==='Alerta'?'⚠️':'📓', titulo:'Diário — '+(dd.tipo||'Registro'), resumo: (dd.texto||'').slice(0,150) }));
   renderizarLinhaTempo(`Linha do Tempo — ${d.p.nome}`, montarLinhaTempo(itens));
 }
 
