@@ -2672,6 +2672,17 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
+<!-- ══ MODAL: Linha do Tempo do Aluno/Paciente ══ -->
+<div class="overlay" id="modal-linha-tempo" onclick="fecharModal('modal-linha-tempo',event)">
+  <div class="modal md">
+    <div class="modal-header">
+      <div class="modal-title" id="lt-nome">Linha do Tempo</div>
+      <button class="modal-close" onclick="fecharModal('modal-linha-tempo')">×</button>
+    </div>
+    <div class="modal-body" id="lt-body" style="max-height:60vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- ══ MODAL: Ciência — ferramentas de IA não substituem laudo ══ -->
 <div class="overlay" id="modal-aviso-ia">
   <div class="modal sm">
@@ -4123,7 +4134,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','linha_tempo_aluno'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -7933,7 +7944,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, linha_tempo_aluno: 97
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
@@ -7941,12 +7952,12 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', linha_tempo_aluno:'Linha do Tempo do Aluno'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
   escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia'],
-  compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
+  compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario','linha_tempo_aluno'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
 
@@ -11283,6 +11294,7 @@ function renderPages() {
       <div class="result-text" id="dossie-result-text" style="white-space:pre-wrap"></div>
       <div class="result-actions">
         <button class="btn-copy" onclick="baixarPDFDossieAluno()">⬇ Baixar PDF</button>
+        <button class="btn-copy" onclick="abrirLinhaTempoAluno()">📅 Linha do Tempo</button>
       </div>
     </div>
   </div>
@@ -13937,6 +13949,7 @@ function renderPagesClinica() {
       <div class="result-text" id="dossie-pac-result-text" style="white-space:pre-wrap"></div>
       <div class="result-actions">
         <button class="btn-copy" onclick="baixarPDFDossiePaciente()">⬇ Baixar PDF</button>
+        <button class="btn-copy" onclick="abrirLinhaTempoPaciente()">📅 Linha do Tempo</button>
       </div>
     </div>
   </div>
@@ -17238,10 +17251,10 @@ async function gerarDossieAluno() {
 
     const pei = (rPei.data||[])[0];
     const aee = (rAee.data||[])[0];
-    const adapts = (rAdapt.data||[]).map(a => ({ data: fmtData(a.created_at), materia: a.materia||'', tipo: a.tipo_atividade||'' }));
-    const ciclos = (rCiclo.data||[]).map(c => ({ data: fmtData(c.created_at), materia: c.materia||'', tema: c.tema||'' }));
-    const evols = (rEvol.data||[]).map(e => ({ data: fmtData(e.data_registro+'T00:00:00'), destaque: e.destaque||'', atencao: e.atencao||'' }));
-    const diarios = (rDiario.data||[]).map(d => ({ data: fmtData(d.created_at), tipo: d.tipo==='conquista'?'Conquista':d.tipo==='alerta'?'Alerta':(d.tipo||''), texto: d.texto||'' }));
+    const adapts = (rAdapt.data||[]).map(a => ({ data: fmtData(a.created_at), _raw: a.created_at, materia: a.materia||'', tipo: a.tipo_atividade||'' }));
+    const ciclos = (rCiclo.data||[]).map(c => ({ data: fmtData(c.created_at), _raw: c.created_at, materia: c.materia||'', tema: c.tema||'' }));
+    const evols = (rEvol.data||[]).map(e => ({ data: fmtData(e.data_registro+'T00:00:00'), _raw: e.data_registro+'T00:00:00', destaque: e.destaque||'', atencao: e.atencao||'' }));
+    const diarios = (rDiario.data||[]).map(d => ({ data: fmtData(d.created_at), _raw: d.created_at, tipo: d.tipo==='conquista'?'Conquista':d.tipo==='alerta'?'Alerta':(d.tipo||''), texto: d.texto||'' }));
 
     dossieAlunoDados = { aluno, dataInicio, inicioISO, fimISO, pei, aee, adapts, ciclos, evols, diarios };
     dossieAlunoAtual = aluno;
@@ -17263,6 +17276,40 @@ async function gerarDossieAluno() {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Gerar Dossiê'; }
   }
+}
+
+function montarLinhaTempo(itens) {
+  return itens.filter(x => x && x._raw).sort((a,b) => new Date(b._raw) - new Date(a._raw));
+}
+function renderizarLinhaTempo(titulo, itens) {
+  const nomeEl = document.getElementById('lt-nome');
+  if (nomeEl) nomeEl.textContent = titulo;
+  const body = document.getElementById('lt-body');
+  if (!body) return;
+  body.innerHTML = itens.length ? itens.map(it => `
+      <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--gr100)">
+        <div style="font-size:18px;flex-shrink:0">${it.icone}</div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:12.5px;font-weight:700;color:var(--gr800)">${it.titulo}</span><span style="font-size:11px;color:var(--gr400);white-space:nowrap">${new Date(it._raw).toLocaleDateString('pt-BR')}</span></div>
+          <div style="font-size:12.5px;color:var(--gr600);line-height:1.5;margin-top:2px">${it.resumo||''}</div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty" style="padding:24px 0"><div class="empty-icon">📅</div><div class="empty-text">Nenhum registro no período selecionado.</div></div>';
+  abrirModal('modal-linha-tempo');
+}
+
+function abrirLinhaTempoAluno() {
+  if (!temAddon('linha_tempo_aluno')) return acessarRecursoPremium('Linha do Tempo do Aluno');
+  const d = dossieAlunoDados;
+  if (!d) return toast('Gere o Dossiê primeiro.', 'error');
+  const itens = [];
+  if (d.pei) itens.push({ _raw: d.pei.created_at, icone:'📄', titulo:'PEI atualizado', resumo: d.pei.periodo||'' });
+  if (d.aee) itens.push({ _raw: d.aee.created_at, icone:'📘', titulo:'Plano de AEE atualizado', resumo: (d.aee.objetivos||'').slice(0,120) });
+  d.adapts.forEach(a => itens.push({ _raw: a._raw, icone:'🧩', titulo:'Adaptação — '+(a.materia||''), resumo: a.tipo||'' }));
+  d.ciclos.forEach(c => itens.push({ _raw: c._raw, icone:'🔁', titulo:'Ciclo de Trabalho — '+(c.materia||''), resumo: c.tema||'' }));
+  d.evols.forEach(e => itens.push({ _raw: e._raw, icone:'📈', titulo:'Evolução Pedagógica', resumo: [e.destaque,e.atencao].filter(Boolean).join(' · ').slice(0,150) }));
+  d.diarios.forEach(dd => itens.push({ _raw: dd._raw, icone: dd.tipo==='Conquista'?'🌟':dd.tipo==='Alerta'?'⚠️':'📓', titulo:'Diário — '+(dd.tipo||'Registro'), resumo: (dd.texto||'').slice(0,150) }));
+  renderizarLinhaTempo(`Linha do Tempo — ${d.aluno.nome}`, montarLinhaTempo(itens));
 }
 
 function baixarPDFDossieAluno() {
@@ -21776,7 +21823,7 @@ async function gerarDossiePaciente() {
 
     const obj = rObj.data;
     const plano = (rPlano.data||[])[0];
-    const devs = (rDevol.data||[]).map(d => ({ data: fmtData(d.created_at), compartilhada: d.autorizado_familia ? 'Sim' : 'Não', conteudo: d.conteudo||'' }));
+    const devs = (rDevol.data||[]).map(d => ({ data: fmtData(d.created_at), _raw: d.created_at, compartilhada: d.autorizado_familia ? 'Sim' : 'Não', conteudo: d.conteudo||'' }));
 
     const mons = rMon.data||[];
     const VALOR_MON_DOSSIE = { ok: 100, parcial: 50, nao: 0 };
@@ -21803,15 +21850,15 @@ async function gerarDossiePaciente() {
     const praticas = (rPratica.data||[]).map(pr => {
       const av = avalMapDossie[pr.id];
       return {
-        data: fmtData(pr.criado_em), titulo: pr.titulo||'', area: AREAS_LABEL_DOSSIE[pr.area]||pr.area||'',
+        data: fmtData(pr.criado_em), _raw: pr.criado_em, titulo: pr.titulo||'', area: AREAS_LABEL_DOSSIE[pr.area]||pr.area||'',
         status: pr.status==='pendente'?'Pendente':'Aplicada',
         resultado: av ? (RESULTADO_LABEL[av.status] || av.status) + (av.nota_rapida ? ` (${av.nota_rapida})` : '') : '—'
       };
     });
 
-    const materiais = (rMaterial.data||[]).map(m => ({ data: fmtData(m.criado_em) + ' ' + new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), tipo: DICAS_MATERIAL[m.tipo]?.label||m.tipo||'', contexto: m.contexto||'' }));
+    const materiais = (rMaterial.data||[]).map(m => ({ data: fmtData(m.criado_em) + ' ' + new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), _raw: m.criado_em, tipo: DICAS_MATERIAL[m.tipo]?.label||m.tipo||'', contexto: m.contexto||'' }));
 
-    const diarios = (rDiario.data||[]).map(d => ({ data: fmtData(d.created_at), tipo: d.tipo==='conquista'?'Conquista':d.tipo==='alerta'?'Alerta':(d.tipo||''), texto: d.texto||'' }));
+    const diarios = (rDiario.data||[]).map(d => ({ data: fmtData(d.created_at), _raw: d.created_at, tipo: d.tipo==='conquista'?'Conquista':d.tipo==='alerta'?'Alerta':(d.tipo||''), texto: d.texto||'' }));
 
     dossiePacienteDados = { p, dataInicio, inicioISO, fimISO, obj, plano, devs, resumoMon, totalMon: mons.length, praticas, materiais, diarios };
     dossiePacienteAtual = p;
@@ -21834,6 +21881,18 @@ async function gerarDossiePaciente() {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Gerar Dossiê'; }
   }
+}
+
+function abrirLinhaTempoPaciente() {
+  if (!temAddon('linha_tempo_aluno')) return acessarRecursoPremium('Linha do Tempo do Aluno');
+  const d = dossiePacienteDados;
+  if (!d) return toast('Gere o Dossiê primeiro.', 'error');
+  const itens = [];
+  d.devs.forEach(dv => itens.push({ _raw: dv._raw, icone:'🔬', titulo:'Devolutiva Clínica', resumo: (dv.conteudo||'').slice(0,150) }));
+  d.praticas.forEach(pr => itens.push({ _raw: pr._raw, icone:'🎯', titulo:'Prática Guiada — '+(pr.titulo||''), resumo: `${pr.area||''} · ${pr.status||''}${pr.resultado&&pr.resultado!=='—'?' · '+pr.resultado:''}` }));
+  d.materiais.forEach(m => itens.push({ _raw: m._raw, icone:'🧰', titulo:'Material Terapêutico — '+(m.tipo||''), resumo: (m.contexto||'').slice(0,120) }));
+  d.diarios.forEach(dd => itens.push({ _raw: dd._raw, icone: dd.tipo==='Conquista'?'🌟':dd.tipo==='Alerta'?'⚠️':'📓', titulo:'Diário — '+(dd.tipo||'Registro'), resumo: (dd.texto||'').slice(0,150) }));
+  renderizarLinhaTempo(`Linha do Tempo — ${d.p.nome}`, montarLinhaTempo(itens));
 }
 
 function baixarPDFDossiePaciente() {
