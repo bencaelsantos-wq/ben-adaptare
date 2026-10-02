@@ -6204,6 +6204,8 @@ async function abrirDiarioCiclo(cicloId) {
   const avMap = {};
   (avaliacoes || []).forEach(av => { avMap[`${av.nivel}_${av.indice_atividade}`] = av; });
 
+  const podeEditarDiarioCiclo = ['professor', 'gestao', 'coordenacao', 'developer'].includes(userRole);
+
   const NIVEL_LABEL = { basico: 'Básico', intermediario: 'Intermediário', avancado: 'Avançado' };
   const blocos = ['basico', 'intermediario', 'avancado'].map(nivel => {
     const atividades = extrairAtividadesCiclo(ciclo[`nivel_${nivel}`], nivel);
@@ -6211,15 +6213,16 @@ async function abrirDiarioCiclo(cicloId) {
     const linhas = atividades.map((texto, indice) => {
       const av = avMap[`${nivel}_${indice}`];
       const rowId = `dc-${nivel}-${indice}`;
+      const dis = podeEditarDiarioCiclo ? '' : 'disabled';
       return `
         <div class="rel-card" style="margin-bottom:8px">
           <div style="font-size:12.5px;color:var(--gr700);margin-bottom:6px">${escapeHtml(texto)}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <label style="font-size:11px;color:var(--gr500)">Reconheceu <input type="number" min="0" max="10" id="${rowId}-reconheceu" value="${av?.nota_reconheceu ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
-            <label style="font-size:11px;color:var(--gr500)">Compreendeu <input type="number" min="0" max="10" id="${rowId}-compreendeu" value="${av?.nota_compreendeu ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
-            <label style="font-size:11px;color:var(--gr500)">Aplicou <input type="number" min="0" max="10" id="${rowId}-aplicou" value="${av?.nota_aplicou ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
-            <input type="text" id="${rowId}-feedback" value="${escapeHtml(av?.feedback || '')}" placeholder="Feedback curto (opcional)" style="flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--gr200);border-radius:6px;font-size:11.5px">
-            <button class="btn-sm" style="font-size:11px;padding:3px 10px" onclick="salvarAvaliacaoAtividade('${cicloId}','${nivel}',${indice},'${rowId}')">Salvar</button>
+            <label style="font-size:11px;color:var(--gr500)">Reconheceu <input type="number" min="0" max="10" ${dis} id="${rowId}-reconheceu" value="${av?.nota_reconheceu ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
+            <label style="font-size:11px;color:var(--gr500)">Compreendeu <input type="number" min="0" max="10" ${dis} id="${rowId}-compreendeu" value="${av?.nota_compreendeu ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
+            <label style="font-size:11px;color:var(--gr500)">Aplicou <input type="number" min="0" max="10" ${dis} id="${rowId}-aplicou" value="${av?.nota_aplicou ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
+            <input type="text" ${dis} id="${rowId}-feedback" value="${escapeHtml(av?.feedback || '')}" placeholder="Feedback curto (opcional)" style="flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--gr200);border-radius:6px;font-size:11.5px">
+            ${podeEditarDiarioCiclo ? `<button class="btn-sm" style="font-size:11px;padding:3px 10px" onclick="salvarAvaliacaoAtividade('${cicloId}','${nivel}',${indice},'${rowId}')">Salvar</button>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -6231,9 +6234,11 @@ async function abrirDiarioCiclo(cicloId) {
   const temAvancadoAvaliado = Object.keys(avMap).some(k => k.startsWith('avancado_'));
   const media = todasNotas.length ? (todasNotas.reduce((s,n)=>s+n,0) / todasNotas.length) : null;
   const notaFinal = media !== null ? (temAvancadoAvaliado ? media : Math.min(media, 8)) : null;
-  document.getElementById('dc-resumo').textContent = notaFinal !== null
+  const explicacao = `Essas notas (Reconheceu/Compreendeu/Aplicou, 0 a 10) são lançadas pelo professor da escola, atividade por atividade, e alimentam o boletim pedagógico do aluno.${!podeEditarDiarioCiclo ? ' Você está vendo em modo somente leitura.' : ''}`;
+  const resumoNota = notaFinal !== null
     ? `Nota de Objeto de Conhecimento (até agora): ${notaFinal.toFixed(1)}${!temAvancadoAvaliado ? ' — teto 8,0 (Avançado não avaliado ainda)' : ''}`
     : 'Nenhuma atividade avaliada ainda.';
+  document.getElementById('dc-resumo').innerHTML = `<div style="margin-bottom:4px">${explicacao}</div><div style="font-weight:600">${resumoNota}</div>`;
   document.getElementById('dc-body').innerHTML = blocos || '<div class="empty" style="padding:16px"><div class="empty-text">Nenhuma atividade encontrada neste ciclo.</div></div>';
   abrirModal('modal-diario-ciclo');
 }
@@ -12417,7 +12422,7 @@ function renderPages() {
 
   <div id="page-praticas-aluno" class="page">
     <h1 class="page-title">Banco de Práticas</h1>
-    <p class="page-sub">Tudo que já foi gerado para este aluno — adaptações e ciclos de trabalho — para quem assumir o acompanhamento continuar de onde parou.</p>
+    <p class="page-sub">Tudo que já foi gerado para este aluno — adaptações e ciclos de trabalho — para quem assumir o acompanhamento continuar de onde parou. Ciclos de trabalho têm um botão "Diário de Ciclo" com a avaliação por atividade lançada pelo professor.</p>
     <div style="margin-bottom:16px"><select class="fselect" id="prat-aluno-sel" onchange="carregarPraticasAluno()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
     <div id="prat-body"></div>
   </div>
@@ -13710,7 +13715,7 @@ function renderPagesClinica() {
 
   <div id="page-praticas-aluno" class="page">
     <h1 class="page-title">Banco de Práticas</h1>
-    <p class="page-sub">Tudo que já foi gerado para este aluno — adaptações e ciclos de trabalho — para quem assumir o acompanhamento continuar de onde parou.</p>
+    <p class="page-sub">Tudo que já foi gerado para este aluno — adaptações e ciclos de trabalho — para quem assumir o acompanhamento continuar de onde parou. Ciclos de trabalho têm um botão "Diário de Ciclo" com a avaliação por atividade lançada pelo professor.</p>
     <div style="margin-bottom:16px"><select class="fselect" id="prat-aluno-sel" onchange="carregarPraticasAluno()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
     <div id="prat-body"></div>
   </div>` : ''}
