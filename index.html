@@ -15446,7 +15446,7 @@ async function gerarCicloTrabalho() {
   function montarPrompt(numSessao, resumoAnterior) {
     const formatoMontessoriano = `
 AULA_EXPOSITIVA:
-${mtAulaExpositiva ? '[reescreva de forma organizada a partir do que o professor informou: ' + mtAulaExpositiva + ']' : '[gere uma breve introdução do conteúdo, 2-3 linhas, já que o professor não preencheu nada específico]'}
+[A aula expositiva dura no máximo 20 minutos e deve: dar uma introdução do conteúdo do ciclo, explicar alguma particularidade específica deste ciclo, e lembrar o professor de passar as datas de início e fim do ciclo em sala. ${mtAulaExpositiva ? 'Reescreva de forma organizada a partir do que o professor informou: ' + mtAulaExpositiva : 'O professor não preencheu nada específico — gere uma introdução breve e a particularidade deste tema, 2-4 linhas.'}]
 
 OBJETIVOS:
 a. [objetivo 1, um único verbo no infinitivo]${contextoBnccCiclo ? ' — CODIGO' : ''}
@@ -15532,7 +15532,9 @@ ${isMontessoriano ? `
 MODELO MONTESSORIANO — ENSINO MÉDIO (regras adicionais obrigatórias para este ciclo, além de tudo acima):
 - Nomenclatura deste ciclo: ${mtCodigoCiclo} - ${materia}: ${tema}.
 - Gere até 6 objetivos (não 3), cada um com um único verbo no infinitivo, numerados a., b., c. etc.${contextoBnccCiclo ? ' TODOS os objetivos precisam ter código BNCC ao final.' : ''}
-- Dentro de cada nível, organize as tarefas em um ou mais blocos "FOLHETO N:" (pode ser só 1 folheto se o conteúdo for curto).
+- Dentro de cada nível, organize as tarefas em um ou mais blocos "FOLHETO N:" (pode ser só 1 folheto se o conteúdo for curto). Calibre o ESTILO de cada folheto pelo nível: no Básico, folhetos curtos e fragmentados, uma instrução por vez, comandos simples (ex: "relacione", "complete"), sem exigir muita autonomia de interpretação; no Intermediário, folhetos mais completos, podendo interligar atividades, com maior aprofundamento e interpretação de texto; no Avançado, folhetos desafiadores, chamativos e criativos, de caráter opcional.
+- REDAÇÃO DOS COMANDOS (obrigatória): todo comando de atividade deve ser direto e muito objetivo, sem gerar dúvida — o aluno precisa entender e responder sozinho, sem perguntar ao professor o que fazer. NUNCA escreva comandos genéricos, vagos ou com mais de uma interpretação possível. Exemplo de comando FRACO a evitar: "Fale sobre a Revolução Industrial." Exemplo de comando ADEQUADO: "Liste 3 causas da Revolução Industrial e explique, em até 5 linhas, como cada uma contribuiu para o processo."
+- TIPOS DE ATIVIDADE: o público é Ensino Médio — evite propostas infantilizadas, use maturidade compatível com a faixa etária. Diversifique os formatos ao longo do ciclo combinando, sempre que fizer sentido para o tema: questões a partir de texto, pesquisa, leitura com resumo/fichamento, produção escrita (dissertação/ensaio), observação e registro, entrevista, jogo ou gamificação, criação autoral/multimídia, desafio lógico, seminário/apresentação oral, debate, análise de notícia ou fato atual. Priorize, sempre que possível, atividades que não sejam solucionáveis apenas com uso de inteligência artificial pelo aluno.
 - O FAZER_MAIS é uma seção própria, com 10 a 15 questões em checklist, nunca um desafio bônus único.` : ''}
 
 FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos, cada um seguido de dois-pontos e o conteúdo (sem nada antes do primeiro rótulo):
