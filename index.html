@@ -4164,7 +4164,7 @@ async function lerPerfilDobanco() {
     }
 
     if (data?.organizacao_id) {
-      const { data: org } = await db.from('organizacoes').select(`plano, ativo, motivo_pausa, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
+      const { data: org } = await db.from('organizacoes').select(`plano, ativo, motivo_pausa, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, modelo_ciclo_trabalho, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
       if (org && org.ativo === false) {
         await db.auth.signOut();
         user = null;
@@ -4187,6 +4187,7 @@ async function lerPerfilDobanco() {
       window._extraIaPacotes = org?.extra_ia_pacotes || 0;
       window._nomeInstituicao = org?.nome || '';
       window._logoEscolaUrl = org?.logo_url || null;
+      window._modeloCicloTrabalho = org?.modelo_ciclo_trabalho || 'padrao';
     } else {
       window._planoAtivo = data?.plano || 'acolhe';
       window._addons = {};
@@ -4204,6 +4205,7 @@ async function lerPerfilDobanco() {
       window._extraIaPacotes = data?.extra_ia_pacotes || 0;
       window._nomeInstituicao = '';
       window._logoEscolaUrl = null;
+      window._modeloCicloTrabalho = 'padrao';
     }
     if (data?.nome) window._profNomeDB = data.nome;
     if (!window._profNomeDB) {
@@ -4411,7 +4413,7 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
-    <div class="nav-item" id="nav-ciclo-trabalho" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Ciclo de Trabalho')" : "showPage('ciclo-trabalho');carregarAlunos()"}">
+    <div class="nav-item" id="nav-ciclo-trabalho" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Ciclo de Trabalho')" : "showPage('ciclo-trabalho');carregarAlunos();aplicarModeloCicloUI()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 1 0 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.3l2 1-2 1z" fill="currentColor" stroke="none"/></svg>Ciclo de Trabalho${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item" id="nav-estudo-caso" onclick="${!temAddon('estudo_caso') ? "acessarRecursoPremium('Estudo de Caso')" : "showPage('estudo-caso');carregarEstudosCaso()"}">
@@ -11007,6 +11009,33 @@ function renderPages() {
       </div>
     </div>
 
+    <div class="fcard" id="cic-campos-montessoriano" style="display:none">
+      <div class="fcard-title">Nomenclatura e datas · Modelo Montessoriano EM</div>
+      <div class="frow">
+        <div><label class="flabel" for="cic-mt-ano">Ano do aluno</label>
+          <select id="cic-mt-ano" class="fselect">
+            <option value="1">1º ano EM</option>
+            <option value="2">2º ano EM</option>
+            <option value="3">3º ano EM</option>
+            <option value="123">Transversal (123 — mesmo professor, todos os anos)</option>
+          </select>
+        </div>
+        <div><label class="flabel" for="cic-mt-bimestre">Bimestre</label>
+          <select id="cic-mt-bimestre" class="fselect">
+            <option value="1">1º bimestre</option><option value="2">2º bimestre</option>
+            <option value="3">3º bimestre</option><option value="4">4º bimestre</option>
+          </select>
+        </div>
+        <div><label class="flabel" for="cic-mt-numero">Nº do ciclo no bimestre</label><input type="number" id="cic-mt-numero" class="finput" min="1" value="1"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="cic-mt-aula-expositiva">Aula Expositiva <span style="font-weight:400;color:#9CA3AF">(opcional — abertura do ciclo)</span></label><textarea id="cic-mt-aula-expositiva" class="ftarea" rows="2" placeholder="Ex: introdução do conteúdo, particularidades do ciclo, datas de início e fim passadas em sala…"></textarea></div>
+      <div class="frow">
+        <div><label class="flabel" for="cic-mt-data-entrega">Data de entrega</label><input type="date" id="cic-mt-data-entrega" class="finput"></div>
+        <div><label class="flabel" for="cic-mt-data-finalizacao">Data de finalização</label><input type="date" id="cic-mt-data-finalizacao" class="finput"></div>
+        <div><label class="flabel" for="cic-mt-data-fazer-mais">Data do Fazer Mais +</label><input type="date" id="cic-mt-data-fazer-mais" class="finput"></div>
+      </div>
+    </div>
+
     <div class="fcard">
       <div class="fcard-title">Formatação do PDF</div>
       <div style="display:flex;flex-wrap:wrap;gap:12px">
@@ -11091,11 +11120,13 @@ function renderPages() {
         <div class="result-title">Ciclo de Trabalho gerado</div>
         <div class="result-badge" id="ciclo-result-badge">—</div>
       </div>
+      <div class="fblock" id="bloco-ciclo-aula-expositiva" style="display:none"><label class="flabel">Aula Expositiva</label><textarea class="result-text" id="ciclo-aula-expositiva" style="width:100%;min-height:60px"></textarea></div>
       <div class="fblock"><label class="flabel">Objetivos</label><textarea class="result-text" id="ciclo-objetivos" style="width:100%;min-height:90px"></textarea></div>
       <div class="fblock"><label class="flabel">Para aquecer</label><textarea class="result-text" id="ciclo-aquecimento" style="width:100%;min-height:80px"></textarea></div>
       <div class="fblock"><label class="flabel">Básico</label><textarea class="result-text" id="ciclo-basico" style="width:100%;min-height:110px"></textarea></div>
       <div class="fblock"><label class="flabel">Intermediário</label><textarea class="result-text" id="ciclo-intermediario" style="width:100%;min-height:110px"></textarea></div>
-      <div class="fblock"><label class="flabel">Avançado (+ Fazer Mais)</label><textarea class="result-text" id="ciclo-avancado" style="width:100%;min-height:110px"></textarea></div>
+      <div class="fblock"><label class="flabel" id="label-ciclo-avancado">Avançado (+ Fazer Mais)</label><textarea class="result-text" id="ciclo-avancado" style="width:100%;min-height:110px"></textarea></div>
+      <div class="fblock" id="bloco-ciclo-fazer-mais" style="display:none"><label class="flabel">Fazer Mais +</label><textarea class="result-text" id="ciclo-fazer-mais" style="width:100%;min-height:90px"></textarea></div>
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarCicloTrabalho()">Salvar</button>
         <button class="btn-copy" onclick="detectarImagensCiclo()">🖼️ Detectar imagens do ciclo</button>
@@ -12641,6 +12672,10 @@ function renderPagesGestao() {
         <p class="page-sub" style="margin-bottom:0;text-transform:capitalize" id="gestao-painel-data">—</p>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <select id="sel-modelo-ciclo" class="fselect" style="width:200px" onchange="salvarModeloCicloTrabalho(this.value)" title="Define o modelo usado na geração do Ciclo de Trabalho">
+          <option value="padrao">Ciclo de Trabalho: Padrão</option>
+          <option value="montessoriano_em">Ciclo de Trabalho: Montessoriano EM</option>
+        </select>
         <input type="text" id="inp-nome-instituicao" class="finput" placeholder="Nome da escola" style="width:200px" onchange="salvarNomeInstituicao(this.value)">
         <div id="logo-preview" style="width:96px;height:44px;border:1.5px dashed var(--gr200);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-shrink:0;position:relative;cursor:pointer" title="Clique para enviar logo da escola">
           <span id="logo-placeholder" style="font-size:10px;color:var(--gr400);text-align:center;line-height:1.3">Logo<br>escola</span>
@@ -15301,6 +15336,13 @@ async function gerarCicloTrabalho() {
   const codigosBnccCiclo = [...(window._cicloBnccTemp || [])];
   const contextoBnccCiclo = await buscarContextoBNCC(codigosBnccCiclo);
 
+  const isMontessoriano = window._modeloCicloTrabalho === 'montessoriano_em' && qtdSessoes <= 1;
+  const mtAno = document.getElementById('cic-mt-ano')?.value || '1';
+  const mtBimestre = document.getElementById('cic-mt-bimestre')?.value || '1';
+  const mtNumero = document.getElementById('cic-mt-numero')?.value || '1';
+  const mtAulaExpositiva = document.getElementById('cic-mt-aula-expositiva')?.value.trim() || '';
+  const mtCodigoCiclo = `${mtAno}.${mtBimestre}.${mtNumero}`;
+
   const btn = document.getElementById('btn-gerar-ciclo');
   btn.disabled = true;
   document.getElementById('gen-ciclo-box').classList.add('show');
@@ -15308,6 +15350,63 @@ async function gerarCicloTrabalho() {
   document.getElementById('ciclo-sessoes-container').style.display = 'none';
 
   function montarPrompt(numSessao, resumoAnterior) {
+    const formatoMontessoriano = `
+AULA_EXPOSITIVA:
+${mtAulaExpositiva ? '[reescreva de forma organizada a partir do que o professor informou: ' + mtAulaExpositiva + ']' : '[gere uma breve introdução do conteúdo, 2-3 linhas, já que o professor não preencheu nada específico]'}
+
+OBJETIVOS:
+a. [objetivo 1, um único verbo no infinitivo]${contextoBnccCiclo ? ' — CODIGO' : ''}
+b. [objetivo 2]
+c. [objetivo 3, se fizer sentido]
+d. [objetivo 4, se fizer sentido]
+e. [objetivo 5, se fizer sentido]
+f. [objetivo 6, se fizer sentido]
+
+AQUECIMENTO:
+[3 a 5 minutos, 1 atividade só, que ativa conhecimento prévio sem antecipar o conteúdo — nunca para casa, sempre em sala]
+
+BASICO:
+FOLHETO 1:
+( ) [tarefa curta, fragmentada, uma instrução por vez]
+( ) [tarefa 2]
+
+INTERMEDIARIO:
+FOLHETO 1:
+( ) [tarefa mais completa, pode interligar com outras]
+( ) [tarefa 2]
+
+AVANCADO:
+FOLHETO 1:
+( ) [tarefa desafiadora, criativa, opcional]
+( ) [tarefa 2]
+
+FAZER_MAIS:
+[10 a 15 questões em checklist "( )", obrigatoriamente ligadas a TODOS os objetivos listados acima — é o fechamento do ciclo, não um desafio bônus]`;
+
+    const formatoPadrao = `
+OBJETIVOS:
+- [objetivo 1, claro e mensurável]${contextoBnccCiclo ? ' — CODIGO (na MESMA linha do objetivo, nunca numa linha própria separada)' : ''}
+- [objetivo 2]
+- [objetivo 3, se fizer sentido]
+
+AQUECIMENTO:
+[2 a 3 linhas — pode ser perguntas de reflexão/curiosidade para responder no caderno, OU uma atividade introdutória curta prática. Escolha o que combinar melhor com o tema.]
+
+BASICO:
+( ) [tarefa 1, genérica, sem citar livro/página]
+( ) [tarefa 2]
+( ) [tarefa 3]
+
+INTERMEDIARIO:
+( ) [tarefa 1, um pouco mais desafiadora que o básico, mesma habilidade]
+( ) [tarefa 2]
+( ) [tarefa 3]
+
+AVANCADO:
+( ) [tarefa 1, mais autônoma/aprofundada]
+( ) [tarefa 2]
+( ) FAZER MAIS: [um desafio bônus opcional, específico e criativo para este tema]`;
+
     return `Você é uma equipe pedagógica especializada em criar Ciclos de Trabalho — planos de estudo autônomos e progressivos que o aluno realiza ao longo de vários dias, em seu próprio ritmo, riscando uma checklist conforme avança.
 
 DADOS:
@@ -15335,31 +15434,15 @@ REGRA DE ADAPTAÇÃO AO PERFIL — obrigatória, sem exceção:
 - Nunca escreva uma tarefa como parágrafo de mais de 2 linhas corridas — se precisar de mais instrução, quebre em itens menores.
 - Logo após CADA tarefa que exigir mais de um passo mental (não tarefas triviais de 1 ação), inclua uma linha no formato EXATO "[DICA: instrução curta e prática de como fazer]" — COM os colchetes e a palavra DICA, nunca como frase solta sem marcador. Exemplo correto: "( ) Fazer uma lista com o nome de todos os personagens.\n[DICA: procure nomes próprios com letra maiúscula e palavras como 'menino', 'cachorro'.]" — NUNCA escreva a dica como uma frase solta em minúscula sem o marcador "[DICA: ...]" ao redor.
 - Sempre que uma tarefa pedir para desenhar, ilustrar ou representar algo visualmente, insira logo após a tarefa um marcador no formato "[IMAGEM: nome-do-item]" (minúsculo, sem acento, com hífen entre palavras, ex: "[IMAGEM: poca-de-agua]") identificando o item principal a ilustrar — sem isso, o professor não consegue anexar nenhuma imagem de apoio à tarefa.
+${isMontessoriano ? `
+MODELO MONTESSORIANO — ENSINO MÉDIO (regras adicionais obrigatórias para este ciclo, além de tudo acima):
+- Nomenclatura deste ciclo: ${mtCodigoCiclo} - ${materia}: ${tema}.
+- Gere até 6 objetivos (não 3), cada um com um único verbo no infinitivo, numerados a., b., c. etc.${contextoBnccCiclo ? ' TODOS os objetivos precisam ter código BNCC ao final.' : ''}
+- Dentro de cada nível, organize as tarefas em um ou mais blocos "FOLHETO N:" (pode ser só 1 folheto se o conteúdo for curto).
+- O FAZER_MAIS é uma seção própria, com 10 a 15 questões em checklist, nunca um desafio bônus único.` : ''}
 
-FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos, cada um seguido de dois-pontos e o conteúdo (sem nada antes de "OBJETIVOS:"):
-
-OBJETIVOS:
-- [objetivo 1, claro e mensurável]${contextoBnccCiclo ? ' — CODIGO (na MESMA linha do objetivo, nunca numa linha própria separada)' : ''}
-- [objetivo 2]
-- [objetivo 3, se fizer sentido]
-
-AQUECIMENTO:
-[2 a 3 linhas — pode ser perguntas de reflexão/curiosidade para responder no caderno, OU uma atividade introdutória curta prática. Escolha o que combinar melhor com o tema.]
-
-BASICO:
-( ) [tarefa 1, genérica, sem citar livro/página]
-( ) [tarefa 2]
-( ) [tarefa 3]
-
-INTERMEDIARIO:
-( ) [tarefa 1, um pouco mais desafiadora que o básico, mesma habilidade]
-( ) [tarefa 2]
-( ) [tarefa 3]
-
-AVANCADO:
-( ) [tarefa 1, mais autônoma/aprofundada]
-( ) [tarefa 2]
-( ) FAZER MAIS: [um desafio bônus opcional, específico e criativo para este tema]`;
+FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos, cada um seguido de dois-pontos e o conteúdo (sem nada antes do primeiro rótulo):
+${isMontessoriano ? formatoMontessoriano : formatoPadrao}`;
   }
 
   const pega = (txt, rotulo, proximo) => {
@@ -15381,12 +15464,13 @@ AVANCADO:
     if (qtdSessoes <= 1) {
       const maxTokensCiclo = 1800 + codigosBnccCiclo.length * 100;
       const txt = await chamarClaude({ prompt: montarPrompt(1, ''), maxTokens: maxTokensCiclo, modulo: 'ciclo_trabalho' });
+      const aulaExpositiva = isMontessoriano ? pega(txt, 'AULA_EXPOSITIVA', 'OBJETIVOS') : '';
       const objetivos = pega(txt, 'OBJETIVOS', 'AQUECIMENTO');
       const aquecimento = pega(txt, 'AQUECIMENTO', 'BASICO');
       const basico = pega(txt, 'BASICO', 'INTERMEDIARIO');
       const intermediario = pega(txt, 'INTERMEDIARIO', 'AVANCADO');
-      const avancadoMatch = txt.match(/AVANCADO:\s*([\s\S]*)$/i);
-      const avancado = avancadoMatch ? avancadoMatch[1].trim() : '';
+      const avancado = isMontessoriano ? pega(txt, 'AVANCADO', 'FAZER_MAIS') : (txt.match(/AVANCADO:\s*([\s\S]*)$/i)?.[1].trim() || '');
+      const fazerMais = isMontessoriano ? pega(txt, 'FAZER_MAIS', '$nunca$') : '';
       if (!objetivos && !basico) {
         console.warn('Ciclo de Trabalho — resposta não interpretada:', txt);
         toast('Não foi possível interpretar o ciclo gerado. Tente novamente.', 'error');
@@ -15396,14 +15480,32 @@ AVANCADO:
         document.getElementById('ciclo-basico').value = formatarDicasSoltas(basico);
         document.getElementById('ciclo-intermediario').value = formatarDicasSoltas(intermediario);
         document.getElementById('ciclo-avancado').value = formatarDicasSoltas(avancado);
-        document.getElementById('ciclo-result-badge').textContent = [materia, serie || a.serie].filter(Boolean).join(' · ') + (codigosBnccCiclo.length ? ' · BNCC ' + codigosBnccCiclo.join(', ') : '');
+        const labelAvancado = document.getElementById('label-ciclo-avancado');
+        if (labelAvancado) labelAvancado.textContent = isMontessoriano ? 'Avançado' : 'Avançado (+ Fazer Mais)';
+        const blocoAulaExp = document.getElementById('bloco-ciclo-aula-expositiva');
+        const blocoFazerMais = document.getElementById('bloco-ciclo-fazer-mais');
+        if (blocoAulaExp) blocoAulaExp.style.display = isMontessoriano ? 'block' : 'none';
+        if (blocoFazerMais) blocoFazerMais.style.display = isMontessoriano ? 'block' : 'none';
+        if (isMontessoriano) {
+          document.getElementById('ciclo-aula-expositiva').value = aulaExpositiva;
+          document.getElementById('ciclo-fazer-mais').value = formatarDicasSoltas(fazerMais);
+          attachEditarIA('ciclo-aula-expositiva');
+          attachEditarIA('ciclo-fazer-mais');
+        }
+        document.getElementById('ciclo-result-badge').textContent = (isMontessoriano ? mtCodigoCiclo + ' · ' : '') + [materia, serie || a.serie].filter(Boolean).join(' · ') + (codigosBnccCiclo.length ? ' · BNCC ' + codigosBnccCiclo.join(', ') : '');
         document.getElementById('ciclo-result-card').classList.add('show');
         attachEditarIA('ciclo-objetivos');
         attachEditarIA('ciclo-aquecimento');
         attachEditarIA('ciclo-basico');
         attachEditarIA('ciclo-intermediario');
         attachEditarIA('ciclo-avancado');
-        window._ultimoCiclo = { aluno: a, materia, serie: serie || a.serie, tema, objetivos, aquecimento, basico, intermediario, avancado, bnccCodigos: codigosBnccCiclo };
+        window._ultimoCiclo = {
+          aluno: a, materia, serie: serie || a.serie, tema, objetivos, aquecimento, basico, intermediario, avancado, bnccCodigos: codigosBnccCiclo,
+          isMontessoriano, aulaExpositiva, fazerMais, codigoCiclo: isMontessoriano ? mtCodigoCiclo : '',
+          dataEntrega: document.getElementById('cic-mt-data-entrega')?.value || '',
+          dataFinalizacao: document.getElementById('cic-mt-data-finalizacao')?.value || '',
+          dataFazerMais: document.getElementById('cic-mt-data-fazer-mais')?.value || '',
+        };
         toast('Ciclo de Trabalho gerado!', 'success');
       }
     } else {
@@ -15596,16 +15698,27 @@ async function baixarPDFCiclo() {
     }
   }
 
-  const fazerMaisMatch = avancado.match(/\(\s*\)\s*FAZER MAIS:?\s*([\s\S]*)$/i);
-  const fazerMais = fazerMaisMatch ? fazerMaisMatch[1].trim() : '';
-  const avancadoSemFazerMais = fazerMaisMatch ? avancado.slice(0, fazerMaisMatch.index).trim() : avancado;
+  let fazerMais, avancadoSemFazerMais;
+  if (c.isMontessoriano) {
+    fazerMais = document.getElementById('ciclo-fazer-mais')?.value.trim() || '';
+    avancadoSemFazerMais = avancado;
+  } else {
+    const fazerMaisMatch = avancado.match(/\(\s*\)\s*FAZER MAIS:?\s*([\s\S]*)$/i);
+    fazerMais = fazerMaisMatch ? fazerMaisMatch[1].trim() : '';
+    avancadoSemFazerMais = fazerMaisMatch ? avancado.slice(0, fazerMaisMatch.index).trim() : avancado;
+  }
+  const aulaExpositiva = c.isMontessoriano ? (document.getElementById('ciclo-aula-expositiva')?.value.trim() || '') : '';
+  const datasLinha = c.isMontessoriano ? [
+    c.dataEntrega ? 'Entrega: ' + new Date(c.dataEntrega+'T00:00:00').toLocaleDateString('pt-BR') : '',
+    c.dataFinalizacao ? 'Finalização: ' + new Date(c.dataFinalizacao+'T00:00:00').toLocaleDateString('pt-BR') : '',
+  ].filter(Boolean).join(' · ') : '';
 
   const conteudo = `Nome: _______________ | Data: ___/___/___
 
-${c.tema.toUpperCase()}
-
+${c.isMontessoriano ? 'Ciclo ' + c.codigoCiclo + ' - ' : ''}${c.tema.toUpperCase()}
+${datasLinha ? '\n' + datasLinha + '\n' : ''}
 ---
-
+${aulaExpositiva ? `\n[BANNER: AULA EXPOSITIVA]\n${aulaExpositiva}\n` : ''}
 [BANNER: OBJETIVOS]
 ${objetivos}
 
@@ -15620,13 +15733,13 @@ ${intermediario}
 
 [BANNER: AVANÇADO]
 ${avancadoSemFazerMais}
-${fazerMais ? `\n[BANNER: FAZER MAIS]\n( ) ${fazerMais}` : ''}`;
+${fazerMais ? `\n[BANNER: FAZER MAIS${c.dataFazerMais ? ' — ' + new Date(c.dataFazerMais+'T00:00:00').toLocaleDateString('pt-BR') : ''}]\n${c.isMontessoriano ? fazerMais : '( ) ' + fazerMais}` : ''}`;
 
   const usaMaiusculasCiclo = document.getElementById('cic-maiusculas')?.checked || false;
 
   gerarPDFDocumento({
     tipo: 'CICLO DE TRABALHO',
-    titulo: 'Ciclo de Trabalho',
+    titulo: 'Ciclo de Trabalho' + (c.isMontessoriano ? ' ' + c.codigoCiclo : ''),
     subtitulo: c.materia + ' — ' + c.tema + (c.bnccCodigos?.length ? ' — BNCC ' + c.bnccCodigos.join(', ') : ''),
     aluno: c.aluno.nome,
     professor: window._profNomeDB || '',
@@ -15645,9 +15758,15 @@ async function salvarCicloTrabalho() {
   const c = window._ultimoCiclo;
   const objetivos = document.getElementById('ciclo-objetivos')?.value.trim();
   const aquecimento = document.getElementById('ciclo-aquecimento')?.value.trim();
-  const nivel_basico = document.getElementById('ciclo-basico')?.value.trim();
+  let nivel_basico = document.getElementById('ciclo-basico')?.value.trim();
   const nivel_intermediario = document.getElementById('ciclo-intermediario')?.value.trim();
-  const nivel_avancado = document.getElementById('ciclo-avancado')?.value.trim();
+  let nivel_avancado = document.getElementById('ciclo-avancado')?.value.trim();
+  if (c.isMontessoriano) {
+    const aulaExpositiva = document.getElementById('ciclo-aula-expositiva')?.value.trim();
+    const fazerMais = document.getElementById('ciclo-fazer-mais')?.value.trim();
+    if (aulaExpositiva) nivel_basico = `[Ciclo ${c.codigoCiclo}] [Aula Expositiva: ${aulaExpositiva}]\n\n${nivel_basico}`;
+    if (fazerMais) nivel_avancado = `${nivel_avancado}\n\n[FAZER MAIS]\n${fazerMais}`;
+  }
   const { error } = await db.from('ciclos_trabalho').insert({
     user_id: user.id, aluno_id: c.aluno.id, aluno_nome: c.aluno.nome,
     materia: c.materia, tema: c.tema, serie: c.serie,
@@ -20963,6 +21082,21 @@ function carregarLogoEscola() {
   mostrarLogoPreview(window._logoEscolaUrl || null);
   const inpNome = document.getElementById('inp-nome-instituicao');
   if (inpNome) inpNome.value = window._nomeInstituicao || '';
+  const selModeloCiclo = document.getElementById('sel-modelo-ciclo');
+  if (selModeloCiclo) selModeloCiclo.value = window._modeloCicloTrabalho || 'padrao';
+}
+
+function aplicarModeloCicloUI() {
+  const bloco = document.getElementById('cic-campos-montessoriano');
+  if (bloco) bloco.style.display = window._modeloCicloTrabalho === 'montessoriano_em' ? 'block' : 'none';
+}
+
+async function salvarModeloCicloTrabalho(valor) {
+  if (!window._organizacaoId) return toast('Sua conta ainda não está vinculada a uma organização — fale com o suporte.', 'error');
+  const { error } = await db.from('organizacoes').update({ modelo_ciclo_trabalho: valor }).eq('id', window._organizacaoId);
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  window._modeloCicloTrabalho = valor;
+  toast('Modelo do Ciclo de Trabalho atualizado!', 'success');
 }
 
 function mostrarLogoPreview(url) {
