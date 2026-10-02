@@ -11047,7 +11047,7 @@ function renderPages() {
             <option value="avancado">🔴 Avançado</option>
           </select>
         </div>
-        <div>
+        <div id="cic-bloco-qtd-sessoes">
           <label class="flabel" for="cic-qtd-sessoes">Quantidade de sessões</label>
           <select id="cic-qtd-sessoes" class="fselect" style="margin-top:4px">
             <option value="1" selected>1 (padrão)</option>
@@ -15316,7 +15316,7 @@ async function gerarCicloTrabalho() {
   const serie = document.getElementById('cic-serie')?.value.trim();
   const tema = document.getElementById('cic-tema')?.value.trim();
   const nivelGeralCiclo = document.getElementById('cic-nivel')?.value || 'intermediario';
-  const qtdSessoes = parseInt(document.getElementById('cic-qtd-sessoes')?.value, 10) || 1;
+  const qtdSessoes = window._modeloCicloTrabalho === 'montessoriano_em' ? 1 : (parseInt(document.getElementById('cic-qtd-sessoes')?.value, 10) || 1);
   const ctxDiagnosticoCiclo = document.getElementById('cic-ctx-diagnostico')?.value.trim() || '';
   const ctxLimitacoesCiclo = document.getElementById('cic-ctx-limitacoes')?.value.trim() || '';
   const ctxPotencialidadesCiclo = document.getElementById('cic-ctx-potencialidades')?.value.trim() || '';
@@ -21087,8 +21087,13 @@ function carregarLogoEscola() {
 }
 
 function aplicarModeloCicloUI() {
+  const ehMontessoriano = window._modeloCicloTrabalho === 'montessoriano_em';
   const bloco = document.getElementById('cic-campos-montessoriano');
-  if (bloco) bloco.style.display = window._modeloCicloTrabalho === 'montessoriano_em' ? 'block' : 'none';
+  if (bloco) bloco.style.display = ehMontessoriano ? 'block' : 'none';
+  const blocoSessoes = document.getElementById('cic-bloco-qtd-sessoes');
+  const selSessoes = document.getElementById('cic-qtd-sessoes');
+  if (blocoSessoes) blocoSessoes.style.display = ehMontessoriano ? 'none' : '';
+  if (selSessoes && ehMontessoriano) selSessoes.value = '1';
 }
 
 async function salvarModeloCicloTrabalho(valor) {
