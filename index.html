@@ -2687,6 +2687,18 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
+<!-- ══ MODAL: Diário de Ciclo ══ -->
+<div class="overlay" id="modal-diario-ciclo" onclick="fecharModal('modal-diario-ciclo',event)">
+  <div class="modal md">
+    <div class="modal-header">
+      <div class="modal-title" id="dc-nome">Diário de Ciclo</div>
+      <button class="modal-close" onclick="fecharModal('modal-diario-ciclo')">×</button>
+    </div>
+    <div id="dc-resumo" style="font-size:12.5px;color:var(--gr600);margin-bottom:10px"></div>
+    <div class="modal-body" id="dc-body" style="max-height:55vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- ══ MODAL: Ciência — ferramentas de IA não substituem laudo ══ -->
 <div class="overlay" id="modal-aviso-ia">
   <div class="modal sm">
@@ -6117,6 +6129,7 @@ async function carregarPraticasAluno() {
           <button class="btn-copy" style="margin-top:8px;font-size:11.5px;padding:4px 10px" onclick="verConteudoPratica('${it.tipo}','${it.id}','${boxId}')">Ver conteúdo completo</button>
           ${it.tipo === 'adaptacoes' ? `<button class="btn-copy" style="margin-top:8px;margin-left:6px;font-size:11.5px;padding:4px 10px" onclick="baixarPDFAdaptacaoSalva('${it.id}')">Baixar PDF</button>` : ''}
           ${it.tipo === 'adaptacoes' ? `<button class="btn-copy" style="margin-top:8px;margin-left:6px;font-size:11.5px;padding:4px 10px" onclick="duplicarEAdaptar('${it.id}')">🔁 Gerar parecida</button>` : ''}
+          ${it.tipo === 'ciclos_trabalho' ? `<button class="btn-copy" style="margin-top:8px;margin-left:6px;font-size:11.5px;padding:4px 10px" onclick="abrirDiarioCiclo('${it.id}')">📝 Diário de Ciclo</button>` : ''}
           <div id="${boxId}" style="display:none;margin-top:8px;padding:10px;background:var(--gr50,#F9FAFB);border-radius:8px;font-size:12.5px;color:var(--gr700);white-space:pre-wrap;max-height:300px;overflow-y:auto"></div>
         </div>
         <div class="mon-btn-group" style="flex-shrink:0">
@@ -6160,6 +6173,82 @@ async function verConteudoPratica(tabelaOrigem, registroId, boxId) {
       'AVANÇADO:\n' + (data.nivel_avancado||'')
     ].join('\n\n') : 'Conteúdo não encontrado.';
   }
+}
+
+function extrairAtividadesCiclo(texto, nivel) {
+  let limpo = texto || '';
+  if (nivel === 'basico') limpo = limpo.replace(/^\[Ciclo[^\]]*\]\s*\[Aula Expositiva:[\s\S]*?\]\n*/, '');
+  if (nivel === 'avancado') limpo = limpo.split(/\n\[FAZER MAIS\]/)[0];
+  const atividades = [];
+  let atual = null;
+  limpo.split('\n').forEach(linhaRaw => {
+    const linha = linhaRaw.trim();
+    if (/^\(\s*\)/.test(linha)) {
+      if (atual) atividades.push(atual);
+      atual = linha.replace(/^\(\s*\)\s*/, '');
+    } else if (atual && linha) {
+      atual += ' ' + linha;
+    }
+  });
+  if (atual) atividades.push(atual);
+  return atividades;
+}
+
+async function abrirDiarioCiclo(cicloId) {
+  const [{ data: ciclo }, { data: avaliacoes }] = await Promise.all([
+    db.from('ciclos_trabalho').select('materia,tema,nivel_basico,nivel_intermediario,nivel_avancado').eq('id', cicloId).maybeSingle(),
+    db.from('avaliacoes_ciclo').select('*').eq('ciclo_id', cicloId)
+  ]);
+  if (!ciclo) return toast('Ciclo não encontrado.', 'error');
+
+  const avMap = {};
+  (avaliacoes || []).forEach(av => { avMap[`${av.nivel}_${av.indice_atividade}`] = av; });
+
+  const NIVEL_LABEL = { basico: 'Básico', intermediario: 'Intermediário', avancado: 'Avançado' };
+  const blocos = ['basico', 'intermediario', 'avancado'].map(nivel => {
+    const atividades = extrairAtividadesCiclo(ciclo[`nivel_${nivel}`], nivel);
+    if (!atividades.length) return '';
+    const linhas = atividades.map((texto, indice) => {
+      const av = avMap[`${nivel}_${indice}`];
+      const rowId = `dc-${nivel}-${indice}`;
+      return `
+        <div class="rel-card" style="margin-bottom:8px">
+          <div style="font-size:12.5px;color:var(--gr700);margin-bottom:6px">${escapeHtml(texto)}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <label style="font-size:11px;color:var(--gr500)">Reconheceu <input type="number" min="0" max="10" id="${rowId}-reconheceu" value="${av?.nota_reconheceu ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
+            <label style="font-size:11px;color:var(--gr500)">Compreendeu <input type="number" min="0" max="10" id="${rowId}-compreendeu" value="${av?.nota_compreendeu ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
+            <label style="font-size:11px;color:var(--gr500)">Aplicou <input type="number" min="0" max="10" id="${rowId}-aplicou" value="${av?.nota_aplicou ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
+            <input type="text" id="${rowId}-feedback" value="${escapeHtml(av?.feedback || '')}" placeholder="Feedback curto (opcional)" style="flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--gr200);border-radius:6px;font-size:11.5px">
+            <button class="btn-sm" style="font-size:11px;padding:3px 10px" onclick="salvarAvaliacaoAtividade('${cicloId}','${nivel}',${indice},'${rowId}')">Salvar</button>
+          </div>
+        </div>`;
+    }).join('');
+    return `<div style="font-size:11.5px;font-weight:700;color:var(--gr500);text-transform:uppercase;margin:12px 0 6px">${NIVEL_LABEL[nivel]}</div>${linhas}`;
+  }).join('');
+
+  document.getElementById('dc-nome').textContent = `Diário de Ciclo — ${ciclo.materia}${ciclo.tema ? ' — ' + ciclo.tema : ''}`;
+  const todasNotas = Object.values(avMap).flatMap(av => [av.nota_reconheceu, av.nota_compreendeu, av.nota_aplicou]).filter(n => n !== null && n !== undefined);
+  const temAvancadoAvaliado = Object.keys(avMap).some(k => k.startsWith('avancado_'));
+  const media = todasNotas.length ? (todasNotas.reduce((s,n)=>s+n,0) / todasNotas.length) : null;
+  const notaFinal = media !== null ? (temAvancadoAvaliado ? media : Math.min(media, 8)) : null;
+  document.getElementById('dc-resumo').textContent = notaFinal !== null
+    ? `Nota de Objeto de Conhecimento (até agora): ${notaFinal.toFixed(1)}${!temAvancadoAvaliado ? ' — teto 8,0 (Avançado não avaliado ainda)' : ''}`
+    : 'Nenhuma atividade avaliada ainda.';
+  document.getElementById('dc-body').innerHTML = blocos || '<div class="empty" style="padding:16px"><div class="empty-text">Nenhuma atividade encontrada neste ciclo.</div></div>';
+  abrirModal('modal-diario-ciclo');
+}
+
+async function salvarAvaliacaoAtividade(cicloId, nivel, indice, rowId) {
+  const num = (id) => { const v = document.getElementById(id)?.value; return v === '' ? null : parseInt(v, 10); };
+  const { error } = await db.from('avaliacoes_ciclo').upsert({
+    ciclo_id: cicloId, nivel, indice_atividade: indice,
+    nota_reconheceu: num(`${rowId}-reconheceu`), nota_compreendeu: num(`${rowId}-compreendeu`), nota_aplicou: num(`${rowId}-aplicou`),
+    feedback: document.getElementById(`${rowId}-feedback`)?.value.trim() || null,
+    avaliado_por: user.id
+  }, { onConflict: 'ciclo_id,nivel,indice_atividade' });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Avaliação salva!', 'success');
+  abrirDiarioCiclo(cicloId);
 }
 
 async function baixarPDFAdaptacaoSalva(registroId) {
