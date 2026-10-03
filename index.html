@@ -22646,8 +22646,9 @@ async function popularVinculoSelects() {
   if (selP) selP.innerHTML = '<option value="">Selecione</option>' + (perfisClinicaList||[]).map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
   const selA = document.getElementById('vinc-aluno-sel');
   if (selA) {
-    const { data } = await db.from('alunos').select('id,nome,serie').order('nome');
-    selA.innerHTML = '<option value="">Selecione</option>' + (data||[]).map(a=>`<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' — '+a.serie:''}</option>`).join('');
+    const { data } = await db.rpc('buscar_alunos_para_vinculo');
+    const ordenado = (data||[]).slice().sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    selA.innerHTML = '<option value="">Selecione</option>' + ordenado.map(a=>`<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' — '+a.serie:''}</option>`).join('');
   }
   carregarVinculosPropostos();
 }
