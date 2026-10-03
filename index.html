@@ -5305,7 +5305,7 @@ function gcRenderEstudantes(lista) {
     const tags = (a.perfis||[]).slice(0,2).map(p=>`<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#EEF2FF;color:#1D4ED8;margin-right:3px">${p.split('—')[0].trim()}</span>`).join('');
     return `<div id="gce-${a.id}" onclick="gcSelecionarEstudante('${a.id}','${(a.nome||'').replace(/'/g,"\\'")}','${(a.serie||'').replace(/'/g,"\\'")}')"
       style="background:var(--gr50);border:1.5px solid var(--gr200);border-radius:var(--rmd);padding:11px 13px;cursor:pointer;transition:border-color .15s">
-      <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin-bottom:2px">${a.serie||'—'}</div>
+      <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin-bottom:2px">${escapeHtml(a.serie||'—')}</div>
       <div style="font-size:13px;font-weight:600;color:var(--gr800)">${escapeHtml(a.nome||'—')}</div>
       ${tags ? `<div style="margin-top:6px">${tags}</div>` : ''}
     </div>`;
@@ -5342,7 +5342,7 @@ function gcRenderClinicas() {
       <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin-bottom:2px">${c.esp}</div>
       <div style="font-size:13px;font-weight:600;color:var(--gr800)">${escapeHtml(c.nome)}</div>
       <div style="font-size:12px;color:var(--gr500);margin-top:1px">${c.prof}</div>
-      <div style="font-size:11px;color:var(--gr400);margin-top:5px">${c.tel} · ${c.email}</div>
+      <div style="font-size:11px;color:var(--gr400);margin-top:5px">${c.tel} · ${escapeHtml(c.email)}</div>
     </div>`).join('');
 }
 
@@ -7037,7 +7037,7 @@ async function carregarDashboardGC() {
   const listaP = document.getElementById('dash-gc-prof-lista');
   if(listaP) {
     const p = profList.slice(0,5);
-    listaP.innerHTML = p.length ? p.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${escapeHtml(x.nome||'Profissional')} <span style="float:right;font-size:11px;color:var(--gr300)">${x.especialidade||''}</span></div>`).join('') : '<span style="color:var(--gr300)">Nenhum profissional cadastrado ainda.</span>';
+    listaP.innerHTML = p.length ? p.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${escapeHtml(x.nome||'Profissional')} <span style="float:right;font-size:11px;color:var(--gr300)">${escapeHtml(x.especialidade||'')}</span></div>`).join('') : '<span style="color:var(--gr300)">Nenhum profissional cadastrado ainda.</span>';
   }
   const listaA = document.getElementById('dash-gc-perfis-lista');
   if(listaA) {
@@ -8230,7 +8230,7 @@ async function carregarDashboardDev() {
     const el = document.getElementById('dev-recentes');
     if (el) el.innerHTML = (data||[]).map(u =>
       `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #F3F4F6;font-size:12.5px">
-        <span style="color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${u.email}</span>
+        <span style="color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${escapeHtml(u.email)}</span>
         <span style="font-size:11px;color:#6B7280;white-space:nowrap">${u.role} · ${new Date(u.created_at).toLocaleDateString('pt-BR')}</span>
       </div>`
     ).join('') || '<p style="font-size:13px;color:#9CA3AF">Sem dados</p>';
@@ -8321,7 +8321,7 @@ function filtrarUsuariosDev() {
   const linhaUsuario = (u, dentroDeOrg, mestre) => {
     const { total } = calcularTotalMes(u);
     return `<tr${dentroDeOrg ? ' style="background:#F9FAFB"' : ''}>
-      <td>${dentroDeOrg ? '&nbsp;&nbsp;↳ ' : ''}${u.email||'—'}${mestre ? ' <span style="display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;background:#FDE68A;color:#92400E;margin-left:4px">👑 MESTRE</span>' : ''}</td>
+      <td>${dentroDeOrg ? '&nbsp;&nbsp;↳ ' : ''}${escapeHtml(u.email||'—')}${mestre ? ' <span style="display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;background:#FDE68A;color:#92400E;margin-left:4px">👑 MESTRE</span>' : ''}</td>
       <td><span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:${cores[u.role]||'#9CA3AF'}20;color:${cores[u.role]||'#9CA3AF'}">${u.role||'—'}</span></td>
       <td>${u.ativo ? '✅' : '⛔'}</td>
       <td style="text-align:center">${dentroDeOrg ? '—' : (u.qtd_pacientes||0) + (u.qtd_alunos||0)}</td>
@@ -17694,14 +17694,14 @@ function popularPeiSel() {
   const sel = document.getElementById('pei-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    alunosCad.map(a => `<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
+    alunosCad.map(a => `<option value="${a.id}">${escapeHtml(a.nome)} — ${escapeHtml(a.serie||'')}</option>`).join('');
 }
 
 async function carregarEstudosCaso() {
   const sel = document.getElementById('ec-aluno-sel');
   if (sel) {
     sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-      (alunosCad || []).map(a => `<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
+      (alunosCad || []).map(a => `<option value="${a.id}">${escapeHtml(a.nome)} — ${escapeHtml(a.serie||'')}</option>`).join('');
   }
   const listaEl = document.getElementById('ec-lista-salvos');
   if (!listaEl) return;
@@ -17762,7 +17762,7 @@ function popularDossieSel() {
   const sel = document.getElementById('dossie-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    (alunosCad||[]).map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
+    (alunosCad||[]).map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${escapeHtml(a.serie||'')}</option>`).join('');
   const fim = document.getElementById('dossie-data-fim');
   if (fim && !fim.value) fim.value = new Date().toISOString().slice(0,10);
 }
@@ -18059,7 +18059,7 @@ function popularPlanejamentoSel() {
   const sel = document.getElementById('pa-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    (alunosCad||[]).map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
+    (alunosCad||[]).map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${escapeHtml(a.serie||'')}</option>`).join('');
 }
 
 let planejamentoGerado = null;
@@ -18294,7 +18294,7 @@ function popularAEESel() {
   const sel = document.getElementById('aee-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    alunosCad.map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
+    alunosCad.map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${escapeHtml(a.serie||'')}</option>`).join('');
 }
 
 function renderPlanoAEELista() {
@@ -20185,14 +20185,14 @@ async function ativarConviteFamilia(token) {
       <p style="text-align:center;color:#6B7280;font-size:13px;margin-bottom:24px">Crie sua senha para acompanhar o progresso de <strong>${convite.aluno_nome}</strong>.</p>
       <div style="margin-bottom:14px">
         <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">E-mail</label>
-        <input type="email" value="${convite.email}" disabled style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:14px;background:#F9FAFB;box-sizing:border-box">
+        <input type="email" value="${escapeHtml(convite.email)}" disabled style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:14px;background:#F9FAFB;box-sizing:border-box">
       </div>
       <div style="margin-bottom:20px">
         <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Criar senha (mínimo 6 caracteres)</label>
         <input type="password" id="conv-senha" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:14px;outline:none;box-sizing:border-box">
       </div>
       <div id="conv-err" style="display:none;color:#DC2626;font-size:12px;margin-bottom:12px"></div>
-      <button onclick="confirmarConvite('${token}','${convite.email}','${convite.aluno_id}')" style="width:100%;padding:13px;background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer">Criar minha senha e entrar</button>
+      <button onclick="confirmarConvite('${token}','${escapeHtml(convite.email)}','${convite.aluno_id}')" style="width:100%;padding:13px;background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer">Criar minha senha e entrar</button>
     </div>
   </div>`;
 }
@@ -20748,7 +20748,7 @@ async function carregarDiarioGestao() {
     const icon = tipoIcon[d.tipo] || '📝';
     const textoSeguro = (d.texto || '').replace(/'/g, "\\'").replace(/\n/g, '\\n');
     const destBadges = (d.destinos||[]).map(dest => `<span style="font-size:10px;padding:1px 7px;background:#F1F5F9;border-radius:20px;color:#6B7280">${destinoLabel[dest]||dest}</span>`).join(' ');
-    return `<div class="item-card" style="cursor:pointer" onclick="abrirDiarioGestao('${d.id}','${(d.aluno_nome||'').replace(/'/g,"\\'")}','${textoSeguro}','${dt}','${d.tipo||''}','${d.area||''}')">
+    return `<div class="item-card" style="cursor:pointer" onclick="abrirDiarioGestao('${d.id}','${(d.aluno_nome||'').replace(/'/g,"\\'")}','${textoSeguro}','${dt}','${d.tipo||''}','${escapeHtml(d.area||'')}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <div class="ic-nome">${d.aluno_nome || '(sem nome)'}</div>
         <div style="display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0">${destBadges}</div>
@@ -20825,7 +20825,7 @@ async function carregarObjetivosGestao() {
     const dt = o.created_at ? new Date(o.created_at).toLocaleDateString('pt-BR') : '';
     return `<div class="item-card">
       <div class="ic-nome">${o.aluno_nome || '(sem nome)'}</div>
-      <div class="ic-meta">${o.area || ''} ${o.especialidade ? '· ' + o.especialidade : ''}</div>
+      <div class="ic-meta">${escapeHtml(o.area || '')} ${o.especialidade ? '· ' + o.especialidade : ''}</div>
       <div class="ic-prev">${(o.objetivo || o.descricao || '').slice(0, 120)}…</div>
       <div class="ic-date">${dt}</div>
     </div>`;
@@ -22355,9 +22355,9 @@ async function selecionarAlunoPlano() {
     <div class="clinic-card" style="margin-bottom:14px">
       <div class="clinic-card-title">🧠 ${escapeHtml(p.nome)} · ${escapeHtml(p.diagnostico||'Sem diagnóstico')}</div>
       <div style="font-size:12.5px;color:var(--gr600);line-height:1.6">
-        <strong>Preservadas:</strong> ${p.preservadas||'—'}<br>
-        <strong>Comprometidas:</strong> ${p.comprometidas||'—'}<br>
-        <strong>Comunicação:</strong> ${p.comunicacao||'—'} &nbsp;|&nbsp; <strong>Sensório:</strong> ${p.sensorio||'—'}
+        <strong>Preservadas:</strong> ${escapeHtml(p.preservadas||'—')}<br>
+        <strong>Comprometidas:</strong> ${escapeHtml(p.comprometidas||'—')}<br>
+        <strong>Comunicação:</strong> ${escapeHtml(p.comunicacao||'—')} &nbsp;|&nbsp; <strong>Sensório:</strong> ${escapeHtml(p.sensorio||'—')}
       </div>
     </div>`;
   if (btnGerar) btnGerar.style.display = 'inline-flex';
@@ -22497,7 +22497,7 @@ function abrirLinhaTempoPaciente() {
   if (!d) return toast('Gere o Dossiê primeiro.', 'error');
   const itens = [];
   d.devs.forEach(dv => itens.push({ _raw: dv._raw, cat:'devolutiva', icone:'🔬', titulo:'Devolutiva Clínica', resumo: (dv.conteudo||'').slice(0,150) }));
-  d.praticas.forEach(pr => itens.push({ _raw: pr._raw, cat:'pratica', icone:'🎯', titulo:'Prática Guiada — '+(pr.titulo||''), resumo: `${pr.area||''} · ${pr.status||''}${pr.resultado&&pr.resultado!=='—'?' · '+pr.resultado:''}` }));
+  d.praticas.forEach(pr => itens.push({ _raw: pr._raw, cat:'pratica', icone:'🎯', titulo:'Prática Guiada — '+(pr.titulo||''), resumo: `${escapeHtml(pr.area||'')} · ${pr.status||''}${pr.resultado&&pr.resultado!=='—'?' · '+pr.resultado:''}` }));
   d.materiais.forEach(m => itens.push({ _raw: m._raw, cat:'material', icone:'🧰', titulo:'Material Terapêutico — '+(m.tipo||''), resumo: (m.contexto||'').slice(0,120) }));
   d.diarios.forEach(dd => itens.push({ _raw: dd._raw, cat:'diario', icone: dd.tipo==='Conquista'?'🌟':dd.tipo==='Alerta'?'⚠️':'📓', titulo:'Diário — '+(dd.tipo||'Registro'), resumo: (dd.texto||'').slice(0,150) }));
   renderizarLinhaTempo(`Linha do Tempo — ${d.p.nome}`, montarLinhaTempo(itens));
@@ -24760,11 +24760,11 @@ async function carregarRoteiroAT() {
     <div class="clinic-card" style="margin-bottom:14px">
       <div class="clinic-card-title">🧠 ${escapeHtml(p.nome)} · ${escapeHtml(p.diagnostico||'Sem diagnóstico')}</div>
       <div style="font-size:12.5px;color:var(--gr600);line-height:1.7">
-        <strong>Comunicação:</strong> ${p.comunicacao||'—'} &nbsp;|&nbsp;
-        <strong>Sensório:</strong> ${p.sensorio||'—'} &nbsp;|&nbsp;
-        <strong>Regulação:</strong> ${p.regulacao||'—'}<br>
-        <strong>Preservadas:</strong> ${p.preservadas||'—'}<br>
-        <strong>Comprometidas:</strong> ${p.comprometidas||'—'}
+        <strong>Comunicação:</strong> ${escapeHtml(p.comunicacao||'—')} &nbsp;|&nbsp;
+        <strong>Sensório:</strong> ${escapeHtml(p.sensorio||'—')} &nbsp;|&nbsp;
+        <strong>Regulação:</strong> ${escapeHtml(p.regulacao||'—')}<br>
+        <strong>Preservadas:</strong> ${escapeHtml(p.preservadas||'—')}<br>
+        <strong>Comprometidas:</strong> ${escapeHtml(p.comprometidas||'—')}
       </div>
     </div>
     ${obj ? `
@@ -26362,7 +26362,7 @@ function filtrarDiario(){
         <span style="margin-left:auto;font-size:16px">${icon}</span>
       </div>
       <div class="diario-texto">${escapeHtml(e.texto||'')}</div>
-      ${e.area?`<div class="diario-tags"><span class="diario-tag">${e.area}</span></div>`:''}
+      ${e.area?`<div class="diario-tags"><span class="diario-tag">${escapeHtml(e.area)}</span></div>`:''}
     </div>`;
   }).join('');
 }
