@@ -3545,7 +3545,7 @@ function popularSelectTriagem() {
   const sel = document.getElementById('tri-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Não cadastrado / digitar manualmente</option>' +
-    (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+    (alunosCad||[]).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
 }
 
 function preencherTriagemDeAluno(id) {
@@ -5057,9 +5057,9 @@ async function carregarPerfisGestaoClinica() {
     }
     grid.innerHTML = lista.map(p => `
       <div class="item-card">
-        <div class="ic-nome">${p.nome||'(sem nome)'}</div>
+        <div class="ic-nome">${escapeHtml(p.nome||'(sem nome)')}</div>
         <div class="ic-meta">${p.nascimento ? '📅 '+new Date(p.nascimento+'T00:00:00').toLocaleDateString('pt-BR') : ''} ${p.idade ? '· '+p.idade : ''}</div>
-        <div class="ic-prev">${p.diagnostico||''}</div>
+        <div class="ic-prev">${escapeHtml(p.diagnostico||'')}</div>
         <div style="display:flex;gap:6px;margin-top:10px">
           <button class="btn-sm" onclick='abrirPerfilClinico(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Ver / Editar</button>
           <button class="btn-danger" onclick="excluirPerfilClinicaGestao('${p.id}','${(p.nome||'').replace(/'/g,"&#39;")}')">Excluir</button>
@@ -5085,7 +5085,7 @@ async function carregarVinculosATGestao() {
     selAT.innerHTML = '<option value="">Selecione um AT</option>' + (ats||[]).map(a => `<option value="${a.id}">${a.nome || a.email}</option>`).join('');
   }
   if (selPaciente) {
-    selPaciente.innerHTML = '<option value="">Selecione um paciente</option>' + (perfisClinicaList||[]).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+    selPaciente.innerHTML = '<option value="">Selecione um paciente</option>' + (perfisClinicaList||[]).map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
   }
   const cont = document.getElementById('gc-vinculos-at-lista');
   if (!cont) return;
@@ -5137,7 +5137,7 @@ async function carregarProfissionaisClinica() {
     return `<div class="prof-card">
       <div class="prof-card-top">
         <div class="prof-avatar">${iniciais}</div>
-        <div><div class="prof-nome">${p.nome||'(sem nome)'}</div>
+        <div><div class="prof-nome">${escapeHtml(p.nome||'(sem nome)')}</div>
         <div class="prof-email">${[p.email,p.vinculo].filter(Boolean).join(' · ')||'—'}</div></div>
       </div>
       <div class="prof-info-row"><span class="prof-badge mat">🩺 ${especialidadeLabel}</span></div>
@@ -5161,7 +5161,7 @@ async function verPacientesDoProfissional(profId, nome) {
   const { data, error } = await db.from('perfis_clinicos').select('id, nome').contains('profissionais_ids', [profId]).order('nome');
   if (error) return toast('Erro: ' + error.message, 'error');
   const lista = data && data.length
-    ? '<ul style="margin:8px 0 0;padding-left:18px">' + data.map(p => `<li>${p.nome}</li>`).join('') + '</ul>'
+    ? '<ul style="margin:8px 0 0;padding-left:18px">' + data.map(p => `<li>${escapeHtml(p.nome)}</li>`).join('') + '</ul>'
     : '<p style="color:var(--gr500);margin-top:8px">Nenhum paciente vinculado a este profissional ainda.</p>';
   const modalConteudo = document.getElementById('clinica-pacientes-modal-conteudo');
   modalConteudo.innerHTML = `<h3 style="font-size:15px;font-weight:600;margin-bottom:4px">Pacientes atendidos por ${nome}</h3>${lista}`;
@@ -5306,7 +5306,7 @@ function gcRenderEstudantes(lista) {
     return `<div id="gce-${a.id}" onclick="gcSelecionarEstudante('${a.id}','${(a.nome||'').replace(/'/g,"\\'")}','${(a.serie||'').replace(/'/g,"\\'")}')"
       style="background:var(--gr50);border:1.5px solid var(--gr200);border-radius:var(--rmd);padding:11px 13px;cursor:pointer;transition:border-color .15s">
       <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin-bottom:2px">${a.serie||'—'}</div>
-      <div style="font-size:13px;font-weight:600;color:var(--gr800)">${a.nome||'—'}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--gr800)">${escapeHtml(a.nome||'—')}</div>
       ${tags ? `<div style="margin-top:6px">${tags}</div>` : ''}
     </div>`;
   }).join('');
@@ -5340,7 +5340,7 @@ function gcRenderClinicas() {
     <div id="gcc-${c.id}" onclick='gcSelecionarClinicaReal(${JSON.stringify(c).replace(/'/g,"&#39;")})'
       style="background:var(--gr50);border:1.5px solid var(--gr200);border-radius:var(--rmd);padding:11px 13px;cursor:pointer;transition:border-color .15s">
       <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gr400);margin-bottom:2px">${c.esp}</div>
-      <div style="font-size:13px;font-weight:600;color:var(--gr800)">${c.nome}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--gr800)">${escapeHtml(c.nome)}</div>
       <div style="font-size:12px;color:var(--gr500);margin-top:1px">${c.prof}</div>
       <div style="font-size:11px;color:var(--gr400);margin-top:5px">${c.tel} · ${c.email}</div>
     </div>`).join('');
@@ -5493,7 +5493,7 @@ async function gcFiltrarRelatorios() {
     const div = document.createElement('div');
     div.className = 'gcrel-card';
     div.style.cssText = 'background:var(--white);border:1px solid var(--gr200);border-radius:var(--rmd);padding:14px 16px;margin-bottom:10px';
-    div.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13.5px;font-weight:600;color:var(--gr800)">${r.titulo||'Relatório'}</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Estudante: ${r.aluno_nome||'—'} · ${dt}</div></div>${badge}</div><div style="font-size:13px;color:var(--gr600);line-height:1.65">${(r.conteudo||'').substring(0,200)}${(r.conteudo||'').length>200?'…':''}</div>`;
+    div.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13.5px;font-weight:600;color:var(--gr800)">${escapeHtml(r.titulo||'Relatório')}</div><div style="font-size:12px;color:var(--gr400);margin-top:2px">Estudante: ${r.aluno_nome||'—'} · ${dt}</div></div>${badge}</div><div style="font-size:13px;color:var(--gr600);line-height:1.65">${(r.conteudo||'').substring(0,200)}${(r.conteudo||'').length>200?'…':''}</div>`;
     el.appendChild(div);
   });
 }
@@ -5719,7 +5719,7 @@ function filtrarGRel() {
   grid.innerHTML = res.length ? res.map(r => `
     <div class="rel-card" onclick='abrirRelatorio(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:${r.origem==='clinica'?'#F5F3FF':'#EEF2FF'};color:${r.origem==='clinica'?'#7C3AED':'#1E3A8A'}">${r.origem==='clinica'?'🏥 Clínica':'🏫 Escola'}</span>
-      <div style="font-weight:600;margin-top:6px">${r.titulo||'Relatório'}</div>
+      <div style="font-weight:600;margin-top:6px">${escapeHtml(r.titulo||'Relatório')}</div>
       <div style="font-size:12px;color:var(--gr400)">${r.aluno_nome||'—'} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
     </div>`).join('') :
     `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📋</div><div class="empty-text">Nenhum relatório encontrado.</div></div>`;
@@ -5861,7 +5861,7 @@ async function carregarColaboracao() {
   if (!sel) return;
   const { data } = await db.from('alunos').select('id,nome,serie').order('nome');
   sel.innerHTML = '<option value="">— Selecione um aluno —</option>' +
-    (data||[]).map(a => `<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' · '+a.serie:''}</option>`).join('');
+    (data||[]).map(a => `<option value="${a.id}" data-nome="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}${a.serie?' · '+a.serie:''}</option>`).join('');
 }
 
 async function carregarMuralAluno(id) {
@@ -5984,14 +5984,14 @@ async function carregarPainelCoordenacao() {
 
     const listaPEI = document.getElementById('coord-lista-peis-pendentes');
     if (listaPEI) listaPEI.innerHTML = alunosSemPEI.length
-      ? alunosSemPEI.slice(0,20).map(a => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${a.nome}</div>`).join('')
+      ? alunosSemPEI.slice(0,20).map(a => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${escapeHtml(a.nome)}</div>`).join('')
       : '<span style="color:var(--gr300)">Nenhum aluno pendente — todos com PEI.</span>';
 
     const listaAtrasadas = document.getElementById('coord-lista-adapt-atrasadas');
     if (listaAtrasadas) listaAtrasadas.innerHTML = alunosAtrasados.length
       ? alunosAtrasados.slice(0,20).map(a => {
           const ultima = ultimaAdaptPorAluno[a.id];
-          return `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${a.nome}</span><span style="font-size:11px;color:var(--gr300)">${ultima ? 'Última: '+ultima.slice(0,10) : 'Nunca adaptado'}</span></div>`;
+          return `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${escapeHtml(a.nome)}</span><span style="font-size:11px;color:var(--gr300)">${ultima ? 'Última: '+ultima.slice(0,10) : 'Nunca adaptado'}</span></div>`;
         }).join('')
       : '<span style="color:var(--gr300)">Nenhuma pendência — todos os alunos com adaptação recente.</span>';
 
@@ -6010,7 +6010,7 @@ async function carregarPainelCoordenacao() {
       ? ranking.slice(0,15).map(r => `
         <div style="padding:8px 0;border-bottom:1px solid var(--gr100)">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-weight:600">${r.aluno.nome}</span>
+            <span style="font-weight:600">${escapeHtml(r.aluno.nome)}</span>
             <span style="font-size:11px;font-weight:700;color:${r.score>=4?'#B91C1C':'#B45309'}">${r.score} pts</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">
@@ -6024,13 +6024,13 @@ async function carregarPainelCoordenacao() {
 function popularSelectEvolucaoAlunos() {
   const sel = document.getElementById('evol-aluno-sel');
   if (!sel) return;
-  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
 }
 
 function popularSelectPraticasAluno() {
   const sel = document.getElementById('prat-aluno-sel');
   if (!sel) return;
-  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
 }
 
 async function duplicarEAdaptar(id) {
@@ -6325,7 +6325,7 @@ function popularRegistroObservacaoSel() {
   const dataEl = document.getElementById('ro-data');
   if (dataEl && !dataEl.value) dataEl.value = new Date().toISOString().slice(0,10);
   if (!sel) return;
-  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad || []).map(a => `<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' · '+a.serie:''}</option>`).join('');
+  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad || []).map(a => `<option value="${a.id}" data-nome="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}${a.serie?' · '+a.serie:''}</option>`).join('');
 }
 
 async function carregarRegistrosObservacao() {
@@ -6669,8 +6669,8 @@ async function carregarEvolucaoAluno() {
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">
             ${areas.filter(a => r[a]).map(a => `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:${r[a]==='avancou'?'#D1FAE5':r[a]==='manteve'?'#FEF3C7':'#FEE2E2'};color:${r[a]==='avancou'?'#065F46':r[a]==='manteve'?'#92400E':'#7F1D1D'}">${labels[a]}: ${r[a]==='avancou'?'✔':r[a]==='manteve'?'⚠':'✗'}</span>`).join('')}
           </div>
-          ${r.destaque ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px"><strong>Destaque:</strong> ${r.destaque}</div>` : ''}
-          ${r.atencao ? `<div style="font-size:12px;color:var(--gr400);margin-top:3px"><strong>Atenção:</strong> ${r.atencao}</div>` : ''}
+          ${r.destaque ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px"><strong>Destaque:</strong> ${escapeHtml(r.destaque)}</div>` : ''}
+          ${r.atencao ? `<div style="font-size:12px;color:var(--gr400);margin-top:3px"><strong>Atenção:</strong> ${escapeHtml(r.atencao)}</div>` : ''}
         </div>`).join('')}` : ''}`;
   window._evolSelecoes = {};
   window._evolRegsAtual = regs;
@@ -6767,7 +6767,7 @@ async function carregarHistoricoEvolucaoPedagogica(alunoId) {
   if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum relatório gerado ainda.</p>'; return; }
   cont.innerHTML = data.map(r => `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
-      <div style="font-size:12.5px">${r.titulo}</div>
+      <div style="font-size:12.5px">${escapeHtml(r.titulo)}</div>
       <button class="btn-sm" onclick="reabrirRelatorioEvolucaoPedagogica('${r.id}')">Abrir</button>
     </div>`).join('');
 }
@@ -6970,8 +6970,8 @@ function renderizarAlunosDashboardClinica(lista) {
   if (totalEl) totalEl.textContent = (lista||[]).length ? `${sl.length} de ${lista.length}` : '';
   listaA.innerHTML = sl.length ? sl.map(x => `
     <div onclick='abrirPerfilClinico(${JSON.stringify(x).replace(/'/g,"&#39;")})' style="padding:8px 0;border-bottom:1px solid var(--gr100);cursor:pointer;width:100%;min-width:0;box-sizing:border-box">
-      <div style="font-weight:600;color:var(--gr700)">${x.nome || 'Aluno'}</div>
-      ${x.diagnostico ? `<div style="font-size:11.5px;color:var(--gr400);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">${x.diagnostico}</div>` : ''}
+      <div style="font-weight:600;color:var(--gr700)">${escapeHtml(x.nome || 'Aluno')}</div>
+      ${x.diagnostico ? `<div style="font-size:11.5px;color:var(--gr400);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">${escapeHtml(x.diagnostico)}</div>` : ''}
     </div>
   `).join('') : '<span style="color:var(--gr300)">Nenhum perfil cadastrado ainda.</span>';
 }
@@ -7037,7 +7037,7 @@ async function carregarDashboardGC() {
   const listaP = document.getElementById('dash-gc-prof-lista');
   if(listaP) {
     const p = profList.slice(0,5);
-    listaP.innerHTML = p.length ? p.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${x.nome||'Profissional'} <span style="float:right;font-size:11px;color:var(--gr300)">${x.especialidade||''}</span></div>`).join('') : '<span style="color:var(--gr300)">Nenhum profissional cadastrado ainda.</span>';
+    listaP.innerHTML = p.length ? p.map(x=>`<div style="padding:6px 0;border-bottom:1px solid var(--gr100)">${escapeHtml(x.nome||'Profissional')} <span style="float:right;font-size:11px;color:var(--gr300)">${x.especialidade||''}</span></div>`).join('') : '<span style="color:var(--gr300)">Nenhum profissional cadastrado ainda.</span>';
   }
   const listaA = document.getElementById('dash-gc-perfis-lista');
   if(listaA) {
@@ -8341,7 +8341,7 @@ function filtrarUsuariosDev() {
     if (!org) return ordenados.map(u => linhaUsuario(u, false)).join('');
     const { total } = calcularTotalMes(org);
     return `<tr style="background:${org.ativo===false?'#FEF2F2':'#EFF6FF'}">
-      <td colspan="6"><strong>🏢 ${org.nome || 'Organização sem nome'}</strong>${org.ativo===false ? ' <span style="display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:700;background:#FCA5A5;color:#7F1D1D;margin-left:6px">⏸ PAUSADA</span>' : ''}</td>
+      <td colspan="6"><strong>🏢 ${escapeHtml(org.nome || 'Organização sem nome')}</strong>${org.ativo===false ? ' <span style="display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:700;background:#FCA5A5;color:#7F1D1D;margin-left:6px">⏸ PAUSADA</span>' : ''}</td>
       <td style="font-weight:700;color:#1E3A8A">R$${total.toFixed(0)}</td>
       <td style="display:flex;gap:6px;max-width:none;overflow:visible;white-space:normal">
         <button class="btn-sm" style="white-space:nowrap" onclick="abrirModalAddAcessoOrg('${orgId}','${(org.nome||'').replace(/'/g,"&#39;")}')">+ Adicionar acesso</button>
@@ -8375,7 +8375,7 @@ async function abrirModalAddonsDev(id) {
     if (org) {
       fonte = org;
       window._damOrgId = org.id;
-      avisoOrg = ` <span style="font-size:11px;font-weight:400;color:#B45309">(vale para toda a organização: ${org.nome||'sem nome'})</span>`;
+      avisoOrg = ` <span style="font-size:11px;font-weight:400;color:#B45309">(vale para toda a organização: ${escapeHtml(org.nome||'sem nome')})</span>`;
     }
   }
 
@@ -8630,7 +8630,7 @@ async function abrirModalNovaSolicitacao(role) {
     try {
       const { data } = await db.from('alunos').select('id,nome').order('nome');
       sel.innerHTML = '<option value="">Selecionar aluno...</option>' +
-        (data||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+        (data||[]).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
     } catch(e) {}
   }
 
@@ -9741,7 +9741,7 @@ function abrirAnaliseComportamental() {
     const sel = document.getElementById('ac-aluno-sel');
     if (sel) {
       sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
-        listaPacientesAtual().map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+        listaPacientesAtual().map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
     }
     carregarAnalisesComportamentais();
   });
@@ -9755,7 +9755,7 @@ function abrirLinhaDoTempoLaudos() {
   const sel = document.getElementById('lt-aluno-sel');
   if (sel) {
     sel.innerHTML = '<option value="">Nenhum — digitar manualmente abaixo</option>' +
-      listaPacientesAtual().map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+      listaPacientesAtual().map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
   }
   carregarLinhasDoTempo();
 }
@@ -10124,7 +10124,7 @@ function abrirApoioPedagogico() {
     const sel = document.getElementById('ap-aluno-sel');
     if (sel) {
       sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-        (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+        (alunosCad||[]).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
     }
     document.getElementById('ap-fase1').style.display = '';
     document.getElementById('ap-fase2').style.display = 'none';
@@ -10255,7 +10255,7 @@ PERGUNTA: [pergunta 4]`;
 function popularSelectSolicitacaoAT() {
   const sel = document.getElementById('sat-aluno-sel');
   if (!sel) return;
-  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
 }
 
 async function processarDocSolicitacaoAT(input) {
@@ -10656,7 +10656,7 @@ async function carregarDevolutivasClinica() {
   const sel = document.getElementById('dc-aluno-sel');
   if (sel) {
     const lista = window._alunosDiario?.length ? window._alunosDiario : (await db.from('alunos').select('id,nome').eq('clinica_email', user.email).order('nome')).data || [];
-    sel.innerHTML = '<option value="">Selecione</option>' + lista.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+    sel.innerHTML = '<option value="">Selecione</option>' + lista.map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
   }
   const listaEl = document.getElementById('dc-lista-salvas');
   if (!listaEl) return;
@@ -15018,7 +15018,7 @@ function filtrarAlSel() {
   el.innerHTML = lista.map(a => {
     const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
     return `<div class="aluno-opt ${alunoSelId===a.id?'selected':''}" onclick="selecionarAluno('${a.id}')">
-      <div class="aluno-opt-nome">${a.nome}</div>
+      <div class="aluno-opt-nome">${escapeHtml(a.nome)}</div>
       <div class="aluno-opt-meta">${meta}</div>
     </div>`;
   }).join('');
@@ -15044,7 +15044,7 @@ async function selecionarAluno(id) {
           boxSugMon.style.background = sugestao.fundo;
           boxSugMon.style.color = sugestao.cor;
           boxSugMon.style.borderColor = sugestao.cor;
-          boxSugMon.innerHTML = `<strong>${sugestao.titulo}</strong><br>${sugestao.motivo}<br><span style="opacity:.8;font-size:11.5px">A Lou vai considerar isso ao calibrar esta adaptação.</span>`;
+          boxSugMon.innerHTML = `<strong>${escapeHtml(sugestao.titulo)}</strong><br>${escapeHtml(sugestao.motivo)}<br><span style="opacity:.8;font-size:11.5px">A Lou vai considerar isso ao calibrar esta adaptação.</span>`;
         });
       }
     } catch(e) { /* aluno sem monitoramento clinico — segue normalmente */ }
@@ -15054,7 +15054,7 @@ async function selecionarAluno(id) {
   const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
   const tags = (a.perfis || []).map(p => `<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join(' ');
   info.style.display = 'block';
-  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${tags}</div>${a.observacoes ? `<div style="margin-top:6px;font-size:12px;color:var(--gr600)">${a.observacoes.slice(0,130)}…</div>` : ''}`;
+  info.innerHTML = `<strong>${escapeHtml(a.nome)}</strong> · ${meta}<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${tags}</div>${a.observacoes ? `<div style="margin-top:6px;font-size:12px;color:var(--gr600)">${a.observacoes.slice(0,130)}…</div>` : ''}`;
   filtrarAlSel();
 
   const inpAluno = document.getElementById('inp-aluno');
@@ -15696,7 +15696,7 @@ function filtrarAlSelCiclo() {
   el.innerHTML = lista.map(a => {
     const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
     return `<div class="aluno-opt ${window._cicloAlunoId===a.id?'selected':''}" onclick="selecionarAlunoCiclo('${a.id}')">
-      <div class="aluno-opt-nome">${a.nome}</div>
+      <div class="aluno-opt-nome">${escapeHtml(a.nome)}</div>
       <div class="aluno-opt-meta">${meta}</div>
     </div>`;
   }).join('');
@@ -15711,7 +15711,7 @@ function selecionarAlunoCiclo(id) {
   const info = document.getElementById('cic-aluno-sel-info');
   const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
   info.style.display = 'block';
-  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}`;
+  info.innerHTML = `<strong>${escapeHtml(a.nome)}</strong> · ${meta}`;
   filtrarAlSelCiclo();
   const searchEl = document.getElementById('cic-aluno-search');
   if (searchEl) searchEl.value = a.nome;
@@ -16277,7 +16277,7 @@ const qtdQuestoes = qtdQuestoesRaw === 'auto' ? null : parseInt(qtdQuestoesRaw, 
       boxSugMon.style.background = sugestaoMonitoramento.fundo;
       boxSugMon.style.color = sugestaoMonitoramento.cor;
       boxSugMon.style.borderColor = sugestaoMonitoramento.cor;
-      boxSugMon.innerHTML = `<strong>${sugestaoMonitoramento.titulo}</strong><br>${sugestaoMonitoramento.motivo}<br><span style="opacity:.8;font-size:11.5px">A Lou vai considerar isso ao calibrar esta adaptação.</span>`;
+      boxSugMon.innerHTML = `<strong>${escapeHtml(sugestaoMonitoramento.titulo)}</strong><br>${escapeHtml(sugestaoMonitoramento.motivo)}<br><span style="opacity:.8;font-size:11.5px">A Lou vai considerar isso ao calibrar esta adaptação.</span>`;
     } else {
       boxSugMon.style.display = 'none';
     }
@@ -17505,7 +17505,7 @@ function carregarDadosPEI() {
   const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
   const tags = (a.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join(' ');
   info.style.display = 'block';
-  info.innerHTML = `<strong>${a.nome}</strong> · ${meta}<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:3px">${tags}</div>${a.observacoes?`<div style="margin-top:5px;font-size:12px;color:var(--gr600)">${a.observacoes}</div>`:''}`;
+  info.innerHTML = `<strong>${escapeHtml(a.nome)}</strong> · ${meta}<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:3px">${tags}</div>${a.observacoes?`<div style="margin-top:5px;font-size:12px;color:var(--gr600)">${escapeHtml(a.observacoes)}</div>`:''}`;
 }
 
 
@@ -17694,14 +17694,14 @@ function popularPeiSel() {
   const sel = document.getElementById('pei-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    alunosCad.map(a => `<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+    alunosCad.map(a => `<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
 }
 
 async function carregarEstudosCaso() {
   const sel = document.getElementById('ec-aluno-sel');
   if (sel) {
     sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-      (alunosCad || []).map(a => `<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+      (alunosCad || []).map(a => `<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
   }
   const listaEl = document.getElementById('ec-lista-salvos');
   if (!listaEl) return;
@@ -17762,7 +17762,7 @@ function popularDossieSel() {
   const sel = document.getElementById('dossie-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    (alunosCad||[]).map(a=>`<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+    (alunosCad||[]).map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
   const fim = document.getElementById('dossie-data-fim');
   if (fim && !fim.value) fim.value = new Date().toISOString().slice(0,10);
 }
@@ -17856,8 +17856,8 @@ function renderizarListaLinhaTempo(itens) {
       <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--gr100)">
         <div style="font-size:18px;flex-shrink:0">${it.icone}</div>
         <div style="flex:1">
-          <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:12.5px;font-weight:700;color:var(--gr800)">${it.titulo}</span><span style="font-size:11px;color:var(--gr400);white-space:nowrap">${new Date(it._raw).toLocaleDateString('pt-BR')}</span></div>
-          <div style="font-size:12.5px;color:var(--gr600);line-height:1.5;margin-top:2px">${it.resumo||''}</div>
+          <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:12.5px;font-weight:700;color:var(--gr800)">${escapeHtml(it.titulo)}</span><span style="font-size:11px;color:var(--gr400);white-space:nowrap">${new Date(it._raw).toLocaleDateString('pt-BR')}</span></div>
+          <div style="font-size:12.5px;color:var(--gr600);line-height:1.5;margin-top:2px">${escapeHtml(it.resumo||'')}</div>
         </div>
       </div>`).join('')
     : '<div class="empty" style="padding:24px 0"><div class="empty-icon">📅</div><div class="empty-text">Nenhum registro no período selecionado.</div></div>';
@@ -18052,14 +18052,14 @@ function carregarDadosPlanejamentoAnual() {
   const aluno = alunosCad.find(x => x.id === sel.value);
   if (!aluno) { info.style.display='none'; return; }
   info.style.display = 'block';
-  info.innerHTML = `<strong>${aluno.nome}</strong>${aluno.serie?' · '+aluno.serie:''}${aluno.perfis?.length?' · '+aluno.perfis.slice(0,2).join(', '):''}`;
+  info.innerHTML = `<strong>${escapeHtml(aluno.nome)}</strong>${aluno.serie?' · '+aluno.serie:''}${aluno.perfis?.length?' · '+aluno.perfis.slice(0,2).join(', '):''}`;
 }
 
 function popularPlanejamentoSel() {
   const sel = document.getElementById('pa-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    (alunosCad||[]).map(a=>`<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+    (alunosCad||[]).map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
 }
 
 let planejamentoGerado = null;
@@ -18121,7 +18121,7 @@ async function carregarPlanejamentoAnual() {
   listaEl.innerHTML = data.map(r => `
     <div class="ic-card">
       <div class="ic-nome">${r.aluno_nome || '(sem aluno)'}</div>
-      <div class="ic-meta">${r.materia||''} · ${r.periodo || ''}</div>
+      <div class="ic-meta">${escapeHtml(r.materia||'')} · ${r.periodo || ''}</div>
       <div style="font-size:11px;color:var(--gr400)">${new Date(r.updated_at).toLocaleDateString('pt-BR')}</div>
       <div style="font-size:12px;margin-top:4px">${(r.texto||'').slice(0,100)}${(r.texto||'').length>100?'…':''}</div>
     </div>
@@ -18202,7 +18202,7 @@ function carregarDadosAEE() {
   if (!aluno) { info.style.display='none'; return; }
   aeeAluno = aluno;
   info.style.display = 'block';
-  info.innerHTML = `<strong>${aluno.nome}</strong>${aluno.serie?' · '+aluno.serie:''}${aluno.perfis?.length?' · '+aluno.perfis.slice(0,2).join(', '):''}`;
+  info.innerHTML = `<strong>${escapeHtml(aluno.nome)}</strong>${aluno.serie?' · '+aluno.serie:''}${aluno.perfis?.length?' · '+aluno.perfis.slice(0,2).join(', '):''}`;
 }
 
 async function gerarPlanoAEE() {
@@ -18294,7 +18294,7 @@ function popularAEESel() {
   const sel = document.getElementById('aee-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    alunosCad.map(a=>`<option value="${a.id}">${a.nome} — ${a.serie||''}</option>`).join('');
+    alunosCad.map(a=>`<option value="${a.id}">${escapeHtml(a.nome)} — ${a.serie||''}</option>`).join('');
 }
 
 function renderPlanoAEELista() {
@@ -18326,7 +18326,7 @@ function carregarDadosPDI() {
   if (!aluno) { info.style.display='none'; return; }
   pdiAluno = aluno;
   info.style.display = 'block';
-  info.innerHTML = `<strong>${aluno.nome}</strong>${aluno.serie?' · '+aluno.serie:''}${aluno.perfis?.length?' · '+aluno.perfis.slice(0,2).join(', '):''}`;
+  info.innerHTML = `<strong>${escapeHtml(aluno.nome)}</strong>${aluno.serie?' · '+aluno.serie:''}${aluno.perfis?.length?' · '+aluno.perfis.slice(0,2).join(', '):''}`;
 }
 
 async function gerarPDI() {
@@ -18417,7 +18417,7 @@ function popularPDISel() {
   const sel = document.getElementById('pdi-aluno-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno cadastrado</option>' +
-    listaPacientesAtual().map(a=>`<option value="${a.id}">${a.nome}${a.serie ? ' — ' + a.serie : ''}</option>`).join('');
+    listaPacientesAtual().map(a=>`<option value="${a.id}">${escapeHtml(a.nome)}${a.serie ? ' — ' + a.serie : ''}</option>`).join('');
 }
 
 function renderPDILista() {
@@ -19774,7 +19774,7 @@ async function carregarAlunosGestao() {
     const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
     const tags = (a.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('');
     return `<div class="item-card">
-      <div class="ic-nome">${a.nome}</div>
+      <div class="ic-nome">${escapeHtml(a.nome)}</div>
       <div class="ic-meta">${meta}</div>
       <div class="ic-tags">${tags}</div>
       ${a.observacoes?`<div style="font-size:11.5px;color:var(--gr400);margin-top:6px">${a.observacoes.slice(0,80)}…</div>`:''}
@@ -19984,7 +19984,7 @@ async function abrirPerfilAluno(a) {
     ]);
 
     adaptEl.innerHTML = (adapts||[]).length
-      ? (adapts||[]).map(ad => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${ad.materia||'Sem matéria'}</span><span style="font-size:11px;color:var(--gr400)">${(ad.created_at||'').slice(0,10)}</span></div>`).join('')
+      ? (adapts||[]).map(ad => `<div style="padding:6px 0;border-bottom:1px solid var(--gr100);display:flex;justify-content:space-between"><span>${escapeHtml(ad.materia||'Sem matéria')}</span><span style="font-size:11px;color:var(--gr400)">${(ad.created_at||'').slice(0,10)}</span></div>`).join('')
       : '<span style="color:var(--gr400)">Nenhuma adaptação ainda</span>';
 
     if (temAddon('analise')) {
@@ -20023,7 +20023,7 @@ async function abrirPerfilAluno(a) {
         .order('created_at',{ascending:false}).limit(5);
       if ((devolutivas||[]).length) {
         devolutivaWrap.style.display = 'block';
-        devolutivaEl.innerHTML = devolutivas.map(r => `<div style="padding:8px 0;border-bottom:1px solid var(--gr100)"><div style="font-size:12px;color:var(--gr700)">${r.conteudo}</div><div style="font-size:11px;color:var(--gr400);margin-top:2px">${(r.created_at||'').slice(0,10)}</div></div>`).join('');
+        devolutivaEl.innerHTML = devolutivas.map(r => `<div style="padding:8px 0;border-bottom:1px solid var(--gr100)"><div style="font-size:12px;color:var(--gr700)">${escapeHtml(r.conteudo)}</div><div style="font-size:11px;color:var(--gr400);margin-top:2px">${(r.created_at||'').slice(0,10)}</div></div>`).join('');
       } else {
         devolutivaWrap.style.display = 'none';
       }
@@ -20090,7 +20090,7 @@ async function popularDropdownProfessoresCad() {
   if (!sel) return;
   const { data } = await db.from('profiles').select('id, nome').eq('role', 'professor').eq('organizacao_id', window._organizacaoId).order('nome');
   sel.innerHTML = '<option value="">Selecione um professor</option>' +
-    (data||[]).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+    (data||[]).map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
 }
 function adicionarProfessorCad() {
   const sel = document.getElementById('cad-professores-sel');
@@ -20350,7 +20350,7 @@ function inicializarPauta() {
   const sel = document.getElementById('pauta-aluno-add');
   if (sel && alunosCad.length) {
     sel.innerHTML = '<option value="">Selecione um aluno</option>' +
-      alunosCad.map(a => `<option value="${a.id}">${a.nome}${a.serie ? ' — ' + a.serie : ''}</option>`).join('');
+      alunosCad.map(a => `<option value="${a.id}">${escapeHtml(a.nome)}${a.serie ? ' — ' + a.serie : ''}</option>`).join('');
   }
   // Pré-preencher data com hoje
   const dtEl = document.getElementById('pauta-data');
@@ -20402,7 +20402,7 @@ function renderAlunosSelecionadosPauta() {
   }
   el.innerHTML = pautaAlunosSelecionados.map(a => `
     <div style="display:flex;align-items:center;gap:6px;background:var(--at-light);border:1px solid #99F6E4;border-radius:20px;padding:4px 10px 4px 12px;font-size:12.5px;font-weight:500;color:#0F766E">
-      <span>${a.nome}${a.serie ? ' · ' + a.serie : ''}</span>
+      <span>${escapeHtml(a.nome)}${a.serie ? ' · ' + a.serie : ''}</span>
       <button onclick="removerAlunoPauta('${a.id}')" style="background:none;border:none;cursor:pointer;color:#0F766E;font-size:14px;line-height:1;padding:0 2px;opacity:.7">×</button>
     </div>`).join('');
 }
@@ -21056,7 +21056,7 @@ async function verRelatorioCompleto() {
             <span style="font-size:12px;font-weight:600;color:#1E3A8A">${icon} ${d.tipo||''} ${d.area ? '· '+d.area : ''}</span>
             <span style="font-size:11px;color:#9CA3AF">${dt}</span>
           </div>
-          <div style="font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.6">${d.texto||''}</div>
+          <div style="font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.6">${escapeHtml(d.texto||'')}</div>
         </div>`;
       }).join('');
   rel.classList.add('open');
@@ -21155,7 +21155,7 @@ async function carregarDadosGestao() {
         `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:${al.bg};border-radius:8px;cursor:pointer" onclick="${al.onclick}">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:14px">${al.icon}</span>
-            <span style="font-size:12px;color:${al.cor};font-weight:500">${al.texto}</span>
+            <span style="font-size:12px;color:${al.cor};font-weight:500">${escapeHtml(al.texto)}</span>
           </div>
           <span style="font-size:11px;color:${al.cor};font-weight:700;white-space:nowrap">${al.label}</span>
         </div>`).join('');
@@ -21661,7 +21661,7 @@ function cardProfessor(p) {
     <div class="prof-card-top">
       <div class="prof-avatar">${iniciais}</div>
       <div>
-        <div class="prof-nome">${p.nome||'(sem nome)'}</div>
+        <div class="prof-nome">${escapeHtml(p.nome||'(sem nome)')}</div>
         <div class="prof-email">${contato}</div>
       </div>
     </div>
@@ -21839,7 +21839,7 @@ function abrirDetProf(p) {
   document.getElementById('mdp-body').innerHTML = `
     ${mats  ? `<div style="margin-bottom:10px"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gr400);margin-bottom:6px">Matérias</div><div style="display:flex;flex-wrap:wrap;gap:5px">${mats}</div></div>` : ''}
     ${salas ? `<div style="margin-bottom:10px"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gr400);margin-bottom:6px">Turmas / Salas</div><div style="display:flex;flex-wrap:wrap;gap:5px">${salas}</div></div>` : ''}
-    ${p.obs ? `<div style="margin-top:10px;padding:10px 12px;background:var(--gr50);border-radius:var(--rsm);font-size:13px;color:var(--gr600);line-height:1.6">${p.obs}</div>` : ''}
+    ${p.obs ? `<div style="margin-top:10px;padding:10px 12px;background:var(--gr50);border-radius:var(--rsm);font-size:13px;color:var(--gr600);line-height:1.6">${escapeHtml(p.obs)}</div>` : ''}
   `;
   abrirModal('modal-det-prof');
 }
@@ -21866,7 +21866,7 @@ async function carregarAlunosClinica() {
 
 function popularSelectsClinica() {
   const opts = '<option value="">Selecione um aluno</option>' +
-    perfisClinicaList.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+    perfisClinicaList.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
   ['obj-aluno-sel','plano-aluno-sel','mon-aluno-sel','mat-terapeutico-aluno-sel','pg-aluno-sel','prat-clinica-sel'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
@@ -22014,7 +22014,7 @@ function renderDocsExtrasPerfilClinico() {
   const el = document.getElementById('cc-docs-extras-lista');
   if (!el) return;
   const docs = window._ccDocsExtras || [];
-  el.innerHTML = docs.map((d, i) => `<span class="mat-tag">${d.nome}<button onclick="window._ccDocsExtras.splice(${i},1);renderDocsExtrasPerfilClinico();executarExtracaoPerfilClinico(document.getElementById('cc-laudo-status'))" style="background:none;border:none;cursor:pointer;margin-left:4px">×</button></span>`).join('');
+  el.innerHTML = docs.map((d, i) => `<span class="mat-tag">${escapeHtml(d.nome)}<button onclick="window._ccDocsExtras.splice(${i},1);renderDocsExtrasPerfilClinico();executarExtracaoPerfilClinico(document.getElementById('cc-laudo-status'))" style="background:none;border:none;cursor:pointer;margin-left:4px">×</button></span>`).join('');
 }
 
 async function executarExtracaoPerfilClinico(status) {
@@ -22127,7 +22127,7 @@ async function popularDropdownProfissionaisCad() {
   const mapaEmailId = {};
   (profs||[]).forEach(p => { mapaEmailId[p.email] = p.id; });
   sel.innerHTML = '<option value="">Selecione um profissional</option>' +
-    (pcs||[]).filter(p => mapaEmailId[p.email]).map(p => `<option value="${mapaEmailId[p.email]}">${p.nome}${!mapaEmailId[p.email] ? ' (login ainda não ativado)' : ''}</option>`).join('');
+    (pcs||[]).filter(p => mapaEmailId[p.email]).map(p => `<option value="${mapaEmailId[p.email]}">${escapeHtml(p.nome)}${!mapaEmailId[p.email] ? ' (login ainda não ativado)' : ''}</option>`).join('');
 }
 function adicionarProfissionalCad() {
   const sel = document.getElementById('cad-profissionais-sel');
@@ -22353,7 +22353,7 @@ async function selecionarAlunoPlano() {
   if (!p) return;
   if (info) info.innerHTML = `
     <div class="clinic-card" style="margin-bottom:14px">
-      <div class="clinic-card-title">🧠 ${p.nome} · ${p.diagnostico||'Sem diagnóstico'}</div>
+      <div class="clinic-card-title">🧠 ${escapeHtml(p.nome)} · ${escapeHtml(p.diagnostico||'Sem diagnóstico')}</div>
       <div style="font-size:12.5px;color:var(--gr600);line-height:1.6">
         <strong>Preservadas:</strong> ${p.preservadas||'—'}<br>
         <strong>Comprometidas:</strong> ${p.comprometidas||'—'}<br>
@@ -22394,7 +22394,7 @@ function popularDossiePacienteSel() {
   const sel = document.getElementById('dossie-pac-sel');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um paciente cadastrado</option>' +
-    (perfisClinicaList||[]).map(p=>`<option value="${p.id}">${p.nome} — ${p.diagnostico||''}</option>`).join('');
+    (perfisClinicaList||[]).map(p=>`<option value="${p.id}">${escapeHtml(p.nome)} — ${escapeHtml(p.diagnostico||'')}</option>`).join('');
   const fim = document.getElementById('dossie-pac-data-fim');
   if (fim && !fim.value) fim.value = new Date().toISOString().slice(0,10);
 }
@@ -22643,12 +22643,12 @@ function baixarPDFDossiePaciente() {
 
 async function popularVinculoSelects() {
   const selP = document.getElementById('vinc-paciente-sel');
-  if (selP) selP.innerHTML = '<option value="">Selecione</option>' + (perfisClinicaList||[]).map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  if (selP) selP.innerHTML = '<option value="">Selecione</option>' + (perfisClinicaList||[]).map(p=>`<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
   const selA = document.getElementById('vinc-aluno-sel');
   if (selA) {
     const { data } = await db.rpc('buscar_alunos_para_vinculo');
     const ordenado = (data||[]).slice().sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
-    selA.innerHTML = '<option value="">Selecione</option>' + ordenado.map(a=>`<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' — '+a.serie:''}</option>`).join('');
+    selA.innerHTML = '<option value="">Selecione</option>' + ordenado.map(a=>`<option value="${a.id}" data-nome="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}${a.serie?' — '+a.serie:''}</option>`).join('');
   }
   carregarVinculosPropostos();
 }
@@ -23125,7 +23125,7 @@ function filtrarHistoricoPraticaGuiada() {
         ${g.itens.map(r => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 8px 22px;border-top:1px solid var(--gr100)">
           <div>
-            <div style="font-weight:600;font-size:13px">${r.titulo}</div>
+            <div style="font-weight:600;font-size:13px">${escapeHtml(r.titulo)}</div>
             <div style="font-size:11.5px;color:var(--gr500)">${r.perfis_clinicos?.nome||''} · ${LABELS_AREA[r.area]||r.area} · ${new Date(r.criado_em).toLocaleDateString('pt-BR')} · ${r.status==='registrado'?'✔ registrado':'pendente'}</div>
           </div>
           <button class="btn-sm" onclick="reabrirPraticaGuiada('${r.id}')">Abrir</button>
@@ -23152,7 +23152,7 @@ function renderizarPendentesPraticaGuiada() {
   lista.innerHTML = data.map(r => `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
       <div>
-        <div style="font-weight:600;font-size:13px">${r.titulo}</div>
+        <div style="font-weight:600;font-size:13px">${escapeHtml(r.titulo)}</div>
         <div style="font-size:11.5px;color:var(--gr500)">${r.perfis_clinicos?.nome||''} · ${LABELS_AREA[r.area]||r.area} · ${new Date(r.criado_em).toLocaleDateString('pt-BR')}</div>
       </div>
       <button class="btn-sm" onclick="reabrirPraticaGuiada('${r.id}')">Abrir para registrar</button>
@@ -23175,7 +23175,7 @@ async function reabrirPraticaGuiada(id) {
   document.getElementById('pg-result-lista').innerHTML = perguntas.map((q, i) => `
     <div class="clinic-card" style="margin-bottom:10px">
       <div style="font-weight:600;margin-bottom:6px">${i+1}. ${q.pergunta}</div>
-      ${q.alternativas.map(a => `<div style="font-size:13px;color:${a.letra===q.correta?'var(--gr800)':'var(--gr500)'};margin-bottom:2px">${a.letra}) ${a.texto}${a.letra===q.correta?' ✓':''}</div>`).join('')}
+      ${q.alternativas.map(a => `<div style="font-size:13px;color:${a.letra===q.correta?'var(--gr800)':'var(--gr500)'};margin-bottom:2px">${a.letra}) ${escapeHtml(a.texto)}${a.letra===q.correta?' ✓':''}</div>`).join('')}
     </div>`).join('');
   document.getElementById('pg-result-card').classList.add('show');
   respostasPraticaGuiada = {};
@@ -23381,7 +23381,7 @@ CORRETA: [A, B ou C]`;
     document.getElementById('pg-result-lista').innerHTML = perguntas.map((q, i) => `
       <div class="clinic-card" style="margin-bottom:10px">
         <div style="font-weight:600;margin-bottom:6px">${i+1}. ${q.pergunta}</div>
-        ${q.alternativas.map(a => `<div style="font-size:13px;color:${a.letra===q.correta?'var(--gr800)':'var(--gr500)'};margin-bottom:2px">${a.letra}) ${a.texto}${a.letra===q.correta?' ✓':''}</div>`).join('')}
+        ${q.alternativas.map(a => `<div style="font-size:13px;color:${a.letra===q.correta?'var(--gr800)':'var(--gr500)'};margin-bottom:2px">${a.letra}) ${escapeHtml(a.texto)}${a.letra===q.correta?' ✓':''}</div>`).join('')}
       </div>`).join('');
     document.getElementById('pg-result-card').classList.add('show');
     respostasPraticaGuiada = {};
@@ -24261,8 +24261,8 @@ async function carregarMonitoramento() {
   body.innerHTML = `
     ${sugestaoProgressao ? `
     <div class="clinic-card" style="margin-bottom:16px;background:${sugestaoProgressao.fundo};border-color:${sugestaoProgressao.cor}">
-      <div class="clinic-card-title" style="color:${sugestaoProgressao.cor}">${sugestaoProgressao.titulo}</div>
-      <p style="font-size:13px;color:${sugestaoProgressao.cor};margin:4px 0 0">${sugestaoProgressao.motivo}</p>
+      <div class="clinic-card-title" style="color:${sugestaoProgressao.cor}">${escapeHtml(sugestaoProgressao.titulo)}</div>
+      <p style="font-size:13px;color:${sugestaoProgressao.cor};margin:4px 0 0">${escapeHtml(sugestaoProgressao.motivo)}</p>
       <p style="font-size:11.5px;color:${sugestaoProgressao.cor};opacity:.8;margin:6px 0 0">Sugestão baseada nos últimos registros de Prática Guiada — a decisão final é sempre do profissional.</p>
     </div>` : ''}
     <div class="clinic-card" style="margin-bottom:16px">
@@ -24341,7 +24341,7 @@ async function carregarMonitoramento() {
                     ${Object.entries(r.resultados||{}).map(([k,v]) => `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:${v==='ok'?'#D1FAE5':v==='parcial'?'#FEF3C7':'#FEE2E2'};color:${v==='ok'?'#065F46':v==='parcial'?'#92400E':'#7F1D1D'}">${labels[k]||k}: ${v==='ok'?'✔':v==='parcial'?'⚠':'✗'}</span>`).join('')}
                     ${nivelBadges.map(b => `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#EEF2FF;color:#3730A3">Ajuda: ${b}</span>`).join('')}
                   </div>
-                  ${r.observacoes ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px">${r.observacoes}</div>` : ''}
+                  ${r.observacoes ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px">${escapeHtml(r.observacoes)}</div>` : ''}
                 </div>`;
               }).join('')}
             </div>
@@ -24548,7 +24548,7 @@ async function carregarHistoricoEvolucao(perfilId) {
   if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum relatório gerado ainda.</p>'; return; }
   cont.innerHTML = data.map(r => `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
-      <div style="font-size:12.5px">${r.titulo}</div>
+      <div style="font-size:12.5px">${escapeHtml(r.titulo)}</div>
       <button class="btn-sm" onclick="reabrirRelatorioEvolucao('${r.id}')">Abrir</button>
     </div>`).join('');
 }
@@ -24591,7 +24591,7 @@ async function carregarRelatoriosClinica() {
   grid.innerHTML = (data||[]).map(r => `
     <div class="rel-card" onclick='abrirRelatorio(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <span class="rel-origem escola">🏫 Escola</span>
-      <div class="rel-titulo">${r.titulo}</div>
+      <div class="rel-titulo">${escapeHtml(r.titulo)}</div>
       <div class="rel-meta">${r.aluno_nome||''} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
     </div>`).join('');
 }
@@ -24601,7 +24601,7 @@ let perfisATList = [];
 async function carregarAlunosAT() {
   const { data: vinculos } = await db.from('atendimentos_at').select('perfis_clinicos(*)').eq('at_user_id', user.id).eq('ativo', true);
   perfisATList = (vinculos || []).map(v => v.perfis_clinicos).filter(Boolean).sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
-  const opcoes = '<option value="">Selecione um aluno</option>' + perfisATList.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+  const opcoes = '<option value="">Selecione um aluno</option>' + perfisATList.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
   const sel = document.getElementById('at-aluno-sel');
   if (sel) sel.innerHTML = opcoes;
   const selDiario = document.getElementById('diat-aluno-sel');
@@ -24741,7 +24741,7 @@ async function carregarRelatoriosAT() {
   grid.innerHTML = (data||[]).map(r => `
     <div class="rel-card" onclick='abrirRelatorio(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <span class="rel-origem ${r.origem}">${r.origem === 'clinica' ? '🏥 Clínica' : '🏫 Escola'}</span>
-      <div class="rel-titulo">${r.titulo}</div>
+      <div class="rel-titulo">${escapeHtml(r.titulo)}</div>
       <div class="rel-meta">${r.aluno_nome||''} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
     </div>`).join('');
 }
@@ -24758,7 +24758,7 @@ async function carregarRoteiroAT() {
 
   body.innerHTML = `
     <div class="clinic-card" style="margin-bottom:14px">
-      <div class="clinic-card-title">🧠 ${p.nome} · ${p.diagnostico||'Sem diagnóstico'}</div>
+      <div class="clinic-card-title">🧠 ${escapeHtml(p.nome)} · ${escapeHtml(p.diagnostico||'Sem diagnóstico')}</div>
       <div style="font-size:12.5px;color:var(--gr600);line-height:1.7">
         <strong>Comunicação:</strong> ${p.comunicacao||'—'} &nbsp;|&nbsp;
         <strong>Sensório:</strong> ${p.sensorio||'—'} &nbsp;|&nbsp;
@@ -24777,8 +24777,8 @@ async function carregarRoteiroAT() {
     <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">📋 Último roteiro recebido da clínica</h3>
     <div class="at-card">
       <div class="at-card-sit">Atualizado em ${new Date(ultimoRel.created_at).toLocaleDateString('pt-BR')}</div>
-      <div style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line">${ultimoRel.conteudo}</div>
-    </div>` : `<div class="info-banner">⚠️ Nenhum roteiro clínico recebido ainda para ${p.nome}. Aguarde o envio pela clínica.</div>`}
+      <div style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line">${escapeHtml(ultimoRel.conteudo)}</div>
+    </div>` : `<div class="info-banner">⚠️ Nenhum roteiro clínico recebido ainda para ${escapeHtml(p.nome)}. Aguarde o envio pela clínica.</div>`}
     <button class="btn-sm" style="margin-top:14px" onclick="gerarRoteiroAT('${id}')">⭐ Gerar Roteiro com a Lou</button>
     <div id="at-roteiro-ia" style="margin-top:14px"></div>`;
 }
@@ -25023,9 +25023,9 @@ function renderGuiaGridGestao() {
     <div class="guia-card" onclick='abrirGuiaPerfil(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
       <div class="guia-card-top">
         <div class="guia-card-emoji">${p.emoji}</div>
-        <div><div class="guia-card-nome">${p.nome}</div><div class="guia-card-sigla">${p.sigla||p.cat}</div></div>
+        <div><div class="guia-card-nome">${escapeHtml(p.nome)}</div><div class="guia-card-sigla">${p.sigla||p.cat}</div></div>
       </div>
-      <div class="guia-card-resumo">${p.resumo}</div>
+      <div class="guia-card-resumo">${escapeHtml(p.resumo)}</div>
       <span class="guia-tag ${p.tag}">${p.cat}</span>
     </div>`).join('')
     : `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum perfil encontrado para essa busca.</div></div>`;
@@ -25042,9 +25042,9 @@ function renderGuiaGrid() {
     <div class="guia-card" onclick='abrirGuiaPerfil(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
       <div class="guia-card-top">
         <div class="guia-card-emoji">${p.emoji}</div>
-        <div><div class="guia-card-nome">${p.nome}</div><div class="guia-card-sigla">${p.sigla||p.cat}</div></div>
+        <div><div class="guia-card-nome">${escapeHtml(p.nome)}</div><div class="guia-card-sigla">${p.sigla||p.cat}</div></div>
       </div>
-      <div class="guia-card-resumo">${p.resumo}</div>
+      <div class="guia-card-resumo">${escapeHtml(p.resumo)}</div>
       <span class="guia-tag ${p.tag}">${p.cat}</span>
     </div>`).join('')
     : `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum perfil encontrado para essa busca.</div></div>`;
@@ -25056,7 +25056,7 @@ function abrirGuiaPerfil(p) {
   document.getElementById('mg-body').innerHTML = `
     <div class="guia-modal-section">
       <h4>O que é?</h4>
-      <p>${p.resumo}</p>
+      <p>${escapeHtml(p.resumo)}</p>
     </div>
     <div class="guia-modal-section">
       <h4>Como se manifesta na escola</h4>
@@ -25278,7 +25278,7 @@ function renderDiversidade() {
   grid.innerHTML = DIV_MODULOS.map((m,i)=>`
     <div class="div-card" onclick="abrirDivModulo(${i})">
       <div class="div-card-icon">${m.icon}</div>
-      <div class="div-card-titulo">${m.titulo}</div>
+      <div class="div-card-titulo">${escapeHtml(m.titulo)}</div>
       <div class="div-card-desc">${m.sub}</div>
       <span class="div-card-badge">${m.badge}</span>
     </div>`).join('');
@@ -25299,7 +25299,7 @@ function abrirDivModulo(i) {
     </div>
     <div class="div-section">
       <h4>Práticas na sala de aula</h4>
-      <div class="div-pratica-grid">${m.praticas.map(p=>`<div class="div-pratica-item"><strong>${p.titulo}</strong>${p.desc}</div>`).join('')}</div>
+      <div class="div-pratica-grid">${m.praticas.map(p=>`<div class="div-pratica-item"><strong>${escapeHtml(p.titulo)}</strong>${p.desc}</div>`).join('')}</div>
     </div>
     ${m.links && m.links.length ? `
     <div class="div-section">
@@ -25732,7 +25732,7 @@ async function verDetalhesEscola(email) {
         <p style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;margin-bottom:8px;">Dados jurídicos</p>
         ${row('Razão Social', e.razao_social||'—')}
         ${row('CNPJ', e.cnpj||'—')}
-        ${row('Endereço', e.endereco ? `${e.endereco}, ${e.cidade||''} - ${e.estado||''}` : '—')}
+        ${row('Endereço', e.endereco ? `${escapeHtml(e.endereco)}, ${escapeHtml(e.cidade||'')} - ${escapeHtml(e.estado||'')}` : '—')}
         ${row('CEP', e.cep||'—')}
       </div>
       <div>
@@ -26128,7 +26128,7 @@ async function carregarFeedbacksDev() {
         <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:${bg}">${tipoLabel[f.tipo]||f.tipo}</span>
         <span style="font-size:11px;color:#9CA3AF">${f.user_role||'—'} · ${f.user_email||'anônimo'} · ${dt}</span>
       </div>
-      <div style="font-size:13px;color:#374151;line-height:1.6">${f.mensagem}</div>
+      <div style="font-size:13px;color:#374151;line-height:1.6">${escapeHtml(f.mensagem)}</div>
     </div>`;
   }).join('');
 }
@@ -26188,7 +26188,7 @@ function popularSelectsPonte(){
   const vistos = new Set();
   const lista  = todosAlunos.filter(a=>{ if(vistos.has(a.nome)) return false; vistos.add(a.nome); return true; });
   const opts   = '<option value="">Selecione um aluno</option>' +
-    lista.map(a=>`<option value="${a.id}">${a.nome}</option>`).join('');
+    lista.map(a=>`<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
   ['diario-aluno-sel','conv-aluno-sel'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.innerHTML=opts;
   });
@@ -26361,7 +26361,7 @@ function filtrarDiario(){
         <span class="diario-data">${dt}</span>
         <span style="margin-left:auto;font-size:16px">${icon}</span>
       </div>
-      <div class="diario-texto">${e.texto||''}</div>
+      <div class="diario-texto">${escapeHtml(e.texto||'')}</div>
       ${e.area?`<div class="diario-tags"><span class="diario-tag">${e.area}</span></div>`:''}
     </div>`;
   }).join('');
@@ -26554,7 +26554,7 @@ function filtrarGlossario(){
     <div class="gloss-card" onclick="toggleGlossItem(${i})">
       <div class="gloss-termo">${g.termo}</div>
       <span class="gloss-origem ${g.origem}">${origemLabel[g.origem]||g.origem} · ${g.cat}</span>
-      <div class="gloss-resumo">${g.resumo}</div>
+      <div class="gloss-resumo">${escapeHtml(g.resumo)}</div>
       <div id="gloss-detalhe-${i}" style="display:none">
         <div class="gloss-escola-label">${g.origem==='pedagogico'?'💡 O que isso significa para a clínica:':'💡 O que isso significa na sala de aula:'}</div>
         <div class="gloss-escola-texto">${g.escola}</div>
@@ -26759,8 +26759,8 @@ Gere 3 a 5 convergências reais baseadas nos dados fornecidos.`;
     const recEl=document.getElementById('conv-recomendacoes');
     if(convEl) convEl.innerHTML=(parsed.convergencias||[]).map(c=>`
       <div class="convergencia-card">
-        <div class="convergencia-titulo">🔗 ${c.titulo}</div>
-        <div class="convergencia-desc">${c.descricao}</div>
+        <div class="convergencia-titulo">🔗 ${escapeHtml(c.titulo)}</div>
+        <div class="convergencia-desc">${escapeHtml(c.descricao)}</div>
         <div class="convergencia-partes">
           ${(c.partes||[]).map(p=>`<span class="convergencia-parte ${p}">${p==='escola'?'🏫 Escola':p==='clinica'?'🏥 Clínica':'🧑‍⚕️ AT'}</span>`).join('')}
         </div>
