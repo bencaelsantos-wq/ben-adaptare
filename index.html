@@ -4150,7 +4150,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4539,6 +4539,9 @@ function renderNavCoordenacaoPedagogica() {
     </div>
     <div class="nav-item" id="nav-banco-praticas-coletivo" onclick="${!temAddon('banco_praticas_coletivo') ? "acessarRecursoPremium('Banco de Práticas Coletivo')" : "showPage('banco-praticas-coletivo');popularBancoPraticasColetivo()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="6" cy="14" r="2.3" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="14" r="2.3" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="5.5" r="2.3" stroke="currentColor" stroke-width="1.5"/><path d="M7.8 12.3 9 8.5M12.2 12.3 11 8.5" stroke="currentColor" stroke-width="1.3"/></svg>Banco de Práticas Coletivo
+    </div>
+    <div class="nav-item" id="nav-comparador-turma" onclick="${!temAddon('comparador_turma') ? "acessarRecursoPremium('Comparador de Turma')" : "showPage('comparador-turma');popularComparadorTurma()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="3" height="7" stroke="currentColor" stroke-width="1.5"/><rect x="8.5" y="6" width="3" height="11" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="3" width="3" height="14" stroke="currentColor" stroke-width="1.5"/></svg>Comparador de Turma
     </div>
     <div class="nav-section">Referência</div>
     <div class="nav-item" id="nav-guia" onclick="showPage('guia')">
@@ -6247,6 +6250,74 @@ async function abrirDiarioCiclo(cicloId) {
   document.getElementById('dc-resumo').innerHTML = `<div style="margin-bottom:4px">${explicacao}</div><div style="font-weight:600">${resumoNota}</div>`;
   document.getElementById('dc-body').innerHTML = blocos || '<div class="empty" style="padding:16px"><div class="empty-text">Nenhuma atividade encontrada neste ciclo.</div></div>';
   abrirModal('modal-diario-ciclo');
+}
+
+async function popularComparadorTurma() {
+  const sel = document.getElementById('ct-serie-sel');
+  if (!sel) return;
+  const { data } = await db.from('alunos').select('serie');
+  const series = [...new Set((data || []).map(a => (a.serie || '').trim()).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Selecione</option>' + series.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+async function gerarComparadorTurma() {
+  const serie = document.getElementById('ct-serie-sel')?.value;
+  if (!serie) return toast('Selecione uma série.', 'error');
+  const resumo = document.getElementById('ct-resumo');
+  const resultado = document.getElementById('ct-resultado');
+  resumo.textContent = 'Comparando…';
+  resultado.innerHTML = '';
+
+  const { data: alunosSerie } = await db.from('alunos').select('id,nome').eq('serie', serie);
+  if (!alunosSerie || !alunosSerie.length) {
+    resumo.textContent = `Nenhum aluno cadastrado na série "${serie}".`;
+    return;
+  }
+  const alunoIds = alunosSerie.map(a => a.id);
+  const AREAS_CT = ['comunicacao','cognicao','social','emocional','mobilidade','curriculo'];
+
+  const [{ data: evols }, { data: planos }] = await Promise.all([
+    db.from('evolucoes_pedagogicas').select('aluno_id,data_registro,' + AREAS_CT.join(',')).in('aluno_id', alunoIds).order('data_registro', { ascending: false }),
+    db.from('planejamento_anual').select('aluno_id,updated_at').in('aluno_id', alunoIds).order('updated_at', { ascending: false })
+  ]);
+
+  const ultimaEvolPorAluno = {};
+  (evols || []).forEach(e => { if (!ultimaEvolPorAluno[e.aluno_id]) ultimaEvolPorAluno[e.aluno_id] = e; });
+  const ultimoPlanoPorAluno = {};
+  (planos || []).forEach(p => { if (!ultimoPlanoPorAluno[p.aluno_id]) ultimoPlanoPorAluno[p.aluno_id] = p; });
+
+  const DIAS_SEM_REGISTRO_ALERTA = 60;
+  const linhas = alunosSerie.map(a => {
+    const evol = ultimaEvolPorAluno[a.id];
+    const plano = ultimoPlanoPorAluno[a.id];
+    let avancou = 0, manteve = 0, regrediu = 0;
+    if (evol) AREAS_CT.forEach(area => {
+      if (evol[area] === 'avancou') avancou++;
+      else if (evol[area] === 'manteve') manteve++;
+      else if (evol[area] === 'regrediu') regrediu++;
+    });
+    const diasSemEvol = evol ? Math.floor((Date.now() - new Date(evol.data_registro+'T00:00:00')) / 86400000) : null;
+    const alertas = [];
+    if (!evol) alertas.push('Sem evolução registrada');
+    else if (diasSemEvol > DIAS_SEM_REGISTRO_ALERTA) alertas.push(`Sem registro há ${diasSemEvol} dias`);
+    if (regrediu >= 2) alertas.push(`Regrediu em ${regrediu} área(s)`);
+    if (!plano) alertas.push('Sem Planejamento Anual cadastrado');
+    const pontuacao = evol ? (avancou - regrediu) : -99;
+    return { aluno: a, evol, plano, avancou, manteve, regrediu, diasSemEvol, alertas, pontuacao };
+  }).sort((a, b) => a.pontuacao - b.pontuacao);
+
+  resumo.textContent = `${alunosSerie.length} aluno(s) na série "${serie}".`;
+  resultado.innerHTML = linhas.map(l => `
+    <div class="rel-card" style="margin-bottom:8px;border-left:3px solid ${l.alertas.length ? (l.alertas.length >= 2 ? '#DC2626' : '#D97706') : '#059669'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--gr800)">${escapeHtml(l.aluno.nome)}</div>
+          <div style="font-size:12px;color:var(--gr500);margin-top:3px">${l.evol ? `Última evolução: ${new Date(l.evol.data_registro+'T00:00:00').toLocaleDateString('pt-BR')} · ${l.avancou} avançou · ${l.manteve} manteve · ${l.regrediu} regrediu` : 'Nenhuma evolução registrada'}</div>
+          <div style="font-size:12px;color:var(--gr500);margin-top:2px">${l.plano ? `Planejamento Anual: atualizado em ${new Date(l.plano.updated_at).toLocaleDateString('pt-BR')}` : 'Sem Planejamento Anual cadastrado'}</div>
+        </div>
+        ${l.alertas.length ? `<div style="text-align:right">${l.alertas.map(a => `<div style="font-size:11px;font-weight:600;color:#B91C1C">⚠ ${a}</div>`).join('')}</div>` : '<div style="font-size:11px;font-weight:600;color:#059669">✔ Em dia</div>'}
+      </div>
+    </div>`).join('');
 }
 
 function popularBancoPraticasColetivo() {
@@ -8117,7 +8188,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 97
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 97, comparador_turma: 97
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
@@ -8125,11 +8196,11 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
-  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma'],
   compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
@@ -11519,6 +11590,26 @@ function renderPages() {
 
     <div id="bpc-resumo" style="font-size:12.5px;color:var(--gr600);margin-bottom:10px"></div>
     <div id="bpc-resultado"></div>
+  </div>
+
+  <!-- COMPARADOR DE TURMA -->
+  <div id="page-comparador-turma" class="page">
+    <h1 class="page-title">Comparador de Turma</h1>
+    <p class="page-sub">Cruza a Evolução Pedagógica e o Planejamento Anual de todos os alunos de uma série, ordenado de quem precisa de mais atenção pra quem está acompanhando bem.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Série / Turma</div></div></div>
+      <div class="fblock"><label class="flabel" for="ct-serie-sel">Série</label>
+        <select id="ct-serie-sel" class="fselect"><option value="">Selecione</option></select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" id="btn-gerar-ct" onclick="gerarComparadorTurma()">Comparar turma</button>
+    </div>
+
+    <div id="ct-resumo" style="font-size:12.5px;color:var(--gr600);margin-bottom:10px"></div>
+    <div id="ct-resultado"></div>
   </div>
 
   <!-- ESTUDO DE CASO -->
