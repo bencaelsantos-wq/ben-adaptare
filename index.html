@@ -3784,13 +3784,14 @@ async function entrar() {
   const senha  = (document.getElementById('lsenha') || document.getElementById('senha')).value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
 
-  // Verificar DEV — a senha é validada pelo Supabase Auth de verdade, nunca comparada no código
+  // Verificar DEV — a senha é validada pelo Supabase Auth de verdade, nunca comparada no código.
+  // Mantém sessão real ativa (necessária pra RLS de school_plans, que exige role 'developer' autenticado).
   if (email.toLowerCase() === DEV_EMAIL) {
     setBtnLoading('btn-entrar', true, 'Entrar');
-    const { error: erroDev } = await db.auth.signInWithPassword({ email, password: senha });
+    const { data: dataDev, error: erroDev } = await db.auth.signInWithPassword({ email, password: senha });
     setBtnLoading('btn-entrar', false, 'Entrar');
     if (erroDev) return showErr('⛔ Senha incorreta para acesso DEV.');
-    await db.auth.signOut(); // mantém o modo DEV sem sessão persistente, como já era antes
+    user = dataDev.user;
     window._devMode = true;
     mostrarDevPanel();
     return;
@@ -4300,7 +4301,7 @@ function abrirManualUso() {
 
 /* Logout */
 async function logout() {
-  if (!window._devMode) await db.auth.signOut();
+  await db.auth.signOut();
   window._devMode = false;
  user = null; userRole = null;  document.getElementById('app-screen').style.display = 'none';
   mostrarLanding();
