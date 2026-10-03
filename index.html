@@ -3784,9 +3784,14 @@ async function entrar() {
   const senha  = (document.getElementById('lsenha') || document.getElementById('senha')).value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
 
-  // Verificar DEV antes de qualquer chamada ao Supabase
+  // Verificar DEV — a senha é validada pelo Supabase Auth de verdade, nunca comparada no código
   if (email.toLowerCase() === DEV_EMAIL) {
-    if (senha !== 'Scs0589#') return showErr('⛔ Senha incorreta para acesso DEV.');
+    setBtnLoading('btn-entrar', true, 'Entrar');
+    const { error: erroDev } = await db.auth.signInWithPassword({ email, password: senha });
+    setBtnLoading('btn-entrar', false, 'Entrar');
+    if (erroDev) return showErr('⛔ Senha incorreta para acesso DEV.');
+    await db.auth.signOut(); // mantém o modo DEV sem sessão persistente, como já era antes
+    window._devMode = true;
     mostrarDevPanel();
     return;
   }
@@ -9199,6 +9204,7 @@ function exportarRespostaPDF() {
 // ══════════════════════════════════════════════════════════════
 
 let _pubSolicitacao = null;
+let _pubSolicitacaoMeta = null;
 let _pubUrgencia = 'rotina';
 
 async function verificarRotaPublica() {
@@ -9259,8 +9265,10 @@ function tocarAudioPublico() {
 
 async function carregarSolicitacaoPublica(token) {
   try {
+    // Consulta 1: só metadados de controle de acesso — NUNCA traz o conteúdo nem a senha em si,
+    // só se existe senha definida (coluna gerada tem_senha), pra decidir se mostra o gate.
     const { data, error } = await dbAnon.from('solicitacoes_externas')
-      .select('*, alunos(nome, nasc, serie )')
+      .select('id, revogado_em, expira_em, tem_senha, acessos_count, max_acessos, status')
       .eq('token', token)
       .maybeSingle();
 
@@ -9277,36 +9285,45 @@ async function carregarSolicitacaoPublica(token) {
       return;
     }
 
-    _pubSolicitacao = data;
+    _pubSolicitacaoMeta = { token, ...data };
 
-    // Verificar senha
-    if (data.senha_acesso) {
+    if (data.tem_senha) {
       document.getElementById('pub-senha-gate').style.display = 'block';
       return;
     }
 
-    // Registrar acesso
-    await registrarAcessoPublico(data.id, data.acessos_count);
-
-    mostrarConteudoPublico(data);
+    // Sem senha: já pode buscar o conteúdo completo
+    await buscarConteudoPublico(token, null);
   } catch(e) {
     mostrarErroPub('Erro ao carregar solicitação.');
   }
+}
+
+async function buscarConteudoPublico(token, senha) {
+  // Consulta 2: só retorna o conteúdo se a senha (quando existir) bater no próprio filtro da
+  // consulta — a senha nunca é comparada no navegador, e o conteúdo nunca sai do banco se errar.
+  let query = dbAnon.from('solicitacoes_externas').select('*, alunos(nome, nasc, serie )').eq('token', token);
+  query = senha === null ? query.is('senha_acesso', null) : query.eq('senha_acesso', senha);
+  const { data, error } = await query.maybeSingle();
+  if (error || !data) return { ok: false };
+  _pubSolicitacao = data;
+  await registrarAcessoPublico(data.id, data.acessos_count);
+  mostrarConteudoPublico(data);
+  return { ok: true };
 }
 
 async function verificarSenhaPublica() {
   const inp = document.getElementById('pub-senha-input');
   const errEl = document.getElementById('pub-senha-err');
   const senha = inp?.value?.trim();
-  if (senha !== _pubSolicitacao.senha_acesso) {
+  const r = await buscarConteudoPublico(_pubSolicitacaoMeta.token, senha);
+  if (!r.ok) {
     if (errEl) { errEl.style.display = 'block'; }
     inp.value = '';
     return;
   }
   if (errEl) errEl.style.display = 'none';
   document.getElementById('pub-senha-gate').style.display = 'none';
-  await registrarAcessoPublico(_pubSolicitacao.id, _pubSolicitacao.acessos_count);
-  mostrarConteudoPublico(_pubSolicitacao);
 }
 
 async function registrarAcessoPublico(id, count) {
