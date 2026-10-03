@@ -22872,9 +22872,16 @@ Responda em texto simples, sem markdown, direto ao ponto, sem repetir os dados d
 let ultimoMaterialTerapeutico = null;
 let materiaisHistorico = [];
 
+let avaliacoesMateriaisMap = {};
+
 async function carregarHistoricoMateriais() {
-  const { data } = await db.from('materiais_terapeuticos_gerados').select('id, tipo, contexto, criado_em, perfis_clinicos(nome)').eq('user_id', user.id).order('criado_em', { ascending: false });
+  const [{ data }, { data: avals }] = await Promise.all([
+    db.from('materiais_terapeuticos_gerados').select('id, tipo, contexto, criado_em, perfil_id, perfis_clinicos(nome)').eq('user_id', user.id).order('criado_em', { ascending: false }),
+    db.from('avaliacoes_praticas').select('*').eq('tabela_origem', 'materiais_terapeuticos_gerados')
+  ]);
   materiaisHistorico = data || [];
+  avaliacoesMateriaisMap = {};
+  (avals || []).forEach(av => { avaliacoesMateriaisMap[av.registro_id] = av; });
   filtrarHistoricoMateriais();
 }
 
@@ -22884,14 +22891,43 @@ function filtrarHistoricoMateriais() {
   if (!lista) return;
   const res = materiaisHistorico.filter(r => !q || (r.perfis_clinicos?.nome||'').toLowerCase().includes(q));
   if (!res.length) { lista.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhum material encontrado.</div></div>`; return; }
-  lista.innerHTML = res.map(r => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100)">
+  const CORES_STATUS_MAT = {
+    funcionou: { cor: '#059669', label: '✔ Funcionou bem' },
+    parcial: { cor: '#D97706', label: '⚠ Funcionou parcialmente' },
+    nao_funcionou: { cor: '#DC2626', label: '✗ Não funcionou' }
+  };
+  lista.innerHTML = res.map(r => {
+    const av = avaliacoesMateriaisMap[r.id];
+    const st = av ? CORES_STATUS_MAT[av.status || 'funcionou'] : null;
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gr100);${st ? `border-left:3px solid ${st.cor};padding-left:8px` : ''}">
       <div>
         <div style="font-weight:600;font-size:13px">${DICAS_MATERIAL[r.tipo]?.label||r.tipo}</div>
         <div style="font-size:11.5px;color:var(--gr500)">${r.perfis_clinicos?.nome||''} · ${new Date(r.criado_em).toLocaleDateString('pt-BR')}</div>
+        ${st ? `<div style="font-size:11px;font-weight:600;color:${st.cor};margin-top:3px">${st.label}</div>` : ''}
       </div>
-      <button class="btn-sm" onclick="reabrirMaterialTerapeutico('${r.id}')">Abrir</button>
-    </div>`).join('');
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div class="mon-btn-group">
+          <button class="mon-btn ok" title="Funcionou bem" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouMaterial('${r.id}','${r.perfil_id}','funcionou')">✔</button>
+          <button class="mon-btn parcial" title="Funcionou parcialmente" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouMaterial('${r.id}','${r.perfil_id}','parcial')">⚠</button>
+          <button class="mon-btn nao" title="Não funcionou" style="width:22px;height:22px;font-size:11px;padding:0" onclick="marcarFuncionouMaterial('${r.id}','${r.perfil_id}','nao_funcionou')">✗</button>
+        </div>
+        <button class="btn-sm" onclick="reabrirMaterialTerapeutico('${r.id}')">Abrir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function marcarFuncionouMaterial(registroId, perfilId, status) {
+  const nota = prompt('Nota rápida (opcional)', '');
+  if (nota === null) return;
+  const { error } = await db.from('avaliacoes_praticas').insert({
+    tabela_origem: 'materiais_terapeuticos_gerados', registro_id: registroId, perfil_id: perfilId,
+    avaliado_por: user.id, funcionou: status === 'funcionou', status, nota_rapida: nota.trim() || null
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Avaliação registrada!', 'success');
+  carregarHistoricoMateriais();
 }
 
 async function reabrirMaterialTerapeutico(id) {
