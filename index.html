@@ -4425,6 +4425,9 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
+    <div class="nav-item" id="nav-registro-observacao" onclick="showPage('registro-observacao');popularRegistroObservacaoSel()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="7.5" cy="7.5" r="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M7 11h6M7 13.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Registro de Observação
+    </div>
     <div class="nav-item" id="nav-ciclo-trabalho" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Ciclo de Trabalho')" : "showPage('ciclo-trabalho');carregarAlunos();aplicarModeloCicloUI()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 1 0 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.3l2 1-2 1z" fill="currentColor" stroke="none"/></svg>Ciclo de Trabalho${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -4504,6 +4507,9 @@ function renderNavCoordenacaoPedagogica() {
     </div>
     <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
+    </div>
+    <div class="nav-item" id="nav-registro-observacao" onclick="showPage('registro-observacao');popularRegistroObservacaoSel()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="7.5" cy="7.5" r="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M7 11h6M7 13.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Registro de Observação
     </div>
     <div class="nav-item" id="nav-estudo-caso" onclick="${!temAddon('estudo_caso') ? "acessarRecursoPremium('Estudo de Caso')" : "showPage('estudo-caso');carregarEstudosCaso()"}">
        <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso${!temAddon('estudo_caso') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -6226,11 +6232,14 @@ async function abrirDiarioCiclo(cicloId) {
       return `
         <div class="rel-card" style="margin-bottom:8px">
           <div style="font-size:12.5px;color:var(--gr700);margin-bottom:6px">${escapeHtml(texto)}</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
             <label style="font-size:11px;color:var(--gr500)">Reconheceu <input type="number" min="0" max="10" ${dis} id="${rowId}-reconheceu" value="${av?.nota_reconheceu ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
             <label style="font-size:11px;color:var(--gr500)">Compreendeu <input type="number" min="0" max="10" ${dis} id="${rowId}-compreendeu" value="${av?.nota_compreendeu ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
             <label style="font-size:11px;color:var(--gr500)">Aplicou <input type="number" min="0" max="10" ${dis} id="${rowId}-aplicou" value="${av?.nota_aplicou ?? ''}" style="width:48px;margin-left:4px;padding:3px 5px;border:1px solid var(--gr200);border-radius:6px"></label>
-            <input type="text" ${dis} id="${rowId}-feedback" value="${escapeHtml(av?.feedback || '')}" placeholder="Feedback curto (opcional)" style="flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--gr200);border-radius:6px;font-size:11.5px">
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <input type="text" ${dis} id="${rowId}-feedback" value="${escapeHtml(av?.feedback || '')}" placeholder="Observação (fato — o que você viu, sem interpretar)" style="flex:1;min-width:160px;padding:4px 8px;border:1px solid var(--gr200);border-radius:6px;font-size:11.5px">
+            <input type="text" ${dis} id="${rowId}-interpretacao" value="${escapeHtml(av?.interpretacao || '')}" placeholder="Interpretação (opcional)" style="flex:1;min-width:140px;padding:4px 8px;border:1px solid var(--gr200);border-radius:6px;font-size:11.5px">
             ${podeEditarDiarioCiclo ? `<button class="btn-sm" style="font-size:11px;padding:3px 10px" onclick="salvarAvaliacaoAtividade('${cicloId}','${nivel}',${indice},'${rowId}')">Salvar</button>` : ''}
           </div>
         </div>`;
@@ -6320,6 +6329,77 @@ async function gerarComparadorTurma() {
     </div>`).join('');
 }
 
+function popularRegistroObservacaoSel() {
+  const sel = document.getElementById('ro-aluno-sel');
+  const dataEl = document.getElementById('ro-data');
+  if (dataEl && !dataEl.value) dataEl.value = new Date().toISOString().slice(0,10);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad || []).map(a => `<option value="${a.id}" data-nome="${a.nome}">${a.nome}${a.serie?' · '+a.serie:''}</option>`).join('');
+}
+
+async function carregarRegistrosObservacao() {
+  const alunoId = document.getElementById('ro-aluno-sel')?.value;
+  const lista = document.getElementById('ro-lista');
+  if (!lista) return;
+  if (!alunoId) { lista.innerHTML = ''; return; }
+  lista.innerHTML = '<p style="font-size:13px;color:var(--gr500)">Carregando…</p>';
+  const { data } = await db.from('registros_observacao').select('*').eq('aluno_id', alunoId).order('data', { ascending: false });
+  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="padding:16px"><div class="empty-text">Nenhum registro ainda para este aluno.</div></div>'; return; }
+  lista.innerHTML = '<h3 style="font-size:14px;font-weight:600;color:var(--gr800);margin:16px 0 10px">Registros anteriores</h3>' + data.map(r => `
+    <div class="rel-card" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase">${escapeHtml(r.contexto||'Geral')}</span><span style="font-size:11px;color:var(--gr400)">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
+      <div style="font-size:12.5px;color:var(--gr700);margin-top:5px">${escapeHtml(r.observacao||'')}</div>
+      ${r.interpretacao ? `<div style="font-size:12px;color:var(--gr500);margin-top:4px"><strong>Interpretação:</strong> ${escapeHtml(r.interpretacao)}</div>` : ''}
+      ${r.plano_acao ? `<div style="font-size:12px;color:var(--gr500);margin-top:3px"><strong>Plano de ação:</strong> ${escapeHtml(r.plano_acao)}</div>` : ''}
+      <button class="btn-copy" style="margin-top:8px;font-size:11px;padding:3px 10px" onclick="baixarPDFRegistroObservacao('${r.id}')">Baixar PDF</button>
+    </div>`).join('');
+}
+
+async function salvarRegistroObservacao() {
+  const sel = document.getElementById('ro-aluno-sel');
+  const alunoId = sel?.value;
+  if (!alunoId) return toast('Selecione um aluno.', 'error');
+  const observacao = document.getElementById('ro-observacao')?.value.trim();
+  if (!observacao) return toast('Descreva a observação.', 'error');
+  const payload = {
+    aluno_id: alunoId,
+    aluno_nome: sel.selectedOptions[0]?.dataset?.nome || '',
+    data: document.getElementById('ro-data')?.value || new Date().toISOString().slice(0,10),
+    contexto: document.getElementById('ro-contexto')?.value || 'Geral',
+    observacao,
+    interpretacao: document.getElementById('ro-interpretacao')?.value.trim() || null,
+    plano_acao: document.getElementById('ro-plano')?.value.trim() || null,
+    autor_id: user.id
+  };
+  const { error } = await db.from('registros_observacao').insert(payload);
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Registro salvo!', 'success');
+  document.getElementById('ro-observacao').value = '';
+  document.getElementById('ro-interpretacao').value = '';
+  document.getElementById('ro-plano').value = '';
+  carregarRegistrosObservacao();
+}
+
+async function baixarPDFRegistroObservacao(id) {
+  const { data, error } = await db.from('registros_observacao').select('*').eq('id', id).maybeSingle();
+  if (error || !data) return toast('Registro não encontrado.', 'error');
+  const conteudo = [
+    `Contexto: ${data.contexto || 'Geral'}`,
+    `Data: ${new Date(data.data+'T00:00:00').toLocaleDateString('pt-BR')}`,
+    '',
+    'OBSERVAÇÃO:',
+    data.observacao || '',
+    data.interpretacao ? '\nINTERPRETAÇÃO:\n' + data.interpretacao : '',
+    data.plano_acao ? '\nPLANO DE AÇÃO:\n' + data.plano_acao : '',
+  ].join('\n');
+  gerarPDFDocumento({
+    tipo: 'REGISTRO DE OBSERVAÇÃO', titulo: 'Registro de Observação', subtitulo: data.contexto || 'Geral',
+    aluno: data.aluno_nome || '', professor: window._profNomeDB || user?.email?.split('@')[0] || '',
+    conteudo, nomeArquivo: 'Registro_Observacao_' + (data.aluno_nome||'aluno').replace(/\s+/g,'_'),
+    isAtividade: false, fonteTamanho: 'medio', espacamento: 'normal', fonteTipo: 'sans', imagensPorItem: {}
+  });
+}
+
 function popularBancoPraticasColetivo() {
   const sel = document.getElementById('bpc-perfil-sel');
   if (!sel) return;
@@ -6393,6 +6473,7 @@ async function salvarAvaliacaoAtividade(cicloId, nivel, indice, rowId) {
     ciclo_id: cicloId, nivel, indice_atividade: indice,
     nota_reconheceu: num(`${rowId}-reconheceu`), nota_compreendeu: num(`${rowId}-compreendeu`), nota_aplicou: num(`${rowId}-aplicou`),
     feedback: document.getElementById(`${rowId}-feedback`)?.value.trim() || null,
+    interpretacao: document.getElementById(`${rowId}-interpretacao`)?.value.trim() || null,
     avaliado_por: user.id
   }, { onConflict: 'ciclo_id,nivel,indice_atividade' });
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
@@ -11392,6 +11473,43 @@ function renderPages() {
       <select class="filter-sel" id="hist-fserie" onchange="filtrarHistorico()"><option value="">Todas as séries</option></select>
     </div>
     <div class="cards-grid" id="hist-grid"></div>
+  </div>
+
+  <!-- REGISTRO DE OBSERVAÇÃO -->
+  <div id="page-registro-observacao" class="page">
+    <h1 class="page-title">Registro de Observação</h1>
+    <p class="page-sub">Documento de observação pedagógica — separa o fato observado da interpretação, pra registros consistentes entre professores diferentes.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Aluno e contexto</div></div></div>
+      <div class="frow">
+        <div><label class="flabel" for="ro-aluno-sel">Aluno</label>
+          <select id="ro-aluno-sel" class="fselect" onchange="carregarRegistrosObservacao()"><option value="">Selecione um aluno</option></select>
+        </div>
+        <div><label class="flabel" for="ro-data">Data</label><input type="date" id="ro-data" class="finput"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ro-contexto">Contexto</label>
+        <select id="ro-contexto" class="fselect">
+          <option value="Geral">Geral / observação espontânea</option>
+          <option value="Durante a atividade (Reconheceu)">Durante a atividade (Reconheceu)</option>
+          <option value="No feedback (Compreendeu)">No feedback individual (Compreendeu)</option>
+          <option value="Na entrega (Aplicou)">Na entrega / correção (Aplicou)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Registro</div></div></div>
+      <div class="fblock"><label class="flabel" for="ro-observacao">Observação (fato — o que você viu, sem interpretar)</label><textarea id="ro-observacao" class="ftarea" rows="3" placeholder="Ex: Levou 12 minutos para concluir a tarefa 2, pediu ajuda uma vez."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ro-interpretacao">Interpretação <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="ro-interpretacao" class="ftarea" rows="2" placeholder="Sua leitura pedagógica do que foi observado"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ro-plano">Plano de ação <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="ro-plano" class="ftarea" rows="2" placeholder="O que fazer a partir disso"></textarea></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" onclick="salvarRegistroObservacao()">Salvar registro</button>
+    </div>
+
+    <div id="ro-lista"></div>
   </div>
 
   <!-- TRIAGEM INICIAL -->
