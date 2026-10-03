@@ -3784,19 +3784,6 @@ async function entrar() {
   const senha  = (document.getElementById('lsenha') || document.getElementById('senha')).value;
   if (!email || !senha) return showErr('Preencha e-mail e senha.');
 
-  // Verificar DEV — a senha é validada pelo Supabase Auth de verdade, nunca comparada no código.
-  // Mantém sessão real ativa (necessária pra RLS de school_plans, que exige role 'developer' autenticado).
-  if (email.toLowerCase() === DEV_EMAIL) {
-    setBtnLoading('btn-entrar', true, 'Entrar');
-    const { data: dataDev, error: erroDev } = await db.auth.signInWithPassword({ email, password: senha });
-    setBtnLoading('btn-entrar', false, 'Entrar');
-    if (erroDev) return showErr('⛔ Senha incorreta para acesso DEV.');
-    user = dataDev.user;
-    window._devMode = true;
-    mostrarDevPanel();
-    return;
-  }
-
   setBtnLoading('btn-entrar', true, 'Entrar');
   const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
   setBtnLoading('btn-entrar', false, 'Entrar');
@@ -3806,13 +3793,11 @@ async function entrar() {
     return showErr(error.message);
   }
   user = data.user;
-  // Verificar status da assinatura (developer ignora)
-  if (email.toLowerCase() !== DEV_EMAIL) {
-    const statusEscola = await verificarStatusEscola(email.toLowerCase());
-    if (!statusEscola.permitido) {
-      await db.auth.signOut();
-      return showErr(statusEscola.motivo || 'Acesso não autorizado.');
-    }
+  // Verificar status da assinatura
+  const statusEscola = await verificarStatusEscola(email.toLowerCase());
+  if (!statusEscola.permitido) {
+    await db.auth.signOut();
+    return showErr(statusEscola.motivo || 'Acesso não autorizado.');
   }
   // Ler perfil do banco — define role e subrole reais
   try { await lerPerfilDobanco(); } catch(e) { return; }
