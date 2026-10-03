@@ -4701,6 +4701,9 @@ function renderNavAT() {
     <div class="nav-item at-item" id="nav-at-roteiro" onclick="showPage('at-roteiro');carregarAlunosAT()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 5h12M4 8h8M4 11h10M4 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Roteiro de Atuação
     </div>
+    <div class="nav-item at-item" id="nav-registro-observacao" onclick="showPage('registro-observacao');popularRegistroObservacaoSelAT()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="7.5" cy="7.5" r="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M7 11h6M7 13.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Registro de Observação
+    </div>
     <div class="nav-item at-item" id="nav-at-relatorios" onclick="showPage('at-relatorios')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Relatórios Recebidos<span class="notif-badge" id="badge-at-rel" style="display:none"></span>
     </div>
@@ -6326,6 +6329,14 @@ function popularRegistroObservacaoSel() {
   if (dataEl && !dataEl.value) dataEl.value = new Date().toISOString().slice(0,10);
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione um aluno</option>' + (alunosCad || []).map(a => `<option value="${a.id}" data-nome="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}${a.serie?' · '+a.serie:''}</option>`).join('');
+}
+
+function popularRegistroObservacaoSelAT() {
+  const sel = document.getElementById('ro-aluno-sel');
+  const dataEl = document.getElementById('ro-data');
+  if (dataEl && !dataEl.value) dataEl.value = new Date().toISOString().slice(0,10);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione um aluno</option>' + (perfisATList || []).map(p => `<option value="${p.id}" data-nome="${escapeHtml(p.nome)}">${escapeHtml(p.nome)}</option>`).join('');
 }
 
 async function carregarRegistrosObservacao() {
@@ -14799,6 +14810,42 @@ function renderPagesAT() {
     <div class="at-hero"><h2>Roteiro de Atuação</h2><p>Seu guia prático do dia a dia. Situações, estratégias e o que evitar — linguagem direta, pronta para aplicar.</p></div>
     <div style="margin-bottom:16px"><select class="fselect" id="at-aluno-sel" style="max-width:320px" onchange="carregarRoteiroAT()"><option value="">Selecione um aluno</option></select></div>
     <div id="at-roteiro-body"><div class="empty"><div class="empty-icon"></div><div class="empty-text">Selecione um aluno para ver o roteiro de atuação.</div></div></div>
+  </div>
+
+  <div id="page-registro-observacao" class="page">
+    <h1 class="page-title">Registro de Observação</h1>
+    <p class="page-sub">Documento de observação pedagógica — separa o fato observado da interpretação, pra registros consistentes entre profissionais diferentes.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Aluno e contexto</div></div></div>
+      <div class="frow">
+        <div><label class="flabel" for="ro-aluno-sel">Aluno</label>
+          <select id="ro-aluno-sel" class="fselect" onchange="carregarRegistrosObservacao()"><option value="">Selecione um aluno</option></select>
+        </div>
+        <div><label class="flabel" for="ro-data">Data</label><input type="date" id="ro-data" class="finput"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ro-contexto">Contexto</label>
+        <select id="ro-contexto" class="fselect">
+          <option value="Geral">Geral / observação espontânea</option>
+          <option value="Durante a atividade (Reconheceu)">Durante a atividade (Reconheceu)</option>
+          <option value="No feedback (Compreendeu)">No feedback individual (Compreendeu)</option>
+          <option value="Na entrega (Aplicou)">Na entrega / correção (Aplicou)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">2</div><div><div class="pei-step-title">Registro</div></div></div>
+      <div class="fblock"><label class="flabel" for="ro-observacao">Observação (fato — o que você viu, sem interpretar)</label><textarea id="ro-observacao" class="ftarea" rows="3" placeholder="Ex: Levou 12 minutos para concluir a tarefa 2, pediu ajuda uma vez."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ro-interpretacao">Interpretação <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="ro-interpretacao" class="ftarea" rows="2" placeholder="Sua leitura pedagógica do que foi observado"></textarea></div>
+      <div class="fblock"><label class="flabel" for="ro-plano">Plano de ação <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="ro-plano" class="ftarea" rows="2" placeholder="O que fazer a partir disso"></textarea></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" onclick="salvarRegistroObservacao()">Salvar registro</button>
+    </div>
+
+    <div id="ro-lista"></div>
   </div>
 
   <div id="page-at-relatorios" class="page">
