@@ -4150,7 +4150,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4537,6 +4537,9 @@ function renderNavCoordenacaoPedagogica() {
     <div class="nav-item" id="nav-dossie-aluno" onclick="showPage('dossie-aluno');popularDossieSel()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Dossiê do Aluno
     </div>
+    <div class="nav-item" id="nav-banco-praticas-coletivo" onclick="${!temAddon('banco_praticas_coletivo') ? "acessarRecursoPremium('Banco de Práticas Coletivo')" : "showPage('banco-praticas-coletivo');popularBancoPraticasColetivo()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="6" cy="14" r="2.3" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="14" r="2.3" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="5.5" r="2.3" stroke="currentColor" stroke-width="1.5"/><path d="M7.8 12.3 9 8.5M12.2 12.3 11 8.5" stroke="currentColor" stroke-width="1.3"/></svg>Banco de Práticas Coletivo
+    </div>
     <div class="nav-section">Referência</div>
     <div class="nav-item" id="nav-guia" onclick="showPage('guia')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 7v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Guia de Perfis
@@ -4574,6 +4577,9 @@ function renderNavGestao() {
     </div>
     <div class="nav-item gestao-item" id="nav-praticas-aluno" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Banco de Práticas')" : "showPage('praticas-aluno');popularSelectPraticasAluno()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
+    <div class="nav-item gestao-item" id="nav-banco-praticas-coletivo" onclick="${!temAddon('banco_praticas_coletivo') ? "acessarRecursoPremium('Banco de Práticas Coletivo')" : "showPage('banco-praticas-coletivo');popularBancoPraticasColetivo()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="6" cy="14" r="2.3" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="14" r="2.3" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="5.5" r="2.3" stroke="currentColor" stroke-width="1.5"/><path d="M7.8 12.3 9 8.5M12.2 12.3 11 8.5" stroke="currentColor" stroke-width="1.3"/></svg>Banco de Práticas Coletivo${!temAddon('banco_praticas_coletivo') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Escola ↔ Clínica</div>
     <div class="nav-item gestao-item" id="nav-colaboracao-gestao" onclick="${!temAddon('colaboracao') ? "acessarRecursoPremium('Colaboração Multiprofissional')" : "abrirColaboracao()"}" style="font-weight:600">
@@ -6241,6 +6247,73 @@ async function abrirDiarioCiclo(cicloId) {
   document.getElementById('dc-resumo').innerHTML = `<div style="margin-bottom:4px">${explicacao}</div><div style="font-weight:600">${resumoNota}</div>`;
   document.getElementById('dc-body').innerHTML = blocos || '<div class="empty" style="padding:16px"><div class="empty-text">Nenhuma atividade encontrada neste ciclo.</div></div>';
   abrirModal('modal-diario-ciclo');
+}
+
+function popularBancoPraticasColetivo() {
+  const sel = document.getElementById('bpc-perfil-sel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione</option>' + PERFIS.map(p => `<option value="${p}">${p}</option>`).join('');
+}
+
+async function gerarBancoPraticasColetivo() {
+  const perfil = document.getElementById('bpc-perfil-sel')?.value;
+  if (!perfil) return toast('Selecione um perfil.', 'error');
+  const resumo = document.getElementById('bpc-resumo');
+  const resultado = document.getElementById('bpc-resultado');
+  resumo.textContent = 'Buscando…';
+  resultado.innerHTML = '';
+
+  const { data: alunosPerfil } = await db.from('alunos').select('id,nome').contains('perfis', [perfil]);
+  const alunoIds = (alunosPerfil || []).map(a => a.id);
+  if (!alunoIds.length) {
+    resumo.textContent = `Nenhum aluno com o perfil "${perfil}" cadastrado ainda.`;
+    return;
+  }
+
+  const [{ data: adapts }, { data: ciclos }, { data: avals }] = await Promise.all([
+    db.from('adaptacoes').select('id,materia,tipo_atividade,aluno_id').in('aluno_id', alunoIds),
+    db.from('ciclos_trabalho').select('id,materia,tema,aluno_id').in('aluno_id', alunoIds),
+    db.from('avaliacoes_praticas').select('*').in('tabela_origem', ['adaptacoes','ciclos_trabalho']).in('aluno_id', alunoIds)
+  ]);
+  const todasAvals = avals || [];
+  const avalMap = {};
+  todasAvals.forEach(av => { avalMap[`${av.tabela_origem}_${av.registro_id}`] = av.status; });
+
+  const grupos = {};
+  (adapts || []).forEach(a => {
+    const st = avalMap[`adaptacoes_${a.id}`];
+    if (!st) return;
+    const chave = `Adaptação · ${a.materia || ''} — ${a.tipo_atividade || ''}`;
+    if (!grupos[chave]) grupos[chave] = { funcionou: 0, parcial: 0, nao_funcionou: 0, alunos: new Set() };
+    grupos[chave][st] = (grupos[chave][st] || 0) + 1;
+    grupos[chave].alunos.add(a.aluno_id);
+  });
+  (ciclos || []).forEach(c => {
+    const st = avalMap[`ciclos_trabalho_${c.id}`];
+    if (!st) return;
+    const chave = `Ciclo de Trabalho · ${c.materia || ''} — ${c.tema || ''}`;
+    if (!grupos[chave]) grupos[chave] = { funcionou: 0, parcial: 0, nao_funcionou: 0, alunos: new Set() };
+    grupos[chave][st] = (grupos[chave][st] || 0) + 1;
+    grupos[chave].alunos.add(c.aluno_id);
+  });
+
+  const linhas = Object.entries(grupos).map(([chave, g]) => {
+    const total = g.funcionou + g.parcial + g.nao_funcionou;
+    const taxa = total ? g.funcionou / total : 0;
+    return { chave, ...g, total, taxa, qtdAlunos: g.alunos.size };
+  }).sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (!linhas.length) {
+    resumo.textContent = `${alunoIds.length} aluno(s) com o perfil "${perfil}", mas nenhuma adaptação ou ciclo de trabalho avaliado (✔/⚠/✗) ainda.`;
+    return;
+  }
+
+  resumo.textContent = `${alunoIds.length} aluno(s) com o perfil "${perfil}" · ${linhas.length} prática(s) avaliada(s) encontrada(s).`;
+  resultado.innerHTML = linhas.map(l => `
+    <div class="rel-card" style="margin-bottom:8px;border-left:3px solid ${l.taxa >= 0.6 ? '#059669' : l.taxa >= 0.3 ? '#D97706' : '#DC2626'}">
+      <div style="font-size:13.5px;font-weight:600;color:var(--gr800)">${escapeHtml(l.chave)}</div>
+      <div style="font-size:12px;color:var(--gr500);margin-top:3px">Funcionou bem com ${l.funcionou} de ${l.total} aplicações, em ${l.qtdAlunos} aluno(s) com esse perfil${l.parcial ? ` · ${l.parcial} parcial` : ''}${l.nao_funcionou ? ` · ${l.nao_funcionou} não funcionou` : ''}</div>
+    </div>`).join('');
 }
 
 async function salvarAvaliacaoAtividade(cicloId, nivel, indice, rowId) {
@@ -8044,7 +8117,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 97
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
@@ -8052,11 +8125,11 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
-  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo'],
   compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
@@ -11428,6 +11501,26 @@ function renderPages() {
     </div>
   </div>
 
+  <!-- BANCO DE PRÁTICAS COLETIVO -->
+  <div id="page-banco-praticas-coletivo" class="page">
+    <h1 class="page-title">Banco de Práticas Coletivo</h1>
+    <p class="page-sub">Cruza adaptações e ciclos de trabalho já avaliados (✔/⚠/✗) de todos os alunos da escola com um mesmo perfil, pra mostrar o que já funcionou em casos parecidos.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Perfil / Diagnóstico</div></div></div>
+      <div class="fblock"><label class="flabel" for="bpc-perfil-sel">Perfil</label>
+        <select id="bpc-perfil-sel" class="fselect"><option value="">Selecione</option></select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" id="btn-gerar-bpc" onclick="gerarBancoPraticasColetivo()">Buscar práticas avaliadas</button>
+    </div>
+
+    <div id="bpc-resumo" style="font-size:12.5px;color:var(--gr600);margin-bottom:10px"></div>
+    <div id="bpc-resultado"></div>
+  </div>
+
   <!-- ESTUDO DE CASO -->
   <div id="page-estudo-caso" class="page">
     <h1 class="page-title">Estudo de Caso</h1>
@@ -13356,6 +13449,25 @@ function renderPagesGestao() {
       <div class="result-header"><div class="result-title">Análise de convergência</div></div>
       <div class="result-text" id="radar-result-text"></div>
     </div>
+  </div>
+
+  <div id="page-banco-praticas-coletivo" class="page">
+    <h1 class="page-title">Banco de Práticas Coletivo</h1>
+    <p class="page-sub">Cruza adaptações e ciclos de trabalho já avaliados (✔/⚠/✗) de todos os alunos da escola com um mesmo perfil, pra mostrar o que já funcionou em casos parecidos.</p>
+
+    <div class="pei-step">
+      <div class="pei-step-header"><div class="pei-step-num">1</div><div><div class="pei-step-title">Perfil / Diagnóstico</div></div></div>
+      <div class="fblock"><label class="flabel" for="bpc-perfil-sel">Perfil</label>
+        <select id="bpc-perfil-sel" class="fselect"><option value="">Selecione</option></select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin:16px 0 24px">
+      <button class="btn-gerar" id="btn-gerar-bpc" onclick="gerarBancoPraticasColetivo()">Buscar práticas avaliadas</button>
+    </div>
+
+    <div id="bpc-resumo" style="font-size:12.5px;color:var(--gr600);margin-bottom:10px"></div>
+    <div id="bpc-resultado"></div>
   </div>
 
   <div id="page-gestao-relatorios" class="page">
