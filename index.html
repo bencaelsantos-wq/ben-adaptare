@@ -4419,6 +4419,9 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-registro-observacao" onclick="showPage('registro-observacao');popularRegistroObservacaoSel()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="7.5" cy="7.5" r="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M7 11h6M7 13.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Registro de Observação
     </div>
+    <div class="nav-item" id="nav-ciclo-preparatorio" onclick="${!temAddon('ciclo_preparatorio') ? "acessarRecursoPremium('Ciclo Preparatório')" : "showPage('ciclo-preparatorio');carregarAlunosCicloPrep()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="14.5" cy="5" r="2.8" fill="#DC2626" stroke="none"/><path d="M13.3 5h2.4M14.5 3.8v2.4" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>Ciclo Preparatório${!temAddon('ciclo_preparatorio') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
     <div class="nav-item" id="nav-ciclo-trabalho" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Ciclo de Trabalho')" : "showPage('ciclo-trabalho');carregarAlunos();aplicarModeloCicloUI()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 1 0 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.3l2 1-2 1z" fill="currentColor" stroke="none"/></svg>Ciclo de Trabalho${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -8274,7 +8277,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
@@ -8282,11 +8285,11 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
-  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio'],
   compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
@@ -11270,6 +11273,74 @@ function renderPages() {
       <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF ao lado do texto — clique em "Baixar PDF" acima depois de selecionar.</p>
       <div id="ap-img-itens"></div>
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
+    </div>
+  </div>
+
+  <!-- CICLO PREPARATÓRIO (ENEM/VESTIBULAR) -->
+  <div id="page-ciclo-preparatorio" class="page">
+    <h1 class="page-title">Ciclo Preparatório</h1>
+    <p class="page-sub">Ferramenta própria pra 8º/9º ano e Ensino Médio — treina o formato real de ENEM/vestibular (simulado em múltipla escolha, redação dissertativa-argumentativa e revisão espaçada), sem alterar o Ciclo de Trabalho padrão.</p>
+
+    <div class="fcard">
+      <div class="fcard-title">Aluno</div>
+      <div class="fblock"><label class="flabel" for="cp-aluno-search">Buscar aluno</label>
+        <div class="aluno-selector">
+          <input class="aluno-search" id="cp-aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSelCicloPrep()">
+          <div id="cp-aluno-lista-sel"></div>
+        </div>
+      </div>
+      <div class="aluno-sel-info" id="cp-aluno-sel-info"></div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">Matéria e tema</div>
+      <div class="frow">
+        <div><label class="flabel" for="cp-materia">Matéria / Área</label>
+          <select id="cp-materia" class="fselect">
+            <option value="">Selecione</option>
+            <option>Língua Portuguesa</option><option>Redação</option><option>Matemática</option><option>Ciências da Natureza</option><option>Biologia</option><option>Física</option><option>Química</option><option>História</option><option>Geografia</option><option>Filosofia</option><option>Sociologia</option><option>Língua Inglesa</option>
+          </select>
+        </div>
+        <div><label class="flabel" for="cp-serie">Série</label>
+          <select id="cp-serie" class="fselect">
+            <option value="8º ano">8º ano (Fundamental II)</option>
+            <option value="9º ano">9º ano (Fundamental II)</option>
+            <option value="1º EM">1º ano Ensino Médio</option>
+            <option value="2º EM">2º ano Ensino Médio</option>
+            <option value="3º EM" selected>3º ano Ensino Médio</option>
+          </select>
+        </div>
+      </div>
+      <div class="fblock"><label class="flabel" for="cp-tema">Tema do ciclo</label><input type="text" id="cp-tema" class="finput" placeholder="Ex: Funções do 2º grau, Revolução Industrial, Interpretação de texto argumentativo"></div>
+      <div class="fblock"><label class="flabel" for="cp-temas-anteriores">Temas já trabalhados nesta matéria <span style="font-weight:400;color:#9CA3AF">(opcional — alimenta a revisão espaçada)</span></label>
+        <textarea id="cp-temas-anteriores" class="ftarea" rows="2" placeholder="Ex: Equações do 1º grau, Razão e proporção, Porcentagem"></textarea>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);margin-top:8px">
+        <input type="checkbox" id="cp-gerar-redacao" style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+        <span>📝 Gerar também proposta de Redação ENEM (dissertativo-argumentativa) sobre este tema</span>
+      </label>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar-cp" onclick="gerarCicloPreparatorio()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar Ciclo Preparatório com a Lou
+    </button>
+    <div class="gen-box" id="gen-cp-box"><div class="spin"></div><span>Lou montando o simulado e a revisão…</span></div>
+
+    <div class="result-card" id="cp-result-card">
+      <div class="result-header">
+        <div class="result-title">Ciclo Preparatório gerado</div>
+        <div class="result-badge" id="cp-result-badge">—</div>
+      </div>
+      <div class="fblock"><label class="flabel">Objetivos (habilidades BNCC/ENEM)</label><textarea class="result-text" id="cp-objetivos" style="width:100%;min-height:80px"></textarea></div>
+      <div class="fblock"><label class="flabel">Simulado — 5 questões estilo ENEM</label><textarea class="result-text" id="cp-simulado" style="width:100%;min-height:220px"></textarea></div>
+      <div class="fblock" id="cp-bloco-redacao" style="display:none"><label class="flabel">Proposta de Redação ENEM</label><textarea class="result-text" id="cp-redacao" style="width:100%;min-height:140px"></textarea></div>
+      <div class="fblock" id="cp-bloco-revisao" style="display:none"><label class="flabel">Revisão espaçada (temas anteriores)</label><textarea class="result-text" id="cp-revisao" style="width:100%;min-height:100px"></textarea></div>
+      <div class="fblock"><label class="flabel">Tempo sugerido</label><input type="text" class="result-text" id="cp-tempo" style="width:100%"></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarCicloPreparatorio()">Salvar</button>
+        <button class="btn-copy" onclick="baixarPDFCicloPreparatorio()">Baixar PDF</button>
+      </div>
     </div>
   </div>
 
@@ -16244,6 +16315,198 @@ async function salvarCicloTrabalho() {
   });
   if (error) return toast('Erro ao salvar: ' + error.message, 'error');
   toast('Ciclo salvo!', 'success');
+}
+
+// ── CICLO PREPARATÓRIO (ENEM/VESTIBULAR) — ferramenta própria, não mexe no Ciclo de Trabalho ──
+function filtrarAlSelCicloPrep() {
+  const q = (document.getElementById('cp-aluno-search')?.value || '').toLowerCase();
+  const lista = (alunosCad || []).filter(a => a.nome.toLowerCase().includes(q));
+  const el = document.getElementById('cp-aluno-lista-sel');
+  if (!el) return;
+  if (!lista.length) { el.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:var(--gr400)">Nenhum aluno encontrado. Cadastre em "Meus alunos".</div>`; return; }
+  el.innerHTML = lista.map(a => {
+    const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+    return `<div class="aluno-opt ${window._cpAlunoId===a.id?'selected':''}" onclick="selecionarAlunoCicloPrep('${a.id}')">
+      <div class="aluno-opt-nome">${escapeHtml(a.nome)}</div>
+      <div class="aluno-opt-meta">${meta}</div>
+    </div>`;
+  }).join('');
+}
+function selecionarAlunoCicloPrep(id) {
+  const a = (alunosCad || []).find(x => x.id === id);
+  if (!a) return;
+  window._cpAlunoId = id;
+  window._cpAlunoObj = a;
+  const serieEl = document.getElementById('cp-serie');
+  if (serieEl && a.serie) {
+    const match = ['8º ano','9º ano','1º EM','2º EM','3º EM'].find(s => a.serie.includes(s.replace(' EM','')) || a.serie.toLowerCase().includes(s.toLowerCase()));
+    if (match) serieEl.value = match;
+  }
+  const info = document.getElementById('cp-aluno-sel-info');
+  const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+  info.style.display = 'block';
+  info.innerHTML = `<strong>${escapeHtml(a.nome)}</strong> · ${meta}`;
+  filtrarAlSelCicloPrep();
+  const searchEl = document.getElementById('cp-aluno-search');
+  if (searchEl) searchEl.value = a.nome;
+}
+function carregarAlunosCicloPrep() { filtrarAlSelCicloPrep(); }
+
+async function gerarCicloPreparatorio() {
+  const a = window._cpAlunoObj;
+  if (!a || !window._cpAlunoId) return toast('Selecione um aluno.', 'error');
+  const materia = document.getElementById('cp-materia')?.value;
+  const serie = document.getElementById('cp-serie')?.value || '3º EM';
+  const tema = document.getElementById('cp-tema')?.value.trim();
+  const temasAnteriores = document.getElementById('cp-temas-anteriores')?.value.trim();
+  const gerarRedacao = document.getElementById('cp-gerar-redacao')?.checked || false;
+  if (!materia) return toast('Selecione a matéria.', 'error');
+  if (!tema) return toast('Informe o tema do ciclo.', 'error');
+
+  const btn = document.getElementById('btn-gerar-cp');
+  btn.disabled = true;
+  document.getElementById('gen-cp-box').classList.add('show');
+  document.getElementById('cp-result-card').classList.remove('show');
+
+  const prompt = `Você é uma equipe pedagógica especializada em preparação para ENEM e vestibulares brasileiros, trabalhando com um aluno de escola de método ativo/Montessoriano no ${serie}.
+
+DADOS:
+Aluno: ${a.nome} | Série: ${serie}
+Matéria: ${materia}
+Tema do ciclo: ${tema}
+${(a.perfis||[]).length ? `Diagnóstico/perfis cadastrados: ${(a.perfis||[]).join(', ')}` : ''}
+${temasAnteriores ? `Temas já trabalhados nesta matéria (usar SÓ na seção REVISAO, não no simulado principal): ${temasAnteriores}` : ''}
+
+CONTEXTO IMPORTANTE: o objetivo deste ciclo é treinar o aluno no FORMATO REAL de prova (ENEM/vestibular) — enunciado contextualizado, múltipla escolha, leitura sob pressão de tempo — complementando o Ciclo de Trabalho tradicional, nunca substituindo.
+
+REGRAS OBRIGATÓRIAS:
+- Cada questão do simulado deve ter um enunciado contextualizado (trecho de texto, notícia, gráfico descrito em palavras, situação-problema ou trecho literário, conforme a matéria), nunca uma pergunta seca de livro didático.
+- 5 alternativas (A a E), só uma correta, nível de dificuldade calibrado pro ${serie} mirando o vestibular — não infantilize.
+- Ao final de cada questão, inclua o gabarito e uma justificativa curta de 1-2 linhas.
+- NUNCA use markdown (sem **negrito** nem #título).
+
+FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos:
+
+OBJETIVOS:
+- [objetivo 1, com código BNCC-EM ou competência da matriz do ENEM, se souber]
+- [objetivo 2]
+
+SIMULADO:
+QUESTÃO 1:
+[enunciado contextualizado completo]
+A) [alternativa]
+B) [alternativa]
+C) [alternativa]
+D) [alternativa]
+E) [alternativa]
+GABARITO: [letra] — [justificativa curta]
+
+QUESTÃO 2:
+(mesma estrutura completa)
+
+QUESTÃO 3:
+(mesma estrutura completa)
+
+QUESTÃO 4:
+(mesma estrutura completa)
+
+QUESTÃO 5:
+(mesma estrutura completa)
+${gerarRedacao ? `
+REDACAO:
+TEMA: [frase-tema no padrão ENEM, ligada ao assunto do ciclo quando fizer sentido]
+TEXTOS MOTIVADORES: [2 a 3 trechos curtos resumidos, de perspectivas diferentes, como num caderno de prova real]
+INSTRUÇÃO: A partir da leitura dos textos motivadores e com base nos conhecimentos construídos ao longo de sua formação, redija um texto dissertativo-argumentativo sobre o tema proposto, apresentando proposta de intervenção que respeite os direitos humanos. Extensão mínima de 7 e máxima de 30 linhas.` : ''}
+${temasAnteriores ? `
+REVISAO:
+[1 a 2 questões curtas de múltipla escolha cobrindo os temas: ${temasAnteriores} — pode misturar com o tema atual se fizer sentido]` : ''}
+
+TEMPO:
+[tempo sugerido, em minutos, pra realizar o simulado completo (+ redação, se houver), calibrado pelo tempo médio real de prova pra esse número de questões]`;
+
+  const pega = (txt, rotulo, proximo) => {
+    const re = new RegExp(rotulo + ':\\s*([\\s\\S]*?)(?=\\n' + proximo + ':|$)', 'i');
+    const m = txt.match(re);
+    return m ? m[1].trim() : '';
+  };
+
+  try {
+    const maxTokensCP = gerarRedacao ? 3400 : 2800;
+    const txt = await chamarClaude({ prompt, maxTokens: maxTokensCP, modulo: 'ciclo_preparatorio' });
+    const proximoAposSimulado = gerarRedacao ? 'REDACAO' : (temasAnteriores ? 'REVISAO' : 'TEMPO');
+    const objetivos = pega(txt, 'OBJETIVOS', 'SIMULADO');
+    const simulado = pega(txt, 'SIMULADO', proximoAposSimulado);
+    const redacao = gerarRedacao ? pega(txt, 'REDACAO', temasAnteriores ? 'REVISAO' : 'TEMPO') : '';
+    const revisao = temasAnteriores ? pega(txt, 'REVISAO', 'TEMPO') : '';
+    const tempoMatch = txt.match(/TEMPO:\s*([\s\S]*)$/i);
+    const tempo = tempoMatch ? tempoMatch[1].trim() : '';
+
+    if (!objetivos && !simulado) {
+      console.warn('Ciclo Preparatório — resposta não interpretada:', txt);
+      toast('Não foi possível interpretar o ciclo gerado. Tente novamente.', 'error');
+    } else {
+      document.getElementById('cp-objetivos').value = objetivos;
+      document.getElementById('cp-simulado').value = simulado;
+      document.getElementById('cp-tempo').value = tempo;
+      document.getElementById('cp-bloco-redacao').style.display = gerarRedacao ? 'block' : 'none';
+      if (gerarRedacao) document.getElementById('cp-redacao').value = redacao;
+      document.getElementById('cp-bloco-revisao').style.display = temasAnteriores ? 'block' : 'none';
+      if (temasAnteriores) document.getElementById('cp-revisao').value = revisao;
+      document.getElementById('cp-result-badge').textContent = [materia, serie].filter(Boolean).join(' · ');
+      document.getElementById('cp-result-card').classList.add('show');
+      window._ultimoCicloPrep = { aluno: a, materia, serie, tema, objetivos, simulado, redacao, revisao, tempo, gerarRedacao, temasAnteriores };
+      toast('Ciclo Preparatório gerado!', 'success');
+    }
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  }
+  btn.disabled = false;
+  document.getElementById('gen-cp-box').classList.remove('show');
+}
+
+async function salvarCicloPreparatorio() {
+  const c = window._ultimoCicloPrep;
+  if (!c) return toast('Gere o ciclo primeiro.', 'error');
+  const { error } = await db.from('ciclos_preparatorios').insert({
+    user_id: user.id, aluno_id: c.aluno.id, aluno_nome: c.aluno.nome, serie: c.serie,
+    materia: c.materia, tema: c.tema, temas_anteriores: c.temasAnteriores || null,
+    objetivos: document.getElementById('cp-objetivos')?.value.trim(),
+    simulado: document.getElementById('cp-simulado')?.value.trim(),
+    redacao: c.gerarRedacao ? document.getElementById('cp-redacao')?.value.trim() : null,
+    revisao: c.temasAnteriores ? document.getElementById('cp-revisao')?.value.trim() : null,
+    tempo: document.getElementById('cp-tempo')?.value.trim(),
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Ciclo Preparatório salvo!', 'success');
+}
+
+function baixarPDFCicloPreparatorio() {
+  const c = window._ultimoCicloPrep;
+  if (!c) return toast('Gere o ciclo primeiro.', 'error');
+  const conteudo = `Nome: _______________ | Data: ___/___/___
+
+${c.tema.toUpperCase()} — ${c.serie}
+
+---
+
+[BANNER: OBJETIVOS]
+${document.getElementById('cp-objetivos')?.value.trim()}
+
+[BANNER: SIMULADO]
+${document.getElementById('cp-simulado')?.value.trim()}
+${c.gerarRedacao ? `\n[BANNER: PROPOSTA DE REDAÇÃO]\n${document.getElementById('cp-redacao')?.value.trim()}` : ''}
+${c.temasAnteriores ? `\n[BANNER: REVISÃO ESPAÇADA]\n${document.getElementById('cp-revisao')?.value.trim()}` : ''}
+
+[BANNER: TEMPO SUGERIDO]
+${document.getElementById('cp-tempo')?.value.trim()}`;
+
+  gerarPDFDocumento({
+    tipo: 'CICLO PREPARATÓRIO', titulo: 'Ciclo Preparatório — ENEM/Vestibular',
+    subtitulo: c.materia + ' — ' + c.tema + ' — ' + c.serie,
+    aluno: c.aluno.nome, professor: window._profNomeDB || '',
+    conteudo, nomeArquivo: 'Ciclo_Preparatorio_' + c.aluno.nome.replace(/\s+/g,'_') + '_' + c.materia.replace(/\s+/g,'_'),
+    isAtividade: true, fonteTamanho: 'medio', espacamento: 'normal', fonteTipo: 'sans', imagensPorItem: {}
+  });
 }
 
 async function gerar() {
