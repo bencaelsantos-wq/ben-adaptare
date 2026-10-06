@@ -3939,6 +3939,21 @@ async function convidarParaOrganizacao(email, papel, nome, orgId, nomeOrg) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`${email}: ` + (data.error || 'erro ao enviar convite'));
+
+  // Esse e-mail já tinha perfil (de um convite/teste anterior)? Se tiver, o convite acima
+  // não teria efeito nenhum sobre ele — então religamos aqui, na hora, e avisamos quem convidou.
+  const { data: perfilExistente } = await db.from('profiles').select('id, organizacao_id, role').eq('email', email.toLowerCase()).maybeSingle();
+  if (perfilExistente && perfilExistente.organizacao_id !== orgId) {
+    const orgAnteriorId = perfilExistente.organizacao_id;
+    await db.from('profiles').update({ organizacao_id: orgId, role: papel }).eq('id', perfilExistente.id);
+    let nomeOrgAnterior = '';
+    if (orgAnteriorId) {
+      const { data: orgAnt } = await db.from('organizacoes').select('nome').eq('id', orgAnteriorId).maybeSingle();
+      nomeOrgAnterior = orgAnt?.nome || orgAnteriorId;
+    }
+    return { religado: true, email, orgAnterior: nomeOrgAnterior || 'nenhuma organização' };
+  }
+  return { religado: false, email };
 }
 async function criarOrganizacaoEConvidarMestre() {
   const nomeOrg = document.getElementById('novaorg-nome')?.value?.trim();
@@ -3988,21 +4003,26 @@ async function criarOrganizacaoEConvidarMestre() {
     if (errOrg) throw new Error('Erro ao criar organização: ' + errOrg.message);
 
     const erros = [];
-    try { await convidarParaOrganizacao(email, papel, nomePessoa, org.id, nomeOrg); }
-    catch (e) { erros.push(e.message); }
+    const religados = [];
+    try {
+      const r = await convidarParaOrganizacao(email, papel, nomePessoa, org.id, nomeOrg);
+      if (r?.religado) religados.push(`${r.email} (estava em "${r.orgAnterior}")`);
+    } catch (e) { erros.push(e.message); }
 
     for (const o of outros) {
-      try { await convidarParaOrganizacao(o.email, o.papel, '', org.id, nomeOrg); }
-      catch (e) { erros.push(e.message); }
+      try {
+        const r = await convidarParaOrganizacao(o.email, o.papel, '', org.id, nomeOrg);
+        if (r?.religado) religados.push(`${r.email} (estava em "${r.orgAnterior}")`);
+      } catch (e) { erros.push(e.message); }
     }
 
     if (erros.length) {
       msg.textContent = `Organização criada. Alguns convites falharam: ${erros.join(' | ')}`;
       msg.style.color = '#DC2626';
     } else {
-      msg.textContent = `Organização criada e ${1 + outros.length} convite(s) enviado(s)!`;
-      msg.style.color = '#16A34A';
-      setTimeout(() => { fecharModalNovaOrg(); carregarUsuariosDev(); }, 2200);
+      msg.textContent = `Organização criada e ${1 + outros.length} convite(s) enviado(s)!` + (religados.length ? ` ⚠️ Já tinham conta e foram religados: ${religados.join(', ')}.` : '');
+      msg.style.color = religados.length ? '#D97706' : '#16A34A';
+      setTimeout(() => { fecharModalNovaOrg(); carregarUsuariosDev(); }, religados.length ? 5000 : 2200);
     }
   } catch (e) {
     msg.textContent = 'Erro: ' + e.message;
@@ -4036,7 +4056,7 @@ async function salvarAddAcessoOrg() {
   btn.disabled = true; btn.textContent = 'Convidando…';
   try {
     const orgNome = document.getElementById('aao-org-nome')?.textContent || '';
-    await convidarParaOrganizacao(email, papel, nome, orgId, orgNome);
+    const r = await convidarParaOrganizacao(email, papel, nome, orgId, orgNome);
 
     const campoQtd = CAMPO_QTD_POR_PAPEL[papel];
     if (campoQtd) {
@@ -4045,9 +4065,14 @@ async function salvarAddAcessoOrg() {
       await db.from('organizacoes').update({ [campoQtd]: atual + 1 }).eq('id', orgId);
     }
 
-    msg.textContent = 'Convite enviado e vinculado à organização!';
-    msg.style.color = '#16A34A';
-    setTimeout(() => { fecharModalAddAcessoOrg(); carregarUsuariosDev(); }, 2000);
+    if (r?.religado) {
+      msg.textContent = `⚠️ Esse e-mail já tinha conta, vinculada a "${r.orgAnterior}" — foi religado pra esta organização agora.`;
+      msg.style.color = '#D97706';
+    } else {
+      msg.textContent = 'Convite enviado e vinculado à organização!';
+      msg.style.color = '#16A34A';
+    }
+    setTimeout(() => { fecharModalAddAcessoOrg(); carregarUsuariosDev(); }, r?.religado ? 4500 : 2000);
   } catch (e) {
     msg.textContent = 'Erro: ' + e.message;
     msg.style.color = '#DC2626';
