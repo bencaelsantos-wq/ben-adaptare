@@ -4192,7 +4192,11 @@ async function lerPerfilDobanco() {
     }
 
     if (data?.organizacao_id) {
-      const { data: org } = await db.from('organizacoes').select(`plano, ativo, motivo_pausa, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, modelo_ciclo_trabalho, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
+      const { data: org, error: errOrgRead } = await db.from('organizacoes').select(`plano, ativo, motivo_pausa, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, modelo_ciclo_trabalho, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
+      if (errOrgRead) {
+        console.error('Falha ao ler dados da organização (add-ons podem não liberar corretamente):', errOrgRead.message);
+        toast('Erro ao carregar dados da organização — alguns recursos podem aparecer bloqueados indevidamente. Avise o suporte: ' + errOrgRead.message, 'error');
+      }
       if (org && org.ativo === false) {
         await db.auth.signOut();
         user = null;
@@ -8410,7 +8414,11 @@ async function abrirModalAddonsDev(id) {
   let fonte = u;
   let avisoOrg = '';
   if (u.organizacao_id) {
-    const { data: org } = await db.from('organizacoes').select(`id,nome,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT},observacoes_negociacao`).eq('id', u.organizacao_id).maybeSingle();
+    const { data: org, error: errOrgModal } = await db.from('organizacoes').select(`id,nome,${CAMPOS_ADDON_SELECT},${CAMPOS_QTD_SELECT},observacoes_negociacao`).eq('id', u.organizacao_id).maybeSingle();
+    if (errOrgModal) {
+      console.error('Falha ao ler organização no modal de add-ons:', errOrgModal.message);
+      toast('Erro ao buscar dados da organização — os checkboxes abaixo podem não refletir o estado real. ' + errOrgModal.message, 'error');
+    }
     if (org) {
       fonte = org;
       window._damOrgId = org.id;
