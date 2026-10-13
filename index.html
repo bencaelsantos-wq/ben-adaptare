@@ -18987,7 +18987,46 @@ function gerarPDFDocumento(opts) {
     const altLinha = 5.8;
     const rodapeH = 35; // espaço reservado para assinaturas
 
+    // Estima a altura (mm) de um bloco de linhas, respeitando quebras de texto
+    function estimarAlturaBloco(idxInicio) {
+      let altura = 0;
+      for (let j = idxInicio; j < linhas.length; j++) {
+        const lj = linhas[j].trim();
+        if (j > idxInicio && /^QUEST[ÃA]O\s*\d+/i.test(lj)) break;
+        if (lj === '') { altura += 2; continue; }
+        if (/^---+$/.test(lj)) { altura += 2; continue; }
+        const ljClean = lj.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
+        const isHeading = /^#{1,2}\s/.test(lj) || (/^\d+\.\s[A-Z]/.test(lj) && lj.length < 80) ||
+          (lj.length < 90 && lj.length > 3 && lj === lj.toUpperCase() && /[A-ZÀ-Ú]/.test(lj) && !/^\(/.test(lj)) ||
+          (/^parte\s*\d+\s*[:.\-]/i.test(lj) && lj.length < 90);
+        if (isHeading) { altura += 10; continue; }
+        const linhasQuebradas = doc.splitTextToSize(ljClean || lj, maxW);
+        altura += altLinha * linhasQuebradas.length;
+      }
+      return altura;
+    }
+
     for (let i = 0; i < linhas.length; i++) {
+      const linhaTrim0 = linhas[i].trim();
+      if (/^QUEST[ÃA]O\s*\d+/i.test(linhaTrim0)) {
+        const alturaBloco = estimarAlturaBloco(i);
+        if (y + alturaBloco > H - rodapeH && y > mt + 5) {
+          adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+          doc.addPage();
+          doc.setFillColor(30, 58, 138);
+          doc.rect(0, 0, W, 3, 'F');
+          doc.setFillColor(245, 248, 255);
+          doc.rect(0, 3, W, 9, 'F');
+          doc.setTextColor(30, 58, 138);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.text(opts.titulo.toUpperCase(), ml, 9);
+          doc.setTextColor(30, 30, 30);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9.5);
+          y = 24;
+        }
+      }
       if (y + altLinha > H - rodapeH) {
         // Rodapé da página atual
         adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
