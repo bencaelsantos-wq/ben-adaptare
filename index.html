@@ -11366,6 +11366,7 @@ function renderPages() {
         <div class="result-badge" id="cp-result-badge">—</div>
       </div>
       <div class="fblock"><label class="flabel">Objetivos (habilidades BNCC/ENEM)</label><textarea class="result-text" id="cp-objetivos" style="width:100%;min-height:80px"></textarea></div>
+      <div class="fblock" id="cp-bloco-orientacoes" style="display:none"><label class="flabel">Orientações de aplicação (perfil do aluno)</label><textarea class="result-text" id="cp-orientacoes" style="width:100%;min-height:70px"></textarea></div>
       <div class="fblock"><label class="flabel">Simulado — 5 questões estilo ENEM</label><textarea class="result-text" id="cp-simulado" style="width:100%;min-height:220px"></textarea></div>
       <div class="fblock" id="cp-bloco-redacao" style="display:none"><label class="flabel">Proposta de Redação ENEM</label><textarea class="result-text" id="cp-redacao" style="width:100%;min-height:140px"></textarea></div>
       <div class="fblock" id="cp-bloco-revisao" style="display:none"><label class="flabel">Revisão espaçada (temas anteriores)</label><textarea class="result-text" id="cp-revisao" style="width:100%;min-height:100px"></textarea></div>
@@ -16401,6 +16402,7 @@ async function gerarCicloPreparatorio() {
   document.getElementById('gen-cp-box').classList.add('show');
   document.getElementById('cp-result-card').classList.remove('show');
 
+  const temPerfil = (a.perfis||[]).length > 0;
   const prompt = `Você é uma equipe pedagógica especializada em preparação para ENEM e vestibulares brasileiros, trabalhando com um aluno de escola de método ativo/Montessoriano no ${serie}.
 
 DADOS:
@@ -16417,12 +16419,16 @@ REGRAS OBRIGATÓRIAS:
 - 5 alternativas (A a E), só uma correta, nível de dificuldade calibrado pro ${serie} mirando o vestibular — não infantilize.
 - Ao final de cada questão, inclua o gabarito e uma justificativa curta de 1-2 linhas.
 - NUNCA use markdown (sem **negrito** nem #título).
+${temPerfil ? `- O conteúdo e o nível de dificuldade do simulado NÃO mudam por causa do perfil/diagnóstico do aluno — o treino tem que continuar fiel ao formato real de prova. O perfil só deve influenciar a seção ORIENTACOES (forma de aplicar o simulado), nunca o conteúdo das questões.` : ''}
 
 FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos:
 
 OBJETIVOS:
 - [objetivo 1, com código BNCC-EM ou competência da matriz do ENEM, se souber]
 - [objetivo 2]
+${temPerfil ? `
+ORIENTACOES:
+[2 a 4 linhas curtas e práticas para o professor aplicar este simulado considerando o perfil do aluno — ex: dividir a aplicação em blocos com pausas entre questões, avisar o tempo de cada questão, deixar claro o que fazer se travar numa questão. NÃO simplifique o conteúdo nem a dificuldade aqui, só a forma de aplicação. Se um interesse pessoal estiver no perfil, pode sugerir usá-lo pra engajar o aluno antes de começar.]` : ''}
 
 SIMULADO:
 QUESTÃO 1:
@@ -16467,7 +16473,8 @@ TEMPO:
     const maxTokensCP = gerarRedacao ? 3400 : 2800;
     const txt = await chamarClaude({ prompt, maxTokens: maxTokensCP, modulo: 'ciclo_preparatorio' });
     const proximoAposSimulado = gerarRedacao ? 'REDACAO' : (temasAnteriores ? 'REVISAO' : 'TEMPO');
-    const objetivos = pega(txt, 'OBJETIVOS', 'SIMULADO');
+    const objetivos = pega(txt, 'OBJETIVOS', temPerfil ? 'ORIENTACOES' : 'SIMULADO');
+    const orientacoes = temPerfil ? pega(txt, 'ORIENTACOES', 'SIMULADO') : '';
     const simulado = pega(txt, 'SIMULADO', proximoAposSimulado);
     const redacao = gerarRedacao ? pega(txt, 'REDACAO', temasAnteriores ? 'REVISAO' : 'TEMPO') : '';
     const revisao = temasAnteriores ? pega(txt, 'REVISAO', 'TEMPO') : '';
@@ -16479,6 +16486,8 @@ TEMPO:
       toast('Não foi possível interpretar o ciclo gerado. Tente novamente.', 'error');
     } else {
       document.getElementById('cp-objetivos').value = objetivos;
+      document.getElementById('cp-bloco-orientacoes').style.display = temPerfil && orientacoes ? 'block' : 'none';
+      if (temPerfil) document.getElementById('cp-orientacoes').value = orientacoes;
       document.getElementById('cp-simulado').value = simulado;
       document.getElementById('cp-tempo').value = tempo;
       document.getElementById('cp-bloco-redacao').style.display = gerarRedacao ? 'block' : 'none';
@@ -16487,7 +16496,7 @@ TEMPO:
       if (temasAnteriores) document.getElementById('cp-revisao').value = revisao;
       document.getElementById('cp-result-badge').textContent = [materia, serie].filter(Boolean).join(' · ');
       document.getElementById('cp-result-card').classList.add('show');
-      window._ultimoCicloPrep = { aluno: a, materia, serie, tema, objetivos, simulado, redacao, revisao, tempo, gerarRedacao, temasAnteriores };
+      window._ultimoCicloPrep = { aluno: a, materia, serie, tema, objetivos, orientacoes, simulado, redacao, revisao, tempo, gerarRedacao, temasAnteriores, temPerfil };
       toast('Ciclo Preparatório gerado!', 'success');
     }
   } catch(e) {
@@ -16504,6 +16513,7 @@ async function salvarCicloPreparatorio() {
     user_id: user.id, aluno_id: c.aluno.id, aluno_nome: c.aluno.nome, serie: c.serie,
     materia: c.materia, tema: c.tema, temas_anteriores: c.temasAnteriores || null,
     objetivos: document.getElementById('cp-objetivos')?.value.trim(),
+    orientacoes: c.temPerfil ? (document.getElementById('cp-orientacoes')?.value.trim() || null) : null,
     simulado: document.getElementById('cp-simulado')?.value.trim(),
     redacao: c.gerarRedacao ? document.getElementById('cp-redacao')?.value.trim() : null,
     revisao: c.temasAnteriores ? document.getElementById('cp-revisao')?.value.trim() : null,
@@ -16560,6 +16570,7 @@ ${c.tema.toUpperCase()} — ${c.serie}
 
 [BANNER: OBJETIVOS]
 ${document.getElementById('cp-objetivos')?.value.trim()}
+${c.temPerfil && document.getElementById('cp-orientacoes')?.value.trim() ? `\n[BANNER: ORIENTAÇÕES DE APLICAÇÃO]\n${document.getElementById('cp-orientacoes')?.value.trim()}` : ''}
 
 [BANNER: SIMULADO]
 ${simuladoPrep.corpo}
