@@ -19040,7 +19040,7 @@ function gerarPDFDocumento(opts) {
       let altura = 0;
       for (let j = idxInicio; j < linhas.length; j++) {
         const lj = linhas[j].trim();
-        if (j > idxInicio && /^QUEST[ÃA]O\s*\d+/i.test(lj)) break;
+        if (j > idxInicio && (/^QUEST[ÃA]O\s*\d+/i.test(lj) || /^\[BANNER:/i.test(lj) || /^\[NOVAPAGINA\]$/i.test(lj))) break;
         if (lj === '') { altura += 2; continue; }
         if (/^---+$/.test(lj)) { altura += 2; continue; }
         const ljClean = lj.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
@@ -19447,7 +19447,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     let altura = 0;
     for (let j = idxInicio; j < linhas.length; j++) {
       const lj = linhas[j].trim();
-      if (j > idxInicio && /^QUEST[ÃA]O\s*\d+/i.test(lj)) break;
+      if (j > idxInicio && (/^QUEST[ÃA]O\s*\d+/i.test(lj) || /^\[BANNER:/i.test(lj) || /^\[NOVAPAGINA\]$/i.test(lj))) break;
       if (lj === '' || /^-{3,}$/.test(lj) || /^\[\/?NEGRITO\]$/i.test(lj)) { altura += 2; continue; }
       const ljClean = lj.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
       const ehHeading = lj.length < 90 && lj.length > 3 && lj === lj.toUpperCase() && /[A-ZÀ-Ú]/.test(lj) && !/^\(/.test(lj);
