@@ -16513,9 +16513,45 @@ async function salvarCicloPreparatorio() {
   toast('Ciclo Preparatório salvo!', 'success');
 }
 
+// Separa o enunciado (em negrito) das alternativas, e extrai o gabarito de cada questão
+// pra ele poder ser impresso numa folha à parte, não embaixo da própria questão.
+function _prepararQuestoesCicloPrep(textoBloco, rotuloGabarito) {
+  if (!textoBloco) return { corpo: '', gabaritos: [] };
+  const blocos = textoBloco.split(/\n(?=QUEST[ÃA]O\s*\d+\s*:)/i);
+  const gabaritos = [];
+  const partes = blocos.map(bloco => {
+    const mNum = bloco.match(/^QUEST[ÃA]O\s*(\d+)\s*:/i);
+    const mGab = bloco.match(/\n\s*GABARITO\s*:\s*([\s\S]*)$/i);
+    const corpoSemGab = mGab ? bloco.slice(0, mGab.index) : bloco;
+    if (mGab) {
+      gabaritos.push(`${rotuloGabarito}${mNum ? ' — QUESTÃO ' + mNum[1] : ''}: ${mGab[1].trim().replace(/\n+/g, ' ')}`);
+    }
+    if (!mNum) return corpoSemGab.trim();
+    const linhasBloco = corpoSemGab.split('\n');
+    const headerLine = linhasBloco[0];
+    const resto = linhasBloco.slice(1);
+    const idxAlt = resto.findIndex(l => /^[A-E]\)/.test(l.trim()));
+    if (idxAlt > 0) {
+      const enunciado = resto.slice(0, idxAlt).join('\n').trim();
+      const alternativas = resto.slice(idxAlt).join('\n');
+      return `${headerLine}\n[NEGRITO]\n${enunciado}\n[/NEGRITO]\n${alternativas}`.trim();
+    }
+    return corpoSemGab.trim();
+  });
+  return { corpo: partes.join('\n\n'), gabaritos };
+}
+
 function baixarPDFCicloPreparatorio() {
   const c = window._ultimoCicloPrep;
   if (!c) return toast('Gere o ciclo primeiro.', 'error');
+
+  const simuladoPrep = _prepararQuestoesCicloPrep(document.getElementById('cp-simulado')?.value.trim(), 'GABARITO DO SIMULADO');
+  const revisaoPrep = c.temasAnteriores ? _prepararQuestoesCicloPrep(document.getElementById('cp-revisao')?.value.trim(), 'GABARITO DA REVISÃO') : { corpo: '', gabaritos: [] };
+  const redacaoTexto = c.gerarRedacao
+    ? (document.getElementById('cp-redacao')?.value.trim() || '').replace(/^(Texto\s*\d+\s*:)/gim, '**$1**')
+    : '';
+  const todosGabaritos = [...simuladoPrep.gabaritos, ...revisaoPrep.gabaritos];
+
   const conteudo = `Nome: _______________ | Data: ___/___/___
 
 ${c.tema.toUpperCase()} — ${c.serie}
@@ -16526,12 +16562,13 @@ ${c.tema.toUpperCase()} — ${c.serie}
 ${document.getElementById('cp-objetivos')?.value.trim()}
 
 [BANNER: SIMULADO]
-${document.getElementById('cp-simulado')?.value.trim()}
-${c.gerarRedacao ? `\n[BANNER: PROPOSTA DE REDAÇÃO]\n${document.getElementById('cp-redacao')?.value.trim()}` : ''}
-${c.temasAnteriores ? `\n[BANNER: REVISÃO ESPAÇADA]\n${document.getElementById('cp-revisao')?.value.trim()}` : ''}
+${simuladoPrep.corpo}
+${c.gerarRedacao ? `\n[BANNER: PROPOSTA DE REDAÇÃO]\n${redacaoTexto}` : ''}
+${c.temasAnteriores ? `\n[BANNER: REVISÃO ESPAÇADA]\n${revisaoPrep.corpo}` : ''}
 
 [BANNER: TEMPO SUGERIDO]
-${document.getElementById('cp-tempo')?.value.trim()}`;
+${document.getElementById('cp-tempo')?.value.trim()}
+${todosGabaritos.length ? `\n[NOVAPAGINA]\n[BANNER: GABARITO — USO DO PROFESSOR]\n${todosGabaritos.join('\n\n')}` : ''}`;
 
   gerarPDFDocumento({
     tipo: 'CICLO PREPARATÓRIO', titulo: 'Ciclo Preparatório — ENEM/Vestibular',
@@ -19392,7 +19429,38 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   doc.setFontSize(fontSize);
   doc.setTextColor(25, 25, 25);
    const linhas = sanitizarTexto(folhaSemTitulo).split('\n');
+  let emNegrito = false;
+
+  // Estima a altura (mm) de um bloco de linhas a partir de uma QUESTÃO, pra não deixá-la cortada entre páginas
+  function estimarAlturaBlocoQuestaoAtiv(idxInicio) {
+    let altura = 0;
+    for (let j = idxInicio; j < linhas.length; j++) {
+      const lj = linhas[j].trim();
+      if (j > idxInicio && /^QUEST[ÃA]O\s*\d+/i.test(lj)) break;
+      if (lj === '' || /^-{3,}$/.test(lj) || /^\[\/?NEGRITO\]$/i.test(lj)) { altura += 2; continue; }
+      const ljClean = lj.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
+      const ehHeading = lj.length < 90 && lj.length > 3 && lj === lj.toUpperCase() && /[A-ZÀ-Ú]/.test(lj) && !/^\(/.test(lj);
+      if (ehHeading) { altura += 10; continue; }
+      altura += altLinha * doc.splitTextToSize(ljClean || lj, maxW).length;
+    }
+    return altura;
+  }
+
   for (let i = 0; i < linhas.length; i++) {
+    const linhaTrim0Ativ = linhas[i].trim();
+    if (/^QUEST[ÃA]O\s*\d+/i.test(linhaTrim0Ativ)) {
+      const alturaBlocoAtiv = estimarAlturaBlocoQuestaoAtiv(i);
+      if (y + alturaBlocoAtiv > H - rodapeH && y > 30) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        doc.setFillColor(CT[0], CT[1], CT[2]);
+        doc.rect(0, 0, W, 3, 'F');
+        y = 24;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(fontSize);
+        doc.setTextColor(25, 25, 25);
+      }
+    }
     if (y + altLinha > H - rodapeH) {
       adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
       doc.addPage();
@@ -19473,6 +19541,8 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       y = 22;
       continue;
     }
+    if (/^\[NEGRITO\]$/i.test(limpa)) { emNegrito = true; continue; }
+    if (/^\[\/NEGRITO\]$/i.test(limpa)) { emNegrito = false; continue; }
     const matchBanner = limpa.match(/^\[BANNER:\s*(.+)\]$/i);
     if (matchBanner) {
       const altBanner = 9;
@@ -19871,9 +19941,32 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       });
       y += altLinha * linhasSublinhadas.length;
     } else {
-      const linhasQuebradasAtiv = doc.splitTextToSize(limpa || linha, maxW);
-      linhasQuebradasAtiv.forEach((lq, li) => doc.text(lq, ml, y + li * altLinha));
-      y += altLinha * linhasQuebradasAtiv.length;
+      const linhaParaInlineAtiv = linhaT.replace(/^#{1,6}\s/, '').replace(/^#+\s*$/, '');
+      if (/\*\*[^*]+\*\*/.test(linhaParaInlineAtiv)) {
+        const palavrasInlineAtiv = [];
+        linhaParaInlineAtiv.split('**').forEach((parte, idx) => {
+          const bold = idx % 2 === 1;
+          parte.split(/(\s+)/).forEach(tok => { if (tok !== '') palavrasInlineAtiv.push({ texto: tok, bold }); });
+        });
+        doc.setFontSize(fontSize);
+        let xInlineAtiv = ml;
+        palavrasInlineAtiv.forEach(p => {
+          doc.setFont('helvetica', (p.bold || emNegrito) ? 'bold' : 'normal');
+          const wInlineAtiv = doc.getTextWidth(p.texto);
+          if (/^\s+$/.test(p.texto)) { xInlineAtiv += wInlineAtiv; return; }
+          if (xInlineAtiv + wInlineAtiv > ml + maxW) { y += altLinha; xInlineAtiv = ml; }
+          doc.text(p.texto, xInlineAtiv, y);
+          xInlineAtiv += wInlineAtiv;
+        });
+        doc.setFont('helvetica', 'normal');
+        y += altLinha;
+      } else {
+        doc.setFont('helvetica', emNegrito ? 'bold' : 'normal');
+        const linhasQuebradasAtiv = doc.splitTextToSize(limpa || linha, maxW);
+        linhasQuebradasAtiv.forEach((lq, li) => doc.text(lq, ml, y + li * altLinha));
+        y += altLinha * linhasQuebradasAtiv.length;
+        doc.setFont('helvetica', 'normal');
+      }
     }
   }
 
