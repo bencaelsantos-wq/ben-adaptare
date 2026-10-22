@@ -3541,6 +3541,48 @@ const ESTRATEGIAS = {
   'Deficiência Múltipla':'Deficiência Múltipla: planejar com base no perfil específico, priorizar comunicação funcional, foco em vida independente e participação, equipe multiprofissional.'
 };
 
+// ── EIXO REAL DE NECESSIDADE POR PERFIL ──────────────────────
+// Etapa 1 da mudança estrutural: só dados, não altera nenhuma geração ainda.
+// 'cognitivo'      — a barreira é de função cognitiva/executiva (o motor de adaptação atual foi feito pra isso)
+// 'acesso'         — a barreira é de MODALIDADE de acesso (motora/visual/auditiva), não de dificuldade do conteúdo
+// 'emocional'      — a necessidade é de regulação emocional/autonomia/previsibilidade, não de carga cognitiva
+// 'enriquecimento' — precisa de MAIS profundidade/complexidade, não de redução (atendido por ferramenta própria, não por este motor)
+const EIXO_PERFIL = {
+  'TEA':'cognitivo',
+  'TDAH':'cognitivo',
+  'Dislexia':'cognitivo',
+  'Discalculia':'cognitivo',
+  'Disgrafia':'cognitivo',
+  'Disortografia':'cognitivo',
+  'D.I. — Deficiência Intelectual':'cognitivo',
+  'D.F. — Deficiência Física':'acesso',
+  'D.V. — Deficiência Visual':'acesso',
+  'D.A. — Deficiência Auditiva':'acesso',
+  'NCC':'cognitivo',
+  'Apraxia':'acesso',
+  'Síndrome de Down':'cognitivo',
+  'Síndrome de Williams':'cognitivo',
+  'Altas Habilidades':'enriquecimento',
+  'TGD':'cognitivo',
+  'TOD':'emocional',
+  'Transtorno de Ansiedade':'emocional',
+  'Transtorno de Processamento Sensorial':'cognitivo',
+  'Deficiência Múltipla':'cognitivo'
+};
+
+// Mesma lógica de correspondência perfil→chave já usada para montar estrategiasTexto em gerar().
+// Retorna o conjunto de eixos presentes entre os perfis informados (sempre inclui 'cognitivo' se nada bater, por segurança).
+const _CHAVES_EIXO_PERFIL_ORDENADAS = Object.keys(EIXO_PERFIL).sort((a, b) => b.length - a.length);
+function eixosDoAluno(perfis) {
+  const eixos = new Set();
+  (perfis || []).forEach(p => {
+    const k = _CHAVES_EIXO_PERFIL_ORDENADAS.find(k => p.includes(k.split('—')[0].trim()));
+    if (k) eixos.add(EIXO_PERFIL[k]);
+  });
+  if (!eixos.size) eixos.add('cognitivo');
+  return eixos;
+}
+
 function popularSelectTriagem() {
   const sel = document.getElementById('tri-aluno-sel');
   if (!sel) return;
