@@ -3412,7 +3412,15 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           <textarea id="cc-comportamento" class="ftarea sm" placeholder="Ex: Estereotipias em situações de estresse, rigidez de rotina, autolesão ocasional…"></textarea>
         </div>
         <div class="fblock">
-          <label class="flabel" for="cc-diretrizes">Diretrizes de Adaptação (opcional)</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <label class="flabel" for="cc-diretrizes" style="margin:0">Diretrizes de Adaptação (opcional)</label>
+            <button type="button" onclick="document.getElementById('cc-inp-diretrizes').click()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#EEF2FF;color:#2563EB;border:1.5px solid rgba(37,99,235,.2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 7l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Importar PDF ou Word
+            </button>
+            <input type="file" id="cc-inp-diretrizes" accept=".pdf,.doc,.docx" style="display:none" onchange="processarArquivoDiretrizes(this)">
+          </div>
+          <div id="cc-diretrizes-status" style="display:none;font-size:12px;color:#2563EB;margin-bottom:6px;padding:6px 10px;background:#EEF2FF;border-radius:6px"></div>
           <textarea id="cc-diretrizes" class="ftarea sm" placeholder="Regras específicas deste aluno por matéria, ex: Leitura: frases curtas, sem metáforas, textos de até 10 linhas. Matemática: apoio visual de tabuada até o 5, contas de divisão com apoio visual."></textarea>
           <div style="font-size:11px;color:#9CA3AF;margin-top:4px">Essas diretrizes são aplicadas automaticamente sempre que a Lou gerar uma Nova Adaptação para este aluno, além das regras gerais do sistema.</div>
         </div>
@@ -15360,6 +15368,43 @@ async function processarArquivoAdaptacao(input) {
         </div>
       `).join('');
     }
+  } catch(e) {
+    status.style.background = '#FEF2F2';
+    status.style.color = '#991B1B';
+    status.textContent = 'Erro ao ler o arquivo: ' + (e.message || 'tente outro formato.');
+    console.error(e);
+  }
+  input.value = '';
+}
+
+async function processarArquivoDiretrizes(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('cc-diretrizes-status');
+  const campo = document.getElementById('cc-diretrizes');
+  status.style.display = 'block';
+  status.style.background = '#EEF2FF';
+  status.style.color = '#2563EB';
+  status.textContent = 'Lendo arquivo…';
+  try {
+    let texto = '';
+    if (file.name.endsWith('.pdf')) {
+      texto = await extrairTextoPDF(file);
+      if (!texto.trim()) { status.textContent = 'Documento sem texto — aplicando OCR…'; texto = await extrairTextoPDFComOCR(file, status); }
+    } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+      texto = await extrairTextoDOCX(file);
+    } else {
+      status.textContent = 'Formato não suportado. Use PDF ou Word.';
+      return;
+    }
+    if (!texto.trim()) {
+      status.textContent = 'Não foi possível extrair texto deste arquivo. Cole o conteúdo manualmente.';
+      return;
+    }
+    campo.value = texto.trim();
+    status.style.background = '#F0FDF4';
+    status.style.color = '#166534';
+    status.textContent = 'Arquivo importado com sucesso. Revise o texto abaixo e salve.';
   } catch(e) {
     status.style.background = '#FEF2F2';
     status.style.color = '#991B1B';
