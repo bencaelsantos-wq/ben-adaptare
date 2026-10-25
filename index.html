@@ -3362,6 +3362,11 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           <div><label class="flabel" for="cc-diag">Diagnóstico(s)</label><input type="text" id="cc-diag" class="finput" placeholder="Ex: TEA nível 2, TDAH combinado"></div>
           <div><label class="flabel" for="cc-hipotese">Hipóteses clínicas</label><input type="text" id="cc-hipotese" class="finput" placeholder="Ex: TPS associado, ansiedade"></div>
         </div>
+        <div class="fblock">
+          <label class="flabel">Perfil(s) estruturado(s) — usado pela Lou para calibrar estratégias de adaptação</label>
+          <div style="font-size:11px;color:#9CA3AF;margin:-2px 0 6px">Diferente do campo "Diagnóstico(s)" acima (texto livre só pra leitura humana), marque aqui o(s) perfil(s) que mais se aproximam — é isso que a Nova Adaptação usa pra decidir a estratégia.</div>
+          <div class="chips-group" id="chips-cc" style="max-height:130px;overflow-y:auto"></div>
+        </div>
         <div class="frow">
           <div>
             <label class="flabel" for="cc-comunicacao">Comunicação</label>
@@ -20333,7 +20338,19 @@ async function carregarAlunos() {
 
 async function carregarAlunosAdaptacaoClinica() {
   const { data } = await db.from('perfis_clinicos').select('*').order('nome');
-  alunosCad = (data || []).filter(p => p.user_id === user.id || (p.profissionais_ids||[]).includes(user.id));
+  alunosCad = (data || [])
+    .filter(p => p.user_id === user.id || (p.profissionais_ids||[]).includes(user.id))
+    .map(p => ({
+      ...p,
+      // gerar() lê a.observacoes — o perfil clínico guarda isso em campos próprios (hipótese/preservadas/
+      // comprometidas/comportamento) em vez de uma coluna "observacoes", então sintetizamos aqui.
+      observacoes: [
+        p.hipotese ? `Hipótese: ${p.hipotese}` : '',
+        p.preservadas ? `Funções preservadas: ${p.preservadas}` : '',
+        p.comprometidas ? `Funções comprometidas: ${p.comprometidas}` : '',
+        p.comportamento ? `Comportamento: ${p.comportamento}` : '',
+      ].filter(Boolean).join(' | ')
+    }));
   renderAlSel();
 }
 
@@ -22667,7 +22684,13 @@ async function abrirModalCadClinica(p) {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  renderChips('chips-cc');
   if (p) {
+    (p.perfis || []).forEach(perfil => {
+      document.querySelectorAll('#chips-cc .chip').forEach(c => {
+        if (c.textContent.trim() === perfil.trim()) c.classList.add('active');
+      });
+    });
     document.getElementById('cc-nome').value         = p.nome || '';
     document.getElementById('cc-idade').value        = p.idade || '';
     document.getElementById('cc-diag').value         = p.diagnostico || '';
@@ -22757,6 +22780,7 @@ async function salvarPerfilClinico() {
     nome, user_id: user.id, organizacao_id: window._organizacaoId || null,
     idade:         document.getElementById('cc-idade').value.trim() || null,
     diagnostico:   document.getElementById('cc-diag').value.trim() || null,
+    perfis:        getChips('chips-cc'),
     hipotese:      document.getElementById('cc-hipotese').value.trim() || null,
     comunicacao:   document.getElementById('cc-comunicacao').value || null,
     regulacao:     document.getElementById('cc-regulacao').value || null,
