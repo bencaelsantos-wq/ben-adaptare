@@ -20895,7 +20895,7 @@ async function salvarAluno() {
     _editAlunoId = null;
   } else {
     ({ data, error } = await db.from('alunos').insert({
-      user_id: user.id, nome, idade, nasc, serie, metodo, perfis, observacoes,
+      user_id: user.id, organizacao_id: window._organizacaoId || null, nome, idade, nasc, serie, metodo, perfis, observacoes,
       pai_nome, pai_tel, pai_email, mae_nome, mae_tel, mae_email,
       clinica_nome, clinica_tel, clinica_email, clinica_end, clinica_profs, bncc_codigos,
       at_id: at_id || null, at_nome: at_nome || null,
