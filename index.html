@@ -17073,7 +17073,7 @@ Nome: _______________ | Data: ___/___/___
 [linhas de resposta: _________________________________]
 [espaço de desenho: inclua [ESPAÇO PARA DESENHO] SOMENTE se a atividade original pede para desenhar, colorir ou criar algo visual]
 - NUNCA crie grades, tabelas ou colunas feitas de caracteres de texto (traços, barras verticais, pipes) para representar posicionamento de material concreto (barras de contas, fichas, blocos) — papel impresso não tem espaço físico real para isso.
-- NUNCA tente desenhar um diagrama, esquema ou ilustração usando caracteres de texto (barras verticais |, barras invertidas \, traços, espaços para simular posição, emojis em sequência formando uma figura). Fonte de PDF não é monoespaçada, esse tipo de "desenho com texto" sempre sai desalinhado e ilegível. Se o conteúdo original tem um diagrama assim, NUNCA o substitua por campos em branco sem nenhuma pista de qual é qual — troque SEMPRE por um marcador [IMAGEM:] por parte, usando UM dos dois formatos abaixo conforme o tipo de exercício:
+- NUNCA tente desenhar um diagrama, esquema ou ilustração usando caracteres de texto (barras verticais |, barras invertidas \, traços, espaços para simular posição, emojis em sequência formando uma figura, OU bloco de código cercado por três acentos graves/crases seguidos, igual se usa em markdown). Fonte de PDF não é monoespaçada, esse tipo de "desenho com texto" sempre sai desalinhado e ilegível, e as crases aparecem como caracteres visíveis estranhos na folha — isso vale inclusive pra "cálculo armado"/conta armada de matemática: nunca monte a conta empilhada com texto, descreva em palavras como decompor e calcular (ex: "multiplique primeiro as unidades, depois as dezenas, some os resultados"). Se o conteúdo original tem um diagrama assim, NUNCA o substitua por campos em branco sem nenhuma pista de qual é qual — troque SEMPRE por um marcador [IMAGEM:] por parte, usando UM dos dois formatos abaixo conforme o tipo de exercício:
   a) Exercício de IDENTIFICAR parte + sua definição já mostrada junto (é uma referência visual, não um desafio de adivinhar): "NOME DA PARTE [IMAGEM: nome] » definição curta" (máx 6 palavras na definição). Use sempre o caractere "»" como conector — NUNCA "->" (hífen + maior que). NUNCA use as palavras "Ligue"/"Associe" pra introduzir este formato, já que a resposta já vem pronta — use "Observe"/"Veja" como introdução.
   b) Exercício de IDENTIFICAR/NOMEAR cada parte (o aluno tem que escrever o nome ao ver a parte): "[IMAGEM: nome-da-parte] Nome: ___________" — um item por parte, na mesma ordem do original, cada um com seu próprio marcador de imagem ANTES do campo de resposta, nunca deixe um campo "Nome: ___" sem a imagem correspondente logo antes.
   c) Exercício de LIGAR/ASSOCIAR DE VERDADE (quando o aluno precisa DESCOBRIR a associação certa, não quando ela já é óbvia) — use OBRIGATORIAMENTE este formato de bloco, nunca o formato do item "a" para este caso:
@@ -19193,6 +19193,7 @@ function gerarPDFDocumento(opts) {
       // Destacar seções em negrito
       const linha = linhas[i];
       const linhaT = linha.trim();
+      if (/^```/.test(linhaT)) continue;
       const isTituloMaiusculo = linhaT.length < 90 && linhaT.length > 3 && linhaT === linhaT.toUpperCase() && /[A-ZÀ-Ú]/.test(linhaT) && !/^\(/.test(linhaT);
       const isParteLabel = /^parte\s*\d+\s*[:.\-]/i.test(linhaT) && linhaT.length < 90;
       const isH1 = /^#{1,2}\s/.test(linhaT) || (/^\d+\.\s[A-Z]/.test(linhaT) && linhaT.length < 80) || isTituloMaiusculo || isParteLabel;
@@ -19581,6 +19582,9 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
     }
     const linha = linhas[i];
     const linhaT = linha.trim();
+    // A IA às vezes ignora a instrução de nunca usar markdown e tenta desenhar grade/cálculo
+    // armado com crases de code fence (```). Isso não é um marcador do sistema — descarta puro.
+    if (/^```/.test(linhaT)) continue;
     const isTituloMaiusculoAtiv = linhaT.length < 90 && linhaT.length > 3 && linhaT === linhaT.toUpperCase() && /[A-ZÀ-Ú]/.test(linhaT) && !/^\(/.test(linhaT);
     const isParteLabelAtiv = /^(parte|passo|situa[cç][aã]o|etapa)\s*\d+\s*[:.\-]/i.test(linhaT) && linhaT.length < 90;
     const isQuestaoNumeradaAtiv = /^\d+\.\s[A-Z]/.test(linhaT) && linhaT.length < 150;
