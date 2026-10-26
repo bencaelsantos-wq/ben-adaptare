@@ -11490,6 +11490,7 @@ function renderPages() {
         <div class="result-badge" id="ta-result-badge">—</div>
       </div>
       <div class="fblock"><label class="flabel">Objetivos</label><textarea class="result-text" id="ta-objetivos" style="width:100%;min-height:70px"></textarea></div>
+      <div class="fblock"><label class="flabel">Texto de apoio (contexto pro aluno e pro professor)</label><textarea class="result-text" id="ta-texto-apoio" style="width:100%;min-height:70px"></textarea></div>
       <div class="fblock"><label class="flabel">Nível 1 — Lembrar/Compreender <span style="font-weight:400;color:#9CA3AF">(ponte rápida, não é o foco)</span></label><textarea class="result-text" id="ta-nivel1" style="width:100%;min-height:80px"></textarea></div>
       <div class="fblock"><label class="flabel">Nível 2 — Aplicar/Analisar</label><textarea class="result-text" id="ta-nivel2" style="width:100%;min-height:110px"></textarea></div>
       <div class="fblock"><label class="flabel">Nível 3 — Sintetizar/Avaliar/Criar <span style="font-weight:400;color:#9CA3AF">(o desafio real)</span></label><textarea class="result-text" id="ta-nivel3" style="width:100%;min-height:140px"></textarea></div>
@@ -14319,6 +14320,7 @@ function renderPagesClinica() {
         <div class="result-badge" id="ta-result-badge">—</div>
       </div>
       <div class="fblock"><label class="flabel">Objetivos</label><textarea class="result-text" id="ta-objetivos" style="width:100%;min-height:70px"></textarea></div>
+      <div class="fblock"><label class="flabel">Texto de apoio (contexto pro aluno e pro professor)</label><textarea class="result-text" id="ta-texto-apoio" style="width:100%;min-height:70px"></textarea></div>
       <div class="fblock"><label class="flabel">Nível 1 — Lembrar/Compreender <span style="font-weight:400;color:#9CA3AF">(ponte rápida, não é o foco)</span></label><textarea class="result-text" id="ta-nivel1" style="width:100%;min-height:80px"></textarea></div>
       <div class="fblock"><label class="flabel">Nível 2 — Aplicar/Analisar</label><textarea class="result-text" id="ta-nivel2" style="width:100%;min-height:110px"></textarea></div>
       <div class="fblock"><label class="flabel">Nível 3 — Sintetizar/Avaliar/Criar <span style="font-weight:400;color:#9CA3AF">(o desafio real)</span></label><textarea class="result-text" id="ta-nivel3" style="width:100%;min-height:140px"></textarea></div>
@@ -16895,6 +16897,9 @@ OBJETIVOS:
 - [objetivo 1, ligado ao mesmo tema da turma, com código BNCC se souber]
 - [objetivo 2]
 
+TEXTO_APOIO:
+[3 a 6 frases, linguagem acessível pra essa idade/série, trazendo qualquer informação ou vocabulário extra que os Níveis 2 e 3 vão precisar além do que já estava no conteúdo original — o objetivo é que NEM o professor (que pode não ter se aprofundado no tema) NEM o aluno precisem de nenhum conhecimento prévio que não esteja aqui ou no conteúdo original. Isso vale tanto pro aluno ler quanto pro professor se situar antes de aplicar.]
+
 NIVEL1:
 [1 atividade curta — lembrar/compreender o conteúdo. Rápida, serve só de ponte, não precisa elaborar muito aqui.]
 
@@ -16919,7 +16924,8 @@ ORIENTACOES:
   try {
     const txt = await chamarClaude({ prompt, maxTokens: 2600, modulo: 'trilha_aprofundamento' });
     const proximoAposNivel3 = incluirSocial ? 'SOCIAL' : 'ORIENTACOES';
-    const objetivos = pega(txt, 'OBJETIVOS', 'NIVEL1');
+    const objetivos = pega(txt, 'OBJETIVOS', 'TEXTO_APOIO');
+    const textoApoio = pega(txt, 'TEXTO_APOIO', 'NIVEL1');
     const nivel1 = pega(txt, 'NIVEL1', 'NIVEL2');
     const nivel2 = pega(txt, 'NIVEL2', 'NIVEL3');
     const nivel3 = pega(txt, 'NIVEL3', proximoAposNivel3);
@@ -16932,6 +16938,7 @@ ORIENTACOES:
       toast('Não foi possível interpretar a trilha gerada. Tente novamente.', 'error');
     } else {
       document.getElementById('ta-objetivos').value = objetivos;
+      document.getElementById('ta-texto-apoio').value = textoApoio;
       document.getElementById('ta-nivel1').value = nivel1;
       document.getElementById('ta-nivel2').value = nivel2;
       document.getElementById('ta-nivel3').value = nivel3;
@@ -16940,7 +16947,7 @@ ORIENTACOES:
       document.getElementById('ta-orientacoes').value = orientacoes;
       document.getElementById('ta-result-badge').textContent = [materia, serie].filter(Boolean).join(' · ');
       document.getElementById('ta-result-card').classList.add('show');
-      window._ultimaTrilhaAp = { aluno: a, materia, serie, tema, conteudoOriginal, objetivos, nivel1, nivel2, nivel3, social, orientacoes, incluirSocial };
+      window._ultimaTrilhaAp = { aluno: a, materia, serie, tema, conteudoOriginal, objetivos, textoApoio, nivel1, nivel2, nivel3, social, orientacoes, incluirSocial };
       toast('Trilha de Aprofundamento gerada!', 'success');
     }
   } catch(e) {
@@ -16957,6 +16964,7 @@ async function salvarTrilhaAprofundamento() {
     user_id: user.id, aluno_id: c.aluno.id, aluno_nome: c.aluno.nome, serie: c.serie,
     materia: c.materia, tema: c.tema, conteudo_original: c.conteudoOriginal || null,
     objetivos: document.getElementById('ta-objetivos')?.value.trim(),
+    texto_apoio: document.getElementById('ta-texto-apoio')?.value.trim(),
     nivel1: document.getElementById('ta-nivel1')?.value.trim(),
     nivel2: document.getElementById('ta-nivel2')?.value.trim(),
     nivel3: document.getElementById('ta-nivel3')?.value.trim(),
@@ -16981,6 +16989,9 @@ ${temaCurto.toUpperCase()} — ${c.serie}
 [BANNER: OBJETIVOS]
 ${document.getElementById('ta-objetivos')?.value.trim()}
 
+[BANNER: TEXTO DE APOIO]
+${document.getElementById('ta-texto-apoio')?.value.trim()}
+
 [BANNER: NÍVEL 1 — LEMBRAR/COMPREENDER]
 ${document.getElementById('ta-nivel1')?.value.trim()}
 
@@ -16991,13 +17002,16 @@ ${document.getElementById('ta-nivel2')?.value.trim()}
 ${document.getElementById('ta-nivel3')?.value.trim()}
 ${c.incluirSocial && document.getElementById('ta-social')?.value.trim() ? `\n[BANNER: COMPONENTE SOCIAL]\n${document.getElementById('ta-social')?.value.trim()}` : ''}
 
-[BANNER: ORIENTAÇÕES DE APLICAÇÃO]
+---USO EXCLUSIVO DO PROFESSOR---
+
+ORIENTAÇÕES DE APLICAÇÃO
+
 ${document.getElementById('ta-orientacoes')?.value.trim()}`;
 
   gerarPDFDocumento({
     tipo: 'TRILHA DE APROFUNDAMENTO', titulo: 'Trilha de Aprofundamento — AH/SD',
     subtitulo: c.materia + ' — ' + temaCurto + ' — ' + c.serie,
-    aluno: c.aluno.nome, professor: window._profNomeDB || '',
+    aluno: c.aluno.nome, professor: window._profNomeDB || '', guiaProf: true,
     conteudo, nomeArquivo: 'Trilha_Aprofundamento_' + c.aluno.nome.replace(/\s+/g,'_') + '_' + c.materia.replace(/\s+/g,'_'),
     isAtividade: true, fonteTamanho: 'medio', espacamento: 'normal', fonteTipo: 'sans', imagensPorItem: {}
   });
