@@ -11469,6 +11469,9 @@ function renderPages() {
         <div><label class="flabel" for="ta-serie">Série</label><input type="text" id="ta-serie" class="finput" placeholder="Ex: 5º ano, 8º ano, 2º EM"></div>
       </div>
       <div class="fblock"><label class="flabel" for="ta-tema">Tema que a turma está estudando</label><input type="text" id="ta-tema" class="finput" placeholder="Ex: Sistema Solar, Frações, Revolução Francesa"></div>
+      <div class="fblock"><label class="flabel" for="ta-conteudo">Conteúdo/exercício original da turma <span style="font-weight:400;color:#9CA3AF">(opcional — cole aqui se já tiver, a Lou eleva a partir dele; se deixar vazio, ela monta do zero a partir do tema)</span></label>
+        <textarea id="ta-conteudo" class="ftarea" rows="4" placeholder="Cole aqui o exercício ou texto que a turma está usando, se já tiver um pronto"></textarea>
+      </div>
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);margin-top:8px">
         <input type="checkbox" id="ta-componente-social" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
         <span>👥 Incluir componente de habilidades sociais/desenvolvimento integral (não só cognitivo)</span>
@@ -14295,6 +14298,9 @@ function renderPagesClinica() {
         <div><label class="flabel" for="ta-serie">Série</label><input type="text" id="ta-serie" class="finput" placeholder="Ex: 5º ano, 8º ano, 2º EM"></div>
       </div>
       <div class="fblock"><label class="flabel" for="ta-tema">Tema que a turma está estudando</label><input type="text" id="ta-tema" class="finput" placeholder="Ex: Sistema Solar, Frações, Revolução Francesa"></div>
+      <div class="fblock"><label class="flabel" for="ta-conteudo">Conteúdo/exercício original da turma <span style="font-weight:400;color:#9CA3AF">(opcional — cole aqui se já tiver, a Lou eleva a partir dele; se deixar vazio, ela monta do zero a partir do tema)</span></label>
+        <textarea id="ta-conteudo" class="ftarea" rows="4" placeholder="Cole aqui o exercício ou texto que a turma está usando, se já tiver um pronto"></textarea>
+      </div>
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);margin-top:8px">
         <input type="checkbox" id="ta-componente-social" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
         <span>👥 Incluir componente de habilidades sociais/desenvolvimento integral (não só cognitivo)</span>
@@ -16846,6 +16852,7 @@ async function gerarTrilhaAprofundamento() {
   const materia = document.getElementById('ta-materia')?.value;
   const serie = document.getElementById('ta-serie')?.value.trim() || a.serie || '';
   const tema = document.getElementById('ta-tema')?.value.trim();
+  const conteudoOriginal = document.getElementById('ta-conteudo')?.value.trim();
   const incluirSocial = document.getElementById('ta-componente-social')?.checked || false;
   if (!materia) return toast('Selecione a matéria.', 'error');
   if (!tema) return toast('Informe o tema que a turma está estudando.', 'error');
@@ -16862,6 +16869,10 @@ Aluno: ${a.nome} | Série: ${serie || 'não informada'}
 Matéria: ${materia}
 Tema que a turma está estudando: ${tema}
 ${a.observacoes ? `Interesses/potencialidades/observações cadastradas: ${a.observacoes}` : ''}
+${conteudoOriginal ? `
+CONTEÚDO/EXERCÍCIO ORIGINAL DA TURMA (eleve a complexidade A PARTIR deste conteúdo específico, não invente um tema genérico diferente dele):
+${conteudoOriginal}
+` : '\nNenhum conteúdo original foi colado — monte a trilha a partir do tema informado acima.'}
 
 CONTEXTO IMPORTANTE: este aluno tem perfil de Altas Habilidades/Superdotação. A necessidade dele é OPOSTA à de um aluno com dificuldade — não precisa de menos carga cognitiva, precisa de MAIS profundidade. Mas "mais profundidade" NUNCA significa mais exercícios, mais páginas ou "avançar" no conteúdo dos colegas — significa o MESMO tema da turma, com a complexidade do pensamento elevada.
 
@@ -16872,6 +16883,7 @@ REGRAS OBRIGATÓRIAS:
 - Nunca use linguagem nem formato infantilizado, mas também nunca exija conhecimento que não faça parte do que um aluno dessa idade teria acesso.
 - Se houver interesse pessoal real informado nas observações, use-o pra ambientar o desafio do Nível 3 — nunca invente um interesse não informado.
 - NUNCA use markdown (sem **negrito** nem #título), nunca monte conta/grade empilhada em texto nem use crases de code fence.
+- Ao final de CADA nível (Nível 1, 2 e 3, e do componente social se houver), inclua linhas de resposta em branco no formato de sublinhado (ex: "_________________________________"), em quantidade proporcional ao tamanho esperado da resposta: poucas linhas no Nível 1, mais no Nível 2, e bastante espaço no Nível 3 (que pede um documento mais longo) — o aluno precisa ter onde escrever no papel impresso.
 
 FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos:
 
@@ -16924,7 +16936,7 @@ ORIENTACOES:
       document.getElementById('ta-orientacoes').value = orientacoes;
       document.getElementById('ta-result-badge').textContent = [materia, serie].filter(Boolean).join(' · ');
       document.getElementById('ta-result-card').classList.add('show');
-      window._ultimaTrilhaAp = { aluno: a, materia, serie, tema, objetivos, nivel1, nivel2, nivel3, social, orientacoes, incluirSocial };
+      window._ultimaTrilhaAp = { aluno: a, materia, serie, tema, conteudoOriginal, objetivos, nivel1, nivel2, nivel3, social, orientacoes, incluirSocial };
       toast('Trilha de Aprofundamento gerada!', 'success');
     }
   } catch(e) {
@@ -16939,7 +16951,7 @@ async function salvarTrilhaAprofundamento() {
   if (!c) return toast('Gere a trilha primeiro.', 'error');
   const { error } = await db.from('trilhas_aprofundamento').insert({
     user_id: user.id, aluno_id: c.aluno.id, aluno_nome: c.aluno.nome, serie: c.serie,
-    materia: c.materia, tema: c.tema,
+    materia: c.materia, tema: c.tema, conteudo_original: c.conteudoOriginal || null,
     objetivos: document.getElementById('ta-objetivos')?.value.trim(),
     nivel1: document.getElementById('ta-nivel1')?.value.trim(),
     nivel2: document.getElementById('ta-nivel2')?.value.trim(),
@@ -16954,9 +16966,11 @@ async function salvarTrilhaAprofundamento() {
 function baixarPDFTrilhaAprofundamento() {
   const c = window._ultimaTrilhaAp;
   if (!c) return toast('Gere a trilha primeiro.', 'error');
+  // Defesa contra tema digitado/colado longo demais — o cabeçalho/subtítulo do PDF é de uma linha só.
+  const temaCurto = (c.tema || '').replace(/\s+/g, ' ').trim().slice(0, 60);
   const conteudo = `Nome: _______________ | Data: ___/___/___
 
-${c.tema.toUpperCase()} — ${c.serie}
+${temaCurto.toUpperCase()} — ${c.serie}
 
 ---
 
@@ -16978,7 +16992,7 @@ ${document.getElementById('ta-orientacoes')?.value.trim()}`;
 
   gerarPDFDocumento({
     tipo: 'TRILHA DE APROFUNDAMENTO', titulo: 'Trilha de Aprofundamento — AH/SD',
-    subtitulo: c.materia + ' — ' + c.tema + ' — ' + c.serie,
+    subtitulo: c.materia + ' — ' + temaCurto + ' — ' + c.serie,
     aluno: c.aluno.nome, professor: window._profNomeDB || '',
     conteudo, nomeArquivo: 'Trilha_Aprofundamento_' + c.aluno.nome.replace(/\s+/g,'_') + '_' + c.materia.replace(/\s+/g,'_'),
     isAtividade: true, fonteTamanho: 'medio', espacamento: 'normal', fonteTipo: 'sans', imagensPorItem: {}
