@@ -16856,6 +16856,7 @@ async function gerarTrilhaAprofundamento() {
   const incluirSocial = document.getElementById('ta-componente-social')?.checked || false;
   if (!materia) return toast('Selecione a matéria.', 'error');
   if (!tema) return toast('Informe o tema que a turma está estudando.', 'error');
+  const eixos = eixosDoAluno(a.perfis);
 
   const btn = document.getElementById('btn-gerar-ta');
   btn.disabled = true;
@@ -16881,9 +16882,12 @@ REGRAS OBRIGATÓRIAS:
 - Estruture pelos 3 blocos da Taxonomia de Bloom: NIVEL1 (Lembrar/Compreender — só uma ponte rápida pra confirmar a base, não é o foco), NIVEL2 (Aplicar/Analisar), NIVEL3 (Sintetizar/Avaliar/Criar — este é o desafio real, deve ser o bloco mais robusto e interessante).
 - A complexidade tem que ficar acessível pra qualquer professor aplicar sem precisar de material especial, e coerente com o repertório real de um aluno dessa idade/série — nunca peça algo fora do alcance etário ou que pareça "prova de faculdade" fora de contexto.
 - Nunca use linguagem nem formato infantilizado, mas também nunca exija conhecimento que não faça parte do que um aluno dessa idade teria acesso.
+- REGRA CRÍTICA DE ESCOPO: o Nível 3 só pode exigir raciocínio mais profundo SOBRE o conteúdo/tema fornecido (o que já foi dado acima) — nunca introduza um fato, critério técnico, classificação oficial ou conceito especializado que não esteja no conteúdo/tema informado e que a turma não tenha visto. "Mais profundo" é pensar melhor sobre o que já foi ensinado, nunca saber algo a mais que não foi ensinado. Se o tema fornecido é básico, o desafio do Nível 3 tem que ser construído só com o que está ali — nunca pesquisa de fatos externos que a criança não teria como saber.
 - Se houver interesse pessoal real informado nas observações, use-o pra ambientar o desafio do Nível 3 — nunca invente um interesse não informado.
 - NUNCA use markdown (sem **negrito** nem #título), nunca monte conta/grade empilhada em texto nem use crases de code fence.
 - Ao final de CADA nível (Nível 1, 2 e 3, e do componente social se houver), inclua linhas de resposta em branco no formato de sublinhado (ex: "_________________________________"), em quantidade proporcional ao tamanho esperado da resposta: poucas linhas no Nível 1, mais no Nível 2, e bastante espaço no Nível 3 (que pede um documento mais longo) — o aluno precisa ter onde escrever no papel impresso.
+${eixos.has('cognitivo') || eixos.has('emocional') ? `
+ATENÇÃO — este aluno também tem perfil que exige atenção cognitiva/executiva ou emocional (além do enriquecimento). Isso NÃO pode ficar só numa nota pro professor — incorpore DENTRO da própria redação do Nível 3 (que é o bloco mais longo/exigente): divida explicitamente a tarefa em 2 ou 3 etapas numeradas menores e claras (ex: "Etapa 1: decida sua posição. Etapa 2: liste os argumentos. Etapa 3: escreva a resposta de quem discordaria"), cada uma curta o suficiente pra não sobrecarregar atenção/ansiedade, em vez de uma instrução única e longa tipo "crie um documento de 1 página com...". Mantenha a mesma profundidade de pensamento exigida, só muda a forma de apresentar em passos.` : ''}
 
 FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos:
 
