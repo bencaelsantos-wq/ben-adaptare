@@ -4221,7 +4221,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4505,6 +4505,9 @@ function renderNavProfessor() {
     </div>
     <div class="nav-item" id="nav-ciclo-preparatorio" onclick="${!temAddon('ciclo_preparatorio') ? "acessarRecursoPremium('Ciclo Preparatório')" : "showPage('ciclo-preparatorio');carregarAlunosCicloPrep()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="14.5" cy="5" r="2.8" fill="#DC2626" stroke="none"/><path d="M13.3 5h2.4M14.5 3.8v2.4" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>Ciclo Preparatório${!temAddon('ciclo_preparatorio') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
+    <div class="nav-item" id="nav-trilha-aprofundamento" onclick="${!temAddon('trilha_aprofundamento') ? "acessarRecursoPremium('Trilha de Aprofundamento')" : "showPage('trilha-aprofundamento');carregarAlunosTrilhaAp()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Trilha de Aprofundamento${!temAddon('trilha_aprofundamento') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item" id="nav-ciclo-trabalho" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Ciclo de Trabalho')" : "showPage('ciclo-trabalho');carregarAlunos();aplicarModeloCicloUI()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 1 0 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.3l2 1-2 1z" fill="currentColor" stroke="none"/></svg>Ciclo de Trabalho${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -8362,7 +8365,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
@@ -8370,11 +8373,11 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório', trilha_aprofundamento:'Trilha de Aprofundamento (AH/SD)'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
-  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio'],
+  escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento'],
   compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
@@ -11430,6 +11433,65 @@ function renderPages() {
       <div class="result-actions">
         <button class="btn-sm" onclick="salvarCicloPreparatorio()">Salvar</button>
         <button class="btn-copy" onclick="baixarPDFCicloPreparatorio()">Baixar PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRILHA DE APROFUNDAMENTO (AH/SD) -->
+  <div id="page-trilha-aprofundamento" class="page">
+    <h1 class="page-title">Trilha de Aprofundamento</h1>
+    <p class="page-sub">Ferramenta própria pra Altas Habilidades/Superdotação — mesmo tema e mesmo volume da turma, com a complexidade elevada pelos níveis da Taxonomia de Bloom. Nunca é "mais páginas", é mais profundidade.</p>
+
+    <div class="fcard">
+      <div class="fcard-title">Aluno</div>
+      <div class="fblock"><label class="flabel" for="ta-aluno-search">Buscar aluno</label>
+        <div class="aluno-selector">
+          <input class="aluno-search" id="ta-aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSelTrilhaAp()">
+          <div id="ta-aluno-lista-sel"></div>
+        </div>
+      </div>
+      <div class="aluno-sel-info" id="ta-aluno-sel-info"></div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">Matéria e tema da turma</div>
+      <p style="font-size:12px;color:#9CA3AF;margin:-4px 0 10px">Use o mesmo tema que a turma está estudando — a trilha não muda o conteúdo, só a profundidade exigida.</p>
+      <div class="frow">
+        <div><label class="flabel" for="ta-materia">Matéria / Área</label>
+          <select id="ta-materia" class="fselect">
+            <option value="">Selecione</option>
+            <option>Língua Portuguesa</option><option>Matemática</option><option>Ciências da Natureza</option><option>Biologia</option><option>Física</option><option>Química</option><option>História</option><option>Geografia</option><option>Filosofia</option><option>Sociologia</option><option>Língua Inglesa</option><option>Arte</option>
+          </select>
+        </div>
+        <div><label class="flabel" for="ta-serie">Série</label><input type="text" id="ta-serie" class="finput" placeholder="Ex: 5º ano, 8º ano, 2º EM"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ta-tema">Tema que a turma está estudando</label><input type="text" id="ta-tema" class="finput" placeholder="Ex: Sistema Solar, Frações, Revolução Francesa"></div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);margin-top:8px">
+        <input type="checkbox" id="ta-componente-social" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+        <span>👥 Incluir componente de habilidades sociais/desenvolvimento integral (não só cognitivo)</span>
+      </label>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar-ta" onclick="gerarTrilhaAprofundamento()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar Trilha de Aprofundamento com a Lou
+    </button>
+    <div class="gen-box" id="gen-ta-box"><div class="spin"></div><span>Lou estruturando os níveis de Bloom…</span></div>
+
+    <div class="result-card" id="ta-result-card">
+      <div class="result-header">
+        <div class="result-title">Trilha de Aprofundamento gerada</div>
+        <div class="result-badge" id="ta-result-badge">—</div>
+      </div>
+      <div class="fblock"><label class="flabel">Objetivos</label><textarea class="result-text" id="ta-objetivos" style="width:100%;min-height:70px"></textarea></div>
+      <div class="fblock"><label class="flabel">Nível 1 — Lembrar/Compreender <span style="font-weight:400;color:#9CA3AF">(ponte rápida, não é o foco)</span></label><textarea class="result-text" id="ta-nivel1" style="width:100%;min-height:80px"></textarea></div>
+      <div class="fblock"><label class="flabel">Nível 2 — Aplicar/Analisar</label><textarea class="result-text" id="ta-nivel2" style="width:100%;min-height:110px"></textarea></div>
+      <div class="fblock"><label class="flabel">Nível 3 — Sintetizar/Avaliar/Criar <span style="font-weight:400;color:#9CA3AF">(o desafio real)</span></label><textarea class="result-text" id="ta-nivel3" style="width:100%;min-height:140px"></textarea></div>
+      <div class="fblock" id="ta-bloco-social" style="display:none"><label class="flabel">Componente social / desenvolvimento integral</label><textarea class="result-text" id="ta-social" style="width:100%;min-height:90px"></textarea></div>
+      <div class="fblock"><label class="flabel">Orientações de aplicação</label><textarea class="result-text" id="ta-orientacoes" style="width:100%;min-height:80px"></textarea></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarTrilhaAprofundamento()">Salvar</button>
+        <button class="btn-copy" onclick="baixarPDFTrilhaAprofundamento()">Baixar PDF</button>
       </div>
     </div>
   </div>
@@ -16680,6 +16742,183 @@ ${todosGabaritos.length ? `\n[NOVAPAGINA]\n[BANNER: GABARITO — USO DO PROFESSO
     subtitulo: c.materia + ' — ' + c.tema + ' — ' + c.serie,
     aluno: c.aluno.nome, professor: window._profNomeDB || '',
     conteudo, nomeArquivo: 'Ciclo_Preparatorio_' + c.aluno.nome.replace(/\s+/g,'_') + '_' + c.materia.replace(/\s+/g,'_'),
+    isAtividade: true, fonteTamanho: 'medio', espacamento: 'normal', fonteTipo: 'sans', imagensPorItem: {}
+  });
+}
+
+// ── TRILHA DE APROFUNDAMENTO (AH/SD) — ferramenta própria, não mexe no motor de adaptação ──
+function filtrarAlSelTrilhaAp() {
+  const q = (document.getElementById('ta-aluno-search')?.value || '').toLowerCase();
+  const lista = (alunosCad || []).filter(a => a.nome.toLowerCase().includes(q));
+  const el = document.getElementById('ta-aluno-lista-sel');
+  if (!el) return;
+  if (!lista.length) { el.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:var(--gr400)">Nenhum aluno encontrado. Cadastre em "Meus alunos".</div>`; return; }
+  el.innerHTML = lista.map(a => {
+    const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+    return `<div class="aluno-opt ${window._taAlunoId===a.id?'selected':''}" onclick="selecionarAlunoTrilhaAp('${a.id}')">
+      <div class="aluno-opt-nome">${escapeHtml(a.nome)}</div>
+      <div class="aluno-opt-meta">${meta}</div>
+    </div>`;
+  }).join('');
+}
+function selecionarAlunoTrilhaAp(id) {
+  const a = (alunosCad || []).find(x => x.id === id);
+  if (!a) return;
+  window._taAlunoId = id;
+  window._taAlunoObj = a;
+  const serieEl = document.getElementById('ta-serie');
+  if (serieEl && a.serie) serieEl.value = a.serie;
+  const info = document.getElementById('ta-aluno-sel-info');
+  const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
+  info.style.display = 'block';
+  info.innerHTML = `<strong>${escapeHtml(a.nome)}</strong> · ${meta}`;
+  filtrarAlSelTrilhaAp();
+  const searchEl = document.getElementById('ta-aluno-search');
+  if (searchEl) searchEl.value = a.nome;
+}
+function carregarAlunosTrilhaAp() { filtrarAlSelTrilhaAp(); }
+
+async function gerarTrilhaAprofundamento() {
+  const a = window._taAlunoObj;
+  if (!a || !window._taAlunoId) return toast('Selecione um aluno.', 'error');
+  const materia = document.getElementById('ta-materia')?.value;
+  const serie = document.getElementById('ta-serie')?.value.trim() || a.serie || '';
+  const tema = document.getElementById('ta-tema')?.value.trim();
+  const incluirSocial = document.getElementById('ta-componente-social')?.checked || false;
+  if (!materia) return toast('Selecione a matéria.', 'error');
+  if (!tema) return toast('Informe o tema que a turma está estudando.', 'error');
+
+  const btn = document.getElementById('btn-gerar-ta');
+  btn.disabled = true;
+  document.getElementById('gen-ta-box').classList.add('show');
+  document.getElementById('ta-result-card').classList.remove('show');
+
+  const prompt = `Você é uma equipe pedagógica especializada em Altas Habilidades/Superdotação (AH/SD), trabalhando com um aluno de escola de método ativo/Montessoriano no ${serie || 'ano não informado'}.
+
+DADOS:
+Aluno: ${a.nome} | Série: ${serie || 'não informada'}
+Matéria: ${materia}
+Tema que a turma está estudando: ${tema}
+${a.observacoes ? `Interesses/potencialidades/observações cadastradas: ${a.observacoes}` : ''}
+
+CONTEXTO IMPORTANTE: este aluno tem perfil de Altas Habilidades/Superdotação. A necessidade dele é OPOSTA à de um aluno com dificuldade — não precisa de menos carga cognitiva, precisa de MAIS profundidade. Mas "mais profundidade" NUNCA significa mais exercícios, mais páginas ou "avançar" no conteúdo dos colegas — significa o MESMO tema da turma, com a complexidade do pensamento elevada.
+
+REGRAS OBRIGATÓRIAS:
+- Volume igual ao dos colegas (3 níveis curtos, não uma lista extensa) — o que muda é a exigência de pensamento, não a quantidade.
+- Estruture pelos 3 blocos da Taxonomia de Bloom: NIVEL1 (Lembrar/Compreender — só uma ponte rápida pra confirmar a base, não é o foco), NIVEL2 (Aplicar/Analisar), NIVEL3 (Sintetizar/Avaliar/Criar — este é o desafio real, deve ser o bloco mais robusto e interessante).
+- A complexidade tem que ficar acessível pra qualquer professor aplicar sem precisar de material especial, e coerente com o repertório real de um aluno dessa idade/série — nunca peça algo fora do alcance etário ou que pareça "prova de faculdade" fora de contexto.
+- Nunca use linguagem nem formato infantilizado, mas também nunca exija conhecimento que não faça parte do que um aluno dessa idade teria acesso.
+- Se houver interesse pessoal real informado nas observações, use-o pra ambientar o desafio do Nível 3 — nunca invente um interesse não informado.
+- NUNCA use markdown (sem **negrito** nem #título), nunca monte conta/grade empilhada em texto nem use crases de code fence.
+
+FORMATO OBRIGATÓRIO — responda EXATAMENTE nesta estrutura, com esses rótulos exatos:
+
+OBJETIVOS:
+- [objetivo 1, ligado ao mesmo tema da turma, com código BNCC se souber]
+- [objetivo 2]
+
+NIVEL1:
+[1 atividade curta — lembrar/compreender o conteúdo. Rápida, serve só de ponte, não precisa elaborar muito aqui.]
+
+NIVEL2:
+[1 a 2 atividades — aplicar o conteúdo em uma situação nova, ou analisar relações/padrões que a turma não explorou. Mais substancial que o Nível 1.]
+
+NIVEL3:
+[1 atividade robusta e genuinamente desafiadora — sintetizar, avaliar criticamente ou criar algo novo a partir do tema. Esse é o bloco principal: dê um produto final concreto (ex: criar algo, defender uma posição com argumentos, propor uma solução, investigar uma pergunta própria), não uma pergunta de resposta curta.]
+${incluirSocial ? `
+SOCIAL:
+[1 componente de habilidade social ou desenvolvimento integral ligado a esta trilha — ex: apresentar o resultado do Nível 3 pra turma, mentorear um colega numa parte do tema, debater com outro colega AH/SD, ou colaborar em dupla mantendo autonomia de pensamento. Não é só cognitivo.]` : ''}
+
+ORIENTACOES:
+[2 a 4 linhas pro professor: como aplicar sem atrapalhar o ritmo da turma, quanto tempo esperar que o aluno leve em cada nível, e um lembrete de que isso complementa — nunca substitui — o convívio normal da turma.]`;
+
+  const pega = (txt, rotulo, proximo) => {
+    const re = new RegExp(rotulo + ':\\s*([\\s\\S]*?)(?=\\n' + proximo + ':|$)', 'i');
+    const m = txt.match(re);
+    return m ? m[1].trim() : '';
+  };
+
+  try {
+    const txt = await chamarClaude({ prompt, maxTokens: 2600, modulo: 'trilha_aprofundamento' });
+    const proximoAposNivel3 = incluirSocial ? 'SOCIAL' : 'ORIENTACOES';
+    const objetivos = pega(txt, 'OBJETIVOS', 'NIVEL1');
+    const nivel1 = pega(txt, 'NIVEL1', 'NIVEL2');
+    const nivel2 = pega(txt, 'NIVEL2', 'NIVEL3');
+    const nivel3 = pega(txt, 'NIVEL3', proximoAposNivel3);
+    const social = incluirSocial ? pega(txt, 'SOCIAL', 'ORIENTACOES') : '';
+    const orientacoesMatch = txt.match(/ORIENTACOES:\s*([\s\S]*)$/i);
+    const orientacoes = orientacoesMatch ? orientacoesMatch[1].trim() : '';
+
+    if (!objetivos && !nivel3) {
+      console.warn('Trilha de Aprofundamento — resposta não interpretada:', txt);
+      toast('Não foi possível interpretar a trilha gerada. Tente novamente.', 'error');
+    } else {
+      document.getElementById('ta-objetivos').value = objetivos;
+      document.getElementById('ta-nivel1').value = nivel1;
+      document.getElementById('ta-nivel2').value = nivel2;
+      document.getElementById('ta-nivel3').value = nivel3;
+      document.getElementById('ta-bloco-social').style.display = incluirSocial ? 'block' : 'none';
+      if (incluirSocial) document.getElementById('ta-social').value = social;
+      document.getElementById('ta-orientacoes').value = orientacoes;
+      document.getElementById('ta-result-badge').textContent = [materia, serie].filter(Boolean).join(' · ');
+      document.getElementById('ta-result-card').classList.add('show');
+      window._ultimaTrilhaAp = { aluno: a, materia, serie, tema, objetivos, nivel1, nivel2, nivel3, social, orientacoes, incluirSocial };
+      toast('Trilha de Aprofundamento gerada!', 'success');
+    }
+  } catch(e) {
+    toast('Erro: ' + (e.message || 'Tente novamente.'), 'error');
+  }
+  btn.disabled = false;
+  document.getElementById('gen-ta-box').classList.remove('show');
+}
+
+async function salvarTrilhaAprofundamento() {
+  const c = window._ultimaTrilhaAp;
+  if (!c) return toast('Gere a trilha primeiro.', 'error');
+  const { error } = await db.from('trilhas_aprofundamento').insert({
+    user_id: user.id, aluno_id: c.aluno.id, aluno_nome: c.aluno.nome, serie: c.serie,
+    materia: c.materia, tema: c.tema,
+    objetivos: document.getElementById('ta-objetivos')?.value.trim(),
+    nivel1: document.getElementById('ta-nivel1')?.value.trim(),
+    nivel2: document.getElementById('ta-nivel2')?.value.trim(),
+    nivel3: document.getElementById('ta-nivel3')?.value.trim(),
+    social: c.incluirSocial ? document.getElementById('ta-social')?.value.trim() : null,
+    orientacoes: document.getElementById('ta-orientacoes')?.value.trim(),
+  });
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  toast('Trilha de Aprofundamento salva!', 'success');
+}
+
+function baixarPDFTrilhaAprofundamento() {
+  const c = window._ultimaTrilhaAp;
+  if (!c) return toast('Gere a trilha primeiro.', 'error');
+  const conteudo = `Nome: _______________ | Data: ___/___/___
+
+${c.tema.toUpperCase()} — ${c.serie}
+
+---
+
+[BANNER: OBJETIVOS]
+${document.getElementById('ta-objetivos')?.value.trim()}
+
+[BANNER: NÍVEL 1 — LEMBRAR/COMPREENDER]
+${document.getElementById('ta-nivel1')?.value.trim()}
+
+[BANNER: NÍVEL 2 — APLICAR/ANALISAR]
+${document.getElementById('ta-nivel2')?.value.trim()}
+
+[BANNER: NÍVEL 3 — SINTETIZAR/AVALIAR/CRIAR]
+${document.getElementById('ta-nivel3')?.value.trim()}
+${c.incluirSocial && document.getElementById('ta-social')?.value.trim() ? `\n[BANNER: COMPONENTE SOCIAL]\n${document.getElementById('ta-social')?.value.trim()}` : ''}
+
+[BANNER: ORIENTAÇÕES DE APLICAÇÃO]
+${document.getElementById('ta-orientacoes')?.value.trim()}`;
+
+  gerarPDFDocumento({
+    tipo: 'TRILHA DE APROFUNDAMENTO', titulo: 'Trilha de Aprofundamento — AH/SD',
+    subtitulo: c.materia + ' — ' + c.tema + ' — ' + c.serie,
+    aluno: c.aluno.nome, professor: window._profNomeDB || '',
+    conteudo, nomeArquivo: 'Trilha_Aprofundamento_' + c.aluno.nome.replace(/\s+/g,'_') + '_' + c.materia.replace(/\s+/g,'_'),
     isAtividade: true, fonteTamanho: 'medio', espacamento: 'normal', fonteTipo: 'sans', imagensPorItem: {}
   });
 }
