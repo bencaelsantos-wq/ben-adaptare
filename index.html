@@ -4715,6 +4715,9 @@ function renderNavClinica() {
     <div class="nav-item clinic-item" id="nav-clinica-nova-adapt" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('nova');carregarAlunosAdaptacaoClinica()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova Adaptação${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
+    <div class="nav-item clinic-item" id="nav-clinica-trilha-aprofundamento" onclick="${!temAddon('trilha_aprofundamento') ? "acessarRecursoPremium('Trilha de Aprofundamento')" : "showPage('trilha-aprofundamento');carregarAlunosAdaptacaoClinica()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Trilha de Aprofundamento${!temAddon('trilha_aprofundamento') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
     <div class="nav-item clinic-item" id="nav-praticas-aluno" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Banco de Práticas')" : "showPage('praticas-aluno');carregarAlunosAdaptacaoClinica().then(popularSelectPraticasAluno)"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -14260,6 +14263,65 @@ function renderPagesClinica() {
       <p class="page-sub" style="margin:0 0 10px">Revise os itens detectados, ajuste se precisar, escolha a fonte e busque uma imagem para cada um. As imagens escolhidas entram direto no PDF ao lado do texto — clique em "Baixar PDF" acima depois de selecionar.</p>
       <div id="ap-img-itens"></div>
       <button class="btn-copy" onclick="adicionarItemImagemManual()">+ Adicionar item manualmente</button>
+    </div>
+  </div>
+
+  <!-- TRILHA DE APROFUNDAMENTO (AH/SD) — lado clínico -->
+  <div id="page-trilha-aprofundamento" class="page">
+    <h1 class="page-title">Trilha de Aprofundamento</h1>
+    <p class="page-sub">Ferramenta própria pra Altas Habilidades/Superdotação — mesmo tema e mesmo volume da turma, com a complexidade elevada pelos níveis da Taxonomia de Bloom. Nunca é "mais páginas", é mais profundidade.</p>
+
+    <div class="fcard">
+      <div class="fcard-title">Paciente</div>
+      <div class="fblock"><label class="flabel" for="ta-aluno-search">Buscar paciente</label>
+        <div class="aluno-selector">
+          <input class="aluno-search" id="ta-aluno-search" placeholder="Digite o nome…" oninput="filtrarAlSelTrilhaAp()">
+          <div id="ta-aluno-lista-sel"></div>
+        </div>
+      </div>
+      <div class="aluno-sel-info" id="ta-aluno-sel-info"></div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">Matéria e tema da turma</div>
+      <p style="font-size:12px;color:#9CA3AF;margin:-4px 0 10px">Use o mesmo tema que a turma está estudando — a trilha não muda o conteúdo, só a profundidade exigida.</p>
+      <div class="frow">
+        <div><label class="flabel" for="ta-materia">Matéria / Área</label>
+          <select id="ta-materia" class="fselect">
+            <option value="">Selecione</option>
+            <option>Língua Portuguesa</option><option>Matemática</option><option>Ciências da Natureza</option><option>Biologia</option><option>Física</option><option>Química</option><option>História</option><option>Geografia</option><option>Filosofia</option><option>Sociologia</option><option>Língua Inglesa</option><option>Arte</option>
+          </select>
+        </div>
+        <div><label class="flabel" for="ta-serie">Série</label><input type="text" id="ta-serie" class="finput" placeholder="Ex: 5º ano, 8º ano, 2º EM"></div>
+      </div>
+      <div class="fblock"><label class="flabel" for="ta-tema">Tema que a turma está estudando</label><input type="text" id="ta-tema" class="finput" placeholder="Ex: Sistema Solar, Frações, Revolução Francesa"></div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gr700);margin-top:8px">
+        <input type="checkbox" id="ta-componente-social" checked style="width:16px;height:16px;accent-color:var(--p-blue);cursor:pointer">
+        <span>👥 Incluir componente de habilidades sociais/desenvolvimento integral (não só cognitivo)</span>
+      </label>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar-ta" onclick="gerarTrilhaAprofundamento()">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.09 7.26L18 8.27L14 12.14L14.91 18L10 15.27L5.09 18L6 12.14L2 8.27L7.91 7.26L10 2Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      Gerar Trilha de Aprofundamento com a Lou
+    </button>
+    <div class="gen-box" id="gen-ta-box"><div class="spin"></div><span>Lou estruturando os níveis de Bloom…</span></div>
+
+    <div class="result-card" id="ta-result-card">
+      <div class="result-header">
+        <div class="result-title">Trilha de Aprofundamento gerada</div>
+        <div class="result-badge" id="ta-result-badge">—</div>
+      </div>
+      <div class="fblock"><label class="flabel">Objetivos</label><textarea class="result-text" id="ta-objetivos" style="width:100%;min-height:70px"></textarea></div>
+      <div class="fblock"><label class="flabel">Nível 1 — Lembrar/Compreender <span style="font-weight:400;color:#9CA3AF">(ponte rápida, não é o foco)</span></label><textarea class="result-text" id="ta-nivel1" style="width:100%;min-height:80px"></textarea></div>
+      <div class="fblock"><label class="flabel">Nível 2 — Aplicar/Analisar</label><textarea class="result-text" id="ta-nivel2" style="width:100%;min-height:110px"></textarea></div>
+      <div class="fblock"><label class="flabel">Nível 3 — Sintetizar/Avaliar/Criar <span style="font-weight:400;color:#9CA3AF">(o desafio real)</span></label><textarea class="result-text" id="ta-nivel3" style="width:100%;min-height:140px"></textarea></div>
+      <div class="fblock" id="ta-bloco-social" style="display:none"><label class="flabel">Componente social / desenvolvimento integral</label><textarea class="result-text" id="ta-social" style="width:100%;min-height:90px"></textarea></div>
+      <div class="fblock"><label class="flabel">Orientações de aplicação</label><textarea class="result-text" id="ta-orientacoes" style="width:100%;min-height:80px"></textarea></div>
+      <div class="result-actions">
+        <button class="btn-sm" onclick="salvarTrilhaAprofundamento()">Salvar</button>
+        <button class="btn-copy" onclick="baixarPDFTrilhaAprofundamento()">Baixar PDF</button>
+      </div>
     </div>
   </div>
 
