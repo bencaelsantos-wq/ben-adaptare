@@ -20873,7 +20873,7 @@ const COLUNAS_IMPORTACAO = {
     { chave: 'nome', rotulo: 'Nome', obrigatorio: true },
     { chave: 'idade', rotulo: 'Idade' },
     { chave: 'diagnostico', rotulo: 'Diagnostico' },
-    { chave: 'hipotese', rotulo: 'Hipoteses' },
+    { chave: 'hipotese', rotulo: 'Hipotese' },
     { chave: 'perfis', rotulo: 'Perfis' },
     { chave: 'observacoes', rotulo: 'Observacoes' },
   ],
@@ -21018,6 +21018,13 @@ async function confirmarImportacaoPlanilha() {
       toast(`${payloads.length} aluno(s) importado(s) com sucesso!`, 'success');
       carregarAlunosGestao();
     } else {
+      const { count } = await db.from('perfis_clinicos').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+      const limitePacientes = limitesAtuais().pacientes;
+      if (limitePacientes !== Infinity && (count||0) + linhas.length > limitePacientes) {
+        toast(`Limite de ${limitePacientes} pacientes contratados seria ultrapassado (${count||0} já cadastrados + ${linhas.length} na planilha). Fale com o suporte para contratar mais.`, 'error');
+        btn.disabled = false; btn.textContent = 'Importar';
+        return;
+      }
       const payloads = linhas.map(l => ({
         user_id: user.id, organizacao_id: window._organizacaoId || null,
         nome: l.nome, idade: l.idade || null, diagnostico: l.diagnostico || null, hipotese: l.hipotese || null,
