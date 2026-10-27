@@ -23302,13 +23302,43 @@ async function carregarObjetivos() {
     { key:'academico',     label:'📚 Acadêmico',       ph:'Ex: Reconhecer números de 1 a 10; copiar palavra com apoio…' },
   ];
   window._objAbaAtual = { perfilId: id, nome: sel.selectedOptions[0]?.text || '', areas, obj };
+  const tiposMedida = obj.tipos_medida || {};
+  const criteriosDominio = obj.criterios_dominio || {};
+  const OPCOES_TIPO_MEDIDA = [
+    { v: 'percentual', label: '% de acerto' },
+    { v: 'frequencia', label: 'Frequência/taxa' },
+    { v: 'duracao', label: 'Duração' },
+    { v: 'latencia', label: 'Latência' },
+    { v: 'sondagem', label: 'Sondagem (não diária)' },
+  ];
   body.innerHTML = `
     <div style="margin-bottom:14px">
-      ${areas.map(a => `
+      ${areas.map(a => {
+        const tipoAtual = tiposMedida[a.key] || 'percentual';
+        const crit = criteriosDominio[a.key] || {};
+        return `
         <div class="obj-area">
           <div class="obj-area-label">${a.label}</div>
           <textarea id="obj-${a.key}" placeholder="${a.ph}">${obj[a.key]||''}</textarea>
-        </div>`).join('')}
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;background:var(--gr50);border-radius:8px">
+            <div>
+              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Tipo de medida</label>
+              <select id="obj-${a.key}-tipo" class="fselect" style="font-size:12.5px;padding:4px 8px">
+                ${OPCOES_TIPO_MEDIDA.map(o => `<option value="${o.v}" ${o.v===tipoAtual?'selected':''}>${o.label}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Critério de domínio (opcional)</label>
+              <div style="display:flex;align-items:center;gap:4px;font-size:12.5px">
+                <input type="number" id="obj-${a.key}-crit-pct" min="0" max="100" value="${crit.percentual ?? ''}" placeholder="%" style="width:55px;padding:4px 6px;border:1px solid var(--gr200);border-radius:6px">
+                <span>% por</span>
+                <input type="number" id="obj-${a.key}-crit-dias" min="1" value="${crit.dias ?? ''}" placeholder="dias" style="width:55px;padding:4px 6px;border:1px solid var(--gr200);border-radius:6px">
+                <span>dias seguidos</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-sm" onclick="salvarObjetivos('${id}')">Salvar objetivos</button>
@@ -23410,6 +23440,16 @@ async function salvarObjetivos(perfilId) {
   const areas = ['cognitivo','comunicacao','social','comportamental','academico'];
   const payload = { perfil_id: perfilId, user_id: user.id };
   areas.forEach(a => { payload[a] = document.getElementById(`obj-${a}`)?.value.trim() || null; });
+  const tiposMedida = {};
+  const criteriosDominio = {};
+  areas.forEach(a => {
+    tiposMedida[a] = document.getElementById(`obj-${a}-tipo`)?.value || 'percentual';
+    const pct = document.getElementById(`obj-${a}-crit-pct`)?.value;
+    const dias = document.getElementById(`obj-${a}-crit-dias`)?.value;
+    if (pct && dias) criteriosDominio[a] = { percentual: parseInt(pct, 10), dias: parseInt(dias, 10) };
+  });
+  payload.tipos_medida = tiposMedida;
+  payload.criterios_dominio = criteriosDominio;
   const { data: existing } = await db.from('objetivos_terapeuticos').select('id').eq('perfil_id', perfilId).maybeSingle();
   let error;
   if (existing) {
@@ -25363,6 +25403,44 @@ function analisarProgressaoPraticaGuiada(regs) {
   return { nivel: 'manter', cor: '#92400E', fundo: '#FEF3C7', titulo: 'Sugestão: manter o nível atual', motivo: `Resultados mistos nos últimos registros de Prática Guiada (${Math.round(media*100)}% de acerto médio) — ainda sem padrão claro de domínio.` };
 }
 
+// Verifica, pra cada área com critério de domínio definido, se os últimos N dias
+// com registro (consecutivos NA SEQUÊNCIA DE REGISTROS, não no calendário) atingem o percentual exigido.
+// Mecânica genérica — os valores de percentual/dias vêm do que o profissional configurou
+// em Objetivos Terapêuticos, não é específico de nenhum método (ex: Greer) ainda.
+function verificarCriteriosDominio(obj, regs, areas, labels) {
+  const VALOR = { ok: 100, parcial: 50, nao: 0 };
+  const criterios = obj?.criterios_dominio || {};
+  const ordenados = [...(regs||[])].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  const porData = new Map();
+  ordenados.forEach(r => {
+    const chave = new Date(r.created_at).toLocaleDateString('pt-BR');
+    if (!porData.has(chave)) porData.set(chave, {});
+    const grupo = porData.get(chave);
+    Object.entries(r.resultados||{}).forEach(([area, val]) => {
+      if (!grupo[area]) grupo[area] = [];
+      grupo[area].push(VALOR[val]);
+    });
+  });
+  const diasOrdenados = [...porData.keys()];
+  const resultado = [];
+  areas.forEach(area => {
+    const crit = criterios[area];
+    if (!crit || !crit.percentual || !crit.dias) return;
+    const mediasDoArea = diasOrdenados
+      .map(dia => {
+        const vals = porData.get(dia)[area];
+        if (!vals || !vals.length) return null;
+        return vals.reduce((s,v) => s+v, 0) / vals.length;
+      })
+      .filter(v => v !== null);
+    if (mediasDoArea.length < crit.dias) return;
+    const ultimosN = mediasDoArea.slice(-crit.dias);
+    const atingido = ultimosN.every(m => m >= crit.percentual);
+    resultado.push({ area, label: labels[area], atingido, crit, mediasRecentes: ultimosN });
+  });
+  return resultado;
+}
+
 async function carregarMonitoramento() {
   const id   = document.getElementById('mon-aluno-sel')?.value;
   const body = document.getElementById('mon-body');
@@ -25373,7 +25451,14 @@ async function carregarMonitoramento() {
   const areas = ['cognitivo','comunicacao','social','comportamental','academico'];
   const labels = { cognitivo:'🧠 Cognitivo', comunicacao:'🗣️ Comunicação', social:'👥 Social', comportamental:'💢 Comportamental', academico:'📚 Acadêmico' };
   const sugestaoProgressao = analisarProgressaoPraticaGuiada(regs);
+  const criteriosAtingidos = verificarCriteriosDominio(obj, regs, areas, labels).filter(c => c.atingido);
   body.innerHTML = `
+    ${criteriosAtingidos.map(c => `
+    <div class="clinic-card" style="margin-bottom:16px;background:#D1FAE5;border-color:#065F46">
+      <div class="clinic-card-title" style="color:#065F46">🎯 Critério de domínio atingido — ${escapeHtml(c.label.replace(/^\S+\s/,''))}</div>
+      <p style="font-size:13px;color:#065F46;margin:4px 0 0">${c.crit.dias} dias seguidos com média ≥ ${c.crit.percentual}% (médias recentes: ${c.mediasRecentes.map(m=>Math.round(m)+'%').join(', ')}).</p>
+      <p style="font-size:11.5px;color:#065F46;opacity:.8;margin:6px 0 0">Critério definido em Objetivos Terapêuticos — a decisão de avançar é sempre do profissional.</p>
+    </div>`).join('')}
     ${sugestaoProgressao ? `
     <div class="clinic-card" style="margin-bottom:16px;background:${sugestaoProgressao.fundo};border-color:${sugestaoProgressao.cor}">
       <div class="clinic-card-title" style="color:${sugestaoProgressao.cor}">${escapeHtml(sugestaoProgressao.titulo)}</div>
