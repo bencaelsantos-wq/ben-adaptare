@@ -3341,6 +3341,10 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <div class="modal-title" id="mcc-titulo">Novo Perfil Clínico</div>
         <button class="modal-close" onclick="fecharModal('modal-cad-clinica')">×</button>
       </div>
+      <div id="mcc-completude" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12.5px">
+        <span id="mcc-completude-texto"></span>
+        <span onclick="recalcularCompletudeAoVivoClinica()" style="margin-left:8px;text-decoration:underline;cursor:pointer;font-weight:600">atualizar</span>
+      </div>
       <div style="margin-top:16px">
         <div class="fblock" style="margin-bottom:14px;padding:12px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:10px">
           <label class="flabel" style="margin-bottom:6px">Preencher automaticamente a partir dos documentos (opcional)</label>
@@ -4247,7 +4251,7 @@ async function lerPerfilDobanco() {
     }
 
     if (data?.organizacao_id) {
-      const { data: org, error: errOrgRead } = await db.from('organizacoes').select(`plano, ativo, motivo_pausa, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, modelo_ciclo_trabalho, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
+      const { data: org, error: errOrgRead } = await db.from('organizacoes').select(`plano, ativo, motivo_pausa, extra_professores, extra_alunos, extra_ia_pacotes, nome, logo_url, modelo_ciclo_trabalho, ocultar_identificacao_pdf, ${CAMPOS_ADDON_SELECT}, ${CAMPOS_QTD_SELECT}`).eq('id', data.organizacao_id).maybeSingle();
       if (errOrgRead) {
         console.error('Falha ao ler dados da organização (add-ons podem não liberar corretamente):', errOrgRead.message);
         toast('Erro ao carregar dados da organização — alguns recursos podem aparecer bloqueados indevidamente. Avise o suporte: ' + errOrgRead.message, 'error');
@@ -4275,6 +4279,7 @@ async function lerPerfilDobanco() {
       window._nomeInstituicao = org?.nome || '';
       window._logoEscolaUrl = org?.logo_url || null;
       window._modeloCicloTrabalho = org?.modelo_ciclo_trabalho || 'padrao';
+      window._ocultarIdentificacaoPDF = !!org?.ocultar_identificacao_pdf;
     } else {
       window._planoAtivo = data?.plano || 'acolhe';
       window._addons = {};
@@ -13319,6 +13324,10 @@ function renderPagesGestao() {
           <option value="padrao">Ciclo de Trabalho: Padrão</option>
           <option value="montessoriano_em">Ciclo de Trabalho: Montessoriano EM</option>
         </select>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--gr700)" title="Quando marcado, os documentos em PDF gerados pela plataforma mostram só o primeiro nome + inicial do sobrenome do aluno, em vez do nome completo.">
+          <input type="checkbox" id="chk-ocultar-identificacao" style="width:15px;height:15px;accent-color:var(--p-blue);cursor:pointer" onchange="salvarOcultarIdentificacaoPDF(this.checked)">
+          🔒 Ocultar sobrenome nos PDFs
+        </label>
         <input type="text" id="inp-nome-instituicao" class="finput" placeholder="Nome da escola" style="width:200px" onchange="salvarNomeInstituicao(this.value)">
         <div id="logo-preview" style="width:96px;height:44px;border:1.5px dashed var(--gr200);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-shrink:0;position:relative;cursor:pointer" title="Clique para enviar logo da escola">
           <span id="logo-placeholder" style="font-size:10px;color:var(--gr400);text-align:center;line-height:1.3">Logo<br>escola</span>
@@ -19294,6 +19303,7 @@ function downloadPEIdireto() {
 
 function gerarPDFDocumento(opts) {
   try {
+    opts.aluno = nomeParaExibicaoPDF(opts.aluno);
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const W = 210, H = 297;
@@ -20616,6 +20626,16 @@ function aplicarFontePersonalizada(doc, fonteTipo) {
   };
 }
 
+// Quando a organização ativa a opção de ocultar identificação (configuração de privacidade),
+// troca o nome completo por primeiro nome + inicial do sobrenome (ex: "Pedro Martins" -> "Pedro M.") —
+// mantém o suficiente pra diferenciar a maioria dos irmãos, sem expor o sobrenome completo no documento impresso.
+function nomeParaExibicaoPDF(nomeCompleto) {
+  if (!nomeCompleto) return nomeCompleto;
+  if (!window._ocultarIdentificacaoPDF) return nomeCompleto;
+  const partes = nomeCompleto.trim().split(/\s+/);
+  if (partes.length < 2) return partes[0] || nomeCompleto;
+  return partes[0] + ' ' + partes[partes.length - 1][0].toUpperCase() + '.';
+}
 function sanitizarTexto(txt) {
   if (!txt) return '';
     return txt
@@ -22439,6 +22459,16 @@ function carregarLogoEscola() {
   if (inpNome) inpNome.value = window._nomeInstituicao || '';
   const selModeloCiclo = document.getElementById('sel-modelo-ciclo');
   if (selModeloCiclo) selModeloCiclo.value = window._modeloCicloTrabalho || 'padrao';
+  const chkOcultar = document.getElementById('chk-ocultar-identificacao');
+  if (chkOcultar) chkOcultar.checked = !!window._ocultarIdentificacaoPDF;
+}
+
+async function salvarOcultarIdentificacaoPDF(valor) {
+  if (!window._organizacaoId) return toast('Sua conta ainda não está vinculada a uma organização — fale com o suporte.', 'error');
+  const { error } = await db.from('organizacoes').update({ ocultar_identificacao_pdf: valor }).eq('id', window._organizacaoId);
+  if (error) return toast('Erro ao salvar: ' + error.message, 'error');
+  window._ocultarIdentificacaoPDF = valor;
+  toast(valor ? 'PDFs agora vão ocultar o sobrenome do aluno.' : 'PDFs voltam a mostrar o nome completo.', 'success');
 }
 
 function aplicarModeloCicloUI() {
@@ -22865,6 +22895,58 @@ ${itens.map(i => '- ' + i).join('\n')}`;
   }
 }
 
+// ── COMPLETUDE DO PERFIL CLÍNICO ──────────────────────────────
+// Não exige laudo fechado (a ata da BC foi clara: há crianças ainda em investigação) —
+// mede só se os campos de hipótese/funcionamento foram preenchidos, fechados ou não.
+const CAMPOS_COMPLETUDE_PERFIL_CLINICO = [
+  { campo: 'diagnostico', label: 'Diagnóstico/hipótese', ok: p => !!(p.diagnostico || p.hipotese) },
+  { campo: 'perfis', label: 'Perfil(s) estruturado(s)', ok: p => !!(p.perfis && p.perfis.length) },
+  { campo: 'comunicacao', label: 'Comunicação', ok: p => !!p.comunicacao },
+  { campo: 'regulacao', label: 'Regulação emocional', ok: p => !!p.regulacao },
+  { campo: 'sensorio', label: 'Perfil sensorial', ok: p => !!p.sensorio },
+  { campo: 'motricidade', label: 'Motricidade', ok: p => !!p.motricidade },
+  { campo: 'preservadas', label: 'Funções preservadas', ok: p => !!p.preservadas },
+  { campo: 'comprometidas', label: 'Funções comprometidas', ok: p => !!p.comprometidas },
+  { campo: 'comportamento', label: 'Comportamento', ok: p => !!p.comportamento },
+  { campo: 'diretrizes_adaptacao', label: 'Diretrizes de Adaptação', ok: p => !!p.diretrizes_adaptacao },
+  { campo: 'bncc_codigos', label: 'Habilidades BNCC', ok: p => !!(p.bncc_codigos && p.bncc_codigos.length) },
+];
+function calcularCompletudePerfilClinico(p) {
+  const faltando = CAMPOS_COMPLETUDE_PERFIL_CLINICO.filter(c => !c.ok(p));
+  const preenchidos = CAMPOS_COMPLETUDE_PERFIL_CLINICO.length - faltando.length;
+  const percentual = Math.round((preenchidos / CAMPOS_COMPLETUDE_PERFIL_CLINICO.length) * 100);
+  return { percentual, faltando: faltando.map(c => c.label) };
+}
+function atualizarCompletudeModalClinica(p) {
+  const el = document.getElementById('mcc-completude');
+  const texto = document.getElementById('mcc-completude-texto');
+  if (!el || !texto) return;
+  const { percentual, faltando } = calcularCompletudePerfilClinico(p);
+  const cor = percentual >= 80 ? '#16A34A' : percentual >= 40 ? '#D97706' : '#DC2626';
+  el.style.display = 'block';
+  el.style.background = cor + '1A';
+  el.style.color = cor;
+  texto.innerHTML = `<strong>${percentual}% completo</strong>${faltando.length ? ' — falta: ' + escapeHtml(faltando.join(', ')) : ' — perfil completo!'}`;
+}
+// Lê o estado atual dos campos do formulário (sem precisar salvar) pra recalcular a completude ao vivo.
+function recalcularCompletudeAoVivoClinica() {
+  const p = {
+    diagnostico: document.getElementById('cc-diag')?.value.trim(),
+    hipotese: document.getElementById('cc-hipotese')?.value.trim(),
+    perfis: getChips('chips-cc'),
+    comunicacao: document.getElementById('cc-comunicacao')?.value,
+    regulacao: document.getElementById('cc-regulacao')?.value,
+    sensorio: document.getElementById('cc-sensorio')?.value,
+    motricidade: document.getElementById('cc-motricidade')?.value,
+    preservadas: document.getElementById('cc-preservadas')?.value.trim(),
+    comprometidas: document.getElementById('cc-comprometidas')?.value.trim(),
+    comportamento: document.getElementById('cc-comportamento')?.value.trim(),
+    diretrizes_adaptacao: document.getElementById('cc-diretrizes')?.value.trim(),
+    bncc_codigos: window._ccBnccCodigos || [],
+  };
+  atualizarCompletudeModalClinica(p);
+}
+
 function renderPerfisClinicaGrid() {
   const grid = document.getElementById('clinica-perfis-grid');
   if (!grid) return;
@@ -22872,16 +22954,21 @@ function renderPerfisClinicaGrid() {
     grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🧠</div><div class="empty-text">Nenhum perfil cadastrado. Clique em "Novo perfil" para começar.</div></div>';
     return;
   }
-  grid.innerHTML = perfisClinicaList.map(p => `
+  grid.innerHTML = perfisClinicaList.map(p => {
+    const completude = calcularCompletudePerfilClinico(p);
+    const corCompletude = completude.percentual >= 80 ? '#16A34A' : completude.percentual >= 40 ? '#D97706' : '#DC2626';
+    return `
     <div class="clinic-card" style="cursor:pointer" onclick='abrirPerfilClinico(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
       <div class="clinic-card-title">🧠 ${escapeHtml(p.nome)} <span style="font-size:11px;font-weight:400;color:var(--gr400)">${escapeHtml(p.idade)}</span></div>
+      <div title="${escapeHtml(completude.faltando.length ? 'Falta: ' + completude.faltando.join(', ') : 'Perfil completo')}" style="display:inline-block;margin-bottom:6px;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:600;background:${corCompletude}1A;color:${corCompletude}">${completude.percentual}% completo</div>
       <div style="font-size:12.5px;color:var(--clinic);font-weight:500;margin-bottom:6px">${escapeHtml(p.diagnostico) || 'Sem diagnóstico registrado'}</div>
       <div style="font-size:12px;color:var(--gr400);line-height:1.5">
         🗣️ ${escapeHtml(p.comunicacao) || '—'} &nbsp;|&nbsp; 🌀 ${escapeHtml(p.sensorio) || '—'} &nbsp;|&nbsp; 💢 ${escapeHtml(p.regulacao) || '—'}
       </div>
       ${p.preservadas ? `<div style="margin-top:8px;font-size:12px;color:var(--gr600)">✅ <strong>Preservadas:</strong> ${escapeHtml(p.preservadas.slice(0,80))}${p.preservadas.length>80?'…':''}</div>` : ''}
       <button class="btn-sm" style="margin-top:10px" onclick='event.stopPropagation();abrirPerfilClinicoView(${JSON.stringify(p).replace(/'/g,"&#39;")})'>👁️ Ver perfil</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function extrairTextoArquivoGenerico(file, status) {
@@ -23053,6 +23140,7 @@ async function abrirModalCadClinica(p) {
   await popularDropdownProfissionaisCad();
   renderProfissionaisTagsCad();
   lgpdResetarModal('clinica','btn-salvar-clinica');
+  atualizarCompletudeModalClinica(p || {});
   abrirModal('modal-cad-clinica');
 }
 
