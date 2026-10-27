@@ -21080,9 +21080,12 @@ function adicionarBnccCC() {
   const tagProf = document.getElementById('cad-professores-tags');
   if (selProf) selProf.value = '';
   if (tagProf) tagProf.innerHTML = '';
+  // Mostra o estado "zerado" antes do await — se for edição, editarAluno() reescreve
+  // isso logo em seguida com os dados reais; sem isso, a reescrita real podia
+  // perder a corrida pro reset daqui (que só roda depois da consulta ao banco abaixo).
+  atualizarCompletudeModalAluno({});
   await popularDropdownProfessoresCad();
   lgpdResetarModal('aluno','btn-salvar-aluno');
-  atualizarCompletudeModalAluno({});
   abrirModal('modal-cad');
 }
 
