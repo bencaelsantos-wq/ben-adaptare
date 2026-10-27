@@ -3499,6 +3499,41 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   </div>
 </div>
 
+<!-- ══ MODAL: Importar Planilha (alunos/perfis clínicos) ══ -->
+<div class="overlay" id="modal-import-planilha">
+  <div class="modal lg">
+    <div class="modal-header">
+      <div class="modal-title" id="imp-titulo">Importar Planilha</div>
+      <button class="modal-close" onclick="fecharModal('modal-import-planilha')">×</button>
+    </div>
+    <div style="margin-top:16px">
+      <div class="fblock" style="padding:12px;background:#F0F4FF;border:1.5px solid #C7D7FA;border-radius:10px;margin-bottom:14px">
+        <div style="font-size:13px;color:#1E3A8A;margin-bottom:8px">Use um arquivo <strong>CSV</strong> (planilha exportada do Excel/Google Sheets como "Valores separados por vírgula"). Baixe o modelo pra ter certeza do formato das colunas — na coluna "Perfis", separe múltiplos diagnósticos com ponto e vírgula (ex: TEA;TDAH).</div>
+        <button type="button" class="btn-copy" onclick="baixarModeloCSVImportacao()">⬇️ Baixar modelo CSV</button>
+      </div>
+      <div class="fblock">
+        <label class="flabel" for="imp-arquivo">Arquivo CSV</label>
+        <input type="file" id="imp-arquivo" accept=".csv,text/csv" onchange="processarArquivoImportacaoPlanilha(this)">
+      </div>
+      <div id="imp-status" style="display:none;margin:8px 0;padding:8px 10px;border-radius:8px;font-size:12.5px"></div>
+      <div id="imp-preview-wrap" style="display:none;margin-top:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--gr700);margin-bottom:8px">Pré-visualização — confira antes de importar</div>
+        <div style="max-height:260px;overflow:auto;border:1px solid var(--gr200);border-radius:8px">
+          <table style="width:100%;border-collapse:collapse;font-size:12px" id="imp-preview-tabela"></table>
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;cursor:pointer;font-size:12.5px;color:var(--gr700)">
+          <input type="checkbox" id="imp-lgpd-confirma" style="margin-top:2px;width:15px;height:15px;accent-color:var(--p-blue);cursor:pointer" onchange="document.getElementById('btn-confirmar-importacao').disabled = !this.checked">
+          <span>Declaro possuir autorização dos responsáveis legais pra registrar e tratar os dados de <strong>todos</strong> os registros desta planilha, conforme a LGPD (Lei nº 13.709/2018).</span>
+        </label>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn-sm" id="btn-confirmar-importacao" onclick="confirmarImportacaoPlanilha()" disabled>Importar</button>
+          <button class="btn-sm-ghost" onclick="fecharModal('modal-import-planilha')">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL: Relatório Cruzado ══ -->
 <div class="overlay" id="modal-rel" onclick="fecharModal('modal-rel',event)">
   <div class="modal lg">
@@ -13422,7 +13457,10 @@ function renderPagesGestao() {
   <div id="page-gestao-alunos" class="page">
     <div class="section-header">
       <div><h1 class="page-title">Alunos</h1><p class="page-sub" style="margin-bottom:0">Cadastre e gerencie todos os alunos da escola.</p></div>
-      <button class="btn-sm" onclick="abrirModalCad()">+ Cadastrar aluno</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm-ghost" onclick="abrirModalImportarPlanilha('alunos')">📥 Importar planilha</button>
+        <button class="btn-sm" onclick="abrirModalCad()">+ Cadastrar aluno</button>
+      </div>
     </div>
     <div class="cards-grid-3" id="gestao-alunos-lista"></div>
   </div>
@@ -14370,7 +14408,10 @@ function renderPagesClinica() {
     <div class="clinic-hero"><h2> Módulo Clínico — Perfil Funcional</h2><p>Construa o perfil funcional do aluno. Essas informações alimentam o plano de intervenção integrado e os relatórios para escola e AT.</p></div>
     <div class="section-header">
       <div><h1 class="page-title">Perfis Clínicos</h1><p class="page-sub" style="margin-bottom:0">Cadastre um perfil por aluno acompanhado.</p></div>
-      <button class="btn-sm" onclick="abrirModalCadClinica()">+ Novo perfil</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm-ghost" onclick="abrirModalImportarPlanilha('perfis_clinicos')">📥 Importar planilha</button>
+        <button class="btn-sm" onclick="abrirModalCadClinica()">+ Novo perfil</button>
+      </div>
     </div>
     <div class="cards-grid" id="clinica-perfis-grid"><div class="empty"><div class="empty-icon"></div><div class="empty-text">Nenhum perfil cadastrado. Clique em "Novo perfil" para começar.</div></div></div>
   </div>
@@ -20815,6 +20856,183 @@ function recalcularCompletudeAoVivoAluno() {
     mae_nome: document.getElementById('cad-mae')?.value.trim(),
   };
   atualizarCompletudeModalAluno(a);
+}
+
+// ── IMPORTAÇÃO DE PRÉ-CADASTRO POR PLANILHA (CSV) ─────────────
+const COLUNAS_IMPORTACAO = {
+  alunos: [
+    { chave: 'nome', rotulo: 'Nome', obrigatorio: true },
+    { chave: 'idade', rotulo: 'Idade' },
+    { chave: 'serie', rotulo: 'Serie' },
+    { chave: 'metodo', rotulo: 'Metodo' },
+    { chave: 'perfis', rotulo: 'Perfis' },
+    { chave: 'observacoes', rotulo: 'Observacoes' },
+    { chave: 'responsavel', rotulo: 'Responsavel' },
+  ],
+  perfis_clinicos: [
+    { chave: 'nome', rotulo: 'Nome', obrigatorio: true },
+    { chave: 'idade', rotulo: 'Idade' },
+    { chave: 'diagnostico', rotulo: 'Diagnostico' },
+    { chave: 'hipotese', rotulo: 'Hipoteses' },
+    { chave: 'perfis', rotulo: 'Perfis' },
+    { chave: 'observacoes', rotulo: 'Observacoes' },
+  ],
+};
+
+function abrirModalImportarPlanilha(contexto) {
+  window._importContexto = contexto;
+  window._importLinhas = null;
+  document.getElementById('imp-titulo').textContent = contexto === 'alunos' ? 'Importar Planilha de Alunos' : 'Importar Planilha de Perfis Clínicos';
+  const inp = document.getElementById('imp-arquivo');
+  if (inp) inp.value = '';
+  const status = document.getElementById('imp-status');
+  if (status) status.style.display = 'none';
+  document.getElementById('imp-preview-wrap').style.display = 'none';
+  const lgpd = document.getElementById('imp-lgpd-confirma');
+  if (lgpd) lgpd.checked = false;
+  document.getElementById('btn-confirmar-importacao').disabled = true;
+  abrirModal('modal-import-planilha');
+}
+
+function baixarModeloCSVImportacao() {
+  const cols = COLUNAS_IMPORTACAO[window._importContexto || 'alunos'];
+  const cabecalho = cols.map(c => c.rotulo).join(',');
+  const exemplo = window._importContexto === 'perfis_clinicos'
+    ? 'Ex: João Silva,8,TEA nível 2,,TEA;TDAH,Observação de exemplo'
+    : 'Ex: João Silva,8,3º ano,Montessori,TEA;TDAH,Observação de exemplo,Maria Silva';
+  const csv = cabecalho + '\n' + exemplo;
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'modelo_importacao_' + (window._importContexto || 'alunos') + '.csv';
+  a.click();
+}
+
+// Parser simples de CSV — lida com campos entre aspas contendo vírgula.
+function parseCSVSimples(texto) {
+  const linhas = texto.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim() !== '');
+  if (!linhas.length) return [];
+  function parseLinha(linha) {
+    const campos = [];
+    let atual = '', dentroAspas = false;
+    for (let i = 0; i < linha.length; i++) {
+      const ch = linha[i];
+      if (ch === '"') {
+        if (dentroAspas && linha[i+1] === '"') { atual += '"'; i++; }
+        else dentroAspas = !dentroAspas;
+      } else if (ch === ',' && !dentroAspas) {
+        campos.push(atual); atual = '';
+      } else {
+        atual += ch;
+      }
+    }
+    campos.push(atual);
+    return campos.map(c => c.trim());
+  }
+  const cabecalho = parseLinha(linhas[0]).map(h => h.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim());
+  return linhas.slice(1).map(linha => {
+    const valores = parseLinha(linha);
+    const obj = {};
+    cabecalho.forEach((h, i) => { obj[h] = (valores[i] || '').trim(); });
+    return obj;
+  });
+}
+
+// Casa o texto livre de perfis da planilha (ex: "TEA;TDAH" ou "TEA, TDAH") contra a lista oficial PERFIS.
+function casarPerfisTexto(textoPerfis) {
+  if (!textoPerfis) return [];
+  const tokens = textoPerfis.split(/[;,]/).map(t => t.trim().toLowerCase()).filter(Boolean);
+  const encontrados = [];
+  tokens.forEach(tok => {
+    const match = PERFIS.find(p => p.toLowerCase().includes(tok) || tok.includes(p.split('—')[0].trim().toLowerCase()));
+    if (match && !encontrados.includes(match)) encontrados.push(match);
+  });
+  return encontrados;
+}
+
+function processarArquivoImportacaoPlanilha(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('imp-status');
+  status.style.display = 'block';
+  status.style.background = '#EEF2FF';
+  status.style.color = '#2563EB';
+  status.textContent = 'Lendo arquivo…';
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const linhas = parseCSVSimples(reader.result);
+      const cols = COLUNAS_IMPORTACAO[window._importContexto];
+      const colObrigatoria = cols.find(c => c.obrigatorio);
+      const chaveNome = colObrigatoria.chave;
+      const semNome = linhas.filter(l => !l[chaveNome]);
+      const linhasValidas = linhas.filter(l => l[chaveNome]);
+      if (!linhasValidas.length) {
+        status.style.background = '#FEF2F2'; status.style.color = '#991B1B';
+        status.textContent = 'Nenhuma linha válida encontrada — confira se a coluna "Nome" está preenchida e se o arquivo é CSV.';
+        document.getElementById('imp-preview-wrap').style.display = 'none';
+        return;
+      }
+      window._importLinhas = linhasValidas;
+      status.style.background = '#F0FDF4'; status.style.color = '#166534';
+      status.textContent = `${linhasValidas.length} linha(s) pronta(s) pra importar.${semNome.length ? ' ' + semNome.length + ' linha(s) ignorada(s) por não ter nome.' : ''}`;
+      const tabela = document.getElementById('imp-preview-tabela');
+      tabela.innerHTML = `<tr style="background:var(--gr50)">${cols.map(c => `<th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--gr200)">${escapeHtml(c.rotulo)}</th>`).join('')}</tr>` +
+        linhasValidas.map(l => `<tr>${cols.map(c => `<td style="padding:6px 8px;border-bottom:1px solid var(--gr100)">${escapeHtml(l[c.chave.toLowerCase()] || '')}</td>`).join('')}</tr>`).join('');
+      document.getElementById('imp-preview-wrap').style.display = 'block';
+    } catch(e) {
+      status.style.background = '#FEF2F2'; status.style.color = '#991B1B';
+      status.textContent = 'Erro ao ler o arquivo: ' + (e.message || 'verifique se é um CSV válido.');
+      console.error(e);
+    }
+  };
+  reader.onerror = () => { status.style.background = '#FEF2F2'; status.style.color = '#991B1B'; status.textContent = 'Erro ao ler o arquivo.'; };
+  reader.readAsText(file, 'UTF-8');
+}
+
+async function confirmarImportacaoPlanilha() {
+  const linhas = window._importLinhas;
+  const contexto = window._importContexto;
+  if (!linhas || !linhas.length) return toast('Nenhuma linha pra importar.', 'error');
+  if (!document.getElementById('imp-lgpd-confirma')?.checked) return toast('Confirme a autorização LGPD antes de importar.', 'error');
+  const btn = document.getElementById('btn-confirmar-importacao');
+  btn.disabled = true; btn.textContent = 'Importando…';
+
+  try {
+    if (contexto === 'alunos') {
+      const { count } = await db.from('alunos').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+      const limite = limitesAtuais().alunos;
+      if (limite !== Infinity && (count||0) + linhas.length > limite) {
+        toast(`Limite de ${limite} alunos contratados seria ultrapassado (${count||0} já cadastrados + ${linhas.length} na planilha). Fale com o suporte para contratar mais.`, 'error');
+        btn.disabled = false; btn.textContent = 'Importar';
+        return;
+      }
+      const payloads = linhas.map(l => ({
+        user_id: user.id, organizacao_id: window._organizacaoId || null,
+        nome: l.nome, idade: l.idade || null, serie: l.serie || null, metodo: l.metodo || null,
+        perfis: casarPerfisTexto(l.perfis), observacoes: l.observacoes || null,
+        pai_nome: l.responsavel || null,
+      }));
+      const { error } = await db.from('alunos').insert(payloads);
+      if (error) throw error;
+      toast(`${payloads.length} aluno(s) importado(s) com sucesso!`, 'success');
+      carregarAlunosGestao();
+    } else {
+      const payloads = linhas.map(l => ({
+        user_id: user.id, organizacao_id: window._organizacaoId || null,
+        nome: l.nome, idade: l.idade || null, diagnostico: l.diagnostico || null, hipotese: l.hipotese || null,
+        perfis: casarPerfisTexto(l.perfis), comportamento: l.observacoes || null,
+      }));
+      const { error } = await db.from('perfis_clinicos').insert(payloads);
+      if (error) throw error;
+      toast(`${payloads.length} perfil(is) importado(s) com sucesso!`, 'success');
+      carregarAlunosClinica();
+    }
+    fecharModal('modal-import-planilha');
+  } catch(e) {
+    toast('Erro ao importar: ' + (e.message || 'tente novamente.'), 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Importar';
 }
 
 function toggleChipMulti(el) {
