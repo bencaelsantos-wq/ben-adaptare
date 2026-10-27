@@ -2954,6 +2954,10 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       <div class="modal-title">Cadastrar aluno</div>
       <button class="modal-close" onclick="fecharModal('modal-cad')">×</button>
     </div>
+    <div id="mcad-completude" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12.5px">
+      <span id="mcad-completude-texto"></span>
+      <span onclick="recalcularCompletudeAoVivoAluno()" style="margin-left:8px;text-decoration:underline;cursor:pointer;font-weight:600">atualizar</span>
+    </div>
     <div style="margin-top:14px">
 
       <!-- ── Seção: Identificação ── -->
@@ -9035,6 +9039,7 @@ function editarAluno(a) {
     if (atSelEdit && a.at_id) atSelEdit.value = a.at_id;
     const titulo = document.querySelector('#modal-cad h2');
     if (titulo) titulo.textContent = 'Editar Aluno';
+    atualizarCompletudeModalAluno(a);
   }, 50);
 }
 
@@ -20755,6 +20760,9 @@ function renderAlunosLista() {
     const avatar = renderAvatarAluno(a.nome, a.perfis);
     const peiPct = a.pei_progresso || 0;
     const barHtml = peiPct > 0 ? `<div class="pei-bar-wrap"><div class="pei-bar-label"><span>PEI</span><span>${peiPct}%</span></div><div class="pei-bar"><div class="pei-bar-fill" style="width:${peiPct}%"></div></div></div>` : '';
+    const completudeAluno = calcularCompletudeAluno(a);
+    const corCompletudeAluno = completudeAluno.percentual >= 80 ? '#16A34A' : completudeAluno.percentual >= 40 ? '#D97706' : '#DC2626';
+    const completudeHtml = `<div title="${escapeHtml(completudeAluno.faltando.length ? 'Falta: ' + completudeAluno.faltando.join(', ') : 'Cadastro completo')}" style="display:inline-block;margin:4px 0;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:600;background:${corCompletudeAluno}1A;color:${corCompletudeAluno}">${completudeAluno.percentual}% completo</div>`;
     return `<div class="item-card" style="cursor:pointer" onclick='abrirPerfilAluno(${JSON.stringify(a).replace(/'/g,"&#39;")})'>
       <div class="ic-header">
         ${avatar}
@@ -20763,10 +20771,50 @@ function renderAlunosLista() {
           <div class="ic-meta">${escapeHtml(meta)}</div>
         </div>
       </div>
+      ${completudeHtml}
       <div class="ic-tags">${tags}</div>
       ${barHtml}
     </div>`;
   }).join('');
+}
+
+// ── COMPLETUDE DO CADASTRO DE ALUNO (lado escolar) ────────────
+const CAMPOS_COMPLETUDE_ALUNO = [
+  { label: 'Série/Ano', ok: a => !!a.serie },
+  { label: 'Método pedagógico', ok: a => !!a.metodo },
+  { label: 'Perfil(s) estruturado(s)', ok: a => !!(a.perfis && a.perfis.length) },
+  { label: 'Observações', ok: a => !!a.observacoes },
+  { label: 'Habilidades BNCC', ok: a => !!(a.bncc_codigos && a.bncc_codigos.length) },
+  { label: 'Responsável (pai/mãe)', ok: a => !!(a.pai_nome || a.mae_nome) },
+];
+function calcularCompletudeAluno(a) {
+  const faltando = CAMPOS_COMPLETUDE_ALUNO.filter(c => !c.ok(a));
+  const preenchidos = CAMPOS_COMPLETUDE_ALUNO.length - faltando.length;
+  const percentual = Math.round((preenchidos / CAMPOS_COMPLETUDE_ALUNO.length) * 100);
+  return { percentual, faltando: faltando.map(c => c.label) };
+}
+function atualizarCompletudeModalAluno(a) {
+  const el = document.getElementById('mcad-completude');
+  const texto = document.getElementById('mcad-completude-texto');
+  if (!el || !texto) return;
+  const { percentual, faltando } = calcularCompletudeAluno(a);
+  const cor = percentual >= 80 ? '#16A34A' : percentual >= 40 ? '#D97706' : '#DC2626';
+  el.style.display = 'block';
+  el.style.background = cor + '1A';
+  el.style.color = cor;
+  texto.innerHTML = `<strong>${percentual}% completo</strong>${faltando.length ? ' — falta: ' + escapeHtml(faltando.join(', ')) : ' — cadastro completo!'}`;
+}
+function recalcularCompletudeAoVivoAluno() {
+  const a = {
+    serie: document.getElementById('cad-serie')?.value,
+    metodo: document.getElementById('cad-metodo')?.value,
+    perfis: getChips('chips-cad'),
+    observacoes: document.getElementById('cad-obs')?.value.trim(),
+    bncc_codigos: window._cadBnccCodigos || [],
+    pai_nome: document.getElementById('cad-pai')?.value.trim(),
+    mae_nome: document.getElementById('cad-mae')?.value.trim(),
+  };
+  atualizarCompletudeModalAluno(a);
 }
 
 function toggleChipMulti(el) {
@@ -21034,6 +21082,7 @@ function adicionarBnccCC() {
   if (tagProf) tagProf.innerHTML = '';
   await popularDropdownProfessoresCad();
   lgpdResetarModal('aluno','btn-salvar-aluno');
+  atualizarCompletudeModalAluno({});
   abrirModal('modal-cad');
 }
 
