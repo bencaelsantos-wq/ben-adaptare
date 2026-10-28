@@ -23480,6 +23480,13 @@ async function salvarPerfilClinico() {
   const nome = document.getElementById('cc-nome').value.trim();
   if (!nome) return toast('Informe o nome do aluno.', 'error');
   if (!lgpdValidar('clinica')) return;
+  if (!perfilClinicaSel) {
+    const { count } = await db.from('perfis_clinicos').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    const limitePacientes = limitesAtuais().pacientes;
+    if (limitePacientes !== Infinity && (count||0) >= limitePacientes) {
+      return toast(`Limite de ${limitePacientes} pacientes contratados atingido. Fale com o suporte para contratar mais.`, 'error');
+    }
+  }
   const payload = {
     nome, user_id: user.id, organizacao_id: window._organizacaoId || null,
     idade:         document.getElementById('cc-idade').value.trim() || null,
