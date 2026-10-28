@@ -19349,7 +19349,19 @@ function downloadPEIdireto() {
 
 function gerarPDFDocumento(opts) {
   try {
+    const nomeOriginalParaArquivo = opts.aluno;
     opts.aluno = nomeParaExibicaoPDF(opts.aluno);
+    // A opção "ocultar identificação" mascara o nome dentro do PDF, mas o NOME DO ARQUIVO
+    // é montado pelo chamador ANTES desta função rodar, usando o nome completo original —
+    // sem isto, o arquivo salvo/baixado continua expondo o sobrenome completo (em pastas
+    // compartilhadas, anexos de e-mail, logs de upload etc.), mesmo com a opção ativada.
+    if (window._ocultarIdentificacaoPDF && nomeOriginalParaArquivo && opts.nomeArquivo) {
+      const trechoOriginal = nomeOriginalParaArquivo.trim().replace(/\s+/g, '_');
+      if (trechoOriginal) {
+        const trechoMascarado = opts.aluno.trim().replace(/\s+/g, '_').replace(/\.$/, '');
+        opts.nomeArquivo = opts.nomeArquivo.split(trechoOriginal).join(trechoMascarado);
+      }
+    }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const W = 210, H = 297;
