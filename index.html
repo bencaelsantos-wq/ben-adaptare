@@ -15450,7 +15450,7 @@ async function selecionarAluno(id) {
   const meta = [a.idade, a.serie].filter(Boolean).join(' · ');
   const tags = (a.perfis || []).map(p => `<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join(' ');
   info.style.display = 'block';
-  info.innerHTML = `<strong>${escapeHtml(a.nome)}</strong> · ${meta}<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${tags}</div>${a.observacoes ? `<div style="margin-top:6px;font-size:12px;color:var(--gr600)">${a.observacoes.slice(0,130)}…</div>` : ''}`;
+  info.innerHTML = `<strong>${escapeHtml(a.nome)}</strong> · ${meta}<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${tags}</div>${a.observacoes ? `<div style="margin-top:6px;font-size:12px;color:var(--gr600)">${escapeHtml(a.observacoes.slice(0,130))}…</div>` : ''}`;
   filtrarAlSel();
 
   const inpAluno = document.getElementById('inp-aluno');
@@ -20787,7 +20787,7 @@ async function carregarAlunosGestao() {
       <div class="ic-nome">${escapeHtml(a.nome)}</div>
       <div class="ic-meta">${meta}</div>
       <div class="ic-tags">${tags}</div>
-      ${a.observacoes?`<div style="font-size:11.5px;color:var(--gr400);margin-top:6px">${a.observacoes.slice(0,80)}…</div>`:''}
+      ${a.observacoes?`<div style="font-size:11.5px;color:var(--gr400);margin-top:6px">${escapeHtml(a.observacoes.slice(0,80))}…</div>`:''}
       <div style="display:flex;gap:6px;margin-top:10px">
         <button class="btn-sm" style="font-size:12px;padding:5px 12px" onclick='editarAluno(${JSON.stringify(a).replace(/'/g,"&#39;")})'>Editar</button>
         <button class="btn-danger" onclick="excluirAluno('${a.id}','${(a.nome||'').replace(/'/g,"&#39;")}')">Excluir</button>
@@ -22918,7 +22918,7 @@ function cardProfessor(p) {
     </div>
     ${mats ? `<div class="prof-info-row">${mats}</div>` : ''}
     ${salas ? `<div class="prof-info-row">${salas}</div>` : ''}
-    ${p.observacoes ? `<div class="prof-obs">${p.observacoes.slice(0,100)}${p.observacoes.length>100?'…':''}</div>` : ''}
+    ${p.observacoes ? `<div class="prof-obs">${escapeHtml(p.observacoes.slice(0,100))}${p.observacoes.length>100?'…':''}</div>` : ''}
     <div style="margin-top:10px;display:flex;gap:6px">
       <button class="btn-sm" style="font-size:12px" onclick='abrirDetProf(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Ver detalhes</button>
     </div>
@@ -23039,6 +23039,7 @@ async function salvarProfessor() {
     await db.from('convites').insert({
       email, papel: 'professor',
       convidado_por: user.id,
+      organizacao_id: window._organizacaoId || null,
       instituicao_nome: document.getElementById('cp-vinculo')?.value || null,
       status: 'pendente'
     });
@@ -23053,6 +23054,7 @@ async function salvarProfessor() {
       materias:    cpMats,
       salas:       cpSalas,
       user_id:     user.id,
+      organizacao_id: window._organizacaoId || null,
     };
 
     let dbError;
@@ -26036,7 +26038,7 @@ async function carregarRelatoriosClinica() {
     <div class="rel-card" onclick='abrirRelatorio(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <span class="rel-origem escola">🏫 Escola</span>
       <div class="rel-titulo">${escapeHtml(r.titulo)}</div>
-      <div class="rel-meta">${r.aluno_nome||''} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+      <div class="rel-meta">${escapeHtml(r.aluno_nome||'')} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
     </div>`).join('');
 }
 
@@ -26186,7 +26188,7 @@ async function carregarRelatoriosAT() {
     <div class="rel-card" onclick='abrirRelatorio(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <span class="rel-origem ${r.origem}">${r.origem === 'clinica' ? '🏥 Clínica' : '🏫 Escola'}</span>
       <div class="rel-titulo">${escapeHtml(r.titulo)}</div>
-      <div class="rel-meta">${r.aluno_nome||''} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+      <div class="rel-meta">${escapeHtml(r.aluno_nome||'')} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
     </div>`).join('');
 }
 
@@ -26215,7 +26217,7 @@ async function carregarRoteiroAT() {
     <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">🎯 Objetivos Terapêuticos</h3>
     <div class="cards-grid-3" style="margin-bottom:14px">
       ${[['🧠 Cognitivo',obj.cognitivo],['🗣️ Comunicação',obj.comunicacao],['👥 Social',obj.social],['💢 Comportamental',obj.comportamental],['📚 Acadêmico',obj.academico]].filter(([,v])=>v).map(([l,v])=>`
-        <div class="at-card"><div class="at-card-sit">${l}</div><div style="font-size:13px;color:var(--gr600);line-height:1.6">${v}</div></div>`).join('')}
+        <div class="at-card"><div class="at-card-sit">${l}</div><div style="font-size:13px;color:var(--gr600);line-height:1.6">${escapeHtml(v)}</div></div>`).join('')}
     </div>` : ''}
     ${ultimoRel ? `
     <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">📋 Último roteiro recebido da clínica</h3>
