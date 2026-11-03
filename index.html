@@ -1735,6 +1735,15 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     </div>
   </nav>
 
+  <!-- ══ BANNER: DIAGNÓSTICO LOUMIND ESCOLAS ══ -->
+  <div id="banner-escolas-cne" style="display:none;background:linear-gradient(90deg,#1E3A8A,#2563EB);padding:10px 20px;text-align:center;position:relative">
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;max-width:900px;margin:0 auto;padding-right:28px">
+      <span style="font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:#fff">Gestão escolar: sua escola está pronta para as novas regras de IA do CNE (Parecer CNE/CP nº 15/2026)?</span>
+      <a href="https://escolas.loumind.ia.br" target="_blank" rel="noopener" style="font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:#1E3A8A;background:#fff;border-radius:100px;padding:5px 14px;text-decoration:none;white-space:nowrap">Diagnóstico gratuito →</a>
+    </div>
+    <button onclick="fecharBannerEscolasCNE()" aria-label="Fechar aviso" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.7);font-size:16px;cursor:pointer;line-height:1;padding:4px">✕</button>
+  </div>
+
   <section class="lp-hero">
 <img src="logo-hero.png" alt="LouMind" class="lp-hero-logo">
     <h1>Plataforma Integrada de Desenvolvimento e Inclusão.</h1>
@@ -27479,6 +27488,16 @@ function mostrarLanding() {
   document.getElementById('landing-page').style.display = 'block';
   document.getElementById('login-screen').style.display = 'none';
   setTimeout(iniciarGraficoLpMonitoramento, 50);
+  const banner = document.getElementById('banner-escolas-cne');
+  if (banner) {
+    try { banner.style.display = localStorage.getItem('loumind_banner_escolas_fechado') ? 'none' : 'block'; }
+    catch (e) { banner.style.display = 'block'; }
+  }
+}
+
+function fecharBannerEscolasCNE() {
+  document.getElementById('banner-escolas-cne').style.display = 'none';
+  try { localStorage.setItem('loumind_banner_escolas_fechado', '1'); } catch (e) {}
 }
 
 function irParaLogin() {
