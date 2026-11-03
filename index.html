@@ -4879,6 +4879,9 @@ function renderNavGestao() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17c0-3 2.686-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 4l1.5 1.5L18 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Professores
     </div>
     <div class="nav-section">Documentos</div>
+    <div class="nav-item gestao-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
+    </div>
     <div class="nav-item gestao-item" id="nav-estudo-caso" onclick="${!temAddon('estudo_caso') ? "acessarRecursoPremium('Estudo de Caso')" : "showPage('estudo-caso');carregarEstudosCaso()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso${!temAddon('estudo_caso') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -13711,6 +13714,95 @@ function renderPagesGestao() {
       </div>
     </div>
     <div class="cards-grid-3" id="gestao-alunos-lista"></div>
+  </div>
+
+  <!-- TRIAGEM INICIAL -->
+  <div id="page-triagem-inicial" class="page">
+    <h1 class="page-title">Triagem Inicial</h1>
+    <p class="page-sub">Ainda sem laudo? Descreva o que você observa do aluno no dia a dia — a IA sugere um ponto de partida pedagógico.</p>
+    <div class="info-banner" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E"><strong>Importante:</strong> isso é só uma hipótese pedagógica de partida, baseada na sua observação — nunca um diagnóstico. Nada aqui substitui avaliação profissional (psicológica, neuropsicológica, fonoaudiológica etc.).</div>
+
+    <div class="fcard">
+      <div class="fcard-title">Aluno observado</div>
+      <div class="fblock">
+        <label class="flabel" for="tri-aluno-sel">Aluno já cadastrado <span style="font-weight:400;color:#9CA3AF">(opcional — preenche os campos abaixo automaticamente)</span></label>
+        <select id="tri-aluno-sel" class="fselect" onchange="preencherTriagemDeAluno(this.value)">
+          <option value="">Não cadastrado / digitar manualmente</option>
+        </select>
+      </div>
+      <div class="frow">
+        <div><label class="flabel" for="tri-nome">Nome do aluno</label><input type="text" id="tri-nome" class="finput" placeholder="Ex: João Silva"></div>
+        <div><label class="flabel" for="tri-idade">Idade</label><select id="tri-idade" class="fselect"><option value="">Selecione</option><option>2 anos</option><option>3 anos</option><option>4 anos</option><option>5 anos</option><option>6 anos</option><option>7 anos</option><option>8 anos</option><option>9 anos</option><option>10 anos</option><option>11 anos</option><option>12 anos</option><option>13 anos</option><option>14 anos</option><option>15 anos</option><option>16 anos</option><option>17 anos</option><option>18 anos</option></select></div>
+        <div><label class="flabel" for="tri-serie">Série</label><input type="text" id="tri-serie" class="finput" placeholder="Ex: 3º ano"></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-title">O que você observa no dia a dia (marque o que se aplica)</div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Atenção e concentração</div>
+      <div id="tri-chips-atencao" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Dificuldade de manter atenção por mais de 10 min</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Se distrai facilmente com estímulos do ambiente</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Foca intensamente em temas de interesse</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Esquece instruções dadas há pouco tempo</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Comunicação e linguagem</div>
+      <div id="tri-chips-comunicacao" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Fala pouco ou não fala</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Repete frases ou palavras (ecolalia)</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Dificuldade de iniciar conversas</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Entende bem mas expressa pouco</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Vocabulário muito avançado para a idade</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Interação social</div>
+      <div id="tri-chips-social" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Prefere brincar sozinho</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Dificuldade de entender regras sociais implícitas</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Pouco contato visual</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Busca contato social de forma atípica</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Sensorial e motor</div>
+      <div id="tri-chips-sensorial" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Incomoda-se muito com barulho ou luz</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Busca estímulos sensoriais intensos (balançar, girar)</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Sensibilidade tátil (texturas, roupas)</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Dificuldade de coordenação motora fina</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Movimentos repetitivos (mãos, corpo)</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--p-blue);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Emocional e comportamental</div>
+      <div id="tri-chips-emocional" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Baixa tolerância à frustração</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Crises de choro ou birra frequentes</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Ansiedade diante de mudanças de rotina</button>
+        <button type="button" class="chip" onclick="toggleChipMulti(this)">Tristeza ou desânimo frequente</button>
+      </div>
+
+      <div class="fblock" style="margin-top:14px">
+        <label class="flabel" for="tri-obs-livre">Outras observações (opcional)</label>
+        <textarea id="tri-obs-livre" class="ftarea sm" placeholder="Qualquer outro comportamento observado que não esteja nas opções acima…"></textarea>
+      </div>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar-triagem" onclick="gerarTriagemInicial()">Gerar hipótese pedagógica com a Lou</button>
+    <div class="gen-box" id="tri-gen-box"><div class="spin"></div><span>IA analisando as observações…</span></div>
+
+    <div class="result-card" id="tri-result-card">
+      <div class="result-header"><div class="result-title">Hipótese pedagógica de partida</div></div>
+      <div class="info-banner" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;margin-bottom:10px"><strong>Lembrete:</strong> isto NÃO é um diagnóstico. É só um ponto de partida pedagógico para orientar a prática enquanto uma avaliação profissional não é feita.</div>
+      <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin-bottom:14px;max-width:420px;margin-left:auto;margin-right:auto">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#6B7280;text-align:center;margin-bottom:6px">Perfil funcional observado</div>
+        <canvas id="tri-radar-canvas" height="260"></canvas>
+      </div>
+      <textarea class="result-text" id="tri-result-text" style="width:100%;min-height:220px"></textarea>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('tri-result-text').value);toast('Copiado!','success')">Copiar texto</button>
+      </div>
+    </div>
   </div>
 
   <!-- ESTUDO DE CASO -->
