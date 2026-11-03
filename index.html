@@ -92,6 +92,11 @@ a:hover{text-decoration:underline}
 .chip-camada:has(input:checked){background:#EEF2FF;border-color:#2563EB;color:#1E3A8A;font-weight:600}
 .chip-camada input{accent-color:#2563EB;margin:0}
 
+.lp-publico-btn{padding:10px 20px;border:1.5px solid #E5E7EB;border-radius:100px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:#374151;background:#fff;cursor:pointer;transition:all .18s}
+.lp-publico-btn:hover{border-color:#C7D7FA}
+.lp-publico-btn.ativo-escola{background:#F0FDFA;border-color:#14B8A6;color:#115E59}
+.lp-publico-btn.ativo-clinica{background:#F5F3FF;border-color:#7C3AED;color:#4C1D95}
+
 /* LGPD box */
 .lgpd-box{background:#F0FDF4;border:1px solid #86EFAC;border-radius:var(--rmd);padding:12px 14px;margin-top:14px}
 .lgpd-box p{font-size:12px;color:#166534;line-height:1.6;margin-bottom:9px}
@@ -1752,9 +1757,17 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 <img src="logo-hero.png" alt="LouMind" class="lp-hero-logo">
     <h1>Plataforma Integrada de Desenvolvimento e Inclusão.</h1>
     <p style="font-size:13px;color:#7C3AED;max-width:680px;margin:0 auto 20px;line-height:1.5;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Conecte educação, saúde e família</p>
-    <p style="font-size:18px;color:#4B5563;max-width:600px;margin:0 auto 32px;line-height:1.7;font-weight:400">Transforme observações em intervenções: registre, organize, crie planos personalizados e monitore a evolução em tempo real — tudo conectado entre escola, clínica e família.</p>
+    <p id="lp-publico-sub" style="font-size:18px;color:#4B5563;max-width:600px;margin:0 auto 32px;line-height:1.7;font-weight:400">Transforme observações em intervenções: registre, organize, crie planos personalizados e monitore a evolução em tempo real — tudo conectado entre escola, clínica e família.</p>
     <div class="lp-hero-btns">
       <button class="btn-lp-primary" onclick="abrirModalTesteGratis()">✨ Adaptar uma atividade grátis</button>
+    </div>
+
+    <div style="margin-top:36px;max-width:520px;margin-left:auto;margin-right:auto">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9CA3AF;margin-bottom:10px">Qual é o seu lado?</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button type="button" id="btn-publico-escola" onclick="selecionarPublicoLanding('escola')" class="lp-publico-btn">🏫 Sou da escola</button>
+        <button type="button" id="btn-publico-clinica" onclick="selecionarPublicoLanding('clinica')" class="lp-publico-btn">🧠 Sou da clínica</button>
+      </div>
     </div>
   </section>
 
@@ -1767,7 +1780,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px">
 
       <!-- BLOCO CLÍNICA -->
-      <div style="background:#fff;border:2px solid #7C3AED;border-radius:20px;padding:26px 26px 22px">
+      <div id="bloco-modulo-clinica" style="background:#fff;border:2px solid #7C3AED;border-radius:20px;padding:26px 26px 22px;transition:box-shadow .25s,transform .25s">
         <div style="margin-bottom:6px">
           <div style="font-size:16px;font-weight:800;color:#4C1D95">Módulo Clínico</div>
           <div style="font-size:12px;color:#7C3AED">Para clínicas, terapeutas e ATs</div>
@@ -1785,7 +1798,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
       </div>
 
       <!-- BLOCO ESCOLA -->
-      <div style="background:#fff;border:2px solid #14B8A6;border-radius:20px;padding:26px 26px 22px">
+      <div id="bloco-modulo-escola" style="background:#fff;border:2px solid #14B8A6;border-radius:20px;padding:26px 26px 22px;transition:box-shadow .25s,transform .25s">
         <div style="margin-bottom:6px">
           <div style="font-size:16px;font-weight:800;color:#115E59">Módulo Escola</div>
           <div style="font-size:12px;color:#14B8A6">Para professores e gestão pedagógica</div>
@@ -27687,6 +27700,28 @@ function iniciarGraficoLpMonitoramento() {
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10.5 } } } },
     },
   });
+}
+
+function selecionarPublicoLanding(publico) {
+  const SUBS = {
+    escola: 'Pra quem dá aula: adapte atividades em segundos, documente PEI/PAEE/PDI sem retrabalho e tenha o contexto clínico do aluno sempre à mão — tudo com IA.',
+    clinica: 'Pra quem acompanha terapeuticamente: monte objetivos mensuráveis, gere material de intervenção com IA e registre a evolução do paciente em tempo real.',
+  };
+  const sub = document.getElementById('lp-publico-sub');
+  if (sub) sub.textContent = SUBS[publico] || SUBS.escola;
+
+  document.getElementById('btn-publico-escola')?.classList.toggle('ativo-escola', publico === 'escola');
+  document.getElementById('btn-publico-clinica')?.classList.toggle('ativo-clinica', publico === 'clinica');
+
+  const blocoEscola = document.getElementById('bloco-modulo-escola');
+  const blocoClinica = document.getElementById('bloco-modulo-clinica');
+  [blocoEscola, blocoClinica].forEach(b => { if (b) { b.style.boxShadow = 'none'; b.style.transform = 'none'; } });
+  const alvo = publico === 'escola' ? blocoEscola : blocoClinica;
+  if (alvo) {
+    alvo.style.boxShadow = '0 10px 30px rgba(0,0,0,0.12)';
+    alvo.style.transform = 'translateY(-4px)';
+    setTimeout(() => alvo.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+  }
 }
 
 function mostrarLanding() {
