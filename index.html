@@ -12319,9 +12319,17 @@ function renderPages() {
     </div>
 
     <div class="pei-step">
-      <div class="pei-step-header"><div class="pei-step-num">4</div><div><div class="pei-step-title">Metas e objetivos individualizados</div></div></div>
-      <div class="fblock"><label class="flabel" for="pei-metas-ac">Metas acadêmicas (o que o aluno deve alcançar neste período)</label><textarea id="pei-metas-ac" class="ftarea sm" placeholder="Ex: Reconhecer e escrever as letras do alfabeto; resolver adições simples com apoio de material concreto…"></textarea></div>
-      <div class="fblock"><label class="flabel" for="pei-metas-dev">Metas de desenvolvimento (comunicação, autonomia, social, emocional)</label><textarea id="pei-metas-dev" class="ftarea sm" placeholder="Ex: Ampliar vocabulário funcional usando CAA; aumentar tempo de permanência em atividade para 15 min; iniciar interações com colegas com mediação…"></textarea></div>
+      <div class="pei-step-header"><div class="pei-step-num">4</div><div><div class="pei-step-title">Metas e objetivos individualizados</div><div class="pei-step-sub">Cada meta com critério de sucesso, linha de base e prazo — isso permite dizer, depois, se ela foi atingida</div></div></div>
+      <div class="fblock">
+        <label class="flabel">Metas acadêmicas</label>
+        <div id="pei-metas-ac-lista"></div>
+        <button type="button" class="btn-copy" onclick="adicionarMetaPEI('ac')" style="margin-top:4px">+ Adicionar meta acadêmica</button>
+      </div>
+      <div class="fblock" style="margin-top:16px">
+        <label class="flabel">Metas de desenvolvimento (comunicação, autonomia, social, emocional)</label>
+        <div id="pei-metas-dev-lista"></div>
+        <button type="button" class="btn-copy" onclick="adicionarMetaPEI('dev')" style="margin-top:4px">+ Adicionar meta de desenvolvimento</button>
+      </div>
     </div>
 
     <div class="pei-step">
@@ -18620,6 +18628,9 @@ function cardAdaptacao(r, gestao=false) {
 function carregarDadosPEI() {
   const id = document.getElementById('pei-aluno-sel').value;
   const info = document.getElementById('pei-aluno-info');
+  _metasPEI = { ac: [], dev: [] };
+  renderMetasPEI('ac');
+  renderMetasPEI('dev');
   if (!id) { info.style.display='none'; return; }
   const a = alunosCad.find(x => x.id === id);
   if (!a) return;
@@ -18690,6 +18701,58 @@ function peiProfSelecionado(sel) {
   }
 }
 
+let _metasPEI = { ac: [], dev: [] };
+
+function adicionarMetaPEI(tipo) {
+  _metasPEI[tipo].push({ descricao: '', criterio: '', linhaBase: '', prazo: '', progresso: 0 });
+  renderMetasPEI(tipo);
+}
+
+function removerMetaPEI(tipo, idx) {
+  coletarMetasPEI(tipo);
+  _metasPEI[tipo].splice(idx, 1);
+  renderMetasPEI(tipo);
+}
+
+function coletarMetasPEI(tipo) {
+  _metasPEI[tipo] = _metasPEI[tipo].map((_, i) => ({
+    descricao: document.getElementById(`pei-meta-${tipo}-${i}-desc`)?.value.trim() || '',
+    criterio: document.getElementById(`pei-meta-${tipo}-${i}-crit`)?.value.trim() || '',
+    linhaBase: document.getElementById(`pei-meta-${tipo}-${i}-base`)?.value.trim() || '',
+    prazo: document.getElementById(`pei-meta-${tipo}-${i}-prazo`)?.value || '',
+    progresso: parseInt(document.getElementById(`pei-meta-${tipo}-${i}-prog`)?.value, 10) || 0,
+  }));
+  return _metasPEI[tipo];
+}
+
+function renderMetasPEI(tipo) {
+  const cont = document.getElementById(`pei-metas-${tipo}-lista`);
+  if (!cont) return;
+  cont.innerHTML = _metasPEI[tipo].map((m, i) => `
+    <div style="border:1px solid var(--gr200);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--gr50)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--gr400);text-transform:uppercase">Meta ${i+1}</span>
+        <button type="button" onclick="removerMetaPEI('${tipo}',${i})" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:12px">Remover</button>
+      </div>
+      <textarea id="pei-meta-${tipo}-${i}-desc" class="ftarea sm" placeholder="Descrição da meta (ex: Reconhecer e escrever as letras do alfabeto)" style="min-height:50px">${m.descricao||''}</textarea>
+      <div class="frow" style="margin-top:8px">
+        <div><label class="flabel" style="font-size:11px">Critério de sucesso</label><input type="text" id="pei-meta-${tipo}-${i}-crit" class="finput" placeholder="Ex: 8 de 10 acertos em 3 avaliações seguidas" value="${m.criterio||''}"></div>
+        <div><label class="flabel" style="font-size:11px">Linha de base (ponto de partida)</label><input type="text" id="pei-meta-${tipo}-${i}-base" class="finput" placeholder="Ex: reconhece 5 de 26 letras" value="${m.linhaBase||''}"></div>
+      </div>
+      <div class="frow" style="margin-top:8px">
+        <div><label class="flabel" style="font-size:11px">Prazo</label><input type="date" id="pei-meta-${tipo}-${i}-prazo" class="finput" value="${m.prazo||''}"></div>
+        <div><label class="flabel" style="font-size:11px">Progresso atual: <span id="pei-meta-${tipo}-${i}-prog-lbl">${m.progresso||0}%</span></label><input type="range" id="pei-meta-${tipo}-${i}-prog" min="0" max="100" step="5" value="${m.progresso||0}" style="width:100%" oninput="document.getElementById('pei-meta-${tipo}-${i}-prog-lbl').textContent=this.value+'%'"></div>
+      </div>
+    </div>`).join('') || `<p style="font-size:12.5px;color:var(--gr400)">Nenhuma meta adicionada ainda.</p>`;
+}
+
+function textoMetasPEI(tipo) {
+  const metas = coletarMetasPEI(tipo);
+  return metas.filter(m => m.descricao).map(m =>
+    `- ${m.descricao}${m.linhaBase ? ' | Linha de base: ' + m.linhaBase : ''}${m.criterio ? ' | Critério de sucesso: ' + m.criterio : ''}${m.prazo ? ' | Prazo: ' + m.prazo : ''}`
+  ).join('\n');
+}
+
 async function gerarPEI() {
   const alunoId  = document.getElementById('pei-aluno-sel').value;
   const periodo  = document.getElementById('pei-periodo').value.trim();
@@ -18705,8 +18768,8 @@ async function gerarPEI() {
   const nivel    = document.getElementById('pei-nivel').value.trim();
   const fortes   = document.getElementById('pei-fortes').value.trim();
   const barreiras= document.getElementById('pei-barreiras').value.trim();
-  const metasAc  = document.getElementById('pei-metas-ac').value.trim();
-  const metasDev = document.getElementById('pei-metas-dev').value.trim();
+  const metasAc  = textoMetasPEI('ac');
+  const metasDev = textoMetasPEI('dev');
   const estrat   = [estratChips, document.getElementById('pei-estrategias').value.trim()].filter(Boolean).join('; ');
   const recursos = [recursosChips, document.getElementById('pei-recursos').value.trim()].filter(Boolean).join('; ');
   const aval     = [avalChips, document.getElementById('pei-avaliacao').value.trim()].filter(Boolean).join('; ');
@@ -18797,7 +18860,8 @@ async function salvarPEI() {
     periodo: document.getElementById('pei-periodo').value.trim(),
     professor: document.getElementById('pei-professor').value.trim(),
     status: 'finalizado',
-    texto: peiGerado
+    texto: peiGerado,
+    metas_estruturadas: { academicas: coletarMetasPEI('ac'), desenvolvimento: coletarMetasPEI('dev') }
   });
   if (error) return toast('Erro: '+error.message, 'error');
   toast('PEI salvo com sucesso!', 'success');
@@ -19300,10 +19364,13 @@ function renderPeiLista() {
   }
   el.innerHTML = peiList.map(p => {
     const dt = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
+    const todasMetas = [...(p.metas_estruturadas?.academicas||[]), ...(p.metas_estruturadas?.desenvolvimento||[])].filter(m => m.descricao);
+    const progressoMedio = todasMetas.length ? Math.round(todasMetas.reduce((s,m) => s + (m.progresso||0), 0) / todasMetas.length) : null;
     return `<div class="item-card" onclick='abrirModalPEI(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
       <div class="ic-nome">${p.aluno_nome||'(sem nome)'}</div>
       <div class="ic-meta">${p.periodo||''} · ${p.professor||''}</div>
       <div class="ic-tags"><span class="ic-tag">${p.status==='finalizado'?'✅ Finalizado':'📝 Rascunho'}</span></div>
+      ${progressoMedio !== null ? `<div style="margin:6px 0 2px;font-size:11px;color:var(--gr500)">Progresso médio das metas: <strong>${progressoMedio}%</strong></div><div style="height:6px;background:var(--gr100);border-radius:100px;overflow:hidden;margin-bottom:6px"><div style="height:100%;width:${progressoMedio}%;background:${progressoMedio>=70?'#16A34A':progressoMedio>=35?'#D97706':'#DC2626'}"></div></div>` : ''}
       <div class="ic-prev">${(p.texto||'').slice(0,100)}…</div>
       <div class="ic-date">${dt}</div>
     </div>`;
