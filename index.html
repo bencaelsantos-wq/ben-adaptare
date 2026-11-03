@@ -4649,7 +4649,7 @@ async function iniciarApp() {
     at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); carregarLogoEscola(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
     coordenacao:     { label:' Coordenação',        cls:'professor',   sidebarCls:'role-professor',         nav: ()=>renderNavCoordenacaoPedagogica(),   after: ()=>{ carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); popularSelectEvolucaoAlunos(); }); carregarAdaptacoes(); carregarPEIs(); showPage('coord-painel'); carregarPainelCoordenacao(); carregarLogoEscola(); } },
-    familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); } },
+    familia:         { label:' Família',          cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavFamilia(),        after: ()=>{ showPage('familia-dashboard'); carregarDiarioFamilia(); carregarEvolucaoFamilia(); } },
   };
 
   const cfg = colorMap[userRole] || colorMap['professor'];
@@ -7419,6 +7419,11 @@ function renderPagesFamilia() {
       <div class="stat-card"><div class="stat-num" id="fam-total-conquistas" style="color:#10B981">—</div><div class="stat-label">Conquistas registradas</div></div>
       <div class="stat-card"><div class="stat-num" id="fam-total-alertas" style="color:#F59E0B">—</div><div class="stat-label">Comunicados da escola</div></div>
     </div>
+    <div class="dash-card" id="fam-evolucao-card" style="display:none;margin-bottom:20px">
+      <div class="dash-card-title">📈 Evolução das metas</div>
+      <p style="font-size:12.5px;color:var(--gr500);margin:4px 0 14px">Progresso das metas do Plano Educacional Individualizado mais recente.</p>
+      <div id="fam-evolucao-lista"></div>
+    </div>
     <div class="dash-card">
       <div class="dash-card-title">✨ Últimas novidades</div>
       <div id="fam-feed" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
@@ -7450,6 +7455,30 @@ function renderPagesFamilia() {
     <p class="page-sub">Cada pequena vitória registrada pela equipe.</p>
     <div class="cards-grid" id="fam-conquistas-lista" style="margin-top:16px"></div>
   </div>`;
+}
+
+async function carregarEvolucaoFamilia() {
+  const card = document.getElementById('fam-evolucao-card');
+  const lista = document.getElementById('fam-evolucao-lista');
+  if (!card || !lista) return;
+  const alunoId = window._alunoFamiliaId || user?.aluno_id;
+  if (!alunoId) { card.style.display = 'none'; return; }
+  try {
+    const { data } = await db.from('peis').select('metas_estruturadas,periodo,created_at')
+      .eq('aluno_id', alunoId).eq('status', 'finalizado')
+      .order('created_at', { ascending: false }).limit(1).maybeSingle();
+    const todasMetas = [...(data?.metas_estruturadas?.academicas||[]), ...(data?.metas_estruturadas?.desenvolvimento||[])].filter(m => m.descricao);
+    if (!todasMetas.length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    lista.innerHTML = todasMetas.map(m => {
+      const p = m.progresso || 0;
+      const cor = p >= 70 ? '#16A34A' : p >= 35 ? '#D97706' : '#DC2626';
+      return `<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--gr700);margin-bottom:4px"><span>${escapeHtml(m.descricao)}</span><strong>${p}%</strong></div>
+        <div style="height:8px;background:var(--gr100);border-radius:100px;overflow:hidden"><div style="height:100%;width:${p}%;background:${cor}"></div></div>
+      </div>`;
+    }).join('');
+  } catch(e) { card.style.display = 'none'; }
 }
 
 async function carregarDiarioFamilia() {
@@ -21777,6 +21806,7 @@ async function confirmarConvite(token, email, alunoId) {
   // Criar perfil com role familia + vínculo ao aluno
   await db.from('profiles').upsert({ id: authData.user.id, email, role: 'familia', ativo: true, aluno_nome: convData?.aluno_nome, aluno_id: convData?.aluno_id });
   window._alunoFamiliaNome = convData?.aluno_nome || '';
+  window._alunoFamiliaId   = convData?.aluno_id   || '';
 
   // Marcar convite como usado
   await db.from('convites_familia').update({ usado: true, usado_em: new Date().toISOString() }).eq('token', token);
