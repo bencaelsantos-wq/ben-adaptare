@@ -27231,7 +27231,23 @@ async function verificarStatusEscola(email) {
 }
 // ===== FIM PAINEL DEV =====
 
-function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block'; }
+function mostrarQuemSomos() {   document.getElementById('landing-page').style.display = 'none';   document.getElementById('login-screen').style.display = 'none';   document.getElementById('quem-somos-page').style.display = 'block';   window.scrollTo(0, 0);   _registrarViewHistorico('quem-somos'); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function irParaLoginDeQuemSomos() {   document.getElementById('quem-somos-page').style.display = 'none';   mostrarDemo(); } function voltarParaLanding() {   document.getElementById('quem-somos-page').style.display = 'none';   document.getElementById('landing-page').style.display = 'block';   _registrarViewHistorico('landing'); }
+
+// ── Histórico do navegador: mantém o botão "voltar" dentro do site ──
+let _navegandoViaPopstate = false;
+function _registrarViewHistorico(view) {
+  if (_navegandoViaPopstate) return;
+  history.pushState({ loumindView: view }, '', window.location.pathname);
+}
+window.addEventListener('popstate', (e) => {
+  _navegandoViaPopstate = true;
+  const view = e.state && e.state.loumindView;
+  if (view === 'quem-somos') mostrarQuemSomos();
+  else if (view === 'ajuda') mostrarCentralAjuda();
+  else if (view === 'login') irParaLogin();
+  else mostrarLanding();
+  _navegandoViaPopstate = false;
+});
 
 const FAQ_AJUDA = [
   { cat: 'primeiros-passos', pergunta: 'Como faço para começar a usar a LouMind?', resposta: 'Crie sua conta, escolha o módulo (Escola ou Clínica), e complete o cadastro do seu perfil profissional. Depois, cadastre seus alunos/pacientes para começar a gerar adaptações e usar os demais recursos.' },
@@ -27285,11 +27301,13 @@ function mostrarCentralAjuda() {
   document.getElementById('ajuda-page').style.display = 'block';
   montarFAQAjuda(FAQ_AJUDA);
   window.scrollTo(0, 0);
+  _registrarViewHistorico('ajuda');
 }
 
 function voltarParaLandingDeAjuda() {
   document.getElementById('ajuda-page').style.display = 'none';
   document.getElementById('landing-page').style.display = 'block';
+  _registrarViewHistorico('landing');
 }
 
 let _chartLpMonitoramento = null;
@@ -27333,6 +27351,7 @@ function mostrarLanding() {
 function irParaLogin() {
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
+  _registrarViewHistorico('login');
 }
 
 function abrirModalTesteGratis() {
