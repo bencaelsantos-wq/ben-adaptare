@@ -22960,8 +22960,44 @@ function filtrarGAdapt() {
   );
   const grid = document.getElementById('gadapt-grid');
   if (!grid) return;
-  grid.innerHTML = res.length ? res.map(r=>cardAdaptacao(r,true)).join('') :
-    `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhuma adaptação encontrada.</div></div>`;
+  if (!res.length) { grid.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Nenhuma adaptação encontrada.</div></div>`; return; }
+
+  const grupos = new Map();
+  res.forEach(r => {
+    const nome = r.aluno || r.aluno_nome || '(sem nome)';
+    if (!grupos.has(nome)) grupos.set(nome, []);
+    grupos.get(nome).push(r);
+  });
+  const nomesOrdenados = [...grupos.keys()].sort((a,b) => a.localeCompare(b));
+
+  grid.innerHTML = nomesOrdenados.map((nome, idx) => {
+    const lista = grupos.get(nome).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    const materias = [...new Set(lista.map(r => r.materia).filter(Boolean))];
+    const ultima = lista[0];
+    const dt = ultima?.created_at ? new Date(ultima.created_at).toLocaleDateString('pt-BR') : '';
+    const groupId = 'gadapt-grp-' + idx;
+    return `<div class="item-card" style="grid-column:1/-1">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="ic-nome">${escapeHtml(nome)}</div>
+          <div class="ic-meta">${lista.length} adaptaç${lista.length===1?'ão':'ões'}${materias.length?' · '+escapeHtml(materias.join(', ')):''} · última em ${dt}</div>
+        </div>
+        <button class="btn-sm" onclick="toggleGAdaptGrupo('${groupId}')" id="${groupId}-btn">Ver todas</button>
+      </div>
+      <div id="${groupId}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--gr100)">
+        <div class="cards-grid">${lista.map(r=>cardAdaptacao(r,true)).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleGAdaptGrupo(groupId) {
+  const el = document.getElementById(groupId);
+  const btn = document.getElementById(groupId+'-btn');
+  if (!el) return;
+  const aberto = el.style.display !== 'none';
+  el.style.display = aberto ? 'none' : 'block';
+  if (btn) btn.textContent = aberto ? 'Ver todas' : 'Recolher';
 }
 
 // ── MODAIS ───────────────────────────────────────────────────
