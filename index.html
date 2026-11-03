@@ -23795,6 +23795,7 @@ async function carregarObjetivos() {
   window._objAbaAtual = { perfilId: id, nome: sel.selectedOptions[0]?.text || '', areas, obj };
   const tiposMedida = obj.tipos_medida || {};
   const criteriosDominio = obj.criterios_dominio || {};
+  const niveisSuporte = obj.niveis_suporte || {};
   const OPCOES_TIPO_MEDIDA = [
     { v: 'percentual', label: '% de acerto' },
     { v: 'frequencia', label: 'Frequência/taxa' },
@@ -23802,16 +23803,31 @@ async function carregarObjetivos() {
     { v: 'latencia', label: 'Latência' },
     { v: 'sondagem', label: 'Sondagem (não diária)' },
   ];
+  const OPCOES_NIVEL_SUPORTE = [
+    { v: '1', label: 'Nível 1 — Universal', cor: '#16A34A' },
+    { v: '2', label: 'Nível 2 — Em grupo', cor: '#D97706' },
+    { v: '3', label: 'Nível 3 — Individual', cor: '#DC2626' },
+  ];
   body.innerHTML = `
     <div style="margin-bottom:14px">
       ${areas.map(a => {
         const tipoAtual = tiposMedida[a.key] || 'percentual';
         const crit = criteriosDominio[a.key] || {};
+        const nivelAtual = niveisSuporte[a.key] || '1';
         return `
         <div class="obj-area">
-          <div class="obj-area-label">${a.label}</div>
+          <div class="obj-area-label" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${a.label}
+            <span id="obj-${a.key}-nivel-badge" style="font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:100px;color:#fff;background:${OPCOES_NIVEL_SUPORTE.find(o=>o.v===nivelAtual).cor}">${OPCOES_NIVEL_SUPORTE.find(o=>o.v===nivelAtual).label}</span>
+          </div>
           <textarea id="obj-${a.key}" placeholder="${a.ph}">${obj[a.key]||''}</textarea>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;background:var(--gr50);border-radius:8px">
+            <div>
+              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Nível de suporte (MTSS)</label>
+              <select id="obj-${a.key}-nivel" class="fselect" style="font-size:12.5px;padding:4px 8px" onchange="atualizarBadgeNivelSuporte('${a.key}')">
+                ${OPCOES_NIVEL_SUPORTE.map(o => `<option value="${o.v}" ${o.v===nivelAtual?'selected':''}>${o.label}</option>`).join('')}
+              </select>
+            </div>
             <div>
               <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Tipo de medida</label>
               <select id="obj-${a.key}-tipo" class="fselect" style="font-size:12.5px;padding:4px 8px">
@@ -23835,6 +23851,16 @@ async function carregarObjetivos() {
       <button class="btn-sm" onclick="salvarObjetivos('${id}')">Salvar objetivos</button>
       <button class="btn-copy" onclick="baixarFichaRegistroABA()">📋 Ficha de Registro ABA</button>
     </div>`;
+}
+
+function atualizarBadgeNivelSuporte(areaKey) {
+  const CORES = { '1': ['#16A34A','Nível 1 — Universal'], '2': ['#D97706','Nível 2 — Em grupo'], '3': ['#DC2626','Nível 3 — Individual'] };
+  const sel = document.getElementById(`obj-${areaKey}-nivel`);
+  const badge = document.getElementById(`obj-${areaKey}-nivel-badge`);
+  if (!sel || !badge) return;
+  const [cor, label] = CORES[sel.value] || CORES['1'];
+  badge.style.background = cor;
+  badge.textContent = label;
 }
 
 async function baixarFichaRegistroABA(perfilIdParam, nomeParam) {
@@ -23933,14 +23959,17 @@ async function salvarObjetivos(perfilId) {
   areas.forEach(a => { payload[a] = document.getElementById(`obj-${a}`)?.value.trim() || null; });
   const tiposMedida = {};
   const criteriosDominio = {};
+  const niveisSuporte = {};
   areas.forEach(a => {
     tiposMedida[a] = document.getElementById(`obj-${a}-tipo`)?.value || 'percentual';
     const pct = document.getElementById(`obj-${a}-crit-pct`)?.value;
     const dias = document.getElementById(`obj-${a}-crit-dias`)?.value;
     if (pct && dias) criteriosDominio[a] = { percentual: parseInt(pct, 10), dias: parseInt(dias, 10) };
+    niveisSuporte[a] = document.getElementById(`obj-${a}-nivel`)?.value || '1';
   });
   payload.tipos_medida = tiposMedida;
   payload.criterios_dominio = criteriosDominio;
+  payload.niveis_suporte = niveisSuporte;
   const { data: existing } = await db.from('objetivos_terapeuticos').select('id').eq('perfil_id', perfilId).maybeSingle();
   let error;
   if (existing) {
