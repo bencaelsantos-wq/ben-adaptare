@@ -3753,12 +3753,44 @@ Nunca use mais de 150 palavras no total.`;
     const texto = await chamarClaude({ prompt, maxTokens: 500, modulo: 'triagem-inicial' });
     document.getElementById('tri-result-text').value = texto.trim();
     document.getElementById('tri-result-card').classList.add('show');
+    renderizarRadarTriagem(grupos);
   } catch (e) {
     toast('Erro ao gerar triagem: ' + e.message, 'error');
   } finally {
     btn.disabled = false;
     document.getElementById('tri-gen-box').classList.remove('show');
   }
+}
+
+let _chartRadarTriagem = null;
+function renderizarRadarTriagem(grupos) {
+  const canvas = document.getElementById('tri-radar-canvas');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const LABELS = { 'tri-chips-atencao':'Atenção', 'tri-chips-comunicacao':'Comunicação', 'tri-chips-social':'Interação Social', 'tri-chips-sensorial':'Sensorial/Motor', 'tri-chips-emocional':'Emocional' };
+  const dados = grupos.map(id => {
+    const total = document.querySelectorAll(`#${id} .chip`).length;
+    const ativos = getChipsAtivos(id).length;
+    return total ? Math.round((ativos / total) * 100) : 0;
+  });
+  if (_chartRadarTriagem) { _chartRadarTriagem.destroy(); _chartRadarTriagem = null; }
+  _chartRadarTriagem = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: grupos.map(id => LABELS[id] || id),
+      datasets: [{
+        label: 'Intensidade observada',
+        data: dados,
+        backgroundColor: 'rgba(37,99,235,0.15)',
+        borderColor: '#2563EB',
+        pointBackgroundColor: '#2563EB',
+        borderWidth: 2,
+      }],
+    },
+    options: {
+      scales: { r: { min: 0, max: 100, ticks: { stepSize: 25, backdropColor: 'transparent', font: { size: 9 } }, pointLabels: { font: { size: 11 } } } },
+      plugins: { legend: { display: false } },
+    },
+  });
 }
 
 function detectarTiposExercicio(conteudo) {
@@ -12044,6 +12076,10 @@ function renderPages() {
     <div class="result-card" id="tri-result-card">
       <div class="result-header"><div class="result-title">Hipótese pedagógica de partida</div></div>
       <div class="info-banner" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;margin-bottom:10px"><strong>Lembrete:</strong> isto NÃO é um diagnóstico. É só um ponto de partida pedagógico para orientar a prática enquanto uma avaliação profissional não é feita.</div>
+      <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin-bottom:14px;max-width:420px;margin-left:auto;margin-right:auto">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#6B7280;text-align:center;margin-bottom:6px">Perfil funcional observado</div>
+        <canvas id="tri-radar-canvas" height="260"></canvas>
+      </div>
       <textarea class="result-text" id="tri-result-text" style="width:100%;min-height:220px"></textarea>
       <div class="result-actions">
         <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('tri-result-text').value);toast('Copiado!','success')">Copiar texto</button>
