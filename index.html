@@ -1691,6 +1691,33 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 </div>
 <!-- ══ FIM CENTRAL DE AJUDA ══ -->
 
+<!-- ══ VISUALIZADOR INTERNO DO MANUAL (sem download/print/cópia) ══ -->
+<div id="manual-viewer-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#111827;">
+  <div style="display:flex;flex-direction:column;height:100%">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#1E3A8A;color:#fff;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <span style="font-size:14px;font-weight:700;white-space:nowrap">📖 Manual de Uso</span>
+        <span id="manual-pag-indicador" style="font-size:12px;color:rgba(255,255,255,0.7);white-space:nowrap">—</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="manualPaginaAnterior()" style="background:rgba(255,255,255,0.12);border:none;color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit">‹ Anterior</button>
+        <button onclick="manualProximaPagina()" style="background:rgba(255,255,255,0.12);border:none;color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit">Próxima ›</button>
+        <button onclick="fecharManualViewer()" style="background:rgba(255,255,255,0.18);border:none;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit;margin-left:4px">✕ Fechar</button>
+      </div>
+    </div>
+    <div id="manual-canvas-wrap" oncontextmenu="return false" style="flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px;user-select:none;-webkit-user-select:none;position:relative">
+      <div id="manual-loading" style="color:#9CA3AF;font-family:'Inter',sans-serif;font-size:14px;margin-top:40px">Carregando manual…</div>
+      <canvas id="manual-canvas" style="display:none;max-width:100%;box-shadow:0 8px 30px rgba(0,0,0,0.4);border-radius:4px;-webkit-user-drag:none;user-select:none;pointer-events:none"></canvas>
+    </div>
+  </div>
+</div>
+<style>
+  @media print {
+    #manual-viewer-overlay { display:none !important; }
+  }
+</style>
+<!-- ══ FIM VISUALIZADOR DO MANUAL ══ -->
+
   <!-- ══ LANDING PAGE ══ -->
 <div id="landing-page" style="display:none">
   <nav class="lp-nav">
@@ -2309,7 +2336,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         <!-- Preenchido via JS conforme o papel -->
       </nav>
       <div class="sb-footer">
-        <a href="#" onclick="abrirManualUso();return false" style="display:block;text-align:center;font-size:11.5px;color:#6B7280;text-decoration:none;margin-bottom:8px;padding:6px;border:1px solid #E2E8F0;border-radius:8px;background:#F9FAFB">📖 Manual de Uso (PDF)</a>
+        <a href="#" onclick="abrirManualUso();return false" style="display:block;text-align:center;font-size:11.5px;color:#6B7280;text-decoration:none;margin-bottom:8px;padding:6px;border:1px solid #E2E8F0;border-radius:8px;background:#F9FAFB">📖 Manual de Uso</a>
         <div id="widget-consumo-ia" style="display:none;margin-bottom:6px;padding:7px 9px;background:#F8FAFF;border:1px solid #E2E8F0;border-radius:8px;font-size:9.5px"></div>
         <div class="user-badge">
           <div class="avatar" id="user-avatar">--</div>
@@ -4412,10 +4439,104 @@ const roleEscolhido = userRole;
   }
 }
 
-function abrirManualUso() {
+let _manualPdfDoc = null;
+let _manualPaginaAtual = 1;
+let _manualBloqueioAtivo = false;
+
+function _manualBloquearAtalhos(e) {
+  const k = (e.key || '').toLowerCase();
+  if (e.ctrlKey || e.metaKey) {
+    if (['p','s','c','u'].includes(k)) { e.preventDefault(); e.stopPropagation(); }
+  }
+  if (k === 'printscreen') { e.preventDefault(); e.stopPropagation(); }
+}
+
+async function abrirManualUso() {
   const clinicos = ['clinica', 'gestao-clinica', 'at'];
   const arquivo = clinicos.includes(userRole) ? 'Manual_Clinica_LouMind.pdf' : 'Manual_Escola_LouMind.pdf';
-  window.open(arquivo, '_blank');
+
+  document.getElementById('manual-viewer-overlay').style.display = 'block';
+  document.getElementById('manual-loading').style.display = 'block';
+  document.getElementById('manual-canvas').style.display = 'none';
+
+  if (!_manualBloqueioAtivo) {
+    document.addEventListener('keydown', _manualBloquearAtalhos, true);
+    _manualBloqueioAtivo = true;
+  }
+
+  try {
+    const { data: assinada, error: errAssinada } = await db.storage.from('manuais').createSignedUrl(arquivo, 120);
+    if (errAssinada || !assinada?.signedUrl) { toast('Não foi possível carregar o manual.', 'error'); fecharManualViewer(); return; }
+
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) { toast('Não foi possível carregar o visualizador do manual.', 'error'); fecharManualViewer(); return; }
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    _manualPdfDoc = await pdfjsLib.getDocument(assinada.signedUrl).promise;
+    _manualPaginaAtual = 1;
+    await _manualRenderizarPagina(_manualPaginaAtual);
+  } catch (e) {
+    toast('Erro ao abrir o manual: ' + e.message, 'error');
+    fecharManualViewer();
+  }
+}
+
+async function _manualRenderizarPagina(num) {
+  if (!_manualPdfDoc) return;
+  const loading = document.getElementById('manual-loading');
+  const canvas = document.getElementById('manual-canvas');
+  loading.style.display = 'block';
+  canvas.style.display = 'none';
+
+  const pagina = await _manualPdfDoc.getPage(num);
+  const escala = Math.min(2, (document.getElementById('manual-canvas-wrap').clientWidth - 48) / pagina.getViewport({ scale: 1 }).width);
+  const viewport = pagina.getViewport({ scale: Math.max(1, escala) });
+  const ctx = canvas.getContext('2d');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await pagina.render({ canvasContext: ctx, viewport }).promise;
+
+  // Marca d'água discreta com o e-mail do usuário logado, repetida na diagonal
+  const marca = (user && user.email) ? user.email : '';
+  if (marca) {
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = '#000';
+    ctx.font = '14px sans-serif';
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(-Math.PI / 6);
+    for (let y = -canvas.height; y < canvas.height; y += 90) {
+      for (let x = -canvas.width; x < canvas.width; x += 260) {
+        ctx.fillText(marca, x, y);
+      }
+    }
+    ctx.restore();
+  }
+
+  loading.style.display = 'none';
+  canvas.style.display = 'block';
+  document.getElementById('manual-pag-indicador').textContent = `Página ${num} de ${_manualPdfDoc.numPages}`;
+  document.getElementById('manual-canvas-wrap').scrollTop = 0;
+}
+
+function manualProximaPagina() {
+  if (!_manualPdfDoc || _manualPaginaAtual >= _manualPdfDoc.numPages) return;
+  _manualPaginaAtual++;
+  _manualRenderizarPagina(_manualPaginaAtual);
+}
+
+function manualPaginaAnterior() {
+  if (!_manualPdfDoc || _manualPaginaAtual <= 1) return;
+  _manualPaginaAtual--;
+  _manualRenderizarPagina(_manualPaginaAtual);
+}
+
+function fecharManualViewer() {
+  document.getElementById('manual-viewer-overlay').style.display = 'none';
+  if (_manualBloqueioAtivo) {
+    document.removeEventListener('keydown', _manualBloquearAtalhos, true);
+    _manualBloqueioAtivo = false;
+  }
+  _manualPdfDoc = null;
 }
 
 /* Logout */
