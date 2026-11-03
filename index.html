@@ -18707,7 +18707,7 @@ function filtrarHistorico() {
   const fm = document.getElementById('hist-fmat')?.value||'';
   const fs = document.getElementById('hist-fserie')?.value||'';
   const res = adaptacoesList.filter(r =>
-    (!q || (r.aluno||'').toLowerCase().includes(q)) &&
+    (!q || (r.aluno||r.aluno_nome||'').toLowerCase().includes(q)) &&
     (!fp || (r.perfis||[]).some(p=>p.includes(fp))) &&
     (!fm || r.materia===fm) &&
     (!fs || r.serie===fs)
@@ -22954,7 +22954,7 @@ function filtrarGAdapt() {
   const fp = document.getElementById('gadapt-fperfil')?.value||'';
   const fm = document.getElementById('gadapt-fmat')?.value||'';
   const res = todasAdaptacoes.filter(r =>
-    (!q || (r.aluno||'').toLowerCase().includes(q)) &&
+    (!q || (r.aluno||r.aluno_nome||'').toLowerCase().includes(q)) &&
     (!fp || (r.perfis||[]).some(p=>p.includes(fp))) &&
     (!fm || r.materia===fm)
   );
