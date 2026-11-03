@@ -3775,6 +3775,62 @@ Nunca use mais de 150 palavras no total.`;
   }
 }
 
+function baixarPDFTriagemInicial() {
+  const texto = document.getElementById('tri-result-text')?.value.trim();
+  if (!texto) return toast('Gere a hipótese primeiro.', 'error');
+  const nome = document.getElementById('tri-nome')?.value.trim() || 'Aluno';
+  const idade = document.getElementById('tri-idade')?.value || '';
+  const serie = document.getElementById('tri-serie')?.value.trim() || '';
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, ml = 18, mr = 18, maxX = W - mr;
+  let y = 22;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(30,58,138);
+  doc.text('TRIAGEM INICIAL — HIPÓTESE PEDAGÓGICA DE PARTIDA', W/2, y, { align:'center' }); y += 9;
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(ml, y, maxX, y); y += 8;
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor(40,40,40);
+  doc.text(`Aluno: ${nome}`, ml, y); y += 6;
+  doc.text(`${[idade, serie].filter(Boolean).join(' · ') || 'Idade/série não informadas'}`, ml, y); y += 10;
+
+  doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(146,64,14);
+  const avisoLinhas = doc.splitTextToSize('Importante: isto NÃO é um diagnóstico. É só uma hipótese pedagógica de partida, baseada na observação do professor — nunca substitui avaliação profissional.', maxX - ml);
+  avisoLinhas.forEach(l => { doc.text(l, ml, y); y += 4.5; });
+  y += 6;
+
+  const canvas = document.getElementById('tri-radar-canvas');
+  if (canvas && canvas.width > 0) {
+    try {
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const imgW = 90, imgH = imgW * (canvas.height / canvas.width);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(30,58,138);
+      doc.text('Perfil funcional observado', W/2, y, { align:'center' }); y += 6;
+      doc.addImage(imgData, 'PNG', (W - imgW) / 2, y, imgW, imgH);
+      y += imgH + 10;
+    } catch(e) { /* canvas pode não estar pronto — segue sem o gráfico */ }
+  }
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor(20,20,20);
+  const linhasTexto = doc.splitTextToSize(texto, maxX - ml);
+  linhasTexto.forEach(l => {
+    if (y > 277) { doc.addPage(); y = 22; }
+    doc.text(l, ml, y); y += 5.5;
+  });
+
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPaginas; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(150,150,150);
+    doc.text('LouMind — Plataforma de Integração Clínica-Pedagógica | loumind.ia.br', ml, 290);
+    doc.text('Pág. ' + i + ' de ' + totalPaginas, maxX, 290, { align:'right' });
+  }
+
+  doc.save('Triagem_Inicial_' + nome.replace(/\s+/g,'_') + '.pdf');
+  toast('PDF gerado!', 'success');
+}
+
 let _chartRadarTriagem = null;
 function renderizarRadarTriagem(grupos) {
   const canvas = document.getElementById('tri-radar-canvas');
@@ -12128,6 +12184,7 @@ function renderPages() {
       <textarea class="result-text" id="tri-result-text" style="width:100%;min-height:220px"></textarea>
       <div class="result-actions">
         <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('tri-result-text').value);toast('Copiado!','success')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFTriagemInicial()">⬇️ Baixar PDF</button>
       </div>
     </div>
   </div>
@@ -13801,6 +13858,7 @@ function renderPagesGestao() {
       <textarea class="result-text" id="tri-result-text" style="width:100%;min-height:220px"></textarea>
       <div class="result-actions">
         <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('tri-result-text').value);toast('Copiado!','success')">Copiar texto</button>
+        <button class="btn-copy" onclick="baixarPDFTriagemInicial()">⬇️ Baixar PDF</button>
       </div>
     </div>
   </div>
