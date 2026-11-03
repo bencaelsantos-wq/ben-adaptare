@@ -14696,8 +14696,11 @@ function renderPagesClinica() {
         <div><label class="flabel" for="vinc-paciente-sel">Paciente (seu cadastro)</label>
           <select id="vinc-paciente-sel" class="fselect"><option value="">Selecione</option></select>
         </div>
-        <div><label class="flabel" for="vinc-aluno-sel">Aluno na escola</label>
-          <select id="vinc-aluno-sel" class="fselect"><option value="">Selecione</option></select>
+        <div><label class="flabel" for="vinc-aluno-busca">Aluno na escola <span style="font-weight:400;color:#9CA3AF">(digite o nome pra buscar)</span></label>
+          <input type="text" id="vinc-aluno-busca" class="finput" placeholder="Digite ao menos 2 letras do nome…" autocomplete="off" oninput="buscarAlunoVinculo()">
+          <div id="vinc-aluno-resultados" style="margin-top:6px;max-height:180px;overflow-y:auto"></div>
+          <div id="vinc-aluno-selecionado" style="display:none;margin-top:6px;padding:8px 10px;background:var(--blue-light);border-radius:8px;font-size:13px;color:var(--p-navy)"></div>
+          <input type="hidden" id="vinc-aluno-sel">
         </div>
       </div>
       <button class="btn-gerar" onclick="proporVinculo()">Propor vínculo</button>
@@ -24393,13 +24396,47 @@ function baixarPDFDossiePaciente() {
 async function popularVinculoSelects() {
   const selP = document.getElementById('vinc-paciente-sel');
   if (selP) selP.innerHTML = '<option value="">Selecione</option>' + (perfisClinicaList||[]).map(p=>`<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
-  const selA = document.getElementById('vinc-aluno-sel');
-  if (selA) {
-    const { data } = await db.rpc('buscar_alunos_para_vinculo');
-    const ordenado = (data||[]).slice().sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
-    selA.innerHTML = '<option value="">Selecione</option>' + ordenado.map(a=>`<option value="${a.id}" data-nome="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}${a.serie?' — '+a.serie:''}</option>`).join('');
-  }
+  limparSelecaoAlunoVinculo();
   carregarVinculosPropostos();
+}
+
+let _vincAlunoBuscaTimer = null;
+function buscarAlunoVinculo() {
+  clearTimeout(_vincAlunoBuscaTimer);
+  const termo = document.getElementById('vinc-aluno-busca')?.value.trim() || '';
+  const resCont = document.getElementById('vinc-aluno-resultados');
+  if (!resCont) return;
+  if (termo.length < 2) { resCont.innerHTML = ''; return; }
+  _vincAlunoBuscaTimer = setTimeout(async () => {
+    const { data, error } = await db.rpc('buscar_alunos_para_vinculo', { termo });
+    if (error) { resCont.innerHTML = `<div style="font-size:12.5px;color:#DC2626">Erro na busca: ${escapeHtml(error.message)}</div>`; return; }
+    if (!data || !data.length) { resCont.innerHTML = '<div style="font-size:12.5px;color:var(--gr400)">Nenhum aluno encontrado.</div>'; return; }
+    resCont.innerHTML = data.map(a => `
+      <div class="aluno-sel-item" style="padding:8px 10px;border:1px solid var(--gr200);border-radius:8px;margin-bottom:4px;cursor:pointer" onclick='selecionarAlunoVinculo(${JSON.stringify(a).replace(/'/g,"&#39;")})'>
+        <strong>${escapeHtml(a.nome)}</strong>${a.serie ? ' — ' + escapeHtml(a.serie) : ''}
+      </div>`).join('');
+  }, 300);
+}
+
+function selecionarAlunoVinculo(a) {
+  document.getElementById('vinc-aluno-sel').value = a.id;
+  document.getElementById('vinc-aluno-sel').dataset.nome = a.nome;
+  document.getElementById('vinc-aluno-busca').value = '';
+  document.getElementById('vinc-aluno-resultados').innerHTML = '';
+  const sel = document.getElementById('vinc-aluno-selecionado');
+  sel.style.display = 'block';
+  sel.innerHTML = `Selecionado: <strong>${escapeHtml(a.nome)}</strong>${a.serie ? ' — ' + escapeHtml(a.serie) : ''} <button type="button" onclick="limparSelecaoAlunoVinculo()" style="margin-left:8px;background:none;border:none;color:#DC2626;cursor:pointer;font-size:12px">Trocar</button>`;
+}
+
+function limparSelecaoAlunoVinculo() {
+  const hid = document.getElementById('vinc-aluno-sel');
+  if (hid) { hid.value = ''; hid.dataset.nome = ''; }
+  const sel = document.getElementById('vinc-aluno-selecionado');
+  if (sel) { sel.style.display = 'none'; sel.innerHTML = ''; }
+  const busca = document.getElementById('vinc-aluno-busca');
+  if (busca) busca.value = '';
+  const res = document.getElementById('vinc-aluno-resultados');
+  if (res) res.innerHTML = '';
 }
 
 async function proporVinculo() {
@@ -24407,14 +24444,14 @@ async function proporVinculo() {
   const alunoId = document.getElementById('vinc-aluno-sel')?.value;
   if (!perfilId || !alunoId) return toast('Selecione o paciente e o aluno.', 'error');
   const paciente = perfisClinicaList.find(p=>p.id===perfilId);
-  const selA = document.getElementById('vinc-aluno-sel');
-  const alunoNome = selA?.selectedOptions[0]?.dataset?.nome || '';
+  const alunoNome = document.getElementById('vinc-aluno-sel')?.dataset?.nome || '';
   const { error } = await db.from('vinculos_aluno_perfil').insert({
     aluno_id: alunoId, aluno_nome: alunoNome,
     perfil_clinico_id: perfilId, paciente_nome: paciente?.nome || ''
   });
   if (error) return toast('Erro ao propor vínculo: ' + error.message, 'error');
   toast('Vínculo proposto! Aguardando confirmação da escola.', 'success');
+  limparSelecaoAlunoVinculo();
   carregarVinculosPropostos();
 }
 
