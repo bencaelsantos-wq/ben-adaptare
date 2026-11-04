@@ -3901,6 +3901,18 @@ function baixarPDFJornada() {
   doc.text(_jrnAtual.nome || '', W/2, y, { align:'center' }); y += 6;
   doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(ml, y, maxX, y); y += 9;
 
+  const resumoEl = document.getElementById('jrn-resumo-resultado');
+  const resumoTexto = (resumoEl && resumoEl.style.display !== 'none') ? resumoEl.textContent.trim() : '';
+  if (resumoTexto) {
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(76,29,149);
+    doc.text('RESUMO GERADO PELA LOU', ml, y); y += 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(50,50,50);
+    const linhasResumoIA = doc.splitTextToSize(resumoTexto, maxX - ml);
+    linhasResumoIA.forEach(l => { garantirEspacoJornada(5); doc.text(l, ml, y); y += 5; });
+    y += 4;
+    doc.setDrawColor(220,220,220); doc.setLineWidth(0.2); doc.line(ml, y, maxX, y); y += 8;
+  }
+
   eventos.forEach(e => {
     const t = TIPOS_JORNADA[e.tipo];
     garantirEspacoJornada(18);
