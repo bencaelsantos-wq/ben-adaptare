@@ -3719,6 +3719,37 @@ function popularSelectChatAluno() {
   _chatAlunoAtual = null;
 }
 
+function _mostrarPopupAvisoUsoIA(usadas, limite) {
+  if (document.getElementById('popup-aviso-ia')) return;
+  const div = document.createElement('div');
+  div.id = 'popup-aviso-ia';
+  div.className = 'overlay open';
+  div.onclick = function(e) { if (e.target === div) div.remove(); };
+  div.innerHTML = `<div class="modal" style="max-width:420px;text-align:center;padding:28px 24px">
+    <div style="font-size:32px;margin-bottom:10px">📊</div>
+    <div style="font-size:16px;font-weight:700;color:var(--gr800);margin-bottom:8px">Uso do "Pergunte para a Lou"</div>
+    <p style="font-size:13.5px;color:var(--gr600);line-height:1.6;margin-bottom:18px">Sua escola/clínica já usou <strong>${usadas} de ${limite}</strong> perguntas deste mês.</p>
+    <button class="btn-sm" onclick="document.getElementById('popup-aviso-ia').remove()">Entendi</button>
+  </div>`;
+  document.body.appendChild(div);
+}
+
+async function verificarAvisoPerguntasGestao() {
+  try {
+    const usadas = await _contarPerguntasMesEscola();
+    const limite = window._qtdPerguntasMes || 100;
+    const tierAtual = Math.floor(usadas / 20) * 20;
+    if (tierAtual < 20) return;
+    const agora = new Date();
+    const chave = `loumind_aviso_perguntas_${window._organizacaoId || user.id}_${agora.getFullYear()}_${agora.getMonth()}`;
+    const ultimoVisto = parseInt(localStorage.getItem(chave) || '0', 10);
+    if (tierAtual > ultimoVisto) {
+      _mostrarPopupAvisoUsoIA(usadas, limite);
+      localStorage.setItem(chave, String(tierAtual));
+    }
+  } catch(e) { /* nunca bloqueia o carregamento do dashboard */ }
+}
+
 async function _contarPerguntasMesEscola() {
   const { data, error } = await db.rpc('contar_perguntas_mes_chat_aluno');
   if (error) { console.error('contar_perguntas_mes_chat_aluno:', error.message); return 0; }
@@ -3880,6 +3911,7 @@ ${contexto}`;
     });
 
     _atualizarContadorChatAluno(usadas + 1);
+    if (['gestao','gestao-clinica'].includes(userRole)) verificarAvisoPerguntasGestao();
   } catch(e) {
     document.getElementById('chat-aluno-pensando')?.remove();
     toast('Erro: ' + e.message, 'error');
@@ -4965,9 +4997,9 @@ async function iniciarApp() {
 
   const colorMap = {
     professor:       { label:' Professor',       cls:'professor', sidebarCls:'role-professor',     nav: ()=>renderNavProfessor(),     after: ()=>{ carregarAlunos().then(popularSelectEvolucaoAlunos); carregarAdaptacoes(); carregarPEIs(); carregarPlanosAEE(); carregarPDIs(); showPage('prof-dashboard'); carregarDashboardProfessor(); carregarProfessoresParaDropdown(); carregarAlunosParaDiario(); carregarLogoEscola(); } }, 
-    gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); setTimeout(verificarOnboardingGestao, 800); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); carregarBancoImagensOrg(); } },
+    gestao:          { label:' Gest. Educacional',            cls:'gestao',    sidebarCls:'role-gestao',         nav: ()=>renderNavGestao(),         after: ()=>{ carregarDadosGestao(); carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); }); showPage('gestao-painel'); setTimeout(verificarOnboardingGestao, 800); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); carregarBancoImagensOrg(); if(temAddon('pergunte_aluno')) verificarAvisoPerguntasGestao(); } },
     clinica:         { label:' Clínica',           cls:'clinica',   sidebarCls:'role-clinica',        nav: ()=>renderNavClinica(),        after: ()=>{ showPage('clinica-dashboard'); carregarDashboardClinica(); carregarPDIs(); carregarAlunosParaDiario(); verificarNotificacoesSolicitacoes(); carregarLogoEscola(); const btnNovoPerfilClinica = document.getElementById('btn-novo-perfil-clinica'); if (btnNovoPerfilClinica) btnNovoPerfilClinica.style.display = 'none'; } },
-    'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); carregarLogoEscola(); carregarBancoImagensOrg(); } },
+    'gestao-clinica':{ label:'Gestão Clínica', cls:'gestao-clinica', sidebarCls:'role-gestao-clinica', nav: ()=>renderNavGestaoClinica(),  after: ()=>{ showPage('gc-dashboard'); carregarDashboardGC(); carregarLogoEscola(); carregarBancoImagensOrg(); if(temAddon('pergunte_aluno')) verificarAvisoPerguntasGestao(); } },
     at:              { label:' AT',               cls:'at',       sidebarCls:'role-at',             nav: ()=>renderNavAT(),             after: ()=>{ carregarRelatoriosAT(); verificarNotificacoesAT(); showPage('at-dashboard'); carregarDashboardAT(); carregarAlunosParaDiario(); carregarAlunosAT(); carregarLogoEscola(); } },
     developer:       { label:'⚙️ Developer',        cls:'gestao',   sidebarCls:'role-developer',      nav: ()=>renderNavDeveloper(),      after: ()=>{ carregarDashboardDev(); showPage('dev-dashboard'); } },
     coordenacao:     { label:' Coordenação',        cls:'professor',   sidebarCls:'role-professor',         nav: ()=>renderNavCoordenacaoPedagogica(),   after: ()=>{ carregarAlunos().then(()=>{ carregarPlanosAEE(); carregarPDIs(); popularPeiSel(); popularAEESel(); popularPDISel(); popularSelectEvolucaoAlunos(); }); carregarAdaptacoes(); carregarPEIs(); showPage('coord-painel'); carregarPainelCoordenacao(); carregarLogoEscola(); } },
