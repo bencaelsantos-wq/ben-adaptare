@@ -3709,7 +3709,7 @@ function popularSelectChatAluno() {
   const label = document.getElementById('chat-aluno-sel-label');
   const titulo = document.getElementById('chat-aluno-titulo');
   if (label) label.textContent = ehClinica ? 'Paciente' : 'Aluno';
-  if (titulo) titulo.textContent = ehClinica ? 'Pergunte sobre o Paciente' : 'Pergunte sobre o Aluno';
+  if (titulo) titulo.textContent = 'Pergunte para a Lou';
   const lista = ehClinica ? (perfisClinicaList||[]) : (alunosCad||[]);
   sel.innerHTML = '<option value="">Selecione</option>' + lista.slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(x=>`<option value="${x.id}">${escapeHtml(x.nome)}</option>`).join('');
   const area = document.getElementById('chat-aluno-area');
@@ -5040,8 +5040,8 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
-    <div class="nav-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte sobre o Aluno')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte sobre o Aluno${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item" id="nav-registro-observacao" onclick="showPage('registro-observacao');popularRegistroObservacaoSel()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="7.5" cy="7.5" r="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M7 11h6M7 13.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Registro de Observação
@@ -5196,8 +5196,8 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
-    <div class="nav-item gestao-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte sobre o Aluno')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte sobre o Aluno${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item gestao-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item gestao-item" id="nav-estudo-caso" onclick="${!temAddon('estudo_caso') ? "acessarRecursoPremium('Estudo de Caso')" : "showPage('estudo-caso');carregarEstudosCaso()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso${!temAddon('estudo_caso') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5274,8 +5274,8 @@ function renderNavClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>` : ''}
     <div class="nav-section">Módulo Clínico</div>
-    <div class="nav-item clinic-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte sobre o Paciente')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte sobre o Paciente${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-clinica-perfil" onclick="showPage('clinica-perfil')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfil Clínico
@@ -5376,8 +5376,8 @@ function renderNavGestaoClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Dashboard
     </div>
     <div class="nav-section">Gestão Clínica</div>
-    <div class="nav-item clinic-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte sobre o Paciente')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte sobre o Paciente${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-gc-perfis" onclick="showPage('gc-perfis')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfis dos Pacientes
@@ -5416,7 +5416,7 @@ function renderNavGestaoClinica() {
 const HTML_PAGE_CHAT_ALUNO = `
   <!-- PERGUNTE SOBRE O ALUNO/PACIENTE -->
   <div id="page-chat-aluno" class="page">
-    <h1 class="page-title" id="chat-aluno-titulo">Pergunte sobre o Aluno</h1>
+    <h1 class="page-title" id="chat-aluno-titulo">Pergunte para a Lou</h1>
     <p class="page-sub">A Lou lê o perfil completo do aluno/paciente selecionado (diagnóstico, metas, objetivos, diário, triagem) e responde com base só nisso — não é uma conversa genérica.</p>
     <div class="fcard">
       <div class="fblock">
@@ -8990,7 +8990,7 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório', trilha_aprofundamento:'Trilha de Aprofundamento (AH/SD)', pergunte_aluno:'Pergunte sobre o Aluno'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório', trilha_aprofundamento:'Trilha de Aprofundamento (AH/SD)', pergunte_aluno:'Pergunte para a Lou'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
