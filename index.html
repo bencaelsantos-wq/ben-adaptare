@@ -3798,6 +3798,10 @@ async function selecionarAlunoChat(id) {
   const usadas = await _contarPerguntasMesEscola();
   if (area) area.style.display = 'block';
   _atualizarContadorChatAluno(usadas);
+  const histCompleto = document.getElementById('chat-aluno-historico-completo');
+  const btnHist = document.getElementById('btn-historico-completo');
+  if (histCompleto) histCompleto.style.display = 'none';
+  if (btnHist) btnHist.textContent = '📜 Ver histórico completo';
 
   const cont = document.getElementById('chat-aluno-mensagens');
   if (cont) {
@@ -3807,6 +3811,35 @@ async function selecionarAlunoChat(id) {
     cont.innerHTML = (data||[]).map(m => _bolhaChatAluno(m.pergunta, true) + _bolhaChatAluno(m.resposta, false)).join('');
     cont.scrollTop = cont.scrollHeight;
   }
+}
+
+async function toggleHistoricoCompletoChatAluno() {
+  if (!_chatAlunoAtual) return;
+  const cont = document.getElementById('chat-aluno-historico-completo');
+  const btn = document.getElementById('btn-historico-completo');
+  if (!cont) return;
+  const aberto = cont.style.display !== 'none';
+  if (aberto) { cont.style.display = 'none'; if (btn) btn.textContent = '📜 Ver histórico completo'; return; }
+
+  cont.innerHTML = '<p style="font-size:12.5px;color:var(--gr400);text-align:center;padding:12px">Carregando…</p>';
+  cont.style.display = 'block';
+  if (btn) btn.textContent = '📜 Fechar histórico';
+
+  const filtroCol = _chatAlunoAtual.ehClinica ? 'perfil_clinico_id' : 'aluno_id';
+  const { data, error } = await db.from('chat_aluno_perguntas').select('pergunta,resposta,created_at')
+    .eq('user_id', user.id).eq(filtroCol, _chatAlunoAtual.id).order('created_at', { ascending: false });
+
+  if (error) { cont.innerHTML = `<p style="font-size:12.5px;color:#DC2626;text-align:center;padding:12px">Erro ao carregar: ${escapeHtml(error.message)}</p>`; return; }
+  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12.5px;color:var(--gr400);text-align:center;padding:12px">Nenhuma pergunta feita sobre este aluno/paciente ainda.</p>'; return; }
+
+  cont.innerHTML = data.map(m => {
+    const dt = new Date(m.created_at).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--gr100)">
+      <div style="font-size:10.5px;color:var(--gr400);margin-bottom:4px">${dt}</div>
+      <div style="font-size:13px;color:var(--gr800);font-weight:600;margin-bottom:3px">${escapeHtml(m.pergunta)}</div>
+      <div style="font-size:12.5px;color:var(--gr600);white-space:pre-wrap">${escapeHtml(m.resposta)}</div>
+    </div>`;
+  }).join('');
 }
 
 async function _montarContextoChatAluno(c) {
@@ -5468,7 +5501,11 @@ const HTML_PAGE_CHAT_ALUNO = `
     </div>
 
     <div id="chat-aluno-area" style="display:none;margin-top:16px">
-      <div id="chat-aluno-contador" style="margin-bottom:10px;font-size:12.5px;color:var(--gr500)"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div id="chat-aluno-contador" style="font-size:12.5px;color:var(--gr500)"></div>
+        <button class="btn-copy" id="btn-historico-completo" onclick="toggleHistoricoCompletoChatAluno()" style="font-size:12px;padding:5px 10px">📜 Ver histórico completo</button>
+      </div>
+      <div id="chat-aluno-historico-completo" style="display:none;margin-bottom:14px;max-height:340px;overflow-y:auto;border:1px solid var(--gr100);border-radius:10px;padding:10px"></div>
       <div id="chat-aluno-mensagens" style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;max-height:420px;overflow-y:auto;padding:4px"></div>
       <div class="fcard">
         <div class="fblock">
