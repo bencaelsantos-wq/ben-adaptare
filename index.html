@@ -379,6 +379,16 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 
 /* SIDEBAR */
 .sidebar{width:240px;background:#FFFFFF;border-right:1px solid #ECEEF2;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;box-shadow:1px 0 0 #ECEEF2,4px 0 20px rgba(0,0,0,.04)}
+#sidebar-edge-trigger{display:none}
+@media (min-width:769px){
+  #sidebar-edge-trigger{display:flex;align-items:center;position:fixed;top:0;left:0;bottom:0;width:14px;z-index:11;cursor:pointer}
+  #sidebar-edge-arrow{position:fixed;top:50%;left:2px;transform:translateY(-50%);width:18px;height:40px;background:#1E3A8A;color:#fff;border-radius:0 8px 8px 0;display:flex;align-items:center;justify-content:center;font-size:15px;opacity:.55;transition:opacity .2s}
+  #sidebar-edge-trigger:hover #sidebar-edge-arrow{opacity:1}
+  .sidebar{transform:translateX(-100%);transition:transform .22s ease}
+  .sidebar.sidebar-aberta{transform:translateX(0);box-shadow:4px 0 28px rgba(0,0,0,.2)}
+  #sidebar-edge-trigger:has(~ .sidebar.sidebar-aberta){pointer-events:none;opacity:0}
+  .main{margin-left:14px !important;transition:margin-left .15s}
+}
 .sb-header{padding:18px 16px 14px;border-bottom:1px solid #F3F4F6}
 .sb-logo{font-family:'Inter',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.3px;color:#1E3A8A}
 .sb-logo-img{margin-bottom:10px}
@@ -2352,8 +2362,13 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 <div id="app-screen">
   <div class="layout">
 
+    <!-- GATILHO DE BORDA — abre a sidebar ao encostar o mouse na esquerda (só desktop) -->
+    <div id="sidebar-edge-trigger" onmouseenter="document.getElementById('main-sidebar').classList.add('sidebar-aberta')">
+      <span id="sidebar-edge-arrow">›</span>
+    </div>
+
     <!-- SIDEBAR -->
-    <aside class="sidebar" id="main-sidebar">
+    <aside class="sidebar" id="main-sidebar" onmouseleave="this.classList.remove('sidebar-aberta')">
       <button class="hamburger-close" onclick="toggleSidebar()" id="hamburger-close" aria-label="Fechar menu">✕</button>
       <div class="sb-header">
         <div class="sb-logo-img">
