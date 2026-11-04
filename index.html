@@ -3841,6 +3841,44 @@ function _limparMarkdown(texto) {
   return (texto || '').replace(/^#{1,6}\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '$1');
 }
 
+async function gerarResumoJornada() {
+  if (!_jrnAtual || !_jrnAtual.eventos) return toast('Selecione um aluno/paciente primeiro.', 'error');
+  const dias = parseInt(document.getElementById('jrn-periodo')?.value, 10) || 9999;
+  const tiposAtivos = new Set(Array.from(document.querySelectorAll('.jrn-filtro-tipo:checked')).map(el => el.value));
+  const limite = new Date(); limite.setDate(limite.getDate() - dias);
+  const eventos = _jrnAtual.eventos.filter(e => e.data >= limite && tiposAtivos.has(e.tipo)).slice().reverse();
+  if (!eventos.length) return toast('Nenhum evento no filtro atual pra resumir.', 'error');
+
+  const btn = document.getElementById('jrn-btn-resumo');
+  const genBox = document.getElementById('jrn-resumo-gen-box');
+  const resultado = document.getElementById('jrn-resumo-resultado');
+  btn.disabled = true;
+  genBox.classList.add('show');
+  resultado.style.display = 'none';
+
+  try {
+    const listaEventos = eventos.map(e => {
+      const t = TIPOS_JORNADA[e.tipo];
+      const dt = e.data.toLocaleDateString('pt-BR');
+      return `[${dt}] (${t?.label||e.tipo}) ${e.titulo}${e.resumo ? ' — ' + e.resumo : ''}`;
+    }).join('\n');
+
+    const prompt = `Você é a Lou, assistente da LouMind. Abaixo está a lista cronológica de eventos registrados sobre ${_jrnAtual.nome}, vindos da escola e/ou da clínica. Escreva um resumo narrativo curto (máximo 2 parágrafos, cerca de 100-150 palavras) juntando o que aconteceu nos dois lados — destaque: (1) o que a escola registrou, (2) o que a clínica registrou (se houver), (3) pontos em que as duas visões convergem ou divergem, se notar algum. Seja concreto, cite fatos reais da lista, nunca invente nada que não esteja nela. NUNCA use markdown (sem #, sem **negrito**) — texto puro corrido.
+
+EVENTOS (do mais antigo pro mais recente):
+${listaEventos}`;
+
+    const texto = await chamarClaude({ prompt, maxTokens: 400, modulo: 'jornada_resumo' });
+    resultado.textContent = _limparMarkdown(texto.trim());
+    resultado.style.display = 'block';
+  } catch(e) {
+    toast('Erro ao gerar resumo: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    genBox.classList.remove('show');
+  }
+}
+
 function baixarPDFJornada() {
   if (!_jrnAtual || !_jrnAtual.eventos) return toast('Selecione um aluno/paciente primeiro.', 'error');
   const dias = parseInt(document.getElementById('jrn-periodo')?.value, 10) || 9999;
@@ -4906,6 +4944,7 @@ async function verificarSessao() {
 const ORCAMENTO_ANALISE_MENSAL = 60;
 const ORCAMENTO_LAUDOS_MENSAL = 50;
 const ORCAMENTO_PERGUNTE_ALUNO_MENSAL = 150;
+const ORCAMENTO_JORNADA_RESUMO_MENSAL = 50;
 const PRECO_EXTRA_PROFESSOR = 20;
 const PRECO_EXTRA_ALUNO = 5;
 const PRECO_PACOTE_IA = 30;
@@ -5269,6 +5308,9 @@ async function renderizarWidgetConsumoIA() {
       const pctPergunta = perguntaOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((perguntaOrc.gastoBRL / perguntaOrc.limiteBRL) * 100));
       html += barraConsumoIA('Pergunte para a Lou', pctPergunta);
     }
+    const jornadaOrc = await verificarOrcamentoIA('jornada_resumo');
+    const pctJornada = jornadaOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((jornadaOrc.gastoBRL / jornadaOrc.limiteBRL) * 100));
+    html += barraConsumoIA('Resumo da Jornada', pctJornada);
     el.innerHTML = html;
     el.style.display = 'block';
   } catch(e) { console.warn('widget consumo IA:', e.message); }
@@ -5717,7 +5759,12 @@ const HTML_PAGE_JORNADA = `
         <div id="jrn-filtros-tipo" style="display:flex;flex-wrap:wrap;gap:6px"></div>
         <button class="btn-copy" onclick="baixarPDFJornada()" style="margin-left:auto">⬇️ Baixar PDF</button>
       </div>
-      <div id="jrn-timeline"></div>
+      <div class="fcard" style="background:linear-gradient(135deg,#F0F4FF,#F5F3FF);border:1px solid #DBEAFE">
+        <button class="btn-gerar" id="jrn-btn-resumo" onclick="gerarResumoJornada()" style="width:auto">✨ Gerar resumo com a Lou</button>
+        <div class="gen-box" id="jrn-resumo-gen-box"><div class="spin"></div><span>A Lou está lendo os eventos do período…</span></div>
+        <div id="jrn-resumo-resultado" style="display:none;margin-top:12px;font-size:13.5px;color:var(--gr800);line-height:1.65;white-space:pre-wrap"></div>
+      </div>
+      <div id="jrn-timeline" style="margin-top:14px"></div>
     </div>
   </div>`;
 
@@ -10559,16 +10606,18 @@ async function verificarOrcamentoIA(modulo) {
   const ehAnalise = modulo === 'analise-comportamental';
   const ehLaudos = modulo === 'linha-tempo-laudos';
   const ehPerguntaAluno = modulo === 'pergunte_aluno';
-  const MODULOS_COM_ORCAMENTO_PROPRIO = ['analise-comportamental', 'linha-tempo-laudos', 'pergunte_aluno'];
+  const ehJornadaResumo = modulo === 'jornada_resumo';
+  const MODULOS_COM_ORCAMENTO_PROPRIO = ['analise-comportamental', 'linha-tempo-laudos', 'pergunte_aluno', 'jornada_resumo'];
   const { data } = await db.from('usage_logs').select('custo_usd, metodo').gte('created_at', inicioMes.toISOString());
   const gastoUSD = (data||[]).filter(r => {
     if (ehAnalise) return r.metodo === 'analise-comportamental';
     if (ehLaudos) return r.metodo === 'linha-tempo-laudos';
     if (ehPerguntaAluno) return r.metodo === 'pergunte_aluno';
+    if (ehJornadaResumo) return r.metodo === 'jornada_resumo';
     return !MODULOS_COM_ORCAMENTO_PROPRIO.includes(r.metodo);
   }).reduce((s,r)=>s+(r.custo_usd||0),0);
   const gastoBRL = gastoUSD * 5.5;
-  const limiteBRL = ehAnalise ? ORCAMENTO_ANALISE_MENSAL : ehLaudos ? ORCAMENTO_LAUDOS_MENSAL : ehPerguntaAluno ? ORCAMENTO_PERGUNTE_ALUNO_MENSAL : orcamentoBaseAtual();
+  const limiteBRL = ehAnalise ? ORCAMENTO_ANALISE_MENSAL : ehLaudos ? ORCAMENTO_LAUDOS_MENSAL : ehPerguntaAluno ? ORCAMENTO_PERGUNTE_ALUNO_MENSAL : ehJornadaResumo ? ORCAMENTO_JORNADA_RESUMO_MENSAL : orcamentoBaseAtual();
   return { ok: limiteBRL === Infinity || gastoBRL < limiteBRL, gastoBRL, limiteBRL };
 }
 
