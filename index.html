@@ -3843,15 +3843,18 @@ async function enviarPerguntaChatAluno() {
   try {
     const contexto = await _montarContextoChatAluno(_chatAlunoAtual);
     const tipo = _chatAlunoAtual.ehClinica ? 'paciente' : 'aluno';
-    const prompt = `Você é a Lou, assistente pedagógica/clínica da LouMind. Um profissional está te perguntando sobre um ${tipo} específico. Responda SOMENTE com base nas informações reais fornecidas abaixo — se a informação pedida não estiver disponível no perfil, diga isso claramente em vez de inventar. Nunca afirme um diagnóstico que não esteja explicitamente nos dados fornecidos. Seja direto e prático, sem rodeios, no máximo 2 parágrafos curtos.
+    const systemText = `Você é a Lou, assistente pedagógica/clínica da LouMind. Um profissional está te perguntando sobre um ${tipo} específico. Responda SOMENTE com base nas informações reais fornecidas abaixo — se a informação pedida não estiver disponível no perfil, diga isso claramente em vez de inventar. Nunca afirme um diagnóstico que não esteja explicitamente nos dados fornecidos. Seja direto e prático: no máximo 3-4 frases curtas, sem rodeios, sem repetir a pergunta antes de responder.
 
 PERFIL DA PESSOA:
-${contexto}
+${contexto}`;
 
-PERGUNTA DO PROFISSIONAL:
-${pergunta}`;
-
-    const resposta = (await chamarClaude({ prompt, maxTokens: 400, modulo: 'pergunte_aluno' })).trim();
+    const resposta = (await chamarClaude({
+      prompt: `PERGUNTA DO PROFISSIONAL: ${pergunta}`,
+      contextoCacheavel: systemText,
+      modelo: 'claude-haiku-4-5',
+      maxTokens: 250,
+      modulo: 'pergunte_aluno',
+    })).trim();
 
     document.getElementById('chat-aluno-pensando')?.remove();
     if (cont) { cont.insertAdjacentHTML('beforeend', _bolhaChatAluno(resposta, false)); cont.scrollTop = cont.scrollHeight; }
@@ -10382,7 +10385,12 @@ ${textoOriginal}`;
   input.disabled = false;
 }
 
-async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral', imagensBase64 = [] }) {
+const PRECOS_MODELO_IA = {
+  'claude-sonnet-4-5': { input: 3,   output: 15, cacheWrite: 3.75, cacheRead: 0.3 },
+  'claude-haiku-4-5':  { input: 0.8, output: 4,  cacheWrite: 1.0,  cacheRead: 0.08 },
+};
+
+async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral', imagensBase64 = [], modelo = 'claude-sonnet-4-5', contextoCacheavel = '' }) {
   if (user) {
     const orc = await verificarOrcamentoIA(modulo);
     if (!orc.ok) {
@@ -10398,10 +10406,14 @@ async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral', imagen
         { type: 'text', text: prompt }
       ]
     : prompt;
+  const body = { model: modelo, max_tokens: maxTokens, messages: [{ role: 'user', content }] };
+  if (contextoCacheavel) {
+    body.system = [{ type: 'text', text: contextoCacheavel, cache_control: { type: 'ephemeral' } }];
+  }
   const r = await fetch(CLAUDE_PROXY, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_KEY}` },
-    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, messages: [{ role: 'user', content }] })
+    body: JSON.stringify(body)
   });
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
@@ -10414,10 +10426,12 @@ async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral', imagen
   // Registrar uso (silencioso — nunca quebra o fluxo)
   try {
     const usage = data.usage || {};
-    const inputTok  = usage.input_tokens  || 0;
-    const outputTok = usage.output_tokens || 0;
-    // Preço aproximado claude-sonnet-4-5: $3/M input, $15/M output
-    const custoUSD = (inputTok * 3 + outputTok * 15) / 1_000_000;
+    const inputTok      = usage.input_tokens  || 0;
+    const outputTok     = usage.output_tokens || 0;
+    const cacheWriteTok = usage.cache_creation_input_tokens || 0;
+    const cacheReadTok  = usage.cache_read_input_tokens || 0;
+    const precos = PRECOS_MODELO_IA[modelo] || PRECOS_MODELO_IA['claude-sonnet-4-5'];
+    const custoUSD = (inputTok * precos.input + outputTok * precos.output + cacheWriteTok * precos.cacheWrite + cacheReadTok * precos.cacheRead) / 1_000_000;
     if (user && !window._devMode) {
       await db.from('usage_logs').insert({
         user_id:       user.id,
