@@ -3776,7 +3776,7 @@ async function _buscarEventosJornada() {
 
   const push = (tipo, created_at, titulo, resumo) => {
     if (!created_at) return;
-    eventos.push({ tipo, data: new Date(created_at), titulo, resumo: resumo || '' });
+    eventos.push({ tipo, data: new Date(created_at), titulo: _limparMarkdown(titulo), resumo: _limparMarkdown(resumo || '') });
   };
 
   try {
@@ -3835,6 +3835,10 @@ function renderizarJornada() {
       </div>`;
     }).join('')}
   </div>`;
+}
+
+function _limparMarkdown(texto) {
+  return (texto || '').replace(/^#{1,6}\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '$1');
 }
 
 function baixarPDFJornada() {
