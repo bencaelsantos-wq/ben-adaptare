@@ -3698,6 +3698,183 @@ function eixosDoAluno(perfis) {
   return eixos;
 }
 
+let _chatAlunoAtual = null;
+
+function _chatAlunoEhClinica() { return ['clinica','gestao-clinica'].includes(userRole); }
+
+function popularSelectChatAluno() {
+  const sel = document.getElementById('chat-aluno-sel');
+  if (!sel) return;
+  const ehClinica = _chatAlunoEhClinica();
+  const label = document.getElementById('chat-aluno-sel-label');
+  const titulo = document.getElementById('chat-aluno-titulo');
+  if (label) label.textContent = ehClinica ? 'Paciente' : 'Aluno';
+  if (titulo) titulo.textContent = ehClinica ? 'Pergunte sobre o Paciente' : 'Pergunte sobre o Aluno';
+  const lista = ehClinica ? (perfisClinicaList||[]) : (alunosCad||[]);
+  sel.innerHTML = '<option value="">Selecione</option>' + lista.slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(x=>`<option value="${x.id}">${escapeHtml(x.nome)}</option>`).join('');
+  const area = document.getElementById('chat-aluno-area');
+  const info = document.getElementById('chat-aluno-info');
+  if (area) area.style.display = 'none';
+  if (info) info.style.display = 'none';
+  _chatAlunoAtual = null;
+}
+
+async function _contarPerguntasHojeChatAluno(filtroCol, filtroVal) {
+  const inicio = new Date(); inicio.setHours(0,0,0,0);
+  const { count } = await db.from('chat_aluno_perguntas').select('id', { count:'exact', head:true })
+    .eq('user_id', user.id).eq(filtroCol, filtroVal).gte('created_at', inicio.toISOString());
+  return count || 0;
+}
+
+function _atualizarContadorChatAluno(usadas) {
+  const el = document.getElementById('chat-aluno-contador');
+  const btn = document.getElementById('chat-aluno-btn-enviar');
+  const restantes = Math.max(0, 5 - usadas);
+  const tipo = _chatAlunoAtual?.ehClinica ? 'paciente' : 'aluno';
+  if (el) el.textContent = restantes > 0
+    ? `${usadas} de 5 perguntas usadas hoje para este ${tipo}.`
+    : `Limite de 5 perguntas hoje para este ${tipo} atingido. Volta amanhã!`;
+  if (btn) btn.disabled = restantes <= 0;
+  if (_chatAlunoAtual) _chatAlunoAtual.usadas = usadas;
+}
+
+function _bolhaChatAluno(texto, deUsuario) {
+  const estiloUsuario = 'align-self:flex-end;max-width:85%;background:#2563EB;color:#fff;padding:9px 13px;border-radius:12px 12px 2px 12px;font-size:13px';
+  const estiloLou = 'align-self:flex-start;max-width:85%;background:var(--gr50);padding:9px 13px;border-radius:12px 12px 12px 2px;font-size:13px;color:var(--gr800);white-space:pre-wrap';
+  return `<div style="${deUsuario ? estiloUsuario : estiloLou}">${escapeHtml(texto)}</div>`;
+}
+
+async function selecionarAlunoChat(id) {
+  const area = document.getElementById('chat-aluno-area');
+  const info = document.getElementById('chat-aluno-info');
+  if (!id) { if(area) area.style.display='none'; if(info) info.style.display='none'; _chatAlunoAtual = null; return; }
+  const ehClinica = _chatAlunoEhClinica();
+  const lista = ehClinica ? perfisClinicaList : alunosCad;
+  const item = (lista||[]).find(x => x.id === id);
+  if (!item) return;
+
+  if (info) {
+    info.style.display = 'block';
+    info.innerHTML = `<strong>${escapeHtml(item.nome)}</strong>${item.idade?' · '+escapeHtml(String(item.idade)):''}${item.serie?' · '+escapeHtml(item.serie):''}`;
+  }
+
+  _chatAlunoAtual = { id, nome: item.nome, item, ehClinica };
+  const filtroCol = ehClinica ? 'perfil_clinico_id' : 'aluno_id';
+  const usadas = await _contarPerguntasHojeChatAluno(filtroCol, id);
+  if (area) area.style.display = 'block';
+  _atualizarContadorChatAluno(usadas);
+
+  const cont = document.getElementById('chat-aluno-mensagens');
+  if (cont) {
+    const inicio = new Date(); inicio.setHours(0,0,0,0);
+    const { data } = await db.from('chat_aluno_perguntas').select('pergunta,resposta,created_at')
+      .eq('user_id', user.id).eq(filtroCol, id).gte('created_at', inicio.toISOString()).order('created_at', { ascending: true });
+    cont.innerHTML = (data||[]).map(m => _bolhaChatAluno(m.pergunta, true) + _bolhaChatAluno(m.resposta, false)).join('');
+    cont.scrollTop = cont.scrollHeight;
+  }
+}
+
+async function _montarContextoChatAluno(c) {
+  const item = c.item, ehClinica = c.ehClinica;
+  const linhas = [`Nome: ${item.nome}`];
+  if (item.idade) linhas.push(`Idade: ${item.idade}`);
+  if (item.serie) linhas.push(`Série: ${item.serie}`);
+  if (ehClinica) {
+    if (item.diagnostico) linhas.push(`Diagnóstico: ${item.diagnostico}`);
+    if (item.hipotese) linhas.push(`Hipótese diagnóstica: ${item.hipotese}`);
+    if (item.preservadas) linhas.push(`Habilidades preservadas: ${item.preservadas}`);
+    if (item.comprometidas) linhas.push(`Áreas comprometidas: ${item.comprometidas}`);
+    if (item.comunicacao) linhas.push(`Comunicação: ${item.comunicacao}`);
+    if (item.sensorio) linhas.push(`Perfil sensorial: ${item.sensorio}`);
+  } else if ((item.perfis||[]).length) {
+    linhas.push(`Perfis/diagnósticos: ${item.perfis.join(', ')}`);
+  }
+  if (item.observacoes) linhas.push(`Observações gerais: ${item.observacoes}`);
+
+  try {
+    if (ehClinica) {
+      const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', item.id).maybeSingle();
+      if (obj) {
+        const areas = ['cognitivo','comunicacao','social','comportamental','academico'];
+        const txt = areas.filter(a => obj[a]).map(a => `- ${a}: ${obj[a]}`).join('\n');
+        if (txt) linhas.push(`Objetivos terapêuticos atuais:\n${txt}`);
+      }
+    } else {
+      const { data: pei } = await db.from('peis').select('metas_estruturadas').eq('aluno_id', item.id).eq('status','finalizado').order('created_at',{ascending:false}).limit(1).maybeSingle();
+      const metas = [...(pei?.metas_estruturadas?.academicas||[]), ...(pei?.metas_estruturadas?.desenvolvimento||[])].filter(m => m.descricao);
+      if (metas.length) linhas.push('Metas do PEI atual:\n' + metas.map(m => `- ${m.descricao} (progresso: ${m.progresso||0}%)`).join('\n'));
+    }
+  } catch(e) { /* segue sem esse bloco se a consulta falhar */ }
+
+  try {
+    let q = db.from('triagens').select('hipotese').order('created_at',{ascending:false}).limit(1);
+    q = ehClinica ? q.eq('aluno_nome', item.nome) : q.eq('aluno_id', item.id);
+    const { data: tri } = await q;
+    if (tri && tri[0]) linhas.push(`Triagem Inicial mais recente (hipótese pedagógica, NÃO é diagnóstico): ${tri[0].hipotese}`);
+  } catch(e) {}
+
+  try {
+    const { data: diarios } = await db.from('diario_aluno').select('tipo,texto').eq('aluno_nome', item.nome).order('created_at',{ascending:false}).limit(5);
+    if (diarios && diarios.length) linhas.push('Últimos registros do diário (mais recente primeiro):\n' + diarios.map(d => `- [${d.tipo||'registro'}] ${(d.texto||'').slice(0,180)}`).join('\n'));
+  } catch(e) {}
+
+  return linhas.join('\n');
+}
+
+async function enviarPerguntaChatAluno() {
+  if (!_chatAlunoAtual) return toast('Selecione um aluno/paciente primeiro.', 'error');
+  const campo = document.getElementById('chat-aluno-pergunta');
+  const pergunta = campo?.value.trim();
+  if (!pergunta) return toast('Digite sua pergunta.', 'error');
+  if (pergunta.length > 400) return toast('Pergunta muito longa (máx. 400 caracteres).', 'error');
+
+  const filtroCol = _chatAlunoAtual.ehClinica ? 'perfil_clinico_id' : 'aluno_id';
+  const usadas = await _contarPerguntasHojeChatAluno(filtroCol, _chatAlunoAtual.id);
+  if (usadas >= 5) { _atualizarContadorChatAluno(usadas); return toast('Limite de 5 perguntas hoje pra este ' + (_chatAlunoAtual.ehClinica?'paciente':'aluno') + ' atingido.', 'error'); }
+
+  const btn = document.getElementById('chat-aluno-btn-enviar');
+  if (btn) btn.disabled = true;
+  const cont = document.getElementById('chat-aluno-mensagens');
+  if (cont) {
+    cont.insertAdjacentHTML('beforeend', _bolhaChatAluno(pergunta, true) + '<div id="chat-aluno-pensando" style="align-self:flex-start;color:var(--gr400);font-size:12.5px;padding:4px 0">A Lou está lendo o perfil e pensando…</div>');
+    cont.scrollTop = cont.scrollHeight;
+  }
+
+  try {
+    const contexto = await _montarContextoChatAluno(_chatAlunoAtual);
+    const tipo = _chatAlunoAtual.ehClinica ? 'paciente' : 'aluno';
+    const prompt = `Você é a Lou, assistente pedagógica/clínica da LouMind. Um profissional está te perguntando sobre um ${tipo} específico. Responda SOMENTE com base nas informações reais fornecidas abaixo — se a informação pedida não estiver disponível no perfil, diga isso claramente em vez de inventar. Nunca afirme um diagnóstico que não esteja explicitamente nos dados fornecidos. Seja direto e prático, sem rodeios, no máximo 2 parágrafos curtos.
+
+PERFIL DA PESSOA:
+${contexto}
+
+PERGUNTA DO PROFISSIONAL:
+${pergunta}`;
+
+    const resposta = (await chamarClaude({ prompt, maxTokens: 400, modulo: 'pergunte_aluno' })).trim();
+
+    document.getElementById('chat-aluno-pensando')?.remove();
+    if (cont) { cont.insertAdjacentHTML('beforeend', _bolhaChatAluno(resposta, false)); cont.scrollTop = cont.scrollHeight; }
+    if (campo) campo.value = '';
+    const contador = document.getElementById('chat-aluno-contador-chars');
+    if (contador) contador.textContent = '0/400';
+
+    await db.from('chat_aluno_perguntas').insert({
+      user_id: user.id,
+      aluno_id: _chatAlunoAtual.ehClinica ? null : _chatAlunoAtual.id,
+      perfil_clinico_id: _chatAlunoAtual.ehClinica ? _chatAlunoAtual.id : null,
+      nome_referencia: _chatAlunoAtual.nome,
+      pergunta, resposta,
+    });
+
+    _atualizarContadorChatAluno(usadas + 1);
+  } catch(e) {
+    document.getElementById('chat-aluno-pensando')?.remove();
+    toast('Erro: ' + e.message, 'error');
+    if (btn) btn.disabled = false;
+  }
+}
+
 function popularSelectTriagem() {
   const sel = document.getElementById('tri-aluno-sel');
   if (!sel) return;
@@ -4485,7 +4662,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento','pergunte_aluno'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -4859,6 +5036,9 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
+    <div class="nav-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte sobre o Aluno')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte sobre o Aluno${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
     <div class="nav-item" id="nav-registro-observacao" onclick="showPage('registro-observacao');popularRegistroObservacaoSel()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="7.5" cy="7.5" r="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M7 11h6M7 13.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Registro de Observação
     </div>
@@ -5012,6 +5192,9 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
+    <div class="nav-item gestao-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte sobre o Aluno')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte sobre o Aluno${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
     <div class="nav-item gestao-item" id="nav-estudo-caso" onclick="${!temAddon('estudo_caso') ? "acessarRecursoPremium('Estudo de Caso')" : "showPage('estudo-caso');carregarEstudosCaso()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4z" stroke="currentColor" stroke-width="1.5" rx="1"/><circle cx="8" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 13h6M10 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Estudo de Caso${!temAddon('estudo_caso') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -5087,6 +5270,9 @@ function renderNavClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>` : ''}
     <div class="nav-section">Módulo Clínico</div>
+    <div class="nav-item clinic-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte sobre o Paciente')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte sobre o Paciente${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
     <div class="nav-item clinic-item" id="nav-clinica-perfil" onclick="showPage('clinica-perfil')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfil Clínico
     </div>
@@ -5186,6 +5372,9 @@ function renderNavGestaoClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Dashboard
     </div>
     <div class="nav-section">Gestão Clínica</div>
+    <div class="nav-item clinic-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte sobre o Paciente')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte sobre o Paciente${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
     <div class="nav-item clinic-item" id="nav-gc-perfis" onclick="showPage('gc-perfis')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfis dos Pacientes
     </div>
@@ -5220,8 +5409,38 @@ function renderNavGestaoClinica() {
   renderPagesGestaoClinica();
 }
 
+const HTML_PAGE_CHAT_ALUNO = `
+  <!-- PERGUNTE SOBRE O ALUNO/PACIENTE -->
+  <div id="page-chat-aluno" class="page">
+    <h1 class="page-title" id="chat-aluno-titulo">Pergunte sobre o Aluno</h1>
+    <p class="page-sub">A Lou lê o perfil completo do aluno/paciente selecionado (diagnóstico, metas, objetivos, diário, triagem) e responde com base só nisso — não é uma conversa genérica.</p>
+    <div class="fcard">
+      <div class="fblock">
+        <label class="flabel" for="chat-aluno-sel" id="chat-aluno-sel-label">Aluno</label>
+        <select id="chat-aluno-sel" class="fselect" onchange="selecionarAlunoChat(this.value)"><option value="">Selecione</option></select>
+      </div>
+      <div id="chat-aluno-info" style="display:none;margin-top:8px;padding:10px 12px;background:var(--blue-light);border-radius:var(--rsm);font-size:13px;color:var(--p-navy)"></div>
+    </div>
+
+    <div id="chat-aluno-area" style="display:none;margin-top:16px">
+      <div id="chat-aluno-contador" style="margin-bottom:10px;font-size:12.5px;color:var(--gr500)"></div>
+      <div id="chat-aluno-mensagens" style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;max-height:420px;overflow-y:auto;padding:4px"></div>
+      <div class="fcard">
+        <div class="fblock">
+          <label class="flabel" for="chat-aluno-pergunta">Sua pergunta</label>
+          <textarea id="chat-aluno-pergunta" class="ftarea sm" maxlength="400" placeholder="Ex: Quais estratégias de regulação emocional fazem mais sentido pra esse perfil?" oninput="document.getElementById('chat-aluno-contador-chars').textContent=this.value.length+'/400'"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+            <span id="chat-aluno-contador-chars" style="font-size:11px;color:var(--gr400)">0/400</span>
+            <button class="btn-gerar" id="chat-aluno-btn-enviar" onclick="enviarPerguntaChatAluno()" style="width:auto;padding:10px 20px">Perguntar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
 function renderPagesGestaoClinica() {
   document.getElementById('main-content').innerHTML = `
+  ${HTML_PAGE_CHAT_ALUNO}
   <!-- DASHBOARD DA GESTÃO CLÍNICA -->
   <div id="page-gc-dashboard" class="page active">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:12px">
@@ -8759,7 +8978,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9, pergunte_aluno: 224.9
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
@@ -8767,12 +8986,12 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório', trilha_aprofundamento:'Trilha de Aprofundamento (AH/SD)'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório', trilha_aprofundamento:'Trilha de Aprofundamento (AH/SD)', pergunte_aluno:'Pergunte sobre o Aluno'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
   escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento'],
-  compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario'],
+  compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario','pergunte_aluno'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
 
@@ -11507,6 +11726,7 @@ window.showPage = showPage;
 // ── RENDERIZAR PÁGINAS PROFESSOR ─────────────────────────────
 function renderPages() {
   document.getElementById('main-content').innerHTML = `
+  ${HTML_PAGE_CHAT_ALUNO}
   <!-- DASHBOARD DO PROFESSOR -->
   <div id="page-prof-dashboard" class="page active">
     <h1 class="page-title">Meu Dashboard</h1>
@@ -13677,6 +13897,7 @@ function renderPages() {
 // ── PÁGINAS GESTÃO ───────────────────────────────────────────
 function renderPagesGestao() {
   document.getElementById('main-content').innerHTML = `
+  ${HTML_PAGE_CHAT_ALUNO}
    <!-- GESTÃO: DIÁRIO DO ALUNO (somente leitura) -->
   <div id="page-ponte-diario" class="page">
     <h1 class="page-title">Diário do Aluno</h1>
@@ -14568,6 +14789,7 @@ function renderPagesGestao() {
 // ── PÁGINAS CLÍNICA ───────────────────────────────────────────
 function renderPagesClinica() {
   document.getElementById('main-content').innerHTML = `
+  ${HTML_PAGE_CHAT_ALUNO}
   <!-- DASHBOARD DA CLÍNICA -->
   <div id="page-clinica-dashboard" class="page active">
     <h1 class="page-title"> Dashboard Clínico</h1>
