@@ -92,7 +92,7 @@ a:hover{text-decoration:underline}
 .chip-camada:has(input:checked){background:#EEF2FF;border-color:#2563EB;color:#1E3A8A;font-weight:600}
 .chip-camada input{accent-color:#2563EB;margin:0}
 
-#widget-consumo-ia{cursor:pointer;overflow:hidden;max-height:18px;transition:max-height .25s ease}
+#widget-consumo-ia{cursor:pointer;overflow:hidden;max-height:30px;transition:max-height .25s ease}
 #widget-consumo-ia:hover,#widget-consumo-ia.wia-aberto{max-height:260px}
 
 .lp-publico-btn{padding:10px 20px;border:1.5px solid #E5E7EB;border-radius:100px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:#374151;background:#fff;cursor:pointer;transition:all .18s}
@@ -400,7 +400,10 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
 .sb-role.clinica{background:#F5F3FF;color:#6D28D9}.sb-role.clinica::before{background:#8B5CF6}
 .sb-role.at{background:#F0FDFA;color:#0F766E}.sb-role.at::before{background:#14B8A6}
 .sb-role.gestao-clinica{background:#F5F0FF;color:#6D28D9}.sb-role.gestao-clinica::before{background:#7C3AED}
-.sb-nav{padding:14px 10px;flex:1;overflow-y:auto}
+.sb-nav-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
+.sb-nav{padding:6px 10px;flex:1;overflow-y:auto;min-height:0}
+.sb-nav-seta{display:block;width:100%;border:none;background:#F8FAFF;color:#94A3B8;font-size:9px;padding:3px 0;cursor:pointer;flex-shrink:0;line-height:1}
+.sb-nav-seta:hover{background:#EEF2FF;color:#3B4ECC}
 
 .notif-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;background:#EF4444;color:#fff;font-size:10px;font-weight:700;border-radius:9px;padding:0 5px;margin-left:auto;line-height:1}
 .nav-section{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#B0B8C4;padding:12px 12px 3px;margin-top:2px}
@@ -2376,9 +2379,13 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
         </div>
         <span class="sb-role" id="sb-role-badge">Professor</span>
       </div>
-      <nav class="sb-nav" id="sb-nav">
-        <!-- Preenchido via JS conforme o papel -->
-      </nav>
+      <div class="sb-nav-wrap">
+        <button type="button" class="sb-nav-seta sb-nav-seta-up" onclick="document.getElementById('sb-nav').scrollBy({top:-140,behavior:'smooth'})" aria-label="Rolar menu pra cima">▲</button>
+        <nav class="sb-nav" id="sb-nav">
+          <!-- Preenchido via JS conforme o papel -->
+        </nav>
+        <button type="button" class="sb-nav-seta sb-nav-seta-down" onclick="document.getElementById('sb-nav').scrollBy({top:140,behavior:'smooth'})" aria-label="Rolar menu pra baixo">▼</button>
+      </div>
       <div class="sb-footer">
         <a href="#" onclick="abrirManualUso();return false" style="display:block;text-align:center;font-size:11.5px;color:#6B7280;text-decoration:none;margin-bottom:8px;padding:6px;border:1px solid #E2E8F0;border-radius:8px;background:#F9FAFB">📖 Manual de Uso</a>
         <div id="widget-consumo-ia" onclick="this.classList.toggle('wia-aberto')" style="display:none;margin-bottom:6px;padding:7px 9px;background:#F8FAFF;border:1px solid #E2E8F0;border-radius:8px;font-size:9.5px"></div>
