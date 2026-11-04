@@ -5036,6 +5036,11 @@ async function renderizarWidgetConsumoIA() {
       const pctLaudos = laudosOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((laudosOrc.gastoBRL / laudosOrc.limiteBRL) * 100));
       html += barraConsumoIA('Linha do Tempo de Laudos', pctLaudos);
     }
+    if (temAddon('pergunte_aluno')) {
+      const perguntaOrc = await verificarOrcamentoIA('pergunte_aluno');
+      const pctPergunta = perguntaOrc.limiteBRL === Infinity ? 0 : Math.min(100, Math.round((perguntaOrc.gastoBRL / perguntaOrc.limiteBRL) * 100));
+      html += barraConsumoIA('Pergunte para a Lou', pctPergunta);
+    }
     el.innerHTML = html;
     el.style.display = 'block';
   } catch(e) { console.warn('widget consumo IA:', e.message); }
