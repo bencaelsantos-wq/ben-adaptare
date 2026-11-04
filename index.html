@@ -3719,21 +3719,20 @@ function popularSelectChatAluno() {
   _chatAlunoAtual = null;
 }
 
-async function _contarPerguntasHojeChatAluno(filtroCol, filtroVal) {
-  const inicio = new Date(); inicio.setHours(0,0,0,0);
-  const { count } = await db.from('chat_aluno_perguntas').select('id', { count:'exact', head:true })
-    .eq('user_id', user.id).eq(filtroCol, filtroVal).gte('created_at', inicio.toISOString());
-  return count || 0;
+async function _contarPerguntasMesEscola() {
+  const { data, error } = await db.rpc('contar_perguntas_mes_chat_aluno');
+  if (error) { console.error('contar_perguntas_mes_chat_aluno:', error.message); return 0; }
+  return data || 0;
 }
 
 function _atualizarContadorChatAluno(usadas) {
   const el = document.getElementById('chat-aluno-contador');
   const btn = document.getElementById('chat-aluno-btn-enviar');
-  const restantes = Math.max(0, 5 - usadas);
-  const tipo = _chatAlunoAtual?.ehClinica ? 'paciente' : 'aluno';
+  const limite = window._qtdPerguntasMes || 100;
+  const restantes = Math.max(0, limite - usadas);
   if (el) el.textContent = restantes > 0
-    ? `${usadas} de 5 perguntas usadas hoje para este ${tipo}.`
-    : `Limite de 5 perguntas hoje para este ${tipo} atingido. Volta amanhã!`;
+    ? `${usadas} de ${limite} perguntas usadas este mês (toda a escola/clínica).`
+    : `Limite de ${limite} perguntas deste mês atingido. Volta no início do próximo mês!`;
   if (btn) btn.disabled = restantes <= 0;
   if (_chatAlunoAtual) _chatAlunoAtual.usadas = usadas;
 }
@@ -3765,7 +3764,7 @@ async function selecionarAlunoChat(id) {
 
   _chatAlunoAtual = { id, nome: item.nome, item, ehClinica };
   const filtroCol = ehClinica ? 'perfil_clinico_id' : 'aluno_id';
-  const usadas = await _contarPerguntasHojeChatAluno(filtroCol, id);
+  const usadas = await _contarPerguntasMesEscola();
   if (area) area.style.display = 'block';
   _atualizarContadorChatAluno(usadas);
 
@@ -3833,9 +3832,9 @@ async function enviarPerguntaChatAluno() {
   if (!pergunta) return toast('Digite sua pergunta.', 'error');
   if (pergunta.length > 400) return toast('Pergunta muito longa (máx. 400 caracteres).', 'error');
 
-  const filtroCol = _chatAlunoAtual.ehClinica ? 'perfil_clinico_id' : 'aluno_id';
-  const usadas = await _contarPerguntasHojeChatAluno(filtroCol, _chatAlunoAtual.id);
-  if (usadas >= 5) { _atualizarContadorChatAluno(usadas); return toast('Limite de 5 perguntas hoje pra este ' + (_chatAlunoAtual.ehClinica?'paciente':'aluno') + ' atingido.', 'error'); }
+  const limiteMes = window._qtdPerguntasMes || 100;
+  const usadas = await _contarPerguntasMesEscola();
+  if (usadas >= limiteMes) { _atualizarContadorChatAluno(usadas); return toast(`Limite de ${limiteMes} perguntas deste mês atingido.`, 'error'); }
 
   const btn = document.getElementById('chat-aluno-btn-enviar');
   if (btn) btn.disabled = true;
@@ -3873,6 +3872,7 @@ ${contexto}`;
 
     await db.from('chat_aluno_perguntas').insert({
       user_id: user.id,
+      organizacao_id: window._organizacaoId || null,
       aluno_id: _chatAlunoAtual.ehClinica ? null : _chatAlunoAtual.id,
       perfil_clinico_id: _chatAlunoAtual.ehClinica ? _chatAlunoAtual.id : null,
       nome_referencia: _chatAlunoAtual.nome,
@@ -4677,7 +4677,7 @@ function orcamentoBaseAtual() {
 
 const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento','pergunte_aluno'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
-const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, desconto_percentual';
+const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, qtd_perguntas_mes, desconto_percentual';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
 
 async function lerPerfilDobanco() {
@@ -4722,6 +4722,7 @@ async function lerPerfilDobanco() {
         pacientes: org?.qtd_pacientes || 0, profissionaisClinicos: org?.qtd_profissionais_clinicos || 0,
         at: org?.qtd_at || 0, alunos: org?.qtd_alunos || 0, professores: org?.qtd_professores || 0
       };
+      window._qtdPerguntasMes = org?.qtd_perguntas_mes ?? data?.qtd_perguntas_mes ?? 100;
       window._descontoPercentual = org?.desconto_percentual || 0;
       window._extraProfessores = org?.extra_professores || 0;
       window._extraAlunos = org?.extra_alunos || 0;
@@ -4741,6 +4742,7 @@ async function lerPerfilDobanco() {
         pacientes: data?.qtd_pacientes || 0, profissionaisClinicos: data?.qtd_profissionais_clinicos || 0,
         at: data?.qtd_at || 0, alunos: data?.qtd_alunos || 0, professores: data?.qtd_professores || 0
       };
+      window._qtdPerguntasMes = data?.qtd_perguntas_mes ?? 100;
       window._descontoPercentual = data?.desconto_percentual || 0;
       window._extraProfessores = data?.extra_professores || 0;
       window._extraAlunos = data?.extra_alunos || 0;
