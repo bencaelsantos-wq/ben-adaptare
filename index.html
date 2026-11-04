@@ -9025,7 +9025,11 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9, pergunte_aluno: 224.9
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9, pergunte_aluno: 89.9
+};
+const PRECOS_PACOTE_PERGUNTAS = { 100: 89.9, 150: 119.9, 200: 149.9 };
+function precoPacotePerguntas(qtd) {
+  return PRECOS_PACOTE_PERGUNTAS[qtd] ?? PRECOS_PACOTE_PERGUNTAS[100];
 };
 const ADDON_LABELS = {
   objetivos_terapeuticos:'Objetivos Terapêuticos', plano_intervencao:'Plano de Intervenção', materiais_terapeuticos:'Materiais Terapêuticos', pratica_guiada:'Prática Guiada',
@@ -9043,7 +9047,7 @@ const GRUPOS_ADDON = {
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
 
 function calcularTotalMes(u) {
-  const subtotalAddons = ADDONS_LISTA.reduce((soma, a) => soma + (u[`addon_${a}`] ? (PRECOS_ADDON[a]||0) : 0), 0);
+  const subtotalAddons = ADDONS_LISTA.reduce((soma, a) => soma + (u[`addon_${a}`] ? (a === 'pergunte_aluno' ? precoPacotePerguntas(u.qtd_perguntas_mes || 100) : (PRECOS_ADDON[a]||0)) : 0), 0);
   const subtotalQtd = Object.keys(PRECOS_QTD).reduce((soma, campo) => soma + (u[campo]||0) * PRECOS_QTD[campo], 0);
   const subtotal = subtotalAddons + subtotalQtd;
   const desconto = subtotal * ((u.desconto_percentual||0) / 100);
@@ -9121,6 +9125,13 @@ function filtrarUsuariosDev() {
 }
 
 function checkboxAddon(u, chave) {
+  if (chave === 'pergunte_aluno') {
+    const qtdAtual = u.qtd_perguntas_mes || 100;
+    return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]}</label>
+      <select id="dam-pacote-pergunte" class="fselect" style="font-size:12px;padding:3px 6px;margin:2px 0 4px 22px;max-width:220px" onchange="recalcularModalAddonsDev()">
+        ${Object.keys(PRECOS_PACOTE_PERGUNTAS).map(qtd => `<option value="${qtd}" ${Number(qtd)===Number(qtdAtual)?'selected':''}>${qtd} perguntas/mês — R$${PRECOS_PACOTE_PERGUNTAS[qtd]}</option>`).join('')}
+      </select>`;
+  }
   return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]} <span style="color:#9CA3AF">(R$${PRECOS_ADDON[chave]})</span></label>`;
 }
 
@@ -9170,7 +9181,15 @@ function fecharModalAddonsDev() {
 function recalcularModalAddonsDev() {
   const checks = document.querySelectorAll('#dev-modal-addons input[type="checkbox"][data-addon]');
   let subtotalAddons = 0;
-  checks.forEach(c => { if (c.checked) subtotalAddons += PRECOS_ADDON[c.dataset.addon] || 0; });
+  checks.forEach(c => {
+    if (!c.checked) return;
+    if (c.dataset.addon === 'pergunte_aluno') {
+      const qtd = parseInt(document.getElementById('dam-pacote-pergunte')?.value, 10) || 100;
+      subtotalAddons += precoPacotePerguntas(qtd);
+    } else {
+      subtotalAddons += PRECOS_ADDON[c.dataset.addon] || 0;
+    }
+  });
   const qtdPacientes = parseInt(document.getElementById('dam-qtd-pacientes').value, 10) || 0;
   const qtdProfissionais = parseInt(document.getElementById('dam-qtd-profissionais').value, 10) || 0;
   const qtdAt = parseInt(document.getElementById('dam-qtd-at').value, 10) || 0;
@@ -9192,6 +9211,8 @@ async function salvarAddonsDev() {
   document.querySelectorAll('#dev-modal-addons input[type="checkbox"][data-addon]').forEach(c => {
     payload[`addon_${c.dataset.addon}`] = c.checked;
   });
+  const selPacotePerguntas = document.getElementById('dam-pacote-pergunte');
+  if (selPacotePerguntas) payload.qtd_perguntas_mes = parseInt(selPacotePerguntas.value, 10) || 100;
   payload.qtd_pacientes = parseInt(document.getElementById('dam-qtd-pacientes').value, 10) || 0;
   payload.qtd_profissionais_clinicos = parseInt(document.getElementById('dam-qtd-profissionais').value, 10) || 0;
   payload.qtd_at = parseInt(document.getElementById('dam-qtd-at').value, 10) || 0;
