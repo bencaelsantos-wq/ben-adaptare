@@ -3982,15 +3982,16 @@ ESTRATÉGIAS SUGERIDAS PARA COMEÇAR JÁ:
 QUANDO BUSCAR AVALIAÇÃO PROFISSIONAL:
 [1 frase objetiva orientando o encaminhamento para avaliação especializada]
 
-Nunca use mais de 150 palavras no total.`;
+Nunca use mais de 150 palavras no total. NUNCA use markdown (sem ## antes dos títulos, sem **negrito**, sem nenhum símbolo de formatação) — os títulos acima (HIPÓTESE PEDAGÓGICA..., ESTRATÉGIAS SUGERIDAS..., QUANDO BUSCAR...) devem aparecer em texto puro, exatamente como escritos neste modelo, sem # na frente.`;
 
   try {
     const texto = await chamarClaude({ prompt, maxTokens: 500, modulo: 'triagem-inicial' });
-    document.getElementById('tri-result-text').value = texto.trim();
+    const textoLimpo = texto.trim().replace(/^#{1,6}\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '$1');
+    document.getElementById('tri-result-text').value = textoLimpo;
     document.getElementById('tri-result-card').classList.add('show');
     const eixos = calcularEixosTriagem(grupos);
     renderizarRadarTriagem(eixos);
-    await salvarTriagemInicial({ nome, idade, serie, observacoes, obsLivre, texto: texto.trim(), eixos, alunoId: alunoIdTriagem });
+    await salvarTriagemInicial({ nome, idade, serie, observacoes, obsLivre, texto: textoLimpo, eixos, alunoId: alunoIdTriagem });
   } catch (e) {
     toast('Erro ao gerar triagem: ' + e.message, 'error');
   } finally {
