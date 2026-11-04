@@ -3837,6 +3837,57 @@ function renderizarJornada() {
   </div>`;
 }
 
+function baixarPDFJornada() {
+  if (!_jrnAtual || !_jrnAtual.eventos) return toast('Selecione um aluno/paciente primeiro.', 'error');
+  const dias = parseInt(document.getElementById('jrn-periodo')?.value, 10) || 9999;
+  const tiposAtivos = new Set(Array.from(document.querySelectorAll('.jrn-filtro-tipo:checked')).map(el => el.value));
+  const limite = new Date(); limite.setDate(limite.getDate() - dias);
+  const eventos = _jrnAtual.eventos.filter(e => e.data >= limite && tiposAtivos.has(e.tipo));
+  if (!eventos.length) return toast('Nenhum evento no filtro atual pra exportar.', 'error');
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, ml = 18, mr = 18, maxX = W - mr;
+  let y = 22;
+
+  function novaPaginaJornada() { doc.addPage(); y = 22; }
+  function garantirEspacoJornada(altura) { if (y + altura > 277) novaPaginaJornada(); }
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(30,58,138);
+  doc.text('JORNADA INTEGRADA', W/2, y, { align:'center' }); y += 8;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(40,40,40);
+  doc.text(_jrnAtual.nome || '', W/2, y, { align:'center' }); y += 6;
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(ml, y, maxX, y); y += 9;
+
+  eventos.forEach(e => {
+    const t = TIPOS_JORNADA[e.tipo];
+    garantirEspacoJornada(18);
+    const dt = e.data.toLocaleDateString('pt-BR');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(20,20,20);
+    doc.text(`${dt} — ${t?.label || e.tipo}`, ml, y); y += 5;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(40,40,40);
+    const linhasTitulo = doc.splitTextToSize(e.titulo, maxX - ml);
+    linhasTitulo.forEach(l => { garantirEspacoJornada(5); doc.text(l, ml, y); y += 5; });
+    if (e.resumo) {
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(100,100,100);
+      const linhasResumo = doc.splitTextToSize(e.resumo, maxX - ml);
+      linhasResumo.forEach(l => { garantirEspacoJornada(4.5); doc.text(l, ml, y); y += 4.5; });
+    }
+    y += 5;
+  });
+
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPaginas; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(150,150,150);
+    doc.text('LouMind — Plataforma de Integração Clínica-Pedagógica | loumind.ia.br', ml, 290);
+    doc.text('Pág. ' + i + ' de ' + totalPaginas, maxX, 290, { align:'right' });
+  }
+
+  doc.save('Jornada_Integrada_' + (_jrnAtual.nome||'aluno').replace(/\s+/g,'_') + '.pdf');
+  toast('PDF gerado!', 'success');
+}
+
 let _chatAlunoAtual = null;
 
 function _chatAlunoEhClinica() { return ['clinica','gestao-clinica'].includes(userRole); }
@@ -5660,6 +5711,7 @@ const HTML_PAGE_JORNADA = `
           <option value="9999" selected>Tudo</option>
         </select>
         <div id="jrn-filtros-tipo" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        <button class="btn-copy" onclick="baixarPDFJornada()" style="margin-left:auto">⬇️ Baixar PDF</button>
       </div>
       <div id="jrn-timeline"></div>
     </div>
