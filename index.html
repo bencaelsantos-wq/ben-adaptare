@@ -4987,7 +4987,7 @@ function orcamentoBaseAtual() {
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
-const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento','pergunte_aluno'];
+const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento','pergunte_aluno','jornada_resumo'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
 const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, qtd_perguntas_mes, desconto_percentual, orcamento_ia_mensal';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
@@ -5784,7 +5784,8 @@ const HTML_PAGE_JORNADA = `
         <button class="btn-copy" onclick="baixarPDFJornada()" style="margin-left:auto">⬇️ Baixar PDF</button>
       </div>
       <div class="fcard" style="background:linear-gradient(135deg,#F0F4FF,#F5F3FF);border:1px solid #DBEAFE">
-        <button class="btn-gerar" id="jrn-btn-resumo" onclick="gerarResumoJornada()" style="width:auto">✨ Gerar resumo com a Lou</button>
+        <p style="font-size:12px;color:var(--gr500);margin:0 0 10px;line-height:1.5">📌 Ver a linha do tempo acima é gratuito. Só o botão abaixo usa IA pra escrever um resumo narrativo — por isso é um recurso avulso (R$37,90/mês).</p>
+        <button class="btn-gerar" id="jrn-btn-resumo" onclick="${!temAddon('jornada_resumo') ? "acessarRecursoPremium('Jornada Integrada — Resumo com a Lou')" : "gerarResumoJornada()"}" style="width:auto">✨ Gerar resumo com a Lou${!temAddon('jornada_resumo') ? '<span class="nav-lock">🔒</span>' : ''}</button>
         <div class="gen-box" id="jrn-resumo-gen-box"><div class="spin"></div><span>A Lou está lendo os eventos do período…</span></div>
         <div id="jrn-resumo-resultado" style="display:none;margin-top:12px;font-size:13.5px;color:var(--gr800);line-height:1.65;white-space:pre-wrap"></div>
       </div>
@@ -9367,7 +9368,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9, pergunte_aluno: 89.9
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9, pergunte_aluno: 89.9, jornada_resumo: 37.9
 };
 const PRECOS_PACOTE_PERGUNTAS = { 100: 89.9, 150: 119.9, 200: 149.9 };
 function precoPacotePerguntas(qtd) {
@@ -9379,12 +9380,12 @@ const ADDON_LABELS = {
   nova_adaptacao:'Nova Adaptação', estudo_caso:'Estudo de Caso', pei:'Elaborar PEI', plano_aee:'Plano de AEE', apoio_pedagogico:'Apoio Pedagógico', ciclo_trabalho:'Ciclo de Trabalho', planejamento_anual:'Planejamento Anual',
   colaboracao:'Colaboração Multiprofissional', diario_aluno:'Diário do Aluno', tradutor:'Tradutor de Linguagem', objetivos_convergentes:'Objetivos Convergentes',
   analise:'Análise e Estratégias', laudos:'Linha do Tempo de Laudos', diario_at:'Diário de Acompanhamento (AT)', solicitacoes:'Solicitações Externas', glossario:'Glossário Clínico',
-  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório', trilha_aprofundamento:'Trilha de Aprofundamento (AH/SD)', pergunte_aluno:'Pergunte para a Lou'
+  pauta_multidisciplinar:'Pauta Multidisciplinar', relatorios_clinica:'Relatórios da Clínica', comunicacao_clinicas:'Comunicação c/ Clínicas', radar_divergencia:'Radar de Divergência', banco_praticas_coletivo:'Banco de Práticas Coletivo', comparador_turma:'Comparador de Turma', ciclo_preparatorio:'Ciclo Preparatório', trilha_aprofundamento:'Trilha de Aprofundamento (AH/SD)', pergunte_aluno:'Pergunte para a Lou', jornada_resumo:'Jornada Integrada — Resumo com a Lou'
 };
 const GRUPOS_ADDON = {
   clinica: ['objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola'],
   escola: ['nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento'],
-  compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario','pergunte_aluno'],
+  compartilhado: ['colaboracao','diario_aluno','tradutor','objetivos_convergentes','analise','laudos','diario_at','solicitacoes','glossario','pergunte_aluno','jornada_resumo'],
 };
 const PRECOS_QTD = { qtd_pacientes: 8, qtd_profissionais_clinicos: 25, qtd_at: 25, qtd_alunos: 8, qtd_professores: 25 };
 
