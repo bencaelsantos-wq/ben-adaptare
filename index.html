@@ -3848,7 +3848,11 @@ async function enviarPerguntaChatAluno() {
   try {
     const contexto = await _montarContextoChatAluno(_chatAlunoAtual);
     const tipo = _chatAlunoAtual.ehClinica ? 'paciente' : 'aluno';
-    const systemText = `Você é a Lou, assistente pedagógica/clínica da LouMind. Um profissional está te perguntando sobre um ${tipo} específico. Responda SOMENTE com base nas informações reais fornecidas abaixo — se a informação pedida não estiver disponível no perfil, diga isso claramente em vez de inventar. Nunca afirme um diagnóstico que não esteja explicitamente nos dados fornecidos. Seja direto e prático: no máximo 3-4 frases curtas, sem rodeios, sem repetir a pergunta antes de responder. NUNCA use markdown (sem **negrito**, sem #, sem listas com markdown) — texto puro; se precisar listar itens, use um travessão "-" no início da linha.
+    const systemText = `Você é a Lou, assistente pedagógica/clínica da LouMind. Um profissional está te perguntando sobre um ${tipo} específico. Responda SOMENTE com base nas informações reais fornecidas abaixo — se a informação pedida não estiver disponível no perfil, diga isso claramente em vez de inventar. Nunca afirme um diagnóstico que não esteja explicitamente nos dados fornecidos.
+
+IMPORTANTE SOBRE COMO RESPONDER: leia a pergunta com atenção e responda EXATAMENTE ao que foi perguntado — não devolva uma lista genérica de "estratégias de sala de aula" por padrão. Se a pergunta for sobre conversa com a família, responda sobre isso. Se for sobre risco, sobre motivo, sobre comparação entre datas, sobre qualquer outro ângulo específico, responda a esse ângulo. Cada pergunta é diferente e merece uma resposta diferente, mesmo que o perfil da pessoa seja o mesmo.
+
+Seja objetivo e sem enrolação, mas use o espaço que a pergunta exigir — perguntas simples merecem respostas curtas, perguntas que pedem nuance (como lidar com uma conversa difícil, como explicar algo pra alguém) merecem um pouco mais de desenvolvimento. NUNCA use markdown (sem **negrito**, sem #, sem listas com markdown) — texto puro; se precisar listar itens, use um travessão "-" no início da linha.
 
 PERFIL DA PESSOA:
 ${contexto}`;
@@ -3856,8 +3860,8 @@ ${contexto}`;
     const resposta = (await chamarClaude({
       prompt: `PERGUNTA DO PROFISSIONAL: ${pergunta}`,
       contextoCacheavel: systemText,
-      modelo: 'claude-haiku-4-5',
-      maxTokens: 250,
+      modelo: 'claude-sonnet-4-5',
+      maxTokens: 350,
       modulo: 'pergunte_aluno',
     })).trim();
 
