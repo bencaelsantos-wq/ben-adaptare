@@ -4675,14 +4675,6 @@ async function verificarSessao() {
   }
 }
 
-const LIMITES_PLANO = {
-  semente:  { alunos: 10,  professores: 2  },
-  acolhe:   { alunos: 20,  professores: 4  },
-  integra:  { alunos: 50,  professores: 10 },
-  singular: { alunos: 100, professores: 25 },
-  rede:     { alunos: Infinity, professores: Infinity }
-};
-const ORCAMENTO_BASE_PLANO = { semente: 15, acolhe: 25, integra: 40, singular: 70, rede: Infinity };
 const ORCAMENTO_ANALISE_MENSAL = 60;
 const ORCAMENTO_LAUDOS_MENSAL = 50;
 const ORCAMENTO_PERGUNTE_ALUNO_MENSAL = 150;
@@ -4702,14 +4694,14 @@ function limitesAtuais() {
 }
 
 function orcamentoBaseAtual() {
-  const base = ORCAMENTO_BASE_PLANO[window._planoAtivo] ?? 15;
-  if (base === Infinity) return Infinity;
+  const base = window._orcamentoIaMensal ?? 25;
+  if (base <= 0) return Infinity; // 0 = sem limite (negociação especial)
   return base + (window._extraIaPacotes||0) * ORCAMENTO_POR_PACOTE_IA;
 }
 
 const ADDONS_LISTA = ['analise','laudos','diario_at','objetivos_terapeuticos','plano_intervencao','materiais_terapeuticos','pratica_guiada','pdi','monitoramento','devolutiva','relatorios_escola','colaboracao','diario_aluno','tradutor','objetivos_convergentes','solicitacoes','nova_adaptacao','estudo_caso','pei','plano_aee','apoio_pedagogico','glossario','ciclo_trabalho','planejamento_anual','pauta_multidisciplinar','relatorios_clinica','comunicacao_clinicas','radar_divergencia','banco_praticas_coletivo','comparador_turma','ciclo_preparatorio','trilha_aprofundamento','pergunte_aluno'];
 const CAMPOS_ADDON_SELECT = ADDONS_LISTA.map(a => `addon_${a}`).join(', ');
-const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, qtd_perguntas_mes, desconto_percentual';
+const CAMPOS_QTD_SELECT = 'qtd_pacientes, qtd_profissionais_clinicos, qtd_at, qtd_alunos, qtd_professores, qtd_perguntas_mes, desconto_percentual, orcamento_ia_mensal';
 function temAddon(nome) { return !!(window._addons && window._addons[nome]); }
 
 async function lerPerfilDobanco() {
@@ -4744,7 +4736,7 @@ async function lerPerfilDobanco() {
         showErr('⛔ O acesso da sua organização está pausado. ' + (org.motivo_pausa ? org.motivo_pausa : 'Entre em contato com o administrador.'));
         throw new Error('Organização pausada');
       }
-      window._planoAtivo = org?.plano || 'acolhe';
+      window._orcamentoIaMensal = org?.orcamento_ia_mensal ?? data?.orcamento_ia_mensal ?? 25;
       window._addons = {};
       ADDONS_LISTA.forEach(a => { window._addons[a] = !!(org?.[`addon_${a}`] || data?.[`addon_${a}`]); });
       window._addonAnalise = window._addons.analise;
@@ -4764,7 +4756,7 @@ async function lerPerfilDobanco() {
       window._modeloCicloTrabalho = org?.modelo_ciclo_trabalho || 'padrao';
       window._ocultarIdentificacaoPDF = !!org?.ocultar_identificacao_pdf;
     } else {
-      window._planoAtivo = data?.plano || 'acolhe';
+      window._orcamentoIaMensal = data?.orcamento_ia_mensal ?? 25;
       window._addons = {};
       ADDONS_LISTA.forEach(a => { window._addons[a] = !!data?.[`addon_${a}`]; });
       window._addonAnalise = window._addons.analise;
@@ -8192,6 +8184,7 @@ function renderPagesDeveloper() {
         <div><label style="font-size:12px;color:#4B5563">Alunos</label><input type="number" min="0" id="dam-qtd-alunos" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
         <div><label style="font-size:12px;color:#4B5563">Professores</label><input type="number" min="0" id="dam-qtd-professores" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
         <div><label style="font-size:12px;color:#4B5563">Desconto (%)</label><input type="number" min="0" max="100" id="dam-desconto" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
+        <div><label style="font-size:12px;color:#4B5563">Orçamento de IA/mês (R$, 0 = sem limite)</label><input type="number" min="0" step="1" id="dam-orcamento-ia" style="width:100%;padding:6px 8px;border:1px solid #D1D5DB;border-radius:6px"></div>
       </div>
 
       <div style="background:#F5F7FA;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px">
@@ -9166,6 +9159,7 @@ async function abrirModalAddonsDev(id) {
   document.getElementById('dam-qtd-alunos').value = fonte.qtd_alunos || 0;
   document.getElementById('dam-qtd-professores').value = fonte.qtd_professores || 0;
   document.getElementById('dam-desconto').value = fonte.desconto_percentual || 0;
+  document.getElementById('dam-orcamento-ia').value = fonte.orcamento_ia_mensal ?? 25;
   document.getElementById('dam-observacoes').value = fonte.observacoes_negociacao || '';
   ['dam-qtd-pacientes','dam-qtd-profissionais','dam-qtd-at','dam-qtd-alunos','dam-qtd-professores','dam-desconto'].forEach(id2 => {
     document.getElementById(id2).oninput = recalcularModalAddonsDev;
@@ -9219,6 +9213,7 @@ async function salvarAddonsDev() {
   payload.qtd_alunos = parseInt(document.getElementById('dam-qtd-alunos').value, 10) || 0;
   payload.qtd_professores = parseInt(document.getElementById('dam-qtd-professores').value, 10) || 0;
   payload.desconto_percentual = parseFloat(document.getElementById('dam-desconto').value) || 0;
+  payload.orcamento_ia_mensal = parseFloat(document.getElementById('dam-orcamento-ia').value) || 0;
   payload.observacoes_negociacao = document.getElementById('dam-observacoes').value.trim();
 
   const tabela = window._damOrgId ? 'organizacoes' : 'profiles';
@@ -10281,7 +10276,7 @@ async function atualizarBadgesSolicitacoes() {
 
 // ── CHAMADA CENTRALIZADA À API ANTHROPIC (com log de uso) ─────
 async function verificarOrcamentoIA(modulo) {
-  if (window._planoAtivo === 'rede' || window._devMode) return { ok: true };
+  if ((window._orcamentoIaMensal ?? 25) <= 0 || window._devMode) return { ok: true };
   const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
   const ehAnalise = modulo === 'analise-comportamental';
   const ehLaudos = modulo === 'linha-tempo-laudos';
