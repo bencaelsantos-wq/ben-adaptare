@@ -387,7 +387,7 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
   .sidebar{transform:translateX(-100%);transition:transform .22s ease}
   .sidebar.sidebar-aberta{transform:translateX(0);box-shadow:4px 0 28px rgba(0,0,0,.2)}
   #sidebar-edge-trigger:has(~ .sidebar.sidebar-aberta){pointer-events:none;opacity:0}
-  .main{margin-left:14px !important;transition:margin-left .15s}
+  .main{flex:none !important;width:100%;margin-left:auto !important;margin-right:auto !important;transition:margin .15s}
 }
 .sb-header{padding:18px 16px 14px;border-bottom:1px solid #F3F4F6}
 .sb-logo{font-family:'Inter',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.3px;color:#1E3A8A}
