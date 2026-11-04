@@ -3698,7 +3698,7 @@ function eixosDoAluno(perfis) {
   return eixos;
 }
 
-const TIPOS_LINHA_TEMPO = {
+const TIPOS_JORNADA = {
   adaptacao:  { label: 'Adaptações',            cor: '#2563EB', icone: '📘' },
   objetivo:   { label: 'Objetivos Terapêuticos', cor: '#7C3AED', icone: '🎯' },
   pratica:    { label: 'Prática Guiada',          cor: '#16A34A', icone: '📊' },
@@ -3709,34 +3709,34 @@ const TIPOS_LINHA_TEMPO = {
   estudo:     { label: 'Estudo de Caso',          cor: '#78350F', icone: '🗂️' },
 };
 
-let _ltAtual = null; // { id, nome, ehClinica, alunoId, perfilClinicoId }
+let _jrnAtual = null; // { id, nome, ehClinica, alunoId, perfilClinicoId }
 
-function popularSelectLinhaTempo() {
-  const sel = document.getElementById('lt-sel');
+function popularSelectJornada() {
+  const sel = document.getElementById('jrn-sel');
   if (!sel) return;
   const ehClinica = _chatAlunoEhClinica();
-  const label = document.getElementById('lt-sel-label');
+  const label = document.getElementById('jrn-sel-label');
   if (label) label.textContent = ehClinica ? 'Paciente' : 'Aluno';
   const lista = ehClinica ? (perfisClinicaList||[]) : (alunosCad||[]);
   sel.innerHTML = '<option value="">Selecione</option>' + lista.slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(x=>`<option value="${x.id}">${escapeHtml(x.nome)}</option>`).join('');
-  const area = document.getElementById('lt-area');
-  const info = document.getElementById('lt-info');
+  const area = document.getElementById('jrn-area');
+  const info = document.getElementById('jrn-info');
   if (area) area.style.display = 'none';
   if (info) info.style.display = 'none';
-  _ltAtual = null;
+  _jrnAtual = null;
 
-  const filtrosCont = document.getElementById('lt-filtros-tipo');
+  const filtrosCont = document.getElementById('jrn-filtros-tipo');
   if (filtrosCont) {
-    filtrosCont.innerHTML = Object.keys(TIPOS_LINHA_TEMPO).map(k => `
-      <label class="chip-camada"><input type="checkbox" value="${k}" class="lt-filtro-tipo" checked onchange="renderizarLinhaDoTempo()"> ${TIPOS_LINHA_TEMPO[k].icone} ${TIPOS_LINHA_TEMPO[k].label}</label>
+    filtrosCont.innerHTML = Object.keys(TIPOS_JORNADA).map(k => `
+      <label class="chip-camada"><input type="checkbox" value="${k}" class="jrn-filtro-tipo" checked onchange="renderizarJornada()"> ${TIPOS_JORNADA[k].icone} ${TIPOS_JORNADA[k].label}</label>
     `).join('');
   }
 }
 
-async function carregarLinhaDoTempo(id) {
-  const area = document.getElementById('lt-area');
-  const info = document.getElementById('lt-info');
-  if (!id) { if(area) area.style.display='none'; if(info) info.style.display='none'; _ltAtual = null; return; }
+async function carregarJornada(id) {
+  const area = document.getElementById('jrn-area');
+  const info = document.getElementById('jrn-info');
+  if (!id) { if(area) area.style.display='none'; if(info) info.style.display='none'; _jrnAtual = null; return; }
   const ehClinica = _chatAlunoEhClinica();
   const lista = ehClinica ? perfisClinicaList : alunosCad;
   const item = (lista||[]).find(x => x.id === id);
@@ -3757,7 +3757,7 @@ async function carregarLinhaDoTempo(id) {
     }
   } catch(e) { /* sem vínculo — segue só com o lado selecionado */ }
 
-  _ltAtual = { id, nome: item.nome, ehClinica, alunoId, perfilClinicoId };
+  _jrnAtual = { id, nome: item.nome, ehClinica, alunoId, perfilClinicoId };
 
   if (info) {
     info.style.display = 'block';
@@ -3766,12 +3766,12 @@ async function carregarLinhaDoTempo(id) {
   }
   if (area) area.style.display = 'block';
 
-  await _buscarEventosLinhaDoTempo();
-  renderizarLinhaDoTempo();
+  await _buscarEventosJornada();
+  renderizarJornada();
 }
 
-async function _buscarEventosLinhaDoTempo() {
-  const { alunoId, perfilClinicoId } = _ltAtual;
+async function _buscarEventosJornada() {
+  const { alunoId, perfilClinicoId } = _jrnAtual;
   const eventos = [];
 
   const push = (tipo, created_at, titulo, resumo) => {
@@ -3794,7 +3794,7 @@ async function _buscarEventosLinhaDoTempo() {
       (estudos.data||[]).forEach(r => push('estudo', r.created_at, 'Estudo de Caso registrado', (r.barreiras||'').slice(0,140)));
       (devol.data||[]).forEach(r => push('devolutiva', r.created_at, 'Devolutiva Clínica enviada à família'));
     }
-    const nomeParaDiario = _ltAtual.nome;
+    const nomeParaDiario = _jrnAtual.nome;
     if (nomeParaDiario) {
       const { data: diarios } = await db.from('diario_aluno').select('tipo,texto,created_at').eq('aluno_nome', nomeParaDiario).order('created_at',{ascending:false}).limit(30);
       (diarios||[]).forEach(r => push('diario', r.created_at, `Diário — ${r.tipo||'registro'}`, (r.texto||'').slice(0,140)));
@@ -3810,22 +3810,22 @@ async function _buscarEventosLinhaDoTempo() {
   } catch(e) { console.error('linha do tempo:', e.message); }
 
   eventos.sort((a,b) => b.data - a.data);
-  _ltAtual.eventos = eventos;
+  _jrnAtual.eventos = eventos;
 }
 
-function renderizarLinhaDoTempo() {
-  const cont = document.getElementById('lt-timeline');
-  if (!cont || !_ltAtual) return;
-  const dias = parseInt(document.getElementById('lt-periodo')?.value, 10) || 9999;
-  const tiposAtivos = new Set(Array.from(document.querySelectorAll('.lt-filtro-tipo:checked')).map(el => el.value));
+function renderizarJornada() {
+  const cont = document.getElementById('jrn-timeline');
+  if (!cont || !_jrnAtual) return;
+  const dias = parseInt(document.getElementById('jrn-periodo')?.value, 10) || 9999;
+  const tiposAtivos = new Set(Array.from(document.querySelectorAll('.jrn-filtro-tipo:checked')).map(el => el.value));
   const limite = new Date(); limite.setDate(limite.getDate() - dias);
 
-  const eventos = (_ltAtual.eventos||[]).filter(e => e.data >= limite && tiposAtivos.has(e.tipo));
+  const eventos = (_jrnAtual.eventos||[]).filter(e => e.data >= limite && tiposAtivos.has(e.tipo));
   if (!eventos.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">🕰️</div><div class="empty-text">Nenhum evento no período/filtro selecionado.</div></div>'; return; }
 
   cont.innerHTML = `<div style="position:relative;padding-left:22px;border-left:2px solid var(--gr100)">
     ${eventos.map(e => {
-      const t = TIPOS_LINHA_TEMPO[e.tipo];
+      const t = TIPOS_JORNADA[e.tipo];
       const dt = e.data.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
       return `<div style="position:relative;margin-bottom:18px">
         <div style="position:absolute;left:-28px;top:2px;width:12px;height:12px;border-radius:50%;background:${t.cor};border:2px solid #fff;box-shadow:0 0 0 1px ${t.cor}"></div>
@@ -5253,8 +5253,8 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
-    <div class="nav-item" id="nav-linha-tempo" onclick="showPage('linha-tempo');popularSelectLinhaTempo()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Linha do Tempo
+    <div class="nav-item" id="nav-jornada" onclick="showPage('jornada');popularSelectJornada()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Jornada Integrada
     </div>
     <div class="nav-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5412,8 +5412,8 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
-    <div class="nav-item gestao-item" id="nav-linha-tempo" onclick="showPage('linha-tempo');popularSelectLinhaTempo()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Linha do Tempo
+    <div class="nav-item gestao-item" id="nav-jornada" onclick="showPage('jornada');popularSelectJornada()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Jornada Integrada
     </div>
     <div class="nav-item gestao-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5493,8 +5493,8 @@ function renderNavClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>` : ''}
     <div class="nav-section">Módulo Clínico</div>
-    <div class="nav-item clinic-item" id="nav-linha-tempo" onclick="showPage('linha-tempo');popularSelectLinhaTempo()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Linha do Tempo
+    <div class="nav-item clinic-item" id="nav-jornada" onclick="showPage('jornada');popularSelectJornada()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Jornada Integrada
     </div>
     <div class="nav-item clinic-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5598,8 +5598,8 @@ function renderNavGestaoClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Dashboard
     </div>
     <div class="nav-section">Gestão Clínica</div>
-    <div class="nav-item clinic-item" id="nav-linha-tempo" onclick="showPage('linha-tempo');popularSelectLinhaTempo()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Linha do Tempo
+    <div class="nav-item clinic-item" id="nav-jornada" onclick="showPage('jornada');popularSelectJornada()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Jornada Integrada
     </div>
     <div class="nav-item clinic-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5638,30 +5638,30 @@ function renderNavGestaoClinica() {
   renderPagesGestaoClinica();
 }
 
-const HTML_PAGE_LINHA_TEMPO = `
+const HTML_PAGE_JORNADA = `
   <!-- LINHA DO TEMPO UNIFICADA -->
-  <div id="page-linha-tempo" class="page">
-    <h1 class="page-title">Linha do Tempo</h1>
+  <div id="page-jornada" class="page">
+    <h1 class="page-title">Jornada Integrada</h1>
     <p class="page-sub">Tudo que já aconteceu com o aluno/paciente, escola e clínica juntas num só lugar — se o vínculo estiver confirmado, os dois lados aparecem na mesma linha.</p>
     <div class="fcard">
       <div class="fblock">
-        <label class="flabel" for="lt-sel" id="lt-sel-label">Aluno</label>
-        <select id="lt-sel" class="fselect" onchange="carregarLinhaDoTempo(this.value)"><option value="">Selecione</option></select>
+        <label class="flabel" for="jrn-sel" id="jrn-sel-label">Aluno</label>
+        <select id="jrn-sel" class="fselect" onchange="carregarJornada(this.value)"><option value="">Selecione</option></select>
       </div>
-      <div id="lt-info" style="display:none;margin-top:8px;padding:10px 12px;background:var(--blue-light);border-radius:var(--rsm);font-size:13px;color:var(--p-navy)"></div>
+      <div id="jrn-info" style="display:none;margin-top:8px;padding:10px 12px;background:var(--blue-light);border-radius:var(--rsm);font-size:13px;color:var(--p-navy)"></div>
     </div>
 
-    <div id="lt-area" style="display:none;margin-top:16px">
+    <div id="jrn-area" style="display:none;margin-top:16px">
       <div class="toolbar" style="margin-bottom:14px">
-        <select id="lt-periodo" class="filter-sel" onchange="renderizarLinhaDoTempo()">
+        <select id="jrn-periodo" class="filter-sel" onchange="renderizarJornada()">
           <option value="30">Últimos 30 dias</option>
           <option value="90">Últimos 90 dias</option>
           <option value="180">Últimos 180 dias</option>
           <option value="9999" selected>Tudo</option>
         </select>
-        <div id="lt-filtros-tipo" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        <div id="jrn-filtros-tipo" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
-      <div id="lt-timeline"></div>
+      <div id="jrn-timeline"></div>
     </div>
   </div>`;
 
@@ -5700,7 +5700,7 @@ const HTML_PAGE_CHAT_ALUNO = `
 
 function renderPagesGestaoClinica() {
   document.getElementById('main-content').innerHTML = `
-  ${HTML_PAGE_LINHA_TEMPO}
+  ${HTML_PAGE_JORNADA}
   ${HTML_PAGE_CHAT_ALUNO}
   <!-- DASHBOARD DA GESTÃO CLÍNICA -->
   <div id="page-gc-dashboard" class="page active">
@@ -12025,7 +12025,7 @@ window.showPage = showPage;
 // ── RENDERIZAR PÁGINAS PROFESSOR ─────────────────────────────
 function renderPages() {
   document.getElementById('main-content').innerHTML = `
-  ${HTML_PAGE_LINHA_TEMPO}
+  ${HTML_PAGE_JORNADA}
   ${HTML_PAGE_CHAT_ALUNO}
   <!-- DASHBOARD DO PROFESSOR -->
   <div id="page-prof-dashboard" class="page active">
@@ -14197,7 +14197,7 @@ function renderPages() {
 // ── PÁGINAS GESTÃO ───────────────────────────────────────────
 function renderPagesGestao() {
   document.getElementById('main-content').innerHTML = `
-  ${HTML_PAGE_LINHA_TEMPO}
+  ${HTML_PAGE_JORNADA}
   ${HTML_PAGE_CHAT_ALUNO}
    <!-- GESTÃO: DIÁRIO DO ALUNO (somente leitura) -->
   <div id="page-ponte-diario" class="page">
@@ -15090,7 +15090,7 @@ function renderPagesGestao() {
 // ── PÁGINAS CLÍNICA ───────────────────────────────────────────
 function renderPagesClinica() {
   document.getElementById('main-content').innerHTML = `
-  ${HTML_PAGE_LINHA_TEMPO}
+  ${HTML_PAGE_JORNADA}
   ${HTML_PAGE_CHAT_ALUNO}
   <!-- DASHBOARD DA CLÍNICA -->
   <div id="page-clinica-dashboard" class="page active">
