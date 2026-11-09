@@ -5812,7 +5812,7 @@ const HTML_PAGE_JORNADA = `
         <button class="btn-copy" onclick="baixarPDFJornada()" style="margin-left:auto">⬇️ Baixar PDF</button>
       </div>
       <div class="fcard" style="background:linear-gradient(135deg,#F0F4FF,#F5F3FF);border:1px solid #DBEAFE">
-        <p style="font-size:12px;color:var(--gr500);margin:0 0 10px;line-height:1.5">📌 Ver a linha do tempo acima é gratuito. Só o botão abaixo usa IA pra escrever um resumo narrativo — por isso é um recurso avulso (R$37,90/mês).</p>
+        <p style="font-size:12px;color:var(--gr500);margin:0 0 10px;line-height:1.5">📌 Ver a linha do tempo acima é gratuito. Só o botão abaixo usa IA pra escrever um resumo narrativo — por isso é um recurso avulso (R$47/mês).</p>
         <button class="btn-gerar" id="jrn-btn-resumo" onclick="${!temAddon('jornada_resumo') ? "acessarRecursoPremium('Jornada Integrada — Resumo com a Lou')" : "gerarResumoJornada()"}" style="width:auto">✨ Gerar resumo com a Lou${!temAddon('jornada_resumo') ? '<span class="nav-lock">🔒</span>' : ''}</button>
         <div class="gen-box" id="jrn-resumo-gen-box"><div class="spin"></div><span>A Lou está lendo os eventos do período…</span></div>
         <div id="jrn-resumo-resultado" style="display:none;margin-top:12px;font-size:13.5px;color:var(--gr800);line-height:1.65;white-space:pre-wrap"></div>
@@ -9396,7 +9396,7 @@ const PRECOS_ADDON = {
   pdi: 147, monitoramento: 197, devolutiva: 97, relatorios_escola: 79,
   nova_adaptacao: 184.9, estudo_caso: 47, pei: 147, plano_aee: 107, apoio_pedagogico: 167, ciclo_trabalho: 204.9,
   colaboracao: 97, diario_aluno: 97, tradutor: 67, objetivos_convergentes: 118.9, analise: 197, laudos: 177, diario_at: 97, solicitacoes: 126.9, glossario: 47, planejamento_anual: 79.9,
-  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9, pergunte_aluno: 89.9, jornada_resumo: 37.9
+  pauta_multidisciplinar: 164.9, relatorios_clinica: 47, comunicacao_clinicas: 47, radar_divergencia: 66.9, banco_praticas_coletivo: 67, comparador_turma: 97, ciclo_preparatorio: 204.9, trilha_aprofundamento: 204.9, pergunte_aluno: 89.9, jornada_resumo: 47
 };
 const PRECOS_PACOTE_PERGUNTAS = { 100: 89.9, 150: 119.9, 200: 149.9 };
 function precoPacotePerguntas(qtd) {
