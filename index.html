@@ -3510,6 +3510,11 @@ body{font-family:'Inter',sans-serif;background:var(--gr50);color:var(--gr800);mi
           <textarea id="cc-comportamento" class="ftarea sm" placeholder="Ex: Estereotipias em situações de estresse, rigidez de rotina, autolesão ocasional…"></textarea>
         </div>
         <div class="fblock">
+          <label class="flabel" for="cc-at-sel">AT responsável <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label>
+          <select id="cc-at-sel" class="fselect"><option value="">Nenhum vinculado</option></select>
+          <div style="font-size:11px;color:#9CA3AF;margin-top:4px">Define quem vê o checklist/roteiro deste paciente na tela de Acompanhamento Terapêutico.</div>
+        </div>
+        <div class="fblock">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <label class="flabel" for="cc-diretrizes" style="margin:0">Diretrizes de Adaptação (opcional)</label>
             <button type="button" onclick="document.getElementById('cc-inp-diretrizes').click()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#EEF2FF;color:#2563EB;border:1.5px solid rgba(37,99,235,.2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">
@@ -24787,9 +24792,36 @@ async function abrirModalCadClinica(p) {
   if (tagProf) tagProf.innerHTML = '';
   await popularDropdownProfissionaisCad();
   renderProfissionaisTagsCad();
+  await popularSelectATCadClinica(p);
   lgpdResetarModal('clinica','btn-salvar-clinica');
   atualizarCompletudeModalClinica(p || {});
   abrirModal('modal-cad-clinica');
+}
+
+async function popularSelectATCadClinica(p) {
+  const sel = document.getElementById('cc-at-sel');
+  if (!sel) return;
+  const { data: ats } = await db.from('profiles').select('id, nome, email').eq('role', 'at').order('nome');
+  sel.innerHTML = '<option value="">Nenhum vinculado</option>' + (ats||[]).map(a => `<option value="${a.id}">${escapeHtml(a.nome || a.email)}</option>`).join('');
+  sel.dataset.vinculoId = '';
+  sel.dataset.atOriginal = '';
+  if (p) {
+    const { data: vinc } = await db.from('atendimentos_at').select('id, at_user_id').eq('perfil_id', p.id).eq('ativo', true).maybeSingle();
+    if (vinc) { sel.value = vinc.at_user_id; sel.dataset.vinculoId = vinc.id; sel.dataset.atOriginal = vinc.at_user_id; }
+  }
+}
+
+async function salvarVinculoATClinica(perfilId) {
+  const sel = document.getElementById('cc-at-sel');
+  if (!sel) return;
+  const novoAtId = sel.value || '';
+  if (novoAtId === (sel.dataset.atOriginal || '')) return; // nada mudou
+  if (sel.dataset.vinculoId) {
+    await db.from('atendimentos_at').update({ ativo: false }).eq('id', sel.dataset.vinculoId);
+  }
+  if (novoAtId) {
+    await db.from('atendimentos_at').insert({ perfil_id: perfilId, at_user_id: novoAtId, vinculado_por: user.id });
+  }
 }
 
 async function popularDropdownProfissionaisCad() {
@@ -24875,13 +24907,16 @@ async function salvarPerfilClinico() {
     profissionais_ids: window._cadProfissionaisIds?.length ? [...window._cadProfissionaisIds] : [],
     bncc_codigos: window._ccBnccCodigos?.length ? [...window._ccBnccCodigos] : [],
   };
-  let error;
+  let error, perfilId = perfilClinicaSel?.id;
   if (perfilClinicaSel) {
     ({ error } = await db.from('perfis_clinicos').update(payload).eq('id', perfilClinicaSel.id));
   } else {
-    ({ error } = await db.from('perfis_clinicos').insert(payload));
+    const { data: novo, error: errInsert } = await db.from('perfis_clinicos').insert(payload).select('id').single();
+    error = errInsert;
+    perfilId = novo?.id;
   }
   if (error) return toast('Erro: ' + error.message, 'error');
+  if (perfilId) await salvarVinculoATClinica(perfilId);
   await lgpdRegistrarConsentimento('perfil_clinico', null, ['finalidade_terapeutica','compartilhamento_restrito','autorizacao_legal']);
   lgpdResetarModal('clinica','btn-salvar-clinica');
   fecharModal('modal-cad-clinica');
