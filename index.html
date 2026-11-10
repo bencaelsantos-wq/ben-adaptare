@@ -15680,6 +15680,15 @@ function renderPagesClinica() {
     <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 12px;margin:8px 0 12px;font-size:12.5px;color:#1E3A8A"><strong>Diferença:</strong> este plano transforma os <strong>Objetivos Terapêuticos</strong> cadastrados em estratégias práticas de aplicação. Não substitui o PDI (documento formal multiprofissional) — é um apoio operacional pro dia a dia.</div>
     <div style="margin-bottom:16px"><select class="fselect" id="plano-aluno-sel" style="max-width:320px" onchange="selecionarAlunoPlano()"><option value="">Selecione um aluno</option></select></div>
     <div id="plano-aluno-info"></div>
+    <div id="checklist-at-card" class="fcard" style="display:none;border-color:#FDE68A;background:#FFFBEB">
+      <div class="fcard-title">📋 Checklist Pré-Atendimento pro AT</div>
+      <p class="page-sub" style="margin:0 0 10px">Rápido e obrigatório antes de cada atendimento — é isso que evita o AT chegar sem contexto. Diferente do Plano de Intervenção (mais completo), isso é o essencial pra hoje.</p>
+      <div class="fblock"><label class="flabel" for="checklist-at-objetivo">Objetivo desta sessão</label><textarea id="checklist-at-objetivo" class="ftarea sm" placeholder="Ex: Trabalhar tolerância à frustração em atividade de dupla"></textarea></div>
+      <div class="fblock"><label class="flabel" for="checklist-at-prioridade">O que priorizar hoje</label><textarea id="checklist-at-prioridade" class="ftarea sm" placeholder="Ex: Reforçar comunicação com prancha de CAA antes de pedir fala oral"></textarea></div>
+      <div class="fblock"><label class="flabel" for="checklist-at-alerta">Alertas / gatilhos recentes <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="checklist-at-alerta" class="ftarea sm" placeholder="Ex: Teve crise na terça por barulho alto — evitar ambientes barulhentos hoje"></textarea></div>
+      <button class="btn-gerar" onclick="enviarChecklistPreAtendimento()" style="width:auto">Enviar Checklist pro AT</button>
+      <div id="checklist-at-historico" style="margin-top:14px"></div>
+    </div>
     <div id="plano-result" style="display:none">
       <p style="font-size:13px;color:#1E3A8A;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 12px;margin:0 0 12px;font-weight:600">💡 Selecione um trecho de qualquer bloco abaixo para editar só aquela parte com a Lou.</p>
       <div class="cards-grid-3" style="margin-bottom:14px">
@@ -25089,8 +25098,9 @@ async function selecionarAlunoPlano() {
   const id = document.getElementById('plano-aluno-sel')?.value;
   const info = document.getElementById('plano-aluno-info');
   const btnGerar = document.getElementById('btn-gerar-plano');
+  const checklistCard = document.getElementById('checklist-at-card');
   document.getElementById('plano-result').style.display = 'none';
-  if (!id) { if(info) info.innerHTML=''; if(btnGerar) btnGerar.style.display='none'; return; }
+  if (!id) { if(info) info.innerHTML=''; if(btnGerar) btnGerar.style.display='none'; if(checklistCard) checklistCard.style.display='none'; return; }
   const p = perfisClinicaList.find(x => x.id === id);
   if (!p) return;
   if (info) info.innerHTML = `
@@ -25103,7 +25113,48 @@ async function selecionarAlunoPlano() {
       </div>
     </div>`;
   if (btnGerar) btnGerar.style.display = 'inline-flex';
+  if (checklistCard) { checklistCard.style.display = 'block'; checklistCard.dataset.alunoId = id; checklistCard.dataset.alunoNome = p.nome; }
+  document.getElementById('checklist-at-objetivo').value = '';
+  document.getElementById('checklist-at-prioridade').value = '';
+  document.getElementById('checklist-at-alerta').value = '';
+  carregarHistoricoChecklistAT(p.nome);
   carregarPlanosIntervencaoSalvos(id);
+}
+
+async function enviarChecklistPreAtendimento() {
+  const card = document.getElementById('checklist-at-card');
+  const nome = card?.dataset?.alunoNome;
+  if (!nome) return toast('Selecione um aluno primeiro.', 'error');
+  const objetivo = document.getElementById('checklist-at-objetivo')?.value.trim();
+  const prioridade = document.getElementById('checklist-at-prioridade')?.value.trim();
+  const alerta = document.getElementById('checklist-at-alerta')?.value.trim();
+  if (!objetivo || !prioridade) return toast('Preencha pelo menos "Objetivo" e "O que priorizar hoje".', 'error');
+
+  const conteudo = `OBJETIVO DESTA SESSÃO:\n${objetivo}\n\nO QUE PRIORIZAR HOJE:\n${prioridade}${alerta ? `\n\nALERTAS / GATILHOS RECENTES:\n${alerta}` : ''}`;
+  const { error } = await db.from('relatorios').insert({
+    user_id: user.id, origem: 'clinica', destino: 'at',
+    aluno_nome: nome, titulo: `Checklist Pré-Atendimento — ${nome}`,
+    conteudo, created_at: new Date().toISOString()
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Checklist enviado pro AT!', 'success');
+  document.getElementById('checklist-at-objetivo').value = '';
+  document.getElementById('checklist-at-prioridade').value = '';
+  document.getElementById('checklist-at-alerta').value = '';
+  carregarHistoricoChecklistAT(nome);
+}
+
+async function carregarHistoricoChecklistAT(nomeAluno) {
+  const cont = document.getElementById('checklist-at-historico');
+  if (!cont) return;
+  const { data } = await db.from('relatorios').select('created_at,conteudo')
+    .eq('aluno_nome', nomeAluno).eq('destino', 'at').like('titulo', 'Checklist Pré-Atendimento%')
+    .order('created_at', { ascending: false }).limit(5);
+  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr400)">Nenhum checklist enviado ainda.</p>'; return; }
+  cont.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase;margin-bottom:6px">Últimos checklists enviados</div>' +
+    data.map(r => `<div style="padding:7px 0;border-bottom:1px solid #F3E8C8;font-size:12px;color:var(--gr600)">
+      <strong>${new Date(r.created_at).toLocaleDateString('pt-BR')}</strong> — ${escapeHtml((r.conteudo||'').slice(0,120))}…
+    </div>`).join('');
 }
 
 async function carregarPlanosIntervencaoSalvos(perfilId) {
@@ -27609,11 +27660,28 @@ async function carregarRoteiroAT() {
   if (!id || !body) return;
   const p = perfisATList.find(x => x.id === id);
   if (!p) return;
-  const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
-  const { data: rels } = await db.from('relatorios').select('*').eq('aluno_nome', p.nome).eq('destino','at').order('created_at',{ascending:false});
+  body.innerHTML = '<div style="color:var(--gr400);font-size:13px">Carregando…</div>';
+
+  const [{ data: obj }, { data: rels }, { data: diarios }, { data: adaptacoes }] = await Promise.all([
+    db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle(),
+    db.from('relatorios').select('*').eq('aluno_nome', p.nome).eq('destino','at').order('created_at',{ascending:false}),
+    db.from('diario_aluno').select('tipo,texto,created_at').eq('aluno_nome', p.nome).order('created_at',{ascending:false}).limit(5),
+    db.from('adaptacoes').select('materia,disciplina,created_at').eq('aluno_nome', p.nome).order('created_at',{ascending:false}).limit(5),
+  ]);
   const ultimoRel = (rels||[])[0];
+  const diasDesdeUltimoRel = ultimoRel ? Math.floor((Date.now() - new Date(ultimoRel.created_at).getTime()) / 86400000) : null;
+  const roteiroDesatualizado = diasDesdeUltimoRel !== null && diasDesdeUltimoRel > 7;
 
   body.innerHTML = `
+    ${(!ultimoRel || roteiroDesatualizado) ? `
+    <div style="background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">🚨</span>
+      <div style="font-size:13px;color:#991B1B;line-height:1.5">
+        ${!ultimoRel
+          ? `<strong>Nenhum checklist/roteiro recebido da clínica ainda</strong> para ${escapeHtml(p.nome)}. Confirme com a clínica antes do atendimento.`
+          : `<strong>Último checklist tem ${diasDesdeUltimoRel} dias</strong> — pode estar desatualizado. Confirme com a clínica se ainda vale pra hoje.`}
+      </div>
+    </div>` : ''}
     <div class="clinic-card" style="margin-bottom:14px">
       <div class="clinic-card-title">🧠 ${escapeHtml(p.nome)} · ${escapeHtml(p.diagnostico||'Sem diagnóstico')}</div>
       <div style="font-size:12.5px;color:var(--gr600);line-height:1.7">
@@ -27631,11 +27699,27 @@ async function carregarRoteiroAT() {
         <div class="at-card"><div class="at-card-sit">${l}</div><div style="font-size:13px;color:var(--gr600);line-height:1.6">${escapeHtml(v)}</div></div>`).join('')}
     </div>` : ''}
     ${ultimoRel ? `
-    <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">📋 Último roteiro recebido da clínica</h3>
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gr800)">📋 Último roteiro/checklist recebido da clínica</h3>
     <div class="at-card">
-      <div class="at-card-sit">Atualizado em ${new Date(ultimoRel.created_at).toLocaleDateString('pt-BR')}</div>
+      <div class="at-card-sit">${escapeHtml(ultimoRel.titulo||'Roteiro')} · Atualizado em ${new Date(ultimoRel.created_at).toLocaleDateString('pt-BR')}</div>
       <div style="font-size:13px;color:var(--gr600);line-height:1.7;white-space:pre-line">${escapeHtml(ultimoRel.conteudo)}</div>
-    </div>` : `<div class="info-banner">⚠️ Nenhum roteiro clínico recebido ainda para ${escapeHtml(p.nome)}. Aguarde o envio pela clínica.</div>`}
+    </div>` : ''}
+    <h3 style="font-size:14px;font-weight:600;margin:18px 0 10px;color:var(--gr800)">🏫 Demandas da Escola</h3>
+    ${(diarios||[]).length ? `
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase;margin-bottom:6px">Últimos registros do Diário do Aluno</div>
+      ${diarios.map(d => `<div style="padding:7px 0;border-bottom:1px solid var(--gr100);font-size:12.5px;color:var(--gr600)">
+        <strong>${new Date(d.created_at).toLocaleDateString('pt-BR')}</strong> ${d.tipo ? `· ${escapeHtml(d.tipo)}` : ''} — ${escapeHtml((d.texto||'').slice(0,160))}
+      </div>`).join('')}
+    </div>` : ''}
+    ${(adaptacoes||[]).length ? `
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase;margin-bottom:6px">Adaptações recentes aplicadas em sala</div>
+      ${adaptacoes.map(a => `<div style="padding:7px 0;border-bottom:1px solid var(--gr100);font-size:12.5px;color:var(--gr600)">
+        <strong>${new Date(a.created_at).toLocaleDateString('pt-BR')}</strong> — ${escapeHtml(a.materia||a.disciplina||'Atividade')}
+      </div>`).join('')}
+    </div>` : ''}
+    ${!(diarios||[]).length && !(adaptacoes||[]).length ? '<p style="font-size:12.5px;color:var(--gr400)">Nenhum registro recente da escola pra este aluno.</p>' : ''}
     <button class="btn-sm" style="margin-top:14px" onclick="gerarRoteiroAT('${id}')">⭐ Gerar Roteiro com a Lou</button>
     <div id="at-roteiro-ia" style="margin-top:14px"></div>`;
 }
