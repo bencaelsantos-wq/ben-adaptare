@@ -6189,13 +6189,20 @@ async function carregarVinculosATGestao() {
   }
   const cont = document.getElementById('gc-vinculos-at-lista');
   if (!cont) return;
-  const { data: vinculos } = await db.from('atendimentos_at').select('*, perfis_clinicos(nome), profiles!atendimentos_at_at_user_id_fkey(nome,email)').eq('ativo', true).order('created_at', { ascending: false });
+  const { data: vinculos, error: errVinc } = await db.from('atendimentos_at').select('*, perfis_clinicos(nome)').eq('ativo', true).order('created_at', { ascending: false });
+  if (errVinc) { cont.innerHTML = `<p style="font-size:12px;color:#DC2626">Erro ao carregar vínculos: ${escapeHtml(errVinc.message)}</p>`; return; }
   if (!(vinculos||[]).length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr500)">Nenhum vínculo cadastrado ainda.</p>'; return; }
-  cont.innerHTML = '<div style="font-size:12px;font-weight:600;color:var(--gr500);margin-bottom:6px">Vínculos ativos</div>' + vinculos.map(v => `
-    <div style="border:1px solid var(--gr100);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;display:flex;justify-content:space-between;align-items:center">
-      <span><b>${v.profiles?.nome || v.profiles?.email || 'AT'}</b> → ${v.perfis_clinicos?.nome || 'paciente'}</span>
+  const atIds = [...new Set(vinculos.map(v => v.at_user_id).filter(Boolean))];
+  const { data: ats } = atIds.length ? await db.from('profiles').select('id, nome, email').in('id', atIds) : { data: [] };
+  const mapaAts = {};
+  (ats||[]).forEach(a => { mapaAts[a.id] = a; });
+  cont.innerHTML = '<div style="font-size:12px;font-weight:600;color:var(--gr500);margin-bottom:6px">Vínculos ativos</div>' + vinculos.map(v => {
+    const at = mapaAts[v.at_user_id];
+    return `<div style="border:1px solid var(--gr100);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;display:flex;justify-content:space-between;align-items:center">
+      <span><b>${escapeHtml(at?.nome || at?.email || 'AT')}</b> → ${escapeHtml(v.perfis_clinicos?.nome || 'paciente')}</span>
       <button class="btn-danger" style="font-size:11px;padding:2px 8px" onclick="desvincularATPaciente('${v.id}')">Desvincular</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function vincularATPaciente() {
