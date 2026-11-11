@@ -3919,6 +3919,85 @@ function abrirJornadaDoAluno(alunoId) {
   }, 100);
 }
 
+function popularSelectsAHSD() {
+  const opcoes = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
+  const selReg = document.getElementById('ahsd-reg-aluno-sel');
+  const selAcel = document.getElementById('ahsd-acel-aluno-sel');
+  if (selReg) { selReg.innerHTML = opcoes; selReg.onchange = () => carregarHistoricoRegistroAHSD(selReg.value); }
+  if (selAcel) { selAcel.innerHTML = opcoes; selAcel.onchange = () => carregarHistoricoAvaliacaoAceleracao(selAcel.value); }
+}
+
+async function salvarRegistroAHSD() {
+  const id = document.getElementById('ahsd-reg-aluno-sel')?.value;
+  if (!id) return toast('Selecione um aluno.', 'error');
+  const a = (alunosCad||[]).find(x => x.id === id);
+  const evidencias = document.getElementById('ahsd-reg-evidencias')?.value.trim();
+  const areas = document.getElementById('ahsd-reg-areas')?.value.trim();
+  const engajamento = document.getElementById('ahsd-reg-engajamento')?.value.trim();
+  if (!evidencias || !areas) return toast('Preencha ao menos "Evidências pedagógicas" e "Área de interesse".', 'error');
+  const { error } = await db.from('registros_ahsd').insert({
+    user_id: user.id, organizacao_id: window._organizacaoId || null,
+    aluno_id: id, aluno_nome: a?.nome || '',
+    evidencias_pedagogicas: evidencias, areas_interesse: areas, engajamento: engajamento || null,
+    estrategias_flexibilizacao: document.getElementById('ahsd-reg-estrategias')?.value.trim() || null,
+    necessidades_apoio: document.getElementById('ahsd-reg-apoio')?.value.trim() || null,
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Registro pedagógico salvo!', 'success');
+  ['ahsd-reg-evidencias','ahsd-reg-areas','ahsd-reg-engajamento','ahsd-reg-estrategias','ahsd-reg-apoio'].forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
+  carregarHistoricoRegistroAHSD(id);
+}
+
+async function carregarHistoricoRegistroAHSD(alunoId) {
+  const cont = document.getElementById('ahsd-reg-historico');
+  if (!cont) return;
+  if (!alunoId) { cont.innerHTML = ''; return; }
+  const { data } = await db.from('registros_ahsd').select('*').eq('aluno_id', alunoId).order('created_at', { ascending: false }).limit(5);
+  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr400)">Nenhum registro ainda para este aluno.</p>'; return; }
+  cont.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase;margin-bottom:6px">Registros anteriores</div>' +
+    data.map(r => `<div style="padding:8px 0;border-bottom:1px solid var(--gr100);font-size:12.5px;color:var(--gr600)">
+      <strong>${new Date(r.created_at).toLocaleDateString('pt-BR')}</strong> — ${escapeHtml(r.areas_interesse||'')}<br>
+      <span style="color:var(--gr500)">${escapeHtml((r.evidencias_pedagogicas||'').slice(0,160))}</span>
+    </div>`).join('');
+}
+
+async function salvarAvaliacaoAceleracao() {
+  const id = document.getElementById('ahsd-acel-aluno-sel')?.value;
+  if (!id) return toast('Selecione um aluno.', 'error');
+  const a = (alunosCad||[]).find(x => x.id === id);
+  const campos = ['ahsd-acel-dominio','ahsd-acel-maturidade','ahsd-acel-impactos','ahsd-acel-equipe','ahsd-acel-plano'];
+  if (campos.some(fid => !document.getElementById(fid)?.value.trim())) {
+    return toast('Preencha os 5 critérios antes de salvar — o parecer do CNE exige todos documentados.', 'error');
+  }
+  const { error } = await db.from('avaliacoes_aceleracao').insert({
+    user_id: user.id, organizacao_id: window._organizacaoId || null,
+    aluno_id: id, aluno_nome: a?.nome || '',
+    evidencia_dominio: document.getElementById('ahsd-acel-dominio').value.trim(),
+    maturidade_socioemocional: document.getElementById('ahsd-acel-maturidade').value.trim(),
+    impactos_convivencia: document.getElementById('ahsd-acel-impactos').value.trim(),
+    manifestacao_equipe: document.getElementById('ahsd-acel-equipe').value.trim(),
+    plano_acompanhamento: document.getElementById('ahsd-acel-plano').value.trim(),
+    decisao: document.getElementById('ahsd-acel-decisao')?.value || 'em_analise',
+  });
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Avaliação de aceleração salva!', 'success');
+  campos.forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
+  carregarHistoricoAvaliacaoAceleracao(id);
+}
+
+async function carregarHistoricoAvaliacaoAceleracao(alunoId) {
+  const cont = document.getElementById('ahsd-acel-historico');
+  if (!cont) return;
+  if (!alunoId) { cont.innerHTML = ''; return; }
+  const { data } = await db.from('avaliacoes_aceleracao').select('*').eq('aluno_id', alunoId).order('created_at', { ascending: false }).limit(5);
+  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr400)">Nenhuma avaliação ainda para este aluno.</p>'; return; }
+  const LABEL_DECISAO = { acelerar: '✅ Aceleração aprovada', nao_acelerar: '🟡 Não recomendada — enriquecimento', em_analise: '⏳ Em análise' };
+  cont.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase;margin-bottom:6px">Avaliações anteriores</div>' +
+    data.map(r => `<div style="padding:8px 0;border-bottom:1px solid #F3E8C8;font-size:12.5px;color:var(--gr600)">
+      <strong>${new Date(r.created_at).toLocaleDateString('pt-BR')}</strong> — ${LABEL_DECISAO[r.decisao] || r.decisao}
+    </div>`).join('');
+}
+
 function baixarPDFJornada() {
   if (!_jrnAtual || !_jrnAtual.eventos) return toast('Selecione um aluno/paciente primeiro.', 'error');
   const dias = parseInt(document.getElementById('jrn-periodo')?.value, 10) || 9999;
@@ -5404,6 +5483,9 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
+    <div class="nav-item" id="nav-ahsd-cne" onclick="showPage('ahsd-cne');popularSelectsAHSD()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Altas Habilidades (CNE)
+    </div>
     <div class="nav-item" id="nav-jornada" onclick="showPage('jornada');popularSelectJornada()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Jornada Integrada
     </div>
@@ -5499,6 +5581,9 @@ function renderNavCoordenacaoPedagogica() {
     <div class="nav-item" id="nav-triagem" onclick="showPage('triagem-inicial')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
     </div>
+    <div class="nav-item" id="nav-ahsd-cne" onclick="showPage('ahsd-cne');popularSelectsAHSD()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Altas Habilidades (CNE)
+    </div>
     <div class="nav-item" id="nav-jornada" onclick="showPage('jornada');popularSelectJornada()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Jornada Integrada
     </div>
@@ -5565,6 +5650,9 @@ function renderNavGestao() {
     <div class="nav-section">Documentos</div>
     <div class="nav-item gestao-item" id="nav-triagem" onclick="showPage('triagem-inicial');popularSelectTriagem()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M4 10h4M12 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>Triagem Inicial
+    </div>
+    <div class="nav-item gestao-item" id="nav-ahsd-cne" onclick="showPage('ahsd-cne');popularSelectsAHSD()">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Altas Habilidades (CNE)
     </div>
     <div class="nav-item gestao-item" id="nav-jornada" onclick="showPage('jornada');popularSelectJornada()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/><path d="M4 10h12" stroke="currentColor" stroke-width="1.3"/></svg>Jornada Integrada
@@ -5791,6 +5879,50 @@ function renderNavGestaoClinica() {
     </div>`;
   renderPagesGestaoClinica();
 }
+
+const HTML_PAGE_AHSD = `
+  <!-- ALTAS HABILIDADES — CNE -->
+  <div id="page-ahsd-cne" class="page">
+    <h1 class="page-title">Altas Habilidades/Superdotação (CNE)</h1>
+    <p class="page-sub">Ferramentas de documentação alinhadas ao Parecer do Conselho Nacional de Educação sobre AH/SD (homologado pelo MEC em 2026) — identificação sem laudo, registro pedagógico e avaliação de aceleração de estudos.</p>
+
+    <div class="fcard">
+      <div class="fcard-title">📋 Registro Pedagógico</div>
+      <p class="page-sub" style="margin:0 0 10px">O parecer exige documentar evidências pedagógicas, área de interesse e engajamento — sem depender de laudo clínico. Revise periodicamente; não é registro permanente.</p>
+      <div class="fblock"><label class="flabel" for="ahsd-reg-aluno-sel">Aluno</label>
+        <select id="ahsd-reg-aluno-sel" class="fselect" style="max-width:320px"><option value="">Selecione um aluno</option></select>
+      </div>
+      <div class="fblock"><label class="flabel" for="ahsd-reg-evidencias">Evidências pedagógicas observadas</label><textarea id="ahsd-reg-evidencias" class="ftarea sm" placeholder="Ex: Resolve problemas de matemática com estratégias próprias, antes dos colegas; faz perguntas investigativas em ciências."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-reg-areas">Área(s) de interesse</label><textarea id="ahsd-reg-areas" class="ftarea sm" placeholder="Ex: Astronomia, programação, desenho técnico — não precisa ser restrito ao desempenho acadêmico."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-reg-engajamento">Engajamento / motivação observada</label><textarea id="ahsd-reg-engajamento" class="ftarea sm" placeholder="Ex: Permanece concentrado por longos períodos em projetos de interesse próprio, busca desafios além do pedido."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-reg-estrategias">Estratégias de flexibilização propostas <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="ahsd-reg-estrategias" class="ftarea sm" placeholder="Ex: Trilha de Aprofundamento semanal, agrupamento flexível com outros alunos de interesse similar."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-reg-apoio">Necessidades de apoio suplementar <span style="font-weight:400;color:#9CA3AF">(opcional)</span></label><textarea id="ahsd-reg-apoio" class="ftarea sm" placeholder="Ex: Articulação com universidade/centro de pesquisa; mentoria."></textarea></div>
+      <button class="btn-gerar" onclick="salvarRegistroAHSD()" style="width:auto">Salvar Registro Pedagógico</button>
+      <div id="ahsd-reg-historico" style="margin-top:14px"></div>
+    </div>
+
+    <div class="fcard" style="margin-top:18px;border-color:#FDE68A;background:#FFFBEB">
+      <div class="fcard-title">🎓 Avaliação de Aceleração de Estudos</div>
+      <p class="page-sub" style="margin:0 0 10px">O parecer trata a aceleração como medida EXCEPCIONAL, nunca automática. Documente os 5 critérios exigidos antes de decidir — isso protege a escola e o aluno.</p>
+      <div class="fblock"><label class="flabel" for="ahsd-acel-aluno-sel">Aluno</label>
+        <select id="ahsd-acel-aluno-sel" class="fselect" style="max-width:320px"><option value="">Selecione um aluno</option></select>
+      </div>
+      <div class="fblock"><label class="flabel" for="ahsd-acel-dominio">1. Evidência pedagógica consistente de domínio curricular</label><textarea id="ahsd-acel-dominio" class="ftarea sm" placeholder="Ex: Domina com folga os conteúdos previstos para o próximo ano em matemática e língua portuguesa, conforme avaliações dos últimos 2 bimestres."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-acel-maturidade">2. Maturidade socioemocional assegurada</label><textarea id="ahsd-acel-maturidade" class="ftarea sm" placeholder="Ex: Demonstra regulação emocional compatível, boa relação com colegas mais velhos observada em atividades conjuntas."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-acel-impactos">3. Impactos na convivência escolar e trajetória formativa (analisados)</label><textarea id="ahsd-acel-impactos" class="ftarea sm" placeholder="Ex: Possível afastamento do grupo de amigos atual foi discutido; aluno já convive bem com a turma-alvo em atividades extracurriculares."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-acel-equipe">4. Manifestação da equipe pedagógica, diálogo com a família e com o próprio estudante</label><textarea id="ahsd-acel-equipe" class="ftarea sm" placeholder="Ex: Reunião em 10/11 com coordenação, professor regente e família — todos favoráveis. Aluno manifestou interesse explícito."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-acel-plano">5. Plano de acompanhamento contínuo após a implementação</label><textarea id="ahsd-acel-plano" class="ftarea sm" placeholder="Ex: Revisão pedagógica e socioemocional ao final de cada bimestre no primeiro ano após a aceleração."></textarea></div>
+      <div class="fblock"><label class="flabel" for="ahsd-acel-decisao">Decisão</label>
+        <select id="ahsd-acel-decisao" class="fselect" style="max-width:260px">
+          <option value="em_analise">Em análise</option>
+          <option value="acelerar">Aceleração aprovada</option>
+          <option value="nao_acelerar">Aceleração não recomendada — seguir com enriquecimento</option>
+        </select>
+      </div>
+      <button class="btn-gerar" onclick="salvarAvaliacaoAceleracao()" style="width:auto">Salvar Avaliação</button>
+      <div id="ahsd-acel-historico" style="margin-top:14px"></div>
+    </div>
+  </div>`;
 
 const HTML_PAGE_JORNADA = `
   <!-- LINHA DO TEMPO UNIFICADA -->
@@ -12195,6 +12327,7 @@ window.showPage = showPage;
 // ── RENDERIZAR PÁGINAS PROFESSOR ─────────────────────────────
 function renderPages() {
   document.getElementById('main-content').innerHTML = `
+  ${HTML_PAGE_AHSD}
   ${HTML_PAGE_JORNADA}
   ${HTML_PAGE_CHAT_ALUNO}
   <!-- DASHBOARD DO PROFESSOR -->
@@ -14367,6 +14500,7 @@ function renderPages() {
 // ── PÁGINAS GESTÃO ───────────────────────────────────────────
 function renderPagesGestao() {
   document.getElementById('main-content').innerHTML = `
+  ${HTML_PAGE_AHSD}
   ${HTML_PAGE_JORNADA}
   ${HTML_PAGE_CHAT_ALUNO}
    <!-- GESTÃO: DIÁRIO DO ALUNO (somente leitura) -->
@@ -18180,7 +18314,7 @@ CONTEÚDO/EXERCÍCIO ORIGINAL DA TURMA (eleve a complexidade A PARTIR deste cont
 ${conteudoOriginal}
 ` : '\nNenhum conteúdo original foi colado — monte a trilha a partir do tema informado acima.'}
 
-CONTEXTO IMPORTANTE: este aluno tem perfil de Altas Habilidades/Superdotação. A necessidade dele é OPOSTA à de um aluno com dificuldade — não precisa de menos carga cognitiva, precisa de MAIS profundidade. Mas "mais profundidade" NUNCA significa mais exercícios, mais páginas ou "avançar" no conteúdo dos colegas — significa o MESMO tema da turma, com a complexidade do pensamento elevada. Isso está alinhado com a orientação de referência no Brasil pra esse público (ex: Indicação CEE-SP 242/2025): enriquecimento curricular no próprio ano/série é o caminho prioritário, e qualquer decisão de avanço de série é excepcional e feita só pela escola depois de esgotadas as possibilidades de aprofundamento — esta trilha é exatamente esse tipo de enriquecimento, nunca uma antecipação de conteúdo da série seguinte. Também não defina alta habilidade só por desempenho técnico: considere junto o envolvimento genuíno do aluno com a tarefa (ele se interessa de verdade pelo desafio?) e a criatividade na resposta, não só "acertar certo".
+CONTEXTO IMPORTANTE: este aluno tem perfil de Altas Habilidades/Superdotação. A necessidade dele é OPOSTA à de um aluno com dificuldade — não precisa de menos carga cognitiva, precisa de MAIS profundidade. Mas "mais profundidade" NUNCA significa mais exercícios, mais páginas ou "avançar" no conteúdo dos colegas — significa o MESMO tema da turma, com a complexidade do pensamento elevada. Isso está alinhado com o Parecer do Conselho Nacional de Educação sobre Altas Habilidades/Superdotação (homologado pelo MEC em 2026, Processos nº 23001.000184/2001-92 e 23001.000977/2023-17): o enriquecimento curricular no próprio ano/série é o caminho prioritário e deve ocorrer preferencialmente na sala comum, não em espaço segregado; a aceleração de série é tratada como medida EXCEPCIONAL, nunca automática, e cabe exclusivamente à escola decidir isso — esta trilha é exatamente o tipo de enriquecimento que o parecer recomenda (estudos orientados, aprofundamento investigativo), nunca uma antecipação de conteúdo da série seguinte. O parecer também reforça que altas habilidades se manifestam de forma multidimensional — domínio acadêmico-cognitivo, expressão artística, liderança social, criatividade produtiva, desempenho psicomotor, resolução inovadora de problemas — não apenas em desempenho técnico/acerto. Por isso, considere também o envolvimento genuíno do aluno com a tarefa e a originalidade da resposta, não só "acertar certo".
 
 REGRAS OBRIGATÓRIAS:
 - Volume igual ao dos colegas (3 níveis curtos, não uma lista extensa) — o que muda é a exigência de pensamento, não a quantidade.
