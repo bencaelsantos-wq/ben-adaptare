@@ -17534,6 +17534,12 @@ function selecionarAlunoCiclo(id) {
   if (searchEl) searchEl.value = a.nome;
   const ctxDiagCiclo = document.getElementById('cic-ctx-diagnostico');
   if (ctxDiagCiclo) ctxDiagCiclo.value = (a.diagnostico || a.hipotese) ? [a.diagnostico, a.hipotese].filter(Boolean).join(' — ') : (a.perfis || []).join(', ');
+  const ctxLimCiclo = document.getElementById('cic-ctx-limitacoes');
+  const ctxPotCiclo = document.getElementById('cic-ctx-potencialidades');
+  const ctxObsCiclo = document.getElementById('cic-ctx-obs');
+  if (ctxLimCiclo) ctxLimCiclo.value = a.limitacoes || a.comprometidas || '';
+  if (ctxPotCiclo) ctxPotCiclo.value = a.potencialidades || a.preservadas || '';
+  if (ctxObsCiclo) ctxObsCiclo.value = [a.comportamento, a.observacoes].filter(Boolean).join('\n') || '';
 }
 window._cicloBnccTemp = [];
 function removerBnccCiclo(codigo) {
