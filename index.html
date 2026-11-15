@@ -17377,16 +17377,57 @@ const BNCC_CTX = {
   gerar: { get arr(){ return window._gerarBnccTemp ||= []; },    render: () => renderizarBnccTagsGerar() },
   ciclo: { get arr(){ return window._cicloBnccTemp ||= []; },    render: () => renderizarBnccTagsCiclo() },
 };
+const BNCC_SINONIMOS = {
+  interpretacao: ['compreender', 'compreensao', 'compreensivo'],
+  interpretar: ['compreender', 'compreensao'],
+  interpretativa: ['compreender', 'compreensao'],
+  leitura: ['ler', 'leitor', 'lido', 'lida'],
+  escrita: ['escrever', 'escrito', 'escrita'],
+  oralidade: ['oral', 'fala', 'falar'],
+  gramatica: ['ortografia', 'morfologia', 'sintaxe', 'linguistica'],
+  texto: ['textual', 'textos'],
+  numero: ['numerico', 'numeral'],
+  problema: ['problemas', 'situacao-problema'],
+  geometria: ['geometrico', 'forma', 'figura'],
+};
+function _bnccNormalizar(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+function _bnccExpandirTermo(palavra) {
+  const grupo = new Set([palavra]);
+  for (const [chave, sinonimos] of Object.entries(BNCC_SINONIMOS)) {
+    const todos = [chave, ...sinonimos];
+    if (todos.some(t => t.includes(palavra) || palavra.includes(t))) {
+      todos.forEach(t => grupo.add(t));
+    }
+  }
+  return [...grupo];
+}
 async function buscarBnccDropdown(prefixo) {
   const inp = document.getElementById(`${prefixo}-bncc-inp`);
   const dd = document.getElementById(`${prefixo}-bncc-dropdown`);
   if (!inp || !dd) return;
-  const termo = inp.value.trim().toLowerCase();
+  const termoBruto = _bnccNormalizar(inp.value.trim());
   const lista = await carregarCacheBNCC();
-  const filtrados = (termo
-    ? lista.filter(h => h.codigo.toLowerCase().includes(termo) || h.descricao.toLowerCase().includes(termo))
-    : lista
-  ).slice(0, 25);
+  let filtrados;
+  if (!termoBruto) {
+    filtrados = lista;
+  } else {
+    const palavras = termoBruto.split(/\s+/).filter(Boolean);
+    const gruposPorPalavra = palavras.map(_bnccExpandirTermo);
+    filtrados = lista
+      .map(h => {
+        const campo = _bnccNormalizar(h.codigo) + ' ' + _bnccNormalizar(h.descricao);
+        const bateTodas = gruposPorPalavra.every(grupo => grupo.some(termo => campo.includes(termo)));
+        if (!bateTodas) return null;
+        const relevancia = campo.includes(termoBruto) ? 1 : 0;
+        return { h, relevancia };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.relevancia - a.relevancia)
+      .map(x => x.h);
+  }
+  filtrados = filtrados.slice(0, 25);
   if (!filtrados.length) {
     dd.innerHTML = '<div style="padding:8px 10px;font-size:12px;color:#9CA3AF">Nenhuma habilidade encontrada</div>';
     dd.style.display = 'block';
