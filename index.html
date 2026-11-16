@@ -27378,6 +27378,82 @@ function verificarCriteriosDominio(obj, regs, areas, labels) {
   return resultado;
 }
 
+// Agrupa os registros por dia e monta, pra cada área, a sequência cronológica de médias (0/50/100)
+// — base compartilhada entre o gráfico de Monitoramento e a análise de padrão de decisão (Greer).
+function construirSequenciasMonitoramento(regs, areas) {
+  const VALOR = { ok: 100, parcial: 50, nao: 0 };
+  const ordenados = [...(regs||[])].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  const porData = new Map();
+  ordenados.forEach(r => {
+    const chave = new Date(r.created_at).toLocaleDateString('pt-BR');
+    if (!porData.has(chave)) porData.set(chave, {});
+    const grupo = porData.get(chave);
+    Object.entries(r.resultados||{}).forEach(([area, val]) => {
+      if (!grupo[area]) grupo[area] = [];
+      grupo[area].push(VALOR[val]);
+    });
+  });
+  const datasKeys = [...porData.keys()];
+  const areasComDados = new Set();
+  ordenados.forEach(r => Object.keys(r.resultados||{}).forEach(k => areasComDados.add(k)));
+  const porArea = {};
+  areas.forEach(a => {
+    if (!areasComDados.has(a)) return;
+    const dataPontos = datasKeys.map(dk => {
+      const vals = porData.get(dk)[a];
+      if (!vals || !vals.length) return null;
+      return vals.reduce((s,v) => s+v, 0) / vals.length;
+    });
+    porArea[a] = { dataPontos, seqValores: dataPontos.filter(v => v !== null) };
+  });
+  return { datasKeys, areasComDados, porArea };
+}
+
+// Análise de padrão de decisão baseada no protocolo de decisão do Greer (adaptado de
+// Matthews & Hagopian, 2014) — olha só pra fase inicial de uma meta (primeiros 1 a 6
+// registros) e sinaliza quando o padrão dos dados indica que vale revisar a estratégia
+// ou considerar avançar. Nunca decide por conta própria, só sinaliza.
+function analisarPadraoDecisaoGreer(seqValoresCron) {
+  const n = (seqValoresCron || []).length;
+  if (!n) return null;
+
+  if (n === 1) {
+    if (seqValoresCron[0] === 100) {
+      return { indice: 0, tipo: 'positivo', titulo: '🎯 Domínio já no 1º registro',
+        motivo: 'O primeiro registro desta área já veio com desempenho completo — vale considerar se a meta está no nível certo ou se já pode avançar.' };
+    }
+    return null;
+  }
+
+  if (n <= 5 && seqValoresCron.every(v => v === 0)) {
+    return { indice: n - 1, tipo: 'alerta', titulo: '⚠️ Dificuldade logo no início',
+      motivo: `${n === 1 ? 'O primeiro registro' : `Os ${n} primeiros registros`} desta meta vieram sem sucesso — antes de insistir, vale checar se faltam pré-requisitos ou se a meta está além do nível atual.` };
+  }
+
+  if (n >= 4) {
+    const primeiros4 = seqValoresCron.slice(0, 4);
+    const diffs4 = [1,2,3].map(i => primeiros4[i] - primeiros4[i-1]);
+    const estavel = diffs4.every(d => d >= 0) || diffs4.every(d => d <= 0);
+    if (estavel) {
+      const tendencia = primeiros4[3] - primeiros4[0];
+      if (tendencia <= 0) {
+        return { indice: 3, tipo: 'alerta', titulo: '📉 Padrão estável sem evolução',
+          motivo: 'Os 4 primeiros registros desta área não mostram melhora (tendência achatada ou de queda) — considerar ajustar a estratégia.' };
+      }
+      return null;
+    }
+    if (n >= 6) {
+      const primeiros6 = seqValoresCron.slice(0, 6);
+      const tendencia6 = primeiros6[5] - primeiros6[0];
+      if (tendencia6 <= 0) {
+        return { indice: 5, tipo: 'alerta', titulo: '📉 Resposta variável sem tendência de melhora',
+          motivo: 'Os primeiros 6 registros desta área oscilam bastante e, no conjunto, não mostram melhora — considerar ajustar a estratégia.' };
+      }
+    }
+  }
+  return null;
+}
+
 async function carregarMonitoramento() {
   const id   = document.getElementById('mon-aluno-sel')?.value;
   const body = document.getElementById('mon-body');
@@ -27389,7 +27465,20 @@ async function carregarMonitoramento() {
   const labels = { cognitivo:'🧠 Cognitivo', comunicacao:'🗣️ Comunicação', social:'👥 Social', comportamental:'💢 Comportamental', academico:'📚 Acadêmico' };
   const sugestaoProgressao = analisarProgressaoPraticaGuiada(regs);
   const criteriosAtingidos = verificarCriteriosDominio(obj, regs, areas, labels).filter(c => c.atingido);
+  const { porArea: _porAreaGreer } = construirSequenciasMonitoramento(regs, areas);
+  const decisoesGreer = {};
+  areas.forEach(a => {
+    if (!_porAreaGreer[a]) return;
+    const d = analisarPadraoDecisaoGreer(_porAreaGreer[a].seqValores);
+    if (d) decisoesGreer[a] = d;
+  });
   body.innerHTML = `
+    ${Object.entries(decisoesGreer).map(([a,d]) => `
+    <div class="clinic-card" style="margin-bottom:16px;background:${d.tipo==='alerta'?'#FEE2E2':'#D1FAE5'};border-color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'}">
+      <div class="clinic-card-title" style="color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'}">${escapeHtml(d.titulo)} — ${escapeHtml(labels[a].replace(/^\S+\s/,''))}</div>
+      <p style="font-size:13px;color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'};margin:4px 0 0">${escapeHtml(d.motivo)}</p>
+      <p style="font-size:11.5px;color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'};opacity:.8;margin:6px 0 0">Baseado no protocolo de decisão de Greer (análise visual de gráficos ABA) — a decisão final é sempre do profissional.</p>
+    </div>`).join('')}
     ${criteriosAtingidos.map(c => `
     <div class="clinic-card" style="margin-bottom:16px;background:#D1FAE5;border-color:#065F46">
       <div class="clinic-card-title" style="color:#065F46">🎯 Critério de domínio atingido — ${escapeHtml(c.label.replace(/^\S+\s/,''))}</div>
@@ -27573,38 +27662,56 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   const canvas = document.getElementById('mon-grafico');
   if (!canvas || typeof Chart === 'undefined') return;
   const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
-  const VALOR = { ok: 100, parcial: 50, nao: 0 };
-  const ordenados = [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  const criterios = obj?.criterios_dominio || {};
+  const { datasKeys, areasComDados, porArea } = construirSequenciasMonitoramento(regs, areas);
+  // Eixo X sequencial (nº do registro, não a data em si) — evita que intervalos desiguais
+  // entre atendimentos distorçam a leitura visual da tendência (análise visual ABA).
+  const dataLabels = datasKeys.map((_, i) => `Reg. ${i + 1}`);
 
-  const porData = new Map();
-  ordenados.forEach(r => {
-    const chave = new Date(r.created_at).toLocaleDateString('pt-BR');
-    if (!porData.has(chave)) porData.set(chave, {});
-    const grupo = porData.get(chave);
-    Object.entries(r.resultados||{}).forEach(([area, val]) => {
-      if (!grupo[area]) grupo[area] = [];
-      grupo[area].push(VALOR[val]);
+  const datasets = [];
+  areas.filter(a => areasComDados.has(a)).forEach(a => {
+    const { dataPontos, seqValores } = porArea[a];
+    const decisao = analisarPadraoDecisaoGreer(seqValores);
+    let indiceFlagReal = null;
+    if (decisao) {
+      let contagem = -1;
+      for (let i = 0; i < dataPontos.length; i++) {
+        if (dataPontos[i] !== null) {
+          contagem++;
+          if (contagem === decisao.indice) { indiceFlagReal = i; break; }
+        }
+      }
+    }
+    datasets.push({
+      label: labels[a].replace(/^\S+\s/, ''),
+      data: dataPontos,
+      borderColor: CORES[a],
+      backgroundColor: CORES[a],
+      tension: 0.3,
+      spanGaps: true,
+      pointRadius: dataPontos.map((_, i) => i === indiceFlagReal ? 9 : 4),
+      pointStyle: dataPontos.map((_, i) => i === indiceFlagReal ? 'rectRot' : 'circle'),
+      pointBackgroundColor: dataPontos.map((_, i) => i === indiceFlagReal ? (decisao.tipo === 'alerta' ? '#DC2626' : '#059669') : CORES[a]),
+      pointBorderColor: dataPontos.map((_, i) => i === indiceFlagReal ? '#fff' : CORES[a]),
+      pointBorderWidth: dataPontos.map((_, i) => i === indiceFlagReal ? 2 : 1),
+      pointHoverRadius: 7,
+      fill: false,
     });
+    if (criterios[a]?.percentual) {
+      datasets.push({
+        label: `Meta ${labels[a].replace(/^\S+\s/, '')} (${criterios[a].percentual}%)`,
+        data: dataLabels.map(() => criterios[a].percentual),
+        borderColor: CORES[a],
+        borderDash: [6, 4],
+        borderWidth: 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        fill: false,
+        tension: 0,
+      });
+    }
   });
-  const dataLabels = [...porData.keys()];
-  const areasComDados = new Set();
-  ordenados.forEach(r => Object.keys(r.resultados||{}).forEach(k => areasComDados.add(k)));
 
-  const datasets = areas.filter(a => areasComDados.has(a)).map(a => ({
-    label: labels[a].replace(/^\S+\s/, ''),
-    data: dataLabels.map(dl => {
-      const vals = porData.get(dl)[a];
-      if (!vals || !vals.length) return null;
-      return vals.reduce((s,v) => s+v, 0) / vals.length;
-    }),
-    borderColor: CORES[a],
-    backgroundColor: CORES[a],
-    tension: 0.3,
-    spanGaps: true,
-    pointRadius: 4,
-    pointHoverRadius: 6,
-    fill: false,
-  }));
   if (_chartMonitoramento) _chartMonitoramento.destroy();
   _chartMonitoramento = new Chart(canvas, {
     type: 'line',
@@ -27615,7 +27722,10 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
         y: { min: 0, max: 105, ticks: { callback: v => v > 100 ? '' : v + '%' }, grid: { color: '#F1F1F4' } },
         x: { grid: { display: false } },
       },
-      plugins: { legend: { position: 'bottom' } },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { title: items => datasKeys[items[0]?.dataIndex] ? `Registro de ${datasKeys[items[0].dataIndex]}` : '' } },
+      },
     },
   });
 }
