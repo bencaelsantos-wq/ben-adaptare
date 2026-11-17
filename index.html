@@ -27477,10 +27477,10 @@ function construirSequenciasMonitoramento(regs, areas) {
   return { datasKeys, areasComDados, porArea };
 }
 
-// Análise de padrão de decisão baseada no protocolo de decisão do Greer (adaptado de
-// Matthews & Hagopian, 2014) — olha só pra fase inicial de uma meta (primeiros 1 a 6
-// registros) e sinaliza quando o padrão dos dados indica que vale revisar a estratégia
-// ou considerar avançar. Nunca decide por conta própria, só sinaliza.
+// Análise de padrão de decisão baseada no protocolo "Pare e Tome uma Decisão" do Greer e nos
+// critérios de análise visual de nível/tendência/variabilidade de Cooper, Heron & Heward (ABA,
+// 3ª ed.) — olha pra fase inicial de uma meta (primeiros 1 a 6 registros) e sinaliza qual das
+// 4 decisões o padrão dos dados indica. Nunca decide por conta própria, só sinaliza.
 function analisarPadraoDecisaoGreer(seqValoresCron) {
   const n = (seqValoresCron || []).length;
   if (!n) return null;
@@ -27498,28 +27498,39 @@ function analisarPadraoDecisaoGreer(seqValoresCron) {
       motivo: `${n === 1 ? 'O primeiro registro' : `Os ${n} primeiros registros`} desta meta vieram sem sucesso — antes de insistir, vale checar se faltam pré-requisitos ou se a meta está além do nível atual.` };
   }
 
-  if (n >= 4) {
-    const primeiros4 = seqValoresCron.slice(0, 4);
-    const diffs4 = [1,2,3].map(i => primeiros4[i] - primeiros4[i-1]);
-    const estavel = diffs4.every(d => d >= 0) || diffs4.every(d => d <= 0);
-    if (estavel) {
-      const tendencia = primeiros4[3] - primeiros4[0];
-      if (tendencia <= 0) {
-        return { indice: 3, tipo: 'alerta', titulo: '📉 Padrão estável sem evolução',
-          motivo: 'Os 4 primeiros registros desta área não mostram melhora (tendência achatada ou de queda) — considerar ajustar a estratégia.' };
-      }
-      return null;
-    }
-    if (n >= 6) {
-      const primeiros6 = seqValoresCron.slice(0, 6);
-      const tendencia6 = primeiros6[5] - primeiros6[0];
-      if (tendencia6 <= 0) {
-        return { indice: 5, tipo: 'alerta', titulo: '📉 Resposta variável sem tendência de melhora',
-          motivo: 'Os primeiros 6 registros desta área oscilam bastante e, no conjunto, não mostram melhora — considerar ajustar a estratégia.' };
-      }
-    }
+  if (n < 4) return null;
+  const pontos = seqValoresCron.slice(0, Math.min(6, n));
+  const m = pontos.length;
+  const indiceFinal = m - 1;
+  const amplitude = Math.max(...pontos) - Math.min(...pontos);
+  const tendencia = pontos[indiceFinal] - pontos[0];
+  const diffs = pontos.slice(1).map((v, i) => v - pontos[i]);
+  // "Variável" de verdade precisa ter troca de direção — uma queda ou subida constante tem
+  // amplitude grande mas não é oscilação, é tendência (tratada mais abaixo).
+  const temTrocaDeDirecao = diffs.some(d => d > 0) && diffs.some(d => d < 0);
+
+  // Decisão 3 (Greer/Cooper-Heron-Heward): variabilidade excessiva é, por si só, motivo de
+  // atenção — independe da tendência, porque indica que a tendência nem pode ser lida com
+  // confiança ainda. Aponta pra integridade de aplicação, motivação, o quanto o comportamento-alvo
+  // está bem operacionalizado, ou condições ambientais inconsistentes entre sessões.
+  if (temTrocaDeDirecao && amplitude >= 40) {
+    return { indice: indiceFinal, tipo: 'alerta', titulo: '🔀 Variabilidade excessiva',
+      motivo: `Os ${m} primeiros registros desta área oscilam demais pra dar uma leitura confiável de tendência — antes de decidir qualquer mudança, vale checar a integridade da aplicação, a motivação do paciente, se o comportamento-alvo está bem operacionalizado, e se as condições ambientais se mantiveram as mesmas entre as sessões.` };
   }
-  return null;
+
+  // Decisão 4: tendência ascendente clara — manter o procedimento, sem alerta.
+  if (tendencia > 15) return null;
+
+  // Decisão 2: tendência descendente/piora — intervenção inadequada, ajustar já.
+  if (tendencia < -15) {
+    return { indice: indiceFinal, tipo: 'alerta', titulo: '📉 Tendência de piora',
+      motivo: `Os ${m} primeiros registros desta área mostram piora consistente — sinal de intervenção inadequada; ajustar o procedimento agora, sem esperar mais sessões.` };
+  }
+
+  // Decisão 1: linha estável, sem melhora nem piora — hora de mudar o procedimento
+  // (aumentar reforço, mudar prompt, alterar SD, revisar procedimento ou esquema de reforço).
+  return { indice: indiceFinal, tipo: 'alerta', titulo: '📊 Linha estável sem melhora',
+    motivo: `Os ${m} primeiros registros desta área não mostram tendência de melhora nem de piora — considerar mudar o procedimento: aumentar reforço, mudar o prompt, alterar o SD ou revisar o esquema de reforço.` };
 }
 
 async function carregarMonitoramento() {
@@ -27548,7 +27559,7 @@ async function carregarMonitoramento() {
     <div class="clinic-card" style="margin-bottom:16px;background:${d.tipo==='alerta'?'#FEE2E2':'#D1FAE5'};border-color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'}">
       <div class="clinic-card-title" style="color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'}">${escapeHtml(d.titulo)} — ${escapeHtml(labels[a].replace(/^\S+\s/,''))}</div>
       <p style="font-size:13px;color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'};margin:4px 0 0">${escapeHtml(d.motivo)}</p>
-      <p style="font-size:11.5px;color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'};opacity:.8;margin:6px 0 0">Baseado no protocolo de decisão de Greer (análise visual de gráficos ABA) — a decisão final é sempre do profissional.</p>
+      <p style="font-size:11.5px;color:${d.tipo==='alerta'?'#7F1D1D':'#065F46'};opacity:.8;margin:6px 0 0">Baseado no protocolo "Pare e Tome uma Decisão" de Greer e nos critérios de nível/tendência/variabilidade de Cooper, Heron & Heward — a decisão final é sempre do profissional.</p>
     </div>`).join('')}
     ${criteriosAtingidos.map(c => `
     <div class="clinic-card" style="margin-bottom:16px;background:#D1FAE5;border-color:#065F46">
