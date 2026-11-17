@@ -3923,8 +3923,12 @@ function abrirJornadaDoAluno(alunoId) {
   }, 100);
 }
 
+function _ahsdEhClinica() { return ['clinica', 'gestao-clinica'].includes(userRole); }
+function _ahsdListaAtual() { return _ahsdEhClinica() ? (perfisClinicaList || []) : (alunosCad || []); }
+
 function popularSelectsAHSD() {
-  const opcoes = '<option value="">Selecione um aluno</option>' + (alunosCad||[]).slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
+  const placeholder = _ahsdEhClinica() ? 'Selecione um paciente' : 'Selecione um aluno';
+  const opcoes = `<option value="">${placeholder}</option>` + _ahsdListaAtual().slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
   const selReg = document.getElementById('ahsd-reg-aluno-sel');
   const selAcel = document.getElementById('ahsd-acel-aluno-sel');
   if (selReg) { selReg.innerHTML = opcoes; selReg.onchange = () => carregarHistoricoRegistroAHSD(selReg.value); }
@@ -3933,15 +3937,15 @@ function popularSelectsAHSD() {
 
 async function salvarRegistroAHSD() {
   const id = document.getElementById('ahsd-reg-aluno-sel')?.value;
-  if (!id) return toast('Selecione um aluno.', 'error');
-  const a = (alunosCad||[]).find(x => x.id === id);
+  if (!id) return toast(_ahsdEhClinica() ? 'Selecione um paciente.' : 'Selecione um aluno.', 'error');
+  const a = _ahsdListaAtual().find(x => x.id === id);
   const evidencias = document.getElementById('ahsd-reg-evidencias')?.value.trim();
   const areas = document.getElementById('ahsd-reg-areas')?.value.trim();
   const engajamento = document.getElementById('ahsd-reg-engajamento')?.value.trim();
   if (!evidencias || !areas) return toast('Preencha ao menos "Evidências pedagógicas" e "Área de interesse".', 'error');
   const { error } = await db.from('registros_ahsd').insert({
     user_id: user.id, organizacao_id: window._organizacaoId || null,
-    aluno_id: id, aluno_nome: a?.nome || '',
+    aluno_id: _ahsdEhClinica() ? null : id, perfil_clinico_id: _ahsdEhClinica() ? id : null, aluno_nome: a?.nome || '',
     evidencias_pedagogicas: evidencias, areas_interesse: areas, engajamento: engajamento || null,
     estrategias_flexibilizacao: document.getElementById('ahsd-reg-estrategias')?.value.trim() || null,
     necessidades_apoio: document.getElementById('ahsd-reg-apoio')?.value.trim() || null,
@@ -3952,12 +3956,13 @@ async function salvarRegistroAHSD() {
   carregarHistoricoRegistroAHSD(id);
 }
 
-async function carregarHistoricoRegistroAHSD(alunoId) {
+async function carregarHistoricoRegistroAHSD(id) {
   const cont = document.getElementById('ahsd-reg-historico');
   if (!cont) return;
-  if (!alunoId) { cont.innerHTML = ''; return; }
-  const { data } = await db.from('registros_ahsd').select('*').eq('aluno_id', alunoId).order('created_at', { ascending: false }).limit(5);
-  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr400)">Nenhum registro ainda para este aluno.</p>'; return; }
+  if (!id) { cont.innerHTML = ''; return; }
+  const campo = _ahsdEhClinica() ? 'perfil_clinico_id' : 'aluno_id';
+  const { data } = await db.from('registros_ahsd').select('*').eq(campo, id).order('created_at', { ascending: false }).limit(5);
+  if (!data || !data.length) { cont.innerHTML = `<p style="font-size:12px;color:var(--gr400)">Nenhum registro ainda para ${_ahsdEhClinica() ? 'este paciente' : 'este aluno'}.</p>`; return; }
   cont.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase;margin-bottom:6px">Registros anteriores</div>' +
     data.map(r => `<div style="padding:8px 0;border-bottom:1px solid var(--gr100);font-size:12.5px;color:var(--gr600)">
       <strong>${new Date(r.created_at).toLocaleDateString('pt-BR')}</strong> — ${escapeHtml(r.areas_interesse||'')}<br>
@@ -3967,15 +3972,15 @@ async function carregarHistoricoRegistroAHSD(alunoId) {
 
 async function salvarAvaliacaoAceleracao() {
   const id = document.getElementById('ahsd-acel-aluno-sel')?.value;
-  if (!id) return toast('Selecione um aluno.', 'error');
-  const a = (alunosCad||[]).find(x => x.id === id);
+  if (!id) return toast(_ahsdEhClinica() ? 'Selecione um paciente.' : 'Selecione um aluno.', 'error');
+  const a = _ahsdListaAtual().find(x => x.id === id);
   const campos = ['ahsd-acel-dominio','ahsd-acel-maturidade','ahsd-acel-impactos','ahsd-acel-equipe','ahsd-acel-plano'];
   if (campos.some(fid => !document.getElementById(fid)?.value.trim())) {
     return toast('Preencha os 5 critérios antes de salvar — o parecer do CNE exige todos documentados.', 'error');
   }
   const { error } = await db.from('avaliacoes_aceleracao').insert({
     user_id: user.id, organizacao_id: window._organizacaoId || null,
-    aluno_id: id, aluno_nome: a?.nome || '',
+    aluno_id: _ahsdEhClinica() ? null : id, perfil_clinico_id: _ahsdEhClinica() ? id : null, aluno_nome: a?.nome || '',
     evidencia_dominio: document.getElementById('ahsd-acel-dominio').value.trim(),
     maturidade_socioemocional: document.getElementById('ahsd-acel-maturidade').value.trim(),
     impactos_convivencia: document.getElementById('ahsd-acel-impactos').value.trim(),
@@ -3989,12 +3994,13 @@ async function salvarAvaliacaoAceleracao() {
   carregarHistoricoAvaliacaoAceleracao(id);
 }
 
-async function carregarHistoricoAvaliacaoAceleracao(alunoId) {
+async function carregarHistoricoAvaliacaoAceleracao(id) {
   const cont = document.getElementById('ahsd-acel-historico');
   if (!cont) return;
-  if (!alunoId) { cont.innerHTML = ''; return; }
-  const { data } = await db.from('avaliacoes_aceleracao').select('*').eq('aluno_id', alunoId).order('created_at', { ascending: false }).limit(5);
-  if (!data || !data.length) { cont.innerHTML = '<p style="font-size:12px;color:var(--gr400)">Nenhuma avaliação ainda para este aluno.</p>'; return; }
+  if (!id) { cont.innerHTML = ''; return; }
+  const campo = _ahsdEhClinica() ? 'perfil_clinico_id' : 'aluno_id';
+  const { data } = await db.from('avaliacoes_aceleracao').select('*').eq(campo, id).order('created_at', { ascending: false }).limit(5);
+  if (!data || !data.length) { cont.innerHTML = `<p style="font-size:12px;color:var(--gr400)">Nenhuma avaliação ainda para ${_ahsdEhClinica() ? 'este paciente' : 'este aluno'}.</p>`; return; }
   const LABEL_DECISAO = { acelerar: '✅ Aceleração aprovada', nao_acelerar: '🟡 Não recomendada — enriquecimento', em_analise: '⏳ Em análise' };
   cont.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase;margin-bottom:6px">Avaliações anteriores</div>' +
     data.map(r => `<div style="padding:8px 0;border-bottom:1px solid #F3E8C8;font-size:12.5px;color:var(--gr600)">
@@ -5763,6 +5769,9 @@ function renderNavClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Trilha de Aprofundamento${!temAddon('trilha_aprofundamento') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Módulo Clínico</div>
+    <div class="nav-item clinic-item" id="nav-ahsd-cne" onclick="showPage('ahsd-cne');carregarAlunosClinica().then(popularSelectsAHSD)">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Altas Habilidades (CNE)
+    </div>
     <div class="nav-item clinic-item" id="nav-analise-comp-clinica" onclick="abrirAnaliseComportamental()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias${!temAddon('analise') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -5863,6 +5872,9 @@ function renderNavGestaoClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Trilha de Aprofundamento${!temAddon('trilha_aprofundamento') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Gestão Clínica</div>
+    <div class="nav-item clinic-item" id="nav-ahsd-cne" onclick="showPage('ahsd-cne');carregarAlunosClinica().then(popularSelectsAHSD)">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Altas Habilidades (CNE)
+    </div>
     <div class="nav-item clinic-item" id="nav-analise-comp-gc" onclick="abrirAnaliseComportamental()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M5 5l2 2M13 13l2 2M15 5l-2 2M7 13l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>Análise e Estratégias${!temAddon('analise') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
@@ -6358,6 +6370,7 @@ function renderPagesGestaoClinica() {
   ${HTML_PAGE_JORNADA}
   ${HTML_PAGE_CHAT_ALUNO}
   ${HTML_BLOCO_ADAPTACAO_CLINICA}
+  ${HTML_PAGE_AHSD}
   <!-- DASHBOARD DA GESTÃO CLÍNICA -->
   <div id="page-gc-dashboard" class="page active">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:12px">
@@ -15759,6 +15772,7 @@ function renderPagesClinica() {
   document.getElementById('main-content').innerHTML = `
   ${HTML_PAGE_JORNADA}
   ${HTML_PAGE_CHAT_ALUNO}
+  ${HTML_PAGE_AHSD}
   <!-- DASHBOARD DA CLÍNICA -->
   <div id="page-clinica-dashboard" class="page active">
     <h1 class="page-title"> Dashboard Clínico</h1>
