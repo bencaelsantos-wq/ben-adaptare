@@ -10023,7 +10023,7 @@ function checkboxAddon(u, chave) {
   if (chave === 'pergunte_aluno') {
     const qtdAtual = u.qtd_perguntas_mes || 100;
     return `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151"><input type="checkbox" data-addon="${chave}" ${u[`addon_${chave}`]?'checked':''} onchange="recalcularModalAddonsDev()"> ${ADDON_LABELS[chave]}</label>
-      <select id="dam-pacote-pergunte" class="fselect" style="font-size:12px;padding:3px 6px;margin:2px 0 4px 22px;max-width:220px" onchange="recalcularModalAddonsDev()">
+      <select id="dam-pacote-pergunte" class="fselect" style="font-size:12px;padding:3px 28px 3px 6px;margin:2px 0 4px 22px;max-width:220px" onchange="recalcularModalAddonsDev()">
         ${Object.keys(PRECOS_PACOTE_PERGUNTAS).map(qtd => `<option value="${qtd}" ${Number(qtd)===Number(qtdAtual)?'selected':''}>${qtd} perguntas/mês — R$${PRECOS_PACOTE_PERGUNTAS[qtd]}</option>`).join('')}
       </select>`;
   }
@@ -25240,7 +25240,7 @@ async function carregarObjetivos() {
           <div class="obj-area-label" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             ${a.label}
             <span id="obj-${a.key}-nivel-badge" style="font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:100px;color:#fff;background:${OPCOES_NIVEL_SUPORTE.find(o=>o.v===nivelAtual).cor}">${OPCOES_NIVEL_SUPORTE.find(o=>o.v===nivelAtual).label}</span>
-            <select id="obj-${a.key}-status" class="fselect" style="font-size:10.5px;padding:2px 6px;width:auto">
+            <select id="obj-${a.key}-status" class="fselect" style="font-size:10.5px;padding:2px 28px 2px 6px;width:auto">
               ${OPCOES_STATUS_PROGRAMA.map(o => `<option value="${o.v}" ${o.v===statusAtual?'selected':''}>${o.label}</option>`).join('')}
             </select>
           </div>
@@ -25248,24 +25248,28 @@ async function carregarObjetivos() {
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;background:var(--gr50);border-radius:8px">
             <div>
               <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Nível de suporte (MTSS)</label>
-              <select id="obj-${a.key}-nivel" class="fselect" style="font-size:12.5px;padding:4px 8px" onchange="atualizarBadgeNivelSuporte('${a.key}')">
+              <select id="obj-${a.key}-nivel" class="fselect" style="font-size:12.5px;padding:4px 28px 4px 8px" onchange="atualizarBadgeNivelSuporte('${a.key}')">
                 ${OPCOES_NIVEL_SUPORTE.map(o => `<option value="${o.v}" ${o.v===nivelAtual?'selected':''}>${o.label}</option>`).join('')}
               </select>
             </div>
             <div>
               <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Tipo de medida</label>
-              <select id="obj-${a.key}-tipo" class="fselect" style="font-size:12.5px;padding:4px 8px">
+              <select id="obj-${a.key}-tipo" class="fselect" style="font-size:12.5px;padding:4px 28px 4px 8px">
                 ${OPCOES_TIPO_MEDIDA.map(o => `<option value="${o.v}" ${o.v===tipoAtual?'selected':''}>${o.label}</option>`).join('')}
               </select>
             </div>
             <div>
               <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Critério de domínio (opcional)</label>
-              <div style="display:flex;align-items:center;gap:4px;font-size:12.5px">
+              <div style="display:flex;align-items:center;gap:4px;font-size:12.5px;flex-wrap:wrap">
                 <input type="number" id="obj-${a.key}-crit-pct" min="0" max="100" value="${crit.percentual ?? ''}" placeholder="%" style="width:55px;padding:4px 6px;border:1px solid var(--gr200);border-radius:6px">
                 <span>% por</span>
                 <input type="number" id="obj-${a.key}-crit-dias" min="1" value="${crit.dias ?? ''}" placeholder="dias" style="width:55px;padding:4px 6px;border:1px solid var(--gr200);border-radius:6px">
                 <span>dias seguidos</span>
               </div>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--gr600);margin-top:5px;cursor:pointer">
+                <input type="checkbox" id="obj-${a.key}-crit-bloco100" ${crit.blocoUnico100 ? 'checked' : ''} style="width:14px;height:14px;cursor:pointer">
+                OU domínio imediato se atingir 100% num único bloco/sessão
+              </label>
             </div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-top:8px;padding:8px 10px;background:#F0FDFA;border-radius:8px">
@@ -25279,7 +25283,7 @@ async function carregarObjetivos() {
                 <span>Verificar</span>
                 <input type="number" id="obj-${a.key}-manut-vezes" min="1" value="${crit.manutencao?.vezes ?? ''}" placeholder="2" style="width:45px;padding:4px 6px;border:1px solid var(--gr200);border-radius:6px">
                 <span>vezes por</span>
-                <select id="obj-${a.key}-manut-unidade" class="fselect" style="font-size:12.5px;padding:4px 6px;width:auto">
+                <select id="obj-${a.key}-manut-unidade" class="fselect" style="font-size:12.5px;padding:4px 28px 4px 6px;width:auto">
                   <option value="semana" ${crit.manutencao?.unidade==='semana'?'selected':''}>semana</option>
                   <option value="mes" ${crit.manutencao?.unidade==='mes'?'selected':''}>mês</option>
                   <option value="dia" ${crit.manutencao?.unidade==='dia'?'selected':''}>dia</option>
@@ -25417,6 +25421,7 @@ async function salvarObjetivos(perfilId) {
     const manutPeriodo = document.getElementById(`obj-${a}-manut-periodo`)?.value;
     if (pct && dias) {
       criteriosDominio[a] = { percentual: parseInt(pct, 10), dias: parseInt(dias, 10) };
+      if (document.getElementById(`obj-${a}-crit-bloco100`)?.checked) criteriosDominio[a].blocoUnico100 = true;
       if (generalizacao) criteriosDominio[a].generalizacao = generalizacao;
       if (manutVezes && manutPeriodo) criteriosDominio[a].manutencao = { vezes: parseInt(manutVezes, 10), unidade: manutUnidade || 'semana', periodoDias: parseInt(manutPeriodo, 10) };
     }
@@ -27468,6 +27473,11 @@ function verificarCriteriosDominio(obj, regs, areas, labels) {
     const crit = criterios[area];
     if (!crit || !crit.percentual || !crit.dias) return;
     const mediasDoArea = porArea[area]?.seqValores || [];
+    // Rota alternativa: domínio imediato se o último registro já veio com 100% num único bloco/sessão.
+    if (crit.blocoUnico100 && mediasDoArea.length && mediasDoArea[mediasDoArea.length - 1] === 100) {
+      resultado.push({ area, label: labels[area], atingido: true, crit, mediasRecentes: [100], viaBlocoUnico: true });
+      return;
+    }
     if (mediasDoArea.length < crit.dias) return;
     const ultimosN = mediasDoArea.slice(-crit.dias);
     const atingido = ultimosN.every(m => m >= crit.percentual);
@@ -27638,7 +27648,7 @@ async function carregarMonitoramento() {
     ${criteriosAtingidos.map(c => `
     <div class="clinic-card" style="margin-bottom:16px;background:#D1FAE5;border-color:#065F46">
       <div class="clinic-card-title" style="color:#065F46">🎯 Critério de domínio atingido — ${escapeHtml(c.label.replace(/^\S+\s/,''))}</div>
-      <p style="font-size:13px;color:#065F46;margin:4px 0 0">${c.crit.dias} dias seguidos com média ≥ ${c.crit.percentual}% (médias recentes: ${c.mediasRecentes.map(m=>Math.round(m)+'%').join(', ')}).</p>
+      <p style="font-size:13px;color:#065F46;margin:4px 0 0">${c.viaBlocoUnico ? 'Atingiu 100% de independência num único bloco/sessão' : `${c.crit.dias} dias seguidos com média ≥ ${c.crit.percentual}%`} (médias recentes: ${c.mediasRecentes.map(m=>Math.round(m)+'%').join(', ')}).</p>
       <p style="font-size:11.5px;color:#065F46;opacity:.8;margin:6px 0 0">Critério definido em Objetivos Terapêuticos — a decisão de avançar é sempre do profissional.</p>
     </div>`).join('')}
     ${sugestaoProgressao ? `
