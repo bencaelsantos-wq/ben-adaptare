@@ -6379,6 +6379,10 @@ function renderPagesGestaoClinica() {
         <p class="page-sub" style="margin-bottom:0">Visão executiva da equipe clínica — especialistas, alunos atendidos e integração com a escola.</p>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--gr700)" title="Quando marcado, os documentos em PDF gerados pela plataforma mostram só o primeiro nome + inicial do sobrenome do paciente, em vez do nome completo.">
+          <input type="checkbox" id="chk-ocultar-identificacao" style="width:15px;height:15px;accent-color:var(--p-blue);cursor:pointer" onchange="salvarOcultarIdentificacaoPDF(this.checked)">
+          🔒 Ocultar sobrenome nos PDFs
+        </label>
         <input type="text" id="inp-nome-instituicao" class="finput" placeholder="Nome da clínica" style="width:200px" onchange="salvarNomeInstituicao(this.value)">
         <div id="logo-preview" style="width:96px;height:44px;border:1.5px dashed var(--gr200);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-shrink:0;position:relative;cursor:pointer" title="Clique para enviar logo da clínica">
           <span id="logo-placeholder" style="font-size:10px;color:var(--gr400);text-align:center;line-height:1.3">Logo<br>clínica</span>
