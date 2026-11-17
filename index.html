@@ -25198,6 +25198,7 @@ async function carregarObjetivos() {
   const tiposMedida = obj.tipos_medida || {};
   const criteriosDominio = obj.criterios_dominio || {};
   const niveisSuporte = obj.niveis_suporte || {};
+  const statusPrograma = obj.status_programa || {};
   const OPCOES_TIPO_MEDIDA = [
     { v: 'percentual', label: '% de acerto' },
     { v: 'frequencia', label: 'Frequência/taxa' },
@@ -25210,17 +25211,26 @@ async function carregarObjetivos() {
     { v: '2', label: 'Nível 2 — Em grupo', cor: '#D97706' },
     { v: '3', label: 'Nível 3 — Individual', cor: '#DC2626' },
   ];
+  const OPCOES_STATUS_PROGRAMA = [
+    { v: 'treino', label: '🟢 Em treino', cor: '#16A34A' },
+    { v: 'suspenso', label: '🔴 Suspenso', cor: '#DC2626' },
+    { v: 'concluido', label: '🟡 Concluído', cor: '#CA8A04' },
+  ];
   body.innerHTML = `
     <div style="margin-bottom:14px">
       ${areas.map(a => {
         const tipoAtual = tiposMedida[a.key] || 'percentual';
         const crit = criteriosDominio[a.key] || {};
         const nivelAtual = niveisSuporte[a.key] || '1';
+        const statusAtual = statusPrograma[a.key] || 'treino';
         return `
         <div class="obj-area">
           <div class="obj-area-label" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             ${a.label}
             <span id="obj-${a.key}-nivel-badge" style="font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:100px;color:#fff;background:${OPCOES_NIVEL_SUPORTE.find(o=>o.v===nivelAtual).cor}">${OPCOES_NIVEL_SUPORTE.find(o=>o.v===nivelAtual).label}</span>
+            <select id="obj-${a.key}-status" class="fselect" style="font-size:10.5px;padding:2px 6px;width:auto">
+              ${OPCOES_STATUS_PROGRAMA.map(o => `<option value="${o.v}" ${o.v===statusAtual?'selected':''}>${o.label}</option>`).join('')}
+            </select>
           </div>
           <textarea id="obj-${a.key}" placeholder="${a.ph}">${obj[a.key]||''}</textarea>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;background:var(--gr50);border-radius:8px">
@@ -25243,6 +25253,28 @@ async function carregarObjetivos() {
                 <span>% por</span>
                 <input type="number" id="obj-${a.key}-crit-dias" min="1" value="${crit.dias ?? ''}" placeholder="dias" style="width:55px;padding:4px 6px;border:1px solid var(--gr200);border-radius:6px">
                 <span>dias seguidos</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-top:8px;padding:8px 10px;background:#F0FDFA;border-radius:8px">
+            <div style="flex:1;min-width:220px">
+              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Critério de Generalização (opcional)</label>
+              <textarea id="obj-${a.key}-generalizacao" class="ftarea sm" style="min-height:40px;font-size:12.5px" placeholder="Ex: responder o antecedente em outros ambientes (clínica, casa ou escola) com pessoas diferentes">${crit.generalizacao || ''}</textarea>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Critério de Manutenção (opcional)</label>
+              <div style="display:flex;align-items:center;gap:4px;font-size:12.5px;flex-wrap:wrap">
+                <span>Verificar</span>
+                <input type="number" id="obj-${a.key}-manut-vezes" min="1" value="${crit.manutencao?.vezes ?? ''}" placeholder="2" style="width:45px;padding:4px 6px;border:1px solid var(--gr200);border-radius:6px">
+                <span>vezes por</span>
+                <select id="obj-${a.key}-manut-unidade" class="fselect" style="font-size:12.5px;padding:4px 6px;width:auto">
+                  <option value="semana" ${crit.manutencao?.unidade==='semana'?'selected':''}>semana</option>
+                  <option value="mes" ${crit.manutencao?.unidade==='mes'?'selected':''}>mês</option>
+                  <option value="dia" ${crit.manutencao?.unidade==='dia'?'selected':''}>dia</option>
+                </select>
+                <span>por</span>
+                <input type="number" id="obj-${a.key}-manut-periodo" min="1" value="${crit.manutencao?.periodoDias ?? ''}" placeholder="30" style="width:50px;padding:4px 6px;border:1px solid var(--gr200);border-radius:6px">
+                <span>dias</span>
               </div>
             </div>
           </div>
@@ -25362,16 +25394,27 @@ async function salvarObjetivos(perfilId) {
   const tiposMedida = {};
   const criteriosDominio = {};
   const niveisSuporte = {};
+  const statusPrograma = {};
   areas.forEach(a => {
     tiposMedida[a] = document.getElementById(`obj-${a}-tipo`)?.value || 'percentual';
     const pct = document.getElementById(`obj-${a}-crit-pct`)?.value;
     const dias = document.getElementById(`obj-${a}-crit-dias`)?.value;
-    if (pct && dias) criteriosDominio[a] = { percentual: parseInt(pct, 10), dias: parseInt(dias, 10) };
+    const generalizacao = document.getElementById(`obj-${a}-generalizacao`)?.value.trim();
+    const manutVezes = document.getElementById(`obj-${a}-manut-vezes`)?.value;
+    const manutUnidade = document.getElementById(`obj-${a}-manut-unidade`)?.value;
+    const manutPeriodo = document.getElementById(`obj-${a}-manut-periodo`)?.value;
+    if (pct && dias) {
+      criteriosDominio[a] = { percentual: parseInt(pct, 10), dias: parseInt(dias, 10) };
+      if (generalizacao) criteriosDominio[a].generalizacao = generalizacao;
+      if (manutVezes && manutPeriodo) criteriosDominio[a].manutencao = { vezes: parseInt(manutVezes, 10), unidade: manutUnidade || 'semana', periodoDias: parseInt(manutPeriodo, 10) };
+    }
     niveisSuporte[a] = document.getElementById(`obj-${a}-nivel`)?.value || '1';
+    statusPrograma[a] = document.getElementById(`obj-${a}-status`)?.value || 'treino';
   });
   payload.tipos_medida = tiposMedida;
   payload.criterios_dominio = criteriosDominio;
   payload.niveis_suporte = niveisSuporte;
+  payload.status_programa = statusPrograma;
   const { data: existing } = await db.from('objetivos_terapeuticos').select('id').eq('perfil_id', perfilId).maybeSingle();
   let error;
   if (existing) {
@@ -27659,14 +27702,20 @@ async function carregarMonitoramento() {
           </div>
         </div>`;
         }
+        const critArea = (obj.criterios_dominio || {})[a] || {};
+        const statusArea = (obj.status_programa || {})[a] || 'treino';
+        const STATUS_BADGE = { treino: ['🟢 Em treino','#16A34A'], suspenso: ['🔴 Suspenso','#DC2626'], concluido: ['🟡 Concluído','#CA8A04'] };
+        const [statusTxt, statusCor] = STATUS_BADGE[statusArea];
         return `
         <div style="margin-bottom:12px">
-          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}: <em style="font-weight:400">${obj[a]}</em>${tipo==='sondagem' ? ' <span style="font-size:10.5px;color:#6B7280;font-weight:400">(sondagem — não precisa registrar todo dia)</span>' : ''}</div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}: <em style="font-weight:400">${obj[a]}</em>${tipo==='sondagem' ? ' <span style="font-size:10.5px;color:#6B7280;font-weight:400">(sondagem — não precisa registrar todo dia)</span>' : ''} <span style="font-size:10px;font-weight:700;color:${statusCor}">${statusTxt}</span></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <div><label style="font-size:10px;color:var(--gr500);display:block">Independente</label><input type="number" min="0" id="mon-ind-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>
             <div><label style="font-size:10px;color:var(--gr500);display:block">Com dica</label><input type="number" min="0" id="mon-dica-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>
             <div><label style="font-size:10px;color:var(--gr500);display:block">Erro</label><input type="number" min="0" id="mon-erro-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>
             <div><label style="font-size:10px;color:var(--gr500);display:block">Ausente/recusou</label><input type="number" min="0" id="mon-aus-${a}" class="finput" style="width:90px" oninput="atualizarTentativaMon('${a}')"></div>
+            ${critArea.manutencao ? `<div><label style="font-size:10px;color:var(--gr500);display:block" title="${critArea.manutencao.vezes}x por ${critArea.manutencao.unidade}, por ${critArea.manutencao.periodoDias} dias">Manutenção</label><input type="number" min="0" id="mon-mt-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>` : ''}
+            ${critArea.generalizacao ? `<div><label style="font-size:10px;color:var(--gr500);display:block" title="${escapeHtml(critArea.generalizacao)}">Generalização</label><input type="number" min="0" id="mon-gen-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>` : ''}
           </div>
           <div id="mon-pct-preview-${a}" style="font-size:11px;color:var(--gr500);margin-top:4px"></div>
         </div>`;
@@ -27702,7 +27751,7 @@ async function carregarMonitoramento() {
                       if (v && typeof v === 'object') {
                         const tot = (v.ind||0)+(v.dica||0)+(v.erro||0)+(v.aus||0);
                         const pct = tot ? Math.round((v.ind||0)/tot*100) : 0;
-                        return `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#D1FAE5;color:#065F46">${labels[k]||k}: ${pct}% ind. (${v.ind||0}/${v.dica||0}/${v.erro||0}${v.aus?'/'+v.aus:''})</span>`;
+                        return `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#D1FAE5;color:#065F46">${labels[k]||k}: ${pct}% ind. (${v.ind||0}/${v.dica||0}/${v.erro||0}${v.aus?'/'+v.aus:''})${v.mt?' · MT:'+v.mt:''}${v.gen?' · GEN:'+v.gen:''}</span>`;
                       }
                       if (typeof v === 'number') return `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#EEF2FF;color:#3730A3">${labels[k]||k}: ${v} ${UNIDADE_TIPO_MEDIDA[tiposMedida[k]]||''}</span>`;
                       return `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:${v==='ok'?'#D1FAE5':v==='parcial'?'#FEF3C7':'#FEE2E2'};color:${v==='ok'?'#065F46':v==='parcial'?'#92400E':'#7F1D1D'}">${labels[k]||k}: ${v==='ok'?'✔':v==='parcial'?'⚠':'✗'}</span>`;
@@ -27751,7 +27800,7 @@ function exportarDadosMonitoramentoCSV() {
   if (!regs.length) return toast('Nenhum registro pra exportar.', 'error');
   const tiposMedida = window._monObjAtual?.tipos_medida || {};
   const labels = window._monLabelsAtual || {};
-  const linhas = [['Data', 'Área', 'Tipo de medida', 'Tentativas', 'Independente', 'Com dica', 'Erro', 'Ausente/recusou', '% Independente', 'Observações']];
+  const linhas = [['Data', 'Área', 'Tipo de medida', 'Tentativas', 'Independente', 'Com dica', 'Erro', 'Ausente/recusou', '% Independente', 'Manutenção', 'Generalização', 'Observações']];
   [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).forEach(r => {
     const dataStr = new Date(r.created_at).toLocaleDateString('pt-BR');
     Object.entries(r.resultados || {}).forEach(([area, val]) => {
@@ -27760,12 +27809,12 @@ function exportarDadosMonitoramentoCSV() {
       if (val && typeof val === 'object') {
         const tot = (val.ind||0)+(val.dica||0)+(val.erro||0)+(val.aus||0);
         const pct = tot ? Math.round((val.ind||0)/tot*100) : '';
-        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, tot, val.ind||0, val.dica||0, val.erro||0, val.aus||0, pct, r.observacoes || '']);
+        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, tot, val.ind||0, val.dica||0, val.erro||0, val.aus||0, pct, val.mt||'', val.gen||'', r.observacoes || '']);
       } else if (typeof val === 'number') {
-        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, '', val, '', '', '', '', r.observacoes || '']);
+        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, '', val, '', '', '', '', '', '', r.observacoes || '']);
       } else {
         const valorTexto = { ok: 'Conseguiu', parcial: 'Parcial', nao: 'Não conseguiu' }[val] || val;
-        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, '', '', '', '', '', valorTexto, r.observacoes || '']);
+        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, '', '', '', '', '', valorTexto, '', '', r.observacoes || '']);
       }
     });
   });
@@ -28060,9 +28109,15 @@ function atualizarTentativaMon(area) {
   const dica = parseFloat(document.getElementById(`mon-dica-${area}`)?.value) || 0;
   const erro = parseFloat(document.getElementById(`mon-erro-${area}`)?.value) || 0;
   const aus = parseFloat(document.getElementById(`mon-aus-${area}`)?.value) || 0;
+  const mt = parseFloat(document.getElementById(`mon-mt-${area}`)?.value) || 0;
+  const gen = parseFloat(document.getElementById(`mon-gen-${area}`)?.value) || 0;
   const total = ind + dica + erro + aus;
-  if (total === 0) { delete monResultados[area]; }
-  else { monResultados[area] = { ind, dica, erro, aus }; }
+  if (total === 0 && !mt && !gen) { delete monResultados[area]; }
+  else {
+    monResultados[area] = { ind, dica, erro, aus };
+    if (mt) monResultados[area].mt = mt;
+    if (gen) monResultados[area].gen = gen;
+  }
   const preview = document.getElementById(`mon-pct-preview-${area}`);
   if (preview) preview.textContent = total ? `${total} tentativa${total>1?'s':''} — ${Math.round(ind/total*100)}% independente` : '';
 }
