@@ -15851,7 +15851,19 @@ function renderPagesClinica() {
   <div id="page-clinica-objetivos" class="page">
     <h1 class="page-title">Objetivos Terapêuticos</h1>
     <p class="page-sub">Defina metas por área de desenvolvimento para cada aluno acompanhado.</p>
-    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 12px;margin:8px 0 12px;font-size:12.5px;color:#1E3A8A"><strong>Diferença:</strong> aqui você cadastra as metas terapêuticas em si. O <strong>Plano de Intervenção Integrado</strong> usa essas metas pra gerar estratégias práticas pra escola, AT e clínica. <strong>Objetivos Convergentes</strong> mostra o alinhamento entre essas metas e as metas pedagógicas da escola.</div>
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 14px;margin:8px 0 12px;font-size:12.5px;color:#1E3A8A;line-height:1.6">
+      <p style="margin:0 0 8px"><strong>Diferença:</strong> aqui você cadastra as metas terapêuticas em si — não a adaptação de atividade, nem o plano de intervenção. O <strong>Plano de Intervenção Integrado</strong> usa essas metas pra gerar estratégias práticas pra escola, AT e clínica. <strong>Objetivos Convergentes</strong> mostra o alinhamento entre essas metas e as metas pedagógicas da escola.</p>
+      <p style="margin:0 0 4px"><strong>Pra cada área, você define:</strong></p>
+      <ul style="margin:0;padding-left:18px">
+        <li><strong>Objetivo</strong> — o comportamento-alvo descrito de forma observável e mensurável (ex: "nomear corretamente 10 figuras geométricas, de forma independente, em 3 sessões consecutivas").</li>
+        <li><strong>Nível de suporte (MTSS)</strong> — se esse objetivo é trabalhado de forma universal (toda a turma/grupo), em pequeno grupo, ou de forma individualizada.</li>
+        <li><strong>Status do programa</strong> — 🟢 Em treino (sendo trabalhado agora), 🔴 Suspenso (pausado), 🟡 Concluído (critério já atingido e mantido).</li>
+        <li><strong>Tipo de medida</strong> — como o dado é coletado no Monitoramento: % de acerto (contagem de tentativas independente/com dica/erro), frequência, duração, latência, ou sondagem (quando o aprendiz não é exposto ao alvo todo dia, como em lição de casa).</li>
+        <li><strong>Critério de domínio</strong> — quando a habilidade é considerada adquirida (ex: 80% de independência por 3 dias seguidos). Quando atingido, o Monitoramento avisa automaticamente — mas a decisão de avançar é sempre sua.</li>
+        <li><strong>Critério de Generalização</strong> — o comportamento também precisa ocorrer fora do contexto de treino (outro ambiente, outra pessoa) pra ser considerado realmente adquirido, não só "decorado" na situação de ensino.</li>
+        <li><strong>Critério de Manutenção</strong> — depois de dominada, a habilidade precisa ser checada periodicamente (ex: 2x por semana, por 30 dias) pra confirmar que não regrediu.</li>
+      </ul>
+    </div>
     <div style="margin-bottom:16px"><select class="fselect" id="obj-aluno-sel" onchange="carregarObjetivos()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
     <div id="clinica-obj-body"><div class="empty"><div class="empty-icon"></div><div class="empty-text">Selecione um aluno para ver ou editar os objetivos.</div></div></div>
   </div>
