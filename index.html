@@ -27877,9 +27877,29 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   const tiposMedida = obj?.tipos_medida || {};
   const areasPercentual = areas.filter(a => !TIPOS_MEDIDA_NUMERICOS.includes(tiposMedida[a]));
   const { datasKeys, areasComDados, porArea } = construirSequenciasMonitoramento(regs, areasPercentual);
-  // Eixo X sequencial (nº do registro, não a data em si) — evita que intervalos desiguais
-  // entre atendimentos distorçam a leitura visual da tendência (análise visual ABA).
-  const dataLabels = datasKeys.map((_, i) => `Reg. ${i + 1}`);
+  // Eixo X com a data de cada registro (igual ao gráfico real da BC) — o Chart.js já trata eixos
+  // de categoria com espaçamento igual entre pontos, então intervalos desiguais entre atendimentos
+  // não distorcem a leitura visual da tendência mesmo mostrando a data de verdade.
+  const dataLabels = datasKeys;
+
+  // Regressão linear simples (mínimos quadrados) sobre a série de % Independente — mesma ideia da
+  // "linha de tendência do programa" que a BC usa nos gráficos dela, pra deixar visualmente óbvio
+  // se a tendência é de subida, queda ou estabilidade.
+  function linhaDeTendencia(pontos) {
+    const idx = [];
+    pontos.forEach((v, i) => { if (v !== null) idx.push(i); });
+    if (idx.length < 2) return pontos.map(() => null);
+    const n = idx.length;
+    const somaX = idx.reduce((s,i) => s+i, 0);
+    const somaY = idx.reduce((s,i) => s+pontos[i], 0);
+    const somaXY = idx.reduce((s,i) => s+i*pontos[i], 0);
+    const somaX2 = idx.reduce((s,i) => s+i*i, 0);
+    const denom = (n*somaX2 - somaX*somaX);
+    if (!denom) return pontos.map(() => null);
+    const slope = (n*somaXY - somaX*somaY) / denom;
+    const intercept = (somaY - slope*somaX) / n;
+    return pontos.map((v, i) => v === null ? null : slope*i + intercept);
+  }
 
   areasPercentual.filter(a => areasComDados.has(a)).forEach(a => {
     const canvas = document.getElementById(`mon-grafico-pct-${a}`);
@@ -27912,6 +27932,7 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
       },
       { label: 'Com dica', data: dataPontosDica, borderColor: '#D97706', backgroundColor: '#D97706', tension: 0.3, spanGaps: true, pointRadius: 3, fill: false },
       { label: 'Erro', data: dataPontosErro, borderColor: '#DC2626', backgroundColor: '#DC2626', tension: 0.3, spanGaps: true, pointRadius: 3, fill: false },
+      { label: 'Linha de tendência', data: linhaDeTendencia(dataPontosInd), borderColor: '#9CA3AF', borderWidth: 1.5, borderDash: [3,3], pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0 },
     ];
     if (criterios[a]?.percentual) {
       datasets.push({
