@@ -6195,10 +6195,6 @@ const HTML_BLOCO_ADAPTACAO_CLINICA = `
           <input type="checkbox" id="inp-maiusculas">
           <span>🔠 Folha em CAIXA ALTA</span>
         </label>
-        <label class="opt-chip" title="O PDF mostra só o primeiro nome, sem o sobrenome">
-          <input type="checkbox" id="inp-ocultar-sobrenome">
-          <span>🔒 Ocultar sobrenome no PDF</span>
-        </label>
       </div>
     </div>
 
@@ -12938,10 +12934,6 @@ function renderPages() {
           <input type="checkbox" id="inp-maiusculas">
           <span>🔠 Folha em CAIXA ALTA</span>
         </label>
-        <label class="opt-chip" title="O PDF mostra só o primeiro nome, sem o sobrenome">
-          <input type="checkbox" id="inp-ocultar-sobrenome">
-          <span>🔒 Ocultar sobrenome no PDF</span>
-        </label>
       </div>
     </div>
 
@@ -19294,8 +19286,7 @@ async function downloadAdaptacaoPDF() {
   const guiaProf = partes[1] ? partes[1].trim() : null;
   const incluiGuia = dadosUltima.incluiGuia !== false;
 
-  let nomeAluno = dadosUltima.aluno || 'Aluno';
-  if (document.getElementById('inp-ocultar-sobrenome')?.checked) nomeAluno = nomeAluno.trim().split(/\s+/)[0];
+  const nomeAluno = dadosUltima.aluno || 'Aluno';
   const materia = dadosUltima.materia || '';
   const profNome = window._profNomeDB || (window._professoresList||[]).find(p => p.email === user?.email)?.nome || user?.user_metadata?.nome || user?.email?.split('@')[0] || document.getElementById('pei-professor')?.value || '';
 
