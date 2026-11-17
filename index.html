@@ -27439,8 +27439,15 @@ function verificarCriteriosDominio(obj, regs, areas, labels) {
   return resultado;
 }
 
-// Agrupa os registros por dia e monta, pra cada área, a sequência cronológica de médias (0/50/100)
-// — base compartilhada entre o gráfico de Monitoramento e a análise de padrão de decisão (Greer).
+// Tipos de medida possíveis por objetivo (configurados em Objetivos Terapêuticos) — os três
+// últimos usam escala própria (não 0-100%) e por isso ficam fora do gráfico de % e do alerta de Greer.
+const LABEL_TIPO_MEDIDA = { percentual: '% de acerto', frequencia: 'Frequência', duracao: 'Duração', latencia: 'Latência', sondagem: 'Sondagem (intermitente)' };
+const TIPOS_MEDIDA_NUMERICOS = ['frequencia', 'duracao', 'latencia'];
+const UNIDADE_TIPO_MEDIDA = { frequencia: 'vezes', duracao: 'min', latencia: 'seg' };
+
+// Agrupa os registros por dia e monta, pra cada área, a sequência cronológica de valores — 0/50/100
+// pras áreas de % de acerto/sondagem, ou o número bruto (contagem/minutos/segundos) pras áreas de
+// medida quantitativa — base compartilhada entre os gráficos de Monitoramento e a análise do Greer.
 function construirSequenciasMonitoramento(regs, areas) {
   const VALOR = { ok: 100, parcial: 50, nao: 0 };
   const ordenados = [...(regs||[])].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
@@ -27451,7 +27458,7 @@ function construirSequenciasMonitoramento(regs, areas) {
     const grupo = porData.get(chave);
     Object.entries(r.resultados||{}).forEach(([area, val]) => {
       if (!grupo[area]) grupo[area] = [];
-      grupo[area].push(VALOR[val]);
+      grupo[area].push(typeof val === 'number' ? val : VALOR[val]);
     });
   });
   const datasKeys = [...porData.keys()];
@@ -27524,12 +27531,15 @@ async function carregarMonitoramento() {
   const { data: regs } = await db.from('monitoramentos').select('*').eq('perfil_id', id).order('created_at', { ascending: false });
   const areas = ['cognitivo','comunicacao','social','comportamental','academico'];
   const labels = { cognitivo:'🧠 Cognitivo', comunicacao:'🗣️ Comunicação', social:'👥 Social', comportamental:'💢 Comportamental', academico:'📚 Acadêmico' };
+  const tiposMedida = obj.tipos_medida || {};
+  const areasNumericas = areas.filter(a => obj[a] && TIPOS_MEDIDA_NUMERICOS.includes(tiposMedida[a]));
   const sugestaoProgressao = analisarProgressaoPraticaGuiada(regs);
   const criteriosAtingidos = verificarCriteriosDominio(obj, regs, areas, labels).filter(c => c.atingido);
   const { porArea: _porAreaGreer } = construirSequenciasMonitoramento(regs, areas);
   const decisoesGreer = {};
   areas.forEach(a => {
     if (!_porAreaGreer[a]) return;
+    if (TIPOS_MEDIDA_NUMERICOS.includes(tiposMedida[a])) return; // Greer pressupõe escala de % — não se aplica a medidas quantitativas
     const d = analisarPadraoDecisaoGreer(_porAreaGreer[a].seqValores);
     if (d) decisoesGreer[a] = d;
   });
@@ -27555,15 +27565,28 @@ async function carregarMonitoramento() {
     <div class="clinic-card" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
         <div class="clinic-card-title" style="margin:0">📈 Evolução</div>
-        <select id="mon-periodo-filtro" class="fselect" style="width:auto;min-width:160px" onchange="aplicarFiltroPeriodoMonitoramento()">
-          <option value="30">Últimos 30 dias</option>
-          <option value="90">Últimos 90 dias</option>
-          <option value="180">Últimos 6 meses</option>
-          <option value="0" selected>Todo o período</option>
-        </select>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="mon-periodo-filtro" class="fselect" style="width:auto;min-width:160px" onchange="aplicarFiltroPeriodoMonitoramento()">
+            <option value="30">Últimos 30 dias</option>
+            <option value="90">Últimos 90 dias</option>
+            <option value="180">Últimos 6 meses</option>
+            <option value="0" selected>Todo o período</option>
+          </select>
+          ${(regs||[]).length ? `<button class="btn-copy" style="font-size:11.5px;padding:5px 10px" onclick="exportarDadosMonitoramentoCSV()">📥 Baixar dados brutos (CSV)</button>` : ''}
+        </div>
       </div>
       ${(regs||[]).length < 2 ? '<div class="empty" style="padding:16px"><div class="empty-text">Ainda não há registros suficientes para montar o gráfico — o gráfico aparece a partir do 2º registro.</div></div>' : '<canvas id="mon-grafico" height="90"></canvas>'}
     </div>
+    ${areasNumericas.length ? `
+    <div class="clinic-card" style="margin-bottom:16px">
+      <div class="clinic-card-title">📊 Medidas quantitativas</div>
+      <p class="page-sub" style="margin:0 0 10px">Frequência, duração e latência têm escala própria — não cabem no gráfico de % de acerto acima, nem no alerta de padrão de decisão (que pressupõe escala de 0 a 100%).</p>
+      ${areasNumericas.map(a => `
+        <div style="margin-bottom:16px">
+          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:6px">${labels[a]} — ${LABEL_TIPO_MEDIDA[tiposMedida[a]]} (${UNIDADE_TIPO_MEDIDA[tiposMedida[a]]})</div>
+          <canvas id="mon-grafico-num-${a}" height="70"></canvas>
+        </div>`).join('')}
+    </div>` : ''}
     <div class="clinic-card" style="margin-bottom:16px">
       <div class="clinic-card-title">🧩 Autonomia ao longo do tempo</div>
       <p class="page-sub" style="margin:0 0 10px">Combina os registros de Prática Guiada, Nova Adaptação e Materiais Terapêuticos — mostra se o paciente está precisando de menos ajuda com o tempo, mesmo quando o percentual de acerto se mantém parecido.</p>
@@ -27589,15 +27612,29 @@ async function carregarMonitoramento() {
     </div>
     <div class="clinic-card" style="margin-bottom:16px">
       <div class="clinic-card-title">📅 Novo Registro — ${new Date().toLocaleDateString('pt-BR')}</div>
-      ${areas.filter(a => obj[a]).map(a => `
+      ${areas.filter(a => obj[a]).map(a => {
+        const tipo = tiposMedida[a] || 'percentual';
+        if (TIPOS_MEDIDA_NUMERICOS.includes(tipo)) {
+          const unidade = UNIDADE_TIPO_MEDIDA[tipo];
+          return `
         <div style="margin-bottom:12px">
-          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}: <em style="font-weight:400">${obj[a]}</em></div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}: <em style="font-weight:400">${obj[a]}</em> <span style="font-size:10.5px;color:#6B7280;font-weight:400">(medida: ${LABEL_TIPO_MEDIDA[tipo]})</span></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" min="0" step="any" id="mon-num-${a}" class="finput" style="max-width:120px" placeholder="${unidade}" oninput="monResultados['${a}']=this.value===''?undefined:parseFloat(this.value)">
+            <span style="font-size:12px;color:var(--gr500)">${unidade}</span>
+          </div>
+        </div>`;
+        }
+        return `
+        <div style="margin-bottom:12px">
+          <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}: <em style="font-weight:400">${obj[a]}</em>${tipo==='sondagem' ? ' <span style="font-size:10.5px;color:#6B7280;font-weight:400">(sondagem — não precisa registrar todo dia)</span>' : ''}</div>
           <div class="mon-btn-group">
             <button class="mon-btn ok"     onclick="selMonBtn(this,'${a}','ok')"     data-area="${a}" data-val="ok">✔ Conseguiu</button>
             <button class="mon-btn parcial" onclick="selMonBtn(this,'${a}','parcial')" data-area="${a}" data-val="parcial">⚠ Parcial</button>
             <button class="mon-btn nao"    onclick="selMonBtn(this,'${a}','nao')"    data-area="${a}" data-val="nao">✗ Não conseguiu</button>
           </div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
       <textarea id="mon-obs" class="ftarea sm" placeholder="Observações do dia (opcional)…" style="margin-top:8px"></textarea>
       <button class="btn-sm" style="margin-top:10px" onclick="salvarMonitoramento('${id}')">Salvar registro</button>
     </div>
@@ -27625,7 +27662,10 @@ async function carregarMonitoramento() {
                 return `
                 <div class="rel-card" style="margin-bottom:8px">
                   <div style="display:flex;flex-wrap:wrap;gap:5px">
-                    ${Object.entries(r.resultados||{}).map(([k,v]) => `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:${v==='ok'?'#D1FAE5':v==='parcial'?'#FEF3C7':'#FEE2E2'};color:${v==='ok'?'#065F46':v==='parcial'?'#92400E':'#7F1D1D'}">${labels[k]||k}: ${v==='ok'?'✔':v==='parcial'?'⚠':'✗'}</span>`).join('')}
+                    ${Object.entries(r.resultados||{}).map(([k,v]) => typeof v === 'number'
+                      ? `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#EEF2FF;color:#3730A3">${labels[k]||k}: ${v} ${UNIDADE_TIPO_MEDIDA[tiposMedida[k]]||''}</span>`
+                      : `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:${v==='ok'?'#D1FAE5':v==='parcial'?'#FEF3C7':'#FEE2E2'};color:${v==='ok'?'#065F46':v==='parcial'?'#92400E':'#7F1D1D'}">${labels[k]||k}: ${v==='ok'?'✔':v==='parcial'?'⚠':'✗'}</span>`
+                    ).join('')}
                     ${nivelBadges.map(b => `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#EEF2FF;color:#3730A3">Ajuda: ${b}</span>`).join('')}
                   </div>
                   ${r.observacoes ? `<div style="font-size:12px;color:var(--gr400);margin-top:5px">${escapeHtml(r.observacoes)}</div>` : ''}
@@ -27638,7 +27678,9 @@ async function carregarMonitoramento() {
   window._monAreasAtual = areas;
   window._monObjAtual = obj;
   window._monLabelsAtual = labels;
+  window._monNomeAtual = document.getElementById('mon-aluno-sel')?.selectedOptions[0]?.text || '';
   if ((regs||[]).length >= 2) renderizarGraficoMonitoramento(regs, areas, obj, labels);
+  renderizarGraficosNumericos(regs, areasNumericas, tiposMedida, labels);
   if ((regs||[]).length >= 2) carregarHistoricoEvolucao(id);
   renderizarGraficoAutonomia(regs);
 }
@@ -27655,7 +27697,60 @@ function aplicarFiltroPeriodoMonitoramento() {
     _chartMonitoramento.destroy();
     _chartMonitoramento = null;
   }
+  const tiposMedida = window._monObjAtual?.tipos_medida || {};
+  const areasNumericas = (window._monAreasAtual||[]).filter(a => window._monObjAtual?.[a] && TIPOS_MEDIDA_NUMERICOS.includes(tiposMedida[a]));
+  renderizarGraficosNumericos(filtrados, areasNumericas, tiposMedida, window._monLabelsAtual);
   renderizarGraficoAutonomia(filtrados);
+}
+
+// Exporta todos os registros brutos de Monitoramento (data, área, tipo de medida, valor,
+// observações) em CSV — pra análise fora da plataforma ou cruzamento com outra ferramenta.
+function exportarDadosMonitoramentoCSV() {
+  const regs = window._monRegsAtual || [];
+  if (!regs.length) return toast('Nenhum registro pra exportar.', 'error');
+  const tiposMedida = window._monObjAtual?.tipos_medida || {};
+  const labels = window._monLabelsAtual || {};
+  const linhas = [['Data', 'Área', 'Tipo de medida', 'Valor', 'Observações']];
+  [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).forEach(r => {
+    const dataStr = new Date(r.created_at).toLocaleDateString('pt-BR');
+    Object.entries(r.resultados || {}).forEach(([area, val]) => {
+      const tipo = tiposMedida[area] || 'percentual';
+      const valorTexto = typeof val === 'number' ? `${val} ${UNIDADE_TIPO_MEDIDA[tipo] || ''}`.trim() : ({ ok: 'Conseguiu', parcial: 'Parcial', nao: 'Não conseguiu' }[val] || val);
+      linhas.push([dataStr, (labels[area] || area).replace(/^\S+\s/, ''), LABEL_TIPO_MEDIDA[tipo] || tipo, valorTexto, r.observacoes || '']);
+    });
+  });
+  const csv = linhas.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'monitoramento_' + (window._monNomeAtual || 'paciente').replace(/\s+/g, '_') + '.csv';
+  a.click();
+}
+
+let _chartsNumericos = {};
+function renderizarGraficosNumericos(regs, areasNumericas, tiposMedida, labels) {
+  const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
+  if (!areasNumericas.length || typeof Chart === 'undefined') return;
+  const { datasKeys, porArea } = construirSequenciasMonitoramento(regs, areasNumericas);
+  const dataLabels = datasKeys.map((_, i) => `Reg. ${i + 1}`);
+  areasNumericas.forEach(a => {
+    const canvas = document.getElementById(`mon-grafico-num-${a}`);
+    if (!canvas) return;
+    if (_chartsNumericos[a]) { _chartsNumericos[a].destroy(); delete _chartsNumericos[a]; }
+    const dataPontos = porArea[a]?.dataPontos || [];
+    _chartsNumericos[a] = new Chart(canvas, {
+      type: 'bar',
+      data: { labels: dataLabels, datasets: [{
+        label: `${(labels[a]||a).replace(/^\S+\s/,'')} (${UNIDADE_TIPO_MEDIDA[tiposMedida[a]]})`,
+        data: dataPontos,
+        backgroundColor: CORES[a] || '#2563EB',
+      }] },
+      options: {
+        scales: { y: { beginAtZero: true }, x: { grid: { display: false } } },
+        plugins: { legend: { display: false } },
+      },
+    });
+  });
 }
 
 function calcularScoreAutonomia(observacoes) {
@@ -27724,13 +27819,15 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   if (!canvas || typeof Chart === 'undefined') return;
   const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
   const criterios = obj?.criterios_dominio || {};
-  const { datasKeys, areasComDados, porArea } = construirSequenciasMonitoramento(regs, areas);
+  const tiposMedida = obj?.tipos_medida || {};
+  const areasPercentual = areas.filter(a => !TIPOS_MEDIDA_NUMERICOS.includes(tiposMedida[a]));
+  const { datasKeys, areasComDados, porArea } = construirSequenciasMonitoramento(regs, areasPercentual);
   // Eixo X sequencial (nº do registro, não a data em si) — evita que intervalos desiguais
   // entre atendimentos distorçam a leitura visual da tendência (análise visual ABA).
   const dataLabels = datasKeys.map((_, i) => `Reg. ${i + 1}`);
 
   const datasets = [];
-  areas.filter(a => areasComDados.has(a)).forEach(a => {
+  areasPercentual.filter(a => areasComDados.has(a)).forEach(a => {
     const { dataPontos, seqValores } = porArea[a];
     const decisao = analisarPadraoDecisaoGreer(seqValores);
     let indiceFlagReal = null;
