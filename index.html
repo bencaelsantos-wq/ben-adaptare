@@ -27744,6 +27744,9 @@ function renderizarGraficosNumericos(regs, areasNumericas, tiposMedida, labels) 
         label: `${(labels[a]||a).replace(/^\S+\s/,'')} (${UNIDADE_TIPO_MEDIDA[tiposMedida[a]]})`,
         data: dataPontos,
         backgroundColor: CORES[a] || '#2563EB',
+        barPercentage: 0.5,
+        categoryPercentage: 0.6,
+        borderRadius: 4,
       }] },
       options: {
         scales: { y: { beginAtZero: true }, x: { grid: { display: false } } },
