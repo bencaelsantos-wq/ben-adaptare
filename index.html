@@ -5537,8 +5537,8 @@ function renderNavProfessor() {
     <div class="nav-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('historico')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-praticas-aluno" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Banco de Práticas')" : "showPage('praticas-aluno');popularSelectPraticasAluno()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item" id="nav-praticas-aluno" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Banco de Práticas do Aluno')" : "showPage('praticas-aluno');popularSelectPraticasAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas do Aluno${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item" id="nav-chat-aluno" onclick="${!temAddon('pergunte_aluno') ? "acessarRecursoPremium('Pergunte para a Lou')" : "showPage('chat-aluno');popularSelectChatAluno()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 5h14v8H7l-4 3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Pergunte para a Lou${!temAddon('pergunte_aluno') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5614,8 +5614,8 @@ function renderNavCoordenacaoPedagogica() {
     <div class="nav-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('historico')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item" id="nav-praticas-aluno" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Banco de Práticas')" : "showPage('praticas-aluno');popularSelectPraticasAluno()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item" id="nav-praticas-aluno" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Banco de Práticas do Aluno')" : "showPage('praticas-aluno');popularSelectPraticasAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas do Aluno${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-section">Documentos Formais</div>
     <div class="nav-item" id="nav-pei" onclick="${!temAddon('pei') ? "acessarRecursoPremium('Elaborar PEI')" : "showPage('pei')"}">
@@ -5703,8 +5703,8 @@ function renderNavGestao() {
     <div class="nav-item gestao-item" id="nav-gestao-adapt" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Adaptações')" : "showPage('gestao-adapt')"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Adaptações${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item gestao-item" id="nav-praticas-aluno" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Banco de Práticas')" : "showPage('praticas-aluno');popularSelectPraticasAluno()"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item gestao-item" id="nav-praticas-aluno" onclick="${!temAddon('ciclo_trabalho') ? "acessarRecursoPremium('Banco de Práticas do Aluno')" : "showPage('praticas-aluno');popularSelectPraticasAluno()"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas do Aluno${!temAddon('ciclo_trabalho') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item gestao-item" id="nav-banco-praticas-coletivo" onclick="${!temAddon('banco_praticas_coletivo') ? "acessarRecursoPremium('Banco de Práticas Coletivo')" : "showPage('banco-praticas-coletivo');popularBancoPraticasColetivo()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="6" cy="14" r="2.3" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="14" r="2.3" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="5.5" r="2.3" stroke="currentColor" stroke-width="1.5"/><path d="M7.8 12.3 9 8.5M12.2 12.3 11 8.5" stroke="currentColor" stroke-width="1.3"/></svg>Banco de Práticas Coletivo${!temAddon('banco_praticas_coletivo') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5754,8 +5754,8 @@ function renderNavClinica() {
     <div class="nav-item clinic-item" id="nav-clinica-trilha-aprofundamento" onclick="${!temAddon('trilha_aprofundamento') ? "acessarRecursoPremium('Trilha de Aprofundamento')" : "showPage('trilha-aprofundamento');carregarAlunosAdaptacaoClinica()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Trilha de Aprofundamento${!temAddon('trilha_aprofundamento') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-praticas-aluno" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Banco de Práticas')" : "showPage('praticas-aluno');carregarAlunosAdaptacaoClinica().then(popularSelectPraticasAluno)"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-praticas-aluno" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Banco de Práticas do Aluno')" : "showPage('praticas-aluno');carregarAlunosAdaptacaoClinica().then(popularSelectPraticasAluno)"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas do Aluno${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Histórico')" : "showPage('historico');carregarAdaptacoes()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5854,8 +5854,8 @@ function renderNavGestaoClinica() {
     <div class="nav-item clinic-item" id="nav-clinica-trilha-aprofundamento" onclick="${!temAddon('trilha_aprofundamento') ? "acessarRecursoPremium('Trilha de Aprofundamento')" : "showPage('trilha-aprofundamento');carregarAlunosAdaptacaoClinica()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Trilha de Aprofundamento${!temAddon('trilha_aprofundamento') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
-    <div class="nav-item clinic-item" id="nav-praticas-aluno" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Banco de Práticas')" : "showPage('praticas-aluno');carregarAlunosAdaptacaoClinica().then(popularSelectPraticasAluno)"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
+    <div class="nav-item clinic-item" id="nav-praticas-aluno" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Banco de Práticas do Aluno')" : "showPage('praticas-aluno');carregarAlunosAdaptacaoClinica().then(popularSelectPraticasAluno)"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas do Aluno${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Histórico')" : "showPage('historico');carregarAdaptacoes()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
@@ -5867,7 +5867,7 @@ function renderNavGestaoClinica() {
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Perfis dos Pacientes
     </div>
     <div class="nav-item clinic-item" id="nav-praticas-clinica" onclick="showPage('praticas-clinica');popularSelectsClinica()">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Práticas Guiadas Aplicadas
     </div>
     <div class="nav-item clinic-item" id="nav-gc-profissionais" onclick="showPage('gc-profissionais')">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-3 2.686-5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M11 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Profissionais
@@ -6343,7 +6343,7 @@ const HTML_BLOCO_ADAPTACAO_CLINICA = `
   </div>
 
   <div id="page-praticas-aluno" class="page">
-    <h1 class="page-title">Banco de Práticas</h1>
+    <h1 class="page-title">Banco de Práticas do Aluno</h1>
     <p class="page-sub">Tudo que já foi gerado para este aluno — adaptações e ciclos de trabalho — para quem assumir o acompanhamento continuar de onde parou. Ciclos de trabalho têm um botão "Diário de Ciclo" com a avaliação por atividade lançada pelo professor.</p>
     <div style="margin-bottom:16px"><select class="fselect" id="prat-aluno-sel" onchange="carregarPraticasAluno()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
     <div id="prat-body"></div>
@@ -14605,14 +14605,14 @@ function renderPages() {
   </div>
 
   <div id="page-praticas-aluno" class="page">
-    <h1 class="page-title">Banco de Práticas</h1>
+    <h1 class="page-title">Banco de Práticas do Aluno</h1>
     <p class="page-sub">Tudo que já foi gerado para este aluno — adaptações e ciclos de trabalho — para quem assumir o acompanhamento continuar de onde parou. Ciclos de trabalho têm um botão "Diário de Ciclo" com a avaliação por atividade lançada pelo professor.</p>
     <div style="margin-bottom:16px"><select class="fselect" id="prat-aluno-sel" onchange="carregarPraticasAluno()" style="max-width:320px"><option value="">Selecione um aluno</option></select></div>
     <div id="prat-body"></div>
   </div>
 
   <div id="page-praticas-clinica" class="page">
-    <h1 class="page-title">Banco de Práticas</h1>
+    <h1 class="page-title">Práticas Guiadas Aplicadas</h1>
     <p class="page-sub">Práticas guiadas já aplicadas com este paciente — para quem assumir o acompanhamento continuar de onde parou.</p>
     <div style="margin-bottom:16px"><select class="fselect" id="prat-clinica-sel" onchange="carregarPraticasClinica()" style="max-width:320px"><option value="">Selecione um paciente</option></select></div>
     <div id="prat-clinica-body"></div>
