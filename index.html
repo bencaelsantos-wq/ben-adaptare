@@ -25322,6 +25322,10 @@ async function baixarFichaRegistroABA(perfilIdParam, nomeParam) {
     { key:'comportamental', label:'Comportamental' },
     { key:'academico', label:'Acadêmico' },
   ];
+  const LABEL_TIPO = { percentual: '% de acerto', frequencia: 'Frequência/taxa', duracao: 'Duração', latencia: 'Latência', sondagem: 'Sondagem (não diária)' };
+  const LABEL_STATUS = { treino: 'Em treino', suspenso: 'Suspenso', concluido: 'Concluído' };
+  const LABEL_UNIDADE_MANUT = { dia: 'dia', semana: 'semana', mes: 'mês' };
+
   let nome = nomeParam, obj = null;
   if (perfilIdParam) {
     if (!nome) return toast('Paciente não encontrado.', 'error');
@@ -25331,9 +25335,28 @@ async function baixarFichaRegistroABA(perfilIdParam, nomeParam) {
     const ctx = window._objAbaAtual;
     if (!ctx) return toast('Selecione um aluno primeiro.', 'error');
     nome = ctx.nome;
-    obj = {};
-    ctx.areas.forEach(a => { obj[a.key] = document.getElementById(`obj-${a.key}`)?.value.trim() || ctx.obj[a.key] || ''; });
+    obj = { tipos_medida: {}, criterios_dominio: {}, status_programa: {} };
+    ctx.areas.forEach(a => {
+      obj[a.key] = document.getElementById(`obj-${a.key}`)?.value.trim() || ctx.obj[a.key] || '';
+      obj.tipos_medida[a.key] = document.getElementById(`obj-${a.key}-tipo`)?.value || 'percentual';
+      obj.status_programa[a.key] = document.getElementById(`obj-${a.key}-status`)?.value || 'treino';
+      const pct = document.getElementById(`obj-${a.key}-crit-pct`)?.value;
+      const dias = document.getElementById(`obj-${a.key}-crit-dias`)?.value;
+      if (pct && dias) {
+        obj.criterios_dominio[a.key] = { percentual: parseInt(pct,10), dias: parseInt(dias,10) };
+        if (document.getElementById(`obj-${a.key}-crit-bloco100`)?.checked) obj.criterios_dominio[a.key].blocoUnico100 = true;
+        const generalizacao = document.getElementById(`obj-${a.key}-generalizacao`)?.value.trim();
+        if (generalizacao) obj.criterios_dominio[a.key].generalizacao = generalizacao;
+        const manutVezes = document.getElementById(`obj-${a.key}-manut-vezes`)?.value;
+        const manutPeriodo = document.getElementById(`obj-${a.key}-manut-periodo`)?.value;
+        const manutUnidade = document.getElementById(`obj-${a.key}-manut-unidade`)?.value;
+        if (manutVezes && manutPeriodo) obj.criterios_dominio[a.key].manutencao = { vezes: parseInt(manutVezes,10), unidade: manutUnidade||'semana', periodoDias: parseInt(manutPeriodo,10) };
+      }
+    });
   }
+  const tiposMedida = obj.tipos_medida || {};
+  const criteriosDominio = obj.criterios_dominio || {};
+  const statusPrograma = obj.status_programa || {};
   const areasComTexto = areasDef.map(a => ({ ...a, texto: obj[a.key] || '' })).filter(a => a.texto);
   if (!areasComTexto.length) return toast('Este paciente ainda não tem objetivos terapêuticos cadastrados.', 'error');
 
@@ -25362,43 +25385,84 @@ async function baixarFichaRegistroABA(perfilIdParam, nomeParam) {
   doc.text('Paciente/Aluno: ' + (nome || ''), ml, y); y += 10;
 
   areasComTexto.forEach(a => {
+    const tipo = tiposMedida[a.key] || 'percentual';
+    const status = LABEL_STATUS[statusPrograma[a.key] || 'treino'];
+    const crit = criteriosDominio[a.key] || {};
+    const ehNumerico = TIPOS_MEDIDA_NUMERICOS.includes(tipo);
+
     garantirEspacoAba(60);
     doc.setDrawColor(60,60,60); doc.setLineWidth(0.3);
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(20,20,20);
-    doc.text('Objetivo de ensino: ' + a.label, ml, y); y += 6;
+    doc.text(`Objetivo de ensino: ${a.label} (${status})`, ml, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
     const linhasObj = doc.splitTextToSize(a.texto, maxX - ml);
     linhasObj.forEach(l => { garantirEspacoAba(6); doc.text(l, ml, y); y += 5; });
+    y += 1;
+
+    doc.setFontSize(8.5); doc.setTextColor(90,90,90);
+    garantirEspacoAba(5);
+    doc.text(`Tipo de medida: ${LABEL_TIPO[tipo]}`, ml, y); y += 4.5;
+    if (crit.percentual && crit.dias) {
+      garantirEspacoAba(5);
+      doc.text(`Critério de domínio: ${crit.percentual}% por ${crit.dias} dia(s) seguidos${crit.blocoUnico100 ? ' OU 100% num único bloco' : ''}`, ml, y); y += 4.5;
+    }
+    if (crit.generalizacao) {
+      garantirEspacoAba(5);
+      const lg = doc.splitTextToSize(`Generalização: ${crit.generalizacao}`, maxX - ml);
+      lg.forEach(l => { garantirEspacoAba(4.5); doc.text(l, ml, y); y += 4.5; });
+    }
+    if (crit.manutencao) {
+      garantirEspacoAba(5);
+      doc.text(`Manutenção: verificar ${crit.manutencao.vezes}x por ${LABEL_UNIDADE_MANUT[crit.manutencao.unidade]||crit.manutencao.unidade} pelo período de ${crit.manutencao.periodoDias} dias`, ml, y); y += 4.5;
+    }
     y += 3;
 
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(20,20,20);
-    doc.text('Oportunidades:', ml, y); y += 5;
-    const cols = 5, linhas2 = 2, cellW = (maxX - ml) / cols, cellH = 10;
-    garantirEspacoAba(cellH * linhas2 + 4);
-    for (let r = 0; r < linhas2; r++) {
-      for (let c = 0; c < cols; c++) {
-        doc.rect(ml + c * cellW, y + r * cellH, cellW, cellH);
+    if (ehNumerico) {
+      const unidade = UNIDADE_TIPO_MEDIDA[tipo] || '';
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(20,20,20);
+      doc.text(`Registros (${unidade}):`, ml, y); y += 5;
+      const cols = 5, linhas2 = 2, cellW = (maxX - ml) / cols, cellH = 10;
+      garantirEspacoAba(cellH * linhas2 + 4);
+      for (let r = 0; r < linhas2; r++) {
+        for (let c = 0; c < cols; c++) doc.rect(ml + c * cellW, y + r * cellH, cellW, cellH);
       }
+      y += cellH * linhas2 + 8;
+    } else {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(20,20,20);
+      doc.text('Tentativas (data / IND / DICA / ERRO / AUS):', ml, y); y += 5;
+      const colsDef = [
+        { label: 'Data', w: 0.22 },
+        { label: 'IND', w: 0.195 },
+        { label: 'DICA', w: 0.195 },
+        { label: 'ERRO', w: 0.195 },
+        { label: 'AUS', w: 0.195 },
+      ];
+      const linhasTabela = 6, cellH = 8;
+      garantirEspacoAba(cellH * (linhasTabela + 1) + 4);
+      let x = ml;
+      doc.setFontSize(8);
+      colsDef.forEach(c => {
+        const w = c.w * (maxX - ml);
+        doc.rect(x, y, w, cellH);
+        doc.text(c.label, x + w/2, y + cellH/2 + 1.2, { align: 'center' });
+        x += w;
+      });
+      for (let r = 1; r <= linhasTabela; r++) {
+        x = ml;
+        colsDef.forEach(c => { const w = c.w * (maxX - ml); doc.rect(x, y + r*cellH, w, cellH); x += w; });
+      }
+      y += cellH * (linhasTabela + 1) + 8;
     }
-    y += cellH * linhas2 + 8;
-
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
-    doc.text('Ajuda vigente: ', ml, y);
-    doc.line(ml + doc.getTextWidth('Ajuda vigente: ') + 2, y + 0.5, maxX, y + 0.5);
-    y += 8;
-    doc.text('Procedimento de correção: ', ml, y);
-    doc.line(ml + doc.getTextWidth('Procedimento de correção: ') + 2, y + 0.5, maxX, y + 0.5);
-    y += 12;
   });
 
   garantirEspacoAba(28);
   doc.setDrawColor(150,150,150); doc.setLineWidth(0.3);
   doc.roundedRect(ml, y, maxX - ml, 24, 2, 2, 'S');
   doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(20,20,20);
-  doc.text('Como preencher as lacunas:', ml + 4, y + 6);
+  doc.text('Legenda:', ml + 4, y + 6);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-  doc.text('I - Independente     A - Acerto com dica     E - Erro', ml + 4, y + 14);
+  doc.text('IND - Independente     DICA - Com ajuda/dica     ERRO - Erro     AUS - Ausente/recusou', ml + 4, y + 14);
 
   doc.save('Ficha_Registro_ABA_' + (nome || 'aluno').replace(/\s+/g, '_') + '.pdf');
   toast('Ficha de Registro ABA gerada!', 'success');
