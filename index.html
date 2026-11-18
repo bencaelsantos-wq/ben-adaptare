@@ -9136,8 +9136,13 @@ function renderPagesDeveloper() {
 
   <!-- LOGS DE ACESSO -->
   <div id="page-dev-acessos" class="page">
-    <h1 class="page-title">Logs de Acesso</h1>
-    <p class="page-sub">Registro de cada login realizado na plataforma, e de acessos a dados sensíveis específicos (PEI, adaptação, Diário do Aluno, solicitações externas) quando identificado.</p>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+      <div>
+        <h1 class="page-title">Logs de Acesso</h1>
+        <p class="page-sub">Registro de cada login realizado na plataforma, e de acessos a dados sensíveis específicos (PEI, adaptação, Diário do Aluno, solicitações externas) quando identificado. A tela mostra só os 200 mais recentes — baixe o relatório completo pra ver tudo.</p>
+      </div>
+      <button class="btn-copy" style="white-space:nowrap" onclick="exportarLogsAcessoCSV()">📥 Baixar relatório completo (CSV)</button>
+    </div>
     <div id="dev-acessos-lista" style="overflow-x:auto;margin-top:14px">
       <table class="dev-table"><thead><tr><th>Usuário</th><th>Papel</th><th>Data/Hora</th><th>O que foi acessado</th><th>Dispositivo</th></tr></thead>
       <tbody id="dev-acessos-tbody"></tbody></table>
@@ -12443,6 +12448,16 @@ function baixarPDFLinhaDoTempo() {
 }
 
 // ── LOG DE AUDITORIA LGPD ─────────────────────────────────────
+const LABEL_ACAO_AUDITORIA = {
+  visualizou_adaptacao: 'Visualizou adaptação', visualizou_pei: 'Visualizou PEI', exportou_pei: 'Exportou PEI',
+  acessou_diario: 'Acessou Diário do Aluno', gerou_solicitacao_externa: 'Gerou solicitação externa',
+  visualizou_jornada_integrada: 'Visualizou Jornada Integrada', acessou_chat_aluno: 'Acessou "Pergunte para a Lou"',
+  visualizou_perfil_clinico: 'Visualizou Perfil Clínico', visualizou_plano_intervencao: 'Visualizou Plano de Intervenção',
+  gerou_ciclo_trabalho: 'Gerou Ciclo de Trabalho', gerou_trilha_aprofundamento: 'Gerou Trilha de Aprofundamento',
+  gerou_pratica_guiada: 'Gerou Prática Guiada', gerou_material_terapeutico: 'Gerou Material Terapêutico',
+  visualizou_objetivos_terapeuticos: 'Visualizou Objetivos Terapêuticos', visualizou_monitoramento: 'Visualizou Monitoramento',
+  selecionou_aluno_adaptacao: 'Selecionou aluno/paciente em Nova Adaptação',
+};
 // Registra cada acesso a dado sensível no banco — acao/recurso/recursoId identificam
 // exatamente o que foi acessado (ex: "visualizou_pei" / "pei" / id do PEI), não só o login.
 async function registrarAuditoria(acao, recurso, recursoId) {
@@ -12475,16 +12490,7 @@ async function carregarLogsAcesso() {
   try {
     const { data, error } = await db.from('logs_acesso').select('*').order('created_at', { ascending: false }).limit(200);
     if (error) throw error;
-    const LABEL_ACAO = {
-      visualizou_adaptacao: 'Visualizou adaptação', visualizou_pei: 'Visualizou PEI', exportou_pei: 'Exportou PEI',
-      acessou_diario: 'Acessou Diário do Aluno', gerou_solicitacao_externa: 'Gerou solicitação externa',
-      visualizou_jornada_integrada: 'Visualizou Jornada Integrada', acessou_chat_aluno: 'Acessou "Pergunte para a Lou"',
-      visualizou_perfil_clinico: 'Visualizou Perfil Clínico', visualizou_plano_intervencao: 'Visualizou Plano de Intervenção',
-      gerou_ciclo_trabalho: 'Gerou Ciclo de Trabalho', gerou_trilha_aprofundamento: 'Gerou Trilha de Aprofundamento',
-      gerou_pratica_guiada: 'Gerou Prática Guiada', gerou_material_terapeutico: 'Gerou Material Terapêutico',
-      visualizou_objetivos_terapeuticos: 'Visualizou Objetivos Terapêuticos', visualizou_monitoramento: 'Visualizou Monitoramento',
-      selecionou_aluno_adaptacao: 'Selecionou aluno/paciente em Nova Adaptação',
-    };
+    const LABEL_ACAO = LABEL_ACAO_AUDITORIA;
     tbody.innerHTML = (data||[]).length
       ? data.map(l => `<tr>
           <td>${l.user_email||'—'}</td>
@@ -12499,6 +12505,29 @@ async function carregarLogsAcesso() {
   }
 }
 
+// Exporta TODO o histórico de logs_acesso em CSV — a tela só mostra os 200 mais recentes,
+// mas o relatório baixado não tem esse limite (até 20 mil linhas, pra não travar o navegador).
+async function exportarLogsAcessoCSV() {
+  toast('Gerando relatório…', 'success');
+  const { data, error } = await db.from('logs_acesso').select('*').order('created_at', { ascending: false }).limit(20000);
+  if (error) return toast('Erro ao gerar relatório: ' + error.message, 'error');
+  if (!data || !data.length) return toast('Nenhum log pra exportar.', 'error');
+  const LABEL_ACAO = LABEL_ACAO_AUDITORIA;
+  const linhas = [['Usuário', 'Papel', 'Data/Hora', 'Ação', 'Recurso', 'ID do recurso', 'Dispositivo']];
+  data.forEach(l => {
+    linhas.push([
+      l.user_email || '', l.role || '', l.created_at ? new Date(l.created_at).toLocaleString('pt-BR') : '',
+      l.acao ? (LABEL_ACAO[l.acao] || l.acao) : 'Login', l.recurso || '', l.recurso_id || '', l.user_agent || '',
+    ]);
+  });
+  const csv = linhas.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'logs_acesso_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  toast(`Relatório com ${data.length} registro(s) gerado!`, 'success');
+}
 
 // ── GESTÃO CLÍNICA: Cadastrar Profissional ─────────────────────
 function abrirModalCadProfissionalClinica() {
