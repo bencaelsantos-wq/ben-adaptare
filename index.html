@@ -25571,7 +25571,16 @@ async function salvarObjetivos(perfilId) {
   payload.criterios_dominio = criteriosDominio;
   payload.niveis_suporte = niveisSuporte;
   payload.status_programa = statusPrograma;
-  const { data: existing } = await db.from('objetivos_terapeuticos').select('id').eq('perfil_id', perfilId).maybeSingle();
+  const { data: existing } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', perfilId).maybeSingle();
+  // Quando o texto de uma meta muda, guarda a data — vira o marcador de "mudança de objetivo"
+  // no gráfico de Monitoramento. Só marca se já havia um texto antes (não na criação inicial).
+  const objetivosAtualizadosEm = { ...(existing?.objetivos_atualizados_em || {}) };
+  if (existing) {
+    areas.forEach(a => {
+      if (existing[a] && payload[a] && existing[a] !== payload[a]) objetivosAtualizadosEm[a] = new Date().toISOString();
+    });
+  }
+  payload.objetivos_atualizados_em = objetivosAtualizadosEm;
   let error;
   if (existing) {
     ({ error } = await db.from('objetivos_terapeuticos').update(payload).eq('id', existing.id));
@@ -27655,9 +27664,10 @@ const VALOR_TALLY_ANTIGO = { ok: { ind: 1 }, parcial: { ind: 0.5, dica: 0.5 }, n
 function construirSequenciasMonitoramento(regs, areas) {
   const ordenados = [...(regs||[])].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
   const porData = new Map();
+  const dataRealPorChave = new Map();
   ordenados.forEach(r => {
     const chave = new Date(r.created_at).toLocaleDateString('pt-BR');
-    if (!porData.has(chave)) porData.set(chave, {});
+    if (!porData.has(chave)) { porData.set(chave, {}); dataRealPorChave.set(chave, new Date(r.created_at)); }
     const grupo = porData.get(chave);
     Object.entries(r.resultados||{}).forEach(([area, val]) => {
       if (!grupo[area]) grupo[area] = [];
@@ -27665,6 +27675,7 @@ function construirSequenciasMonitoramento(regs, areas) {
     });
   });
   const datasKeys = [...porData.keys()];
+  const datasReais = datasKeys.map(k => dataRealPorChave.get(k));
   const areasComDados = new Set();
   ordenados.forEach(r => Object.keys(r.resultados||{}).forEach(k => areasComDados.add(k)));
   const porArea = {};
@@ -27707,7 +27718,7 @@ function construirSequenciasMonitoramento(regs, areas) {
       seqValores: dataPontos.filter(v => v !== null),
     };
   });
-  return { datasKeys, areasComDados, porArea };
+  return { datasKeys, datasReais, areasComDados, porArea };
 }
 
 // Análise de padrão de decisão baseada no protocolo "Pare e Tome uma Decisão" do Greer e nos
@@ -28107,7 +28118,39 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
   const criterios = obj?.criterios_dominio || {};
   const tiposMedida = obj?.tipos_medida || {};
   const areasPercentual = areas.filter(a => !TIPOS_MEDIDA_NUMERICOS.includes(tiposMedida[a]));
-  const { datasKeys, areasComDados, porArea } = construirSequenciasMonitoramento(regs, areasPercentual);
+  const { datasKeys, datasReais, areasComDados, porArea } = construirSequenciasMonitoramento(regs, areasPercentual);
+  const objetivosAtualizadosEm = obj?.objetivos_atualizados_em || {};
+
+  // Plugin Chart.js (desenho manual, sem lib externa) que marca com uma linha vertical + rótulo
+  // o ponto do gráfico em que o texto do objetivo dessa área mudou pela última vez — mesma ideia
+  // da faixa cinza de "mudança de objetivo" nos gráficos reais da BC (convenção clássica de
+  // linha de mudança de fase em gráficos de caso único).
+  function criarPluginMudancaObjetivo(indice) {
+    if (indice === null || indice === undefined || indice < 0) return null;
+    return {
+      id: 'mudancaObjetivo_' + indice,
+      afterDraw(chart) {
+        const xScale = chart.scales.x, yScale = chart.scales.y;
+        if (!xScale || !yScale) return;
+        const x = xScale.getPixelForValue(indice);
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.strokeStyle = '#8B5CF6';
+        ctx.setLineDash([4, 3]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, yScale.top);
+        ctx.lineTo(x, yScale.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#6D28D9';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Mudança de objetivo', x, yScale.top - 3);
+        ctx.restore();
+      }
+    };
+  }
   // Eixo X com a data de cada registro (igual ao gráfico real da BC) — o Chart.js já trata eixos
   // de categoria com espaçamento igual entre pontos, então intervalos desiguais entre atendimentos
   // não distorcem a leitura visual da tendência mesmo mostrando a data de verdade.
@@ -28173,9 +28216,16 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
         pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0,
       });
     }
+    let indiceMudanca = null;
+    if (objetivosAtualizadosEm[a]) {
+      const dataMudanca = new Date(objetivosAtualizadosEm[a]);
+      indiceMudanca = datasReais.findIndex(d => d && d >= dataMudanca);
+    }
+    const pluginMudanca = criarPluginMudancaObjetivo(indiceMudanca);
     _chartsPercentuais[a] = new Chart(canvas, {
       type: 'line',
       data: { labels: dataLabels, datasets },
+      plugins: pluginMudanca ? [pluginMudanca] : [],
       options: {
         layout: { padding: { top: 12 } },
         scales: {
