@@ -9758,7 +9758,7 @@ async function carregarConsumoIA() {
     const { data: logs } = await db.from('usage_logs')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(500);
+      .limit(10000);
 
     if (!logs || !logs.length) {
       document.getElementById('ia-historico-tbody').innerHTML =
