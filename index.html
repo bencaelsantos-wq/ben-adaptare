@@ -9135,9 +9135,9 @@ function renderPagesDeveloper() {
   <!-- LOGS DE ACESSO -->
   <div id="page-dev-acessos" class="page">
     <h1 class="page-title">Logs de Acesso</h1>
-    <p class="page-sub">Registro de cada login realizado na plataforma.</p>
+    <p class="page-sub">Registro de cada login realizado na plataforma, e de acessos a dados sensíveis específicos (PEI, adaptação, Diário do Aluno, solicitações externas) quando identificado.</p>
     <div id="dev-acessos-lista" style="overflow-x:auto;margin-top:14px">
-      <table class="dev-table"><thead><tr><th>Usuário</th><th>Papel</th><th>Data/Hora</th><th>Dispositivo</th></tr></thead>
+      <table class="dev-table"><thead><tr><th>Usuário</th><th>Papel</th><th>Data/Hora</th><th>O que foi acessado</th><th>Dispositivo</th></tr></thead>
       <tbody id="dev-acessos-tbody"></tbody></table>
     </div>
   </div>
@@ -12441,7 +12441,8 @@ function baixarPDFLinhaDoTempo() {
 }
 
 // ── LOG DE AUDITORIA LGPD ─────────────────────────────────────
-// Registra cada acesso a dado sensível no banco
+// Registra cada acesso a dado sensível no banco — acao/recurso/recursoId identificam
+// exatamente o que foi acessado (ex: "visualizou_pei" / "pei" / id do PEI), não só o login.
 async function registrarAuditoria(acao, recurso, recursoId) {
   try {
     if (!user || window._devMode) return;
@@ -12450,10 +12451,8 @@ async function registrarAuditoria(acao, recurso, recursoId) {
       role:       userRole,
       user_agent: navigator.userAgent.slice(0, 200),
       created_at: new Date().toISOString(),
-      // Campos extras embutidos no user_agent como JSON se a tabela não tiver colunas extras
-      // Para registrar ação e recurso, usamos o campo user_agent como carrier temporário
+      acao, recurso, recurso_id: recursoId || null,
     });
-
   } catch(e) { /* silencioso — nunca quebra o fluxo */ }
 }
 
@@ -12474,16 +12473,21 @@ async function carregarLogsAcesso() {
   try {
     const { data, error } = await db.from('logs_acesso').select('*').order('created_at', { ascending: false }).limit(200);
     if (error) throw error;
+    const LABEL_ACAO = {
+      visualizou_adaptacao: 'Visualizou adaptação', visualizou_pei: 'Visualizou PEI', exportou_pei: 'Exportou PEI',
+      acessou_diario: 'Acessou Diário do Aluno', gerou_solicitacao_externa: 'Gerou solicitação externa',
+    };
     tbody.innerHTML = (data||[]).length
       ? data.map(l => `<tr>
           <td>${l.user_email||'—'}</td>
           <td>${l.role||'—'}</td>
           <td>${l.created_at ? new Date(l.created_at).toLocaleString('pt-BR') : '—'}</td>
+          <td>${l.acao ? `${LABEL_ACAO[l.acao]||l.acao}${l.recurso_id ? ' · ID '+l.recurso_id.slice(0,8) : ''}` : '<span style="color:var(--gr300)">Login</span>'}</td>
           <td style="max-width:260px">${(l.user_agent||'—')}</td>
         </tr>`).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:var(--gr300);padding:20px">Nenhum acesso registrado ainda.</td></tr>';
+      : '<tr><td colspan="5" style="text-align:center;color:var(--gr300);padding:20px">Nenhum acesso registrado ainda.</td></tr>';
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#DC2626;padding:20px">Erro ao carregar logs: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#DC2626;padding:20px">Erro ao carregar logs: ${e.message}</td></tr>`;
   }
 }
 
