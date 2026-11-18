@@ -29595,7 +29595,7 @@ async function verDetalhesEscola(email) {
     gid ? db.from('adaptacoes').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
     gid ? db.from('peis').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
     gid ? db.from('paees').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
-    db.from('usage_logs').select('tokens_input,tokens_output,custo_usd,metodo,criado_em').eq('user_email',email.toLowerCase()).order('criado_em',{ascending:false}).limit(100),
+    db.from('usage_logs').select('tokens_input,tokens_output,custo_usd,metodo,created_at').eq('user_email',email.toLowerCase()).order('created_at',{ascending:false}).limit(100),
     db.from('logs_acesso').select('created_at,role').eq('user_email',email.toLowerCase()).order('created_at',{ascending:false}).limit(10),
   ]);
 
