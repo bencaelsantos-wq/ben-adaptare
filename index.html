@@ -5754,22 +5754,22 @@ function navBloqueado() {
 function renderNavClinica() {
   document.getElementById('sb-nav').innerHTML = `
     <div class="nav-section">Visão Geral</div>
-    <div class="nav-item clinic-item" id="nav-praticas-aluno" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Banco de Práticas do Aluno')" : "showPage('praticas-aluno');carregarAlunosAdaptacaoClinica().then(popularSelectPraticasAluno)"}">
-      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas do Aluno${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
-    </div>
     <div class="nav-item clinic-item active" id="nav-clinica-dashboard" onclick="showPage('clinica-dashboard');carregarDashboardClinica()">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Dashboard
     </div>
     ${userSubRole === 'adaptacao' ? `
+    <div class="nav-item clinic-item" id="nav-praticas-aluno" onclick="${!temAddon('pratica_guiada') ? "acessarRecursoPremium('Banco de Práticas do Aluno')" : "showPage('praticas-aluno');carregarAlunosAdaptacaoClinica().then(popularSelectPraticasAluno)"}">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Banco de Práticas do Aluno${!temAddon('pratica_guiada') ? '<span class="nav-lock">🔒</span>' : ''}
+    </div>
     <div class="nav-item clinic-item" id="nav-historico" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Histórico')" : "showPage('historico');carregarAdaptacoes()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Histórico${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
-    </div>` : ''}
+    </div>
     <div class="nav-item clinic-item" id="nav-clinica-nova-adapt" onclick="${!temAddon('nova_adaptacao') ? "acessarRecursoPremium('Nova Adaptação')" : "showPage('nova');carregarAlunosAdaptacaoClinica()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Nova Adaptação${!temAddon('nova_adaptacao') ? '<span class="nav-lock">🔒</span>' : ''}
     </div>
     <div class="nav-item clinic-item" id="nav-clinica-trilha-aprofundamento" onclick="${!temAddon('trilha_aprofundamento') ? "acessarRecursoPremium('Trilha de Aprofundamento')" : "showPage('trilha-aprofundamento');carregarAlunosAdaptacaoClinica()"}">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Trilha de Aprofundamento${!temAddon('trilha_aprofundamento') ? '<span class="nav-lock">🔒</span>' : ''}
-    </div>
+    </div>` : ''}
     <div class="nav-section">Módulo Clínico</div>
     <div class="nav-item clinic-item" id="nav-ahsd-cne" onclick="showPage('ahsd-cne');carregarAlunosClinica().then(popularSelectsAHSD)">
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.2 4.6 5 .7-3.6 3.6.8 5-4.4-2.4-4.4 2.4.8-5L2.8 7.3l5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Altas Habilidades (CNE)
@@ -27660,9 +27660,13 @@ function analisarProgressaoPraticaGuiada(regs) {
 // em Objetivos Terapêuticos, não é específico de nenhum método (ex: Greer) ainda.
 function verificarCriteriosDominio(obj, regs, areas, labels) {
   const criterios = obj?.criterios_dominio || {};
+  const tiposMedida = obj?.tipos_medida || {};
   const { porArea } = construirSequenciasMonitoramento(regs, areas);
   const resultado = [];
   areas.forEach(area => {
+    // Critério de domínio pressupõe escala de 0-100% — não se aplica a frequência/duração/latência,
+    // onde os valores em seqValores são a contagem/tempo bruto, não uma porcentagem.
+    if (TIPOS_MEDIDA_NUMERICOS.includes(tiposMedida[area])) return;
     const crit = criterios[area];
     if (!crit || !crit.percentual || !crit.dias) return;
     const mediasDoArea = porArea[area]?.seqValores || [];
@@ -27774,17 +27778,19 @@ function analisarPadraoDecisaoGreer(seqValoresCron) {
   const n = (seqValoresCron || []).length;
   if (!n) return null;
 
+  // Checa "dificuldade logo no início" ANTES do caso de 1 registro só — senão esse branch
+  // nunca é alcançado quando n===1 e o único registro já é 0 (o return do n===1 cortava o fluxo antes).
+  if (n <= 5 && seqValoresCron.every(v => v === 0)) {
+    return { indice: n - 1, tipo: 'alerta', titulo: '⚠️ Dificuldade logo no início',
+      motivo: `${n === 1 ? 'O primeiro registro' : `Os ${n} primeiros registros`} desta meta vieram sem sucesso — antes de insistir, vale checar se faltam pré-requisitos ou se a meta está além do nível atual.` };
+  }
+
   if (n === 1) {
     if (seqValoresCron[0] === 100) {
       return { indice: 0, tipo: 'positivo', titulo: '🎯 Domínio já no 1º registro',
         motivo: 'O primeiro registro desta área já veio com desempenho completo — vale considerar se a meta está no nível certo ou se já pode avançar.' };
     }
     return null;
-  }
-
-  if (n <= 5 && seqValoresCron.every(v => v === 0)) {
-    return { indice: n - 1, tipo: 'alerta', titulo: '⚠️ Dificuldade logo no início',
-      motivo: `${n === 1 ? 'O primeiro registro' : `Os ${n} primeiros registros`} desta meta vieram sem sucesso — antes de insistir, vale checar se faltam pré-requisitos ou se a meta está além do nível atual.` };
   }
 
   if (n < 4) return null;
@@ -27826,6 +27832,9 @@ async function carregarMonitoramento() {
   const id   = document.getElementById('mon-aluno-sel')?.value;
   const body = document.getElementById('mon-body');
   if (!id || !body) return;
+  // Zera o rascunho de registro ao trocar de aluno/paciente — senão um valor digitado e não
+  // salvo pra um paciente podia ser enviado por engano no registro de outro paciente.
+  monResultados = {};
   registrarAuditoria('visualizou_monitoramento', 'perfil_clinico', id);
   const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
   if (!obj) { body.innerHTML = '<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Cadastre os objetivos terapêuticos deste aluno primeiro.</div></div>'; return; }
@@ -28006,6 +28015,7 @@ async function carregarMonitoramento() {
   window._monObjAtual = obj;
   window._monLabelsAtual = labels;
   window._monNomeAtual = document.getElementById('mon-aluno-sel')?.selectedOptions[0]?.text || '';
+  window._monRegsFiltrados = regs; // padrão do filtro é "todo o período"
   if ((regs||[]).length >= 2) renderizarGraficoMonitoramento(regs, areas, obj, labels);
   renderizarGraficosNumericos(regs, areasNumericas, tiposMedida, labels);
   if ((regs||[]).length >= 2) carregarHistoricoEvolucao(id);
@@ -28018,6 +28028,7 @@ function aplicarFiltroPeriodoMonitoramento() {
   const filtrados = dias > 0
     ? todos.filter(r => new Date(r.created_at) >= new Date(Date.now() - dias * 86400000))
     : todos;
+  window._monRegsFiltrados = filtrados;
   if (filtrados.length >= 2) {
     renderizarGraficoMonitoramento(filtrados, window._monAreasAtual, window._monObjAtual, window._monLabelsAtual);
   } else {
@@ -28030,10 +28041,11 @@ function aplicarFiltroPeriodoMonitoramento() {
   renderizarGraficoAutonomia(filtrados);
 }
 
-// Exporta todos os registros brutos de Monitoramento (data, área, tipo de medida, valor,
-// observações) em CSV — pra análise fora da plataforma ou cruzamento com outra ferramenta.
+// Exporta os registros brutos de Monitoramento (data, área, tipo de medida, valor,
+// observações) em CSV, respeitando o filtro de período aplicado na tela — pra análise fora
+// da plataforma ou cruzamento com outra ferramenta.
 function exportarDadosMonitoramentoCSV() {
-  const regs = window._monRegsAtual || [];
+  const regs = window._monRegsFiltrados || window._monRegsAtual || [];
   if (!regs.length) return toast('Nenhum registro pra exportar.', 'error');
   const tiposMedida = window._monObjAtual?.tipos_medida || {};
   const labels = window._monLabelsAtual || {};
