@@ -11192,7 +11192,9 @@ async function verificarOrcamentoIA(modulo) {
   const ehPerguntaAluno = modulo === 'pergunte_aluno';
   const ehJornadaResumo = modulo === 'jornada_resumo';
   const MODULOS_COM_ORCAMENTO_PROPRIO = ['analise-comportamental', 'linha-tempo-laudos', 'pergunte_aluno', 'jornada_resumo'];
-  const { data } = await db.from('usage_logs').select('custo_usd, metodo').gte('created_at', inicioMes.toISOString());
+  let query = db.from('usage_logs').select('custo_usd, metodo').gte('created_at', inicioMes.toISOString());
+  query = window._organizacaoId ? query.eq('organizacao_id', window._organizacaoId) : query.eq('user_id', user?.id || '');
+  const { data } = await query;
   const gastoUSD = (data||[]).filter(r => {
     if (ehAnalise) return r.metodo === 'analise-comportamental';
     if (ehLaudos) return r.metodo === 'linha-tempo-laudos';
@@ -11410,7 +11412,8 @@ async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral', imagen
         metodo:        modulo,
         tokens_input:  inputTok,
         tokens_output: outputTok,
-        custo_usd:     parseFloat(custoUSD.toFixed(6))
+        custo_usd:     parseFloat(custoUSD.toFixed(6)),
+        organizacao_id: window._organizacaoId || null
       }).then(() => {}).catch(() => {});
     }
   } catch (_) {}
