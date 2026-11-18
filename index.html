@@ -3776,6 +3776,7 @@ async function carregarJornada(id) {
   const lista = ehClinica ? perfisClinicaList : alunosCad;
   const item = (lista||[]).find(x => x.id === id);
   if (!item) return;
+  registrarAuditoria('visualizou_jornada_integrada', ehClinica ? 'perfil_clinico' : 'aluno', id);
 
   let alunoId = ehClinica ? null : id;
   let perfilClinicoId = ehClinica ? id : null;
@@ -4160,6 +4161,7 @@ async function selecionarAlunoChat(id) {
   const lista = ehClinica ? perfisClinicaList : alunosCad;
   const item = (lista||[]).find(x => x.id === id);
   if (!item) return;
+  registrarAuditoria('acessou_chat_aluno', ehClinica ? 'perfil_clinico' : 'aluno', id);
 
   if (info) {
     info.style.display = 'block';
@@ -12476,6 +12478,12 @@ async function carregarLogsAcesso() {
     const LABEL_ACAO = {
       visualizou_adaptacao: 'Visualizou adaptação', visualizou_pei: 'Visualizou PEI', exportou_pei: 'Exportou PEI',
       acessou_diario: 'Acessou Diário do Aluno', gerou_solicitacao_externa: 'Gerou solicitação externa',
+      visualizou_jornada_integrada: 'Visualizou Jornada Integrada', acessou_chat_aluno: 'Acessou "Pergunte para a Lou"',
+      visualizou_perfil_clinico: 'Visualizou Perfil Clínico', visualizou_plano_intervencao: 'Visualizou Plano de Intervenção',
+      gerou_ciclo_trabalho: 'Gerou Ciclo de Trabalho', gerou_trilha_aprofundamento: 'Gerou Trilha de Aprofundamento',
+      gerou_pratica_guiada: 'Gerou Prática Guiada', gerou_material_terapeutico: 'Gerou Material Terapêutico',
+      visualizou_objetivos_terapeuticos: 'Visualizou Objetivos Terapêuticos', visualizou_monitoramento: 'Visualizou Monitoramento',
+      selecionou_aluno_adaptacao: 'Selecionou aluno/paciente em Nova Adaptação',
     };
     tbody.innerHTML = (data||[]).length
       ? data.map(l => `<tr>
@@ -16882,6 +16890,7 @@ async function selecionarAluno(id) {
   alunoSelId = id;
   const a = alunosCad.find(x => x.id === id);
   if (!a) return;
+  registrarAuditoria('selecionou_aluno_adaptacao', ['clinica','gestao-clinica'].includes(userRole) ? 'perfil_clinico' : 'aluno', id);
 
   window._gerarBnccTemp = [];
   renderizarBnccTagsGerar();
@@ -17674,6 +17683,7 @@ function renderizarBnccTagsCiclo() {
 async function gerarCicloTrabalho() {
   const a = window._cicloAlunoObj;
   if (!a || !window._cicloAlunoId) return toast('Selecione um aluno.', 'error');
+  registrarAuditoria('gerou_ciclo_trabalho', 'aluno', window._cicloAlunoId);
   const materia = document.getElementById('cic-materia')?.value;
   const serie = document.getElementById('cic-serie')?.value.trim();
   const tema = document.getElementById('cic-tema')?.value.trim();
@@ -18416,6 +18426,7 @@ function carregarAlunosTrilhaAp() { filtrarAlSelTrilhaAp(); }
 async function gerarTrilhaAprofundamento() {
   const a = window._taAlunoObj;
   if (!a || !window._taAlunoId) return toast('Selecione um aluno.', 'error');
+  registrarAuditoria('gerou_trilha_aprofundamento', 'aluno', window._taAlunoId);
   const materia = document.getElementById('ta-materia')?.value;
   const serie = document.getElementById('ta-serie')?.value.trim() || a.serie || '';
   const tema = document.getElementById('ta-tema')?.value.trim();
@@ -24761,6 +24772,7 @@ function popularSelectsClinica() {
 
 function abrirPerfilClinicoView(p) {
   window._perfilClinicoAtual = p;
+  registrarAuditoria('visualizou_perfil_clinico', 'perfil_clinico', p?.id);
   document.getElementById('resumo-familia-cli-box').style.display = 'none';
   const cores = ['#7C3AED','#2563EB','#059669','#0891B2','#D97706'];
   const cor = cores[(p.nome||'').charCodeAt(0) % cores.length];
@@ -25201,6 +25213,7 @@ async function carregarObjetivos() {
   const id  = sel?.value;
   const body = document.getElementById('clinica-obj-body');
   if (!id || !body) return;
+  registrarAuditoria('visualizou_objetivos_terapeuticos', 'perfil_clinico', id);
   const { data } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
   const obj = data || {};
   const areas = [
@@ -25601,6 +25614,7 @@ async function selecionarAlunoPlano() {
   if (!id) { if(info) info.innerHTML=''; if(btnGerar) btnGerar.style.display='none'; if(checklistCard) checklistCard.style.display='none'; return; }
   const p = perfisClinicaList.find(x => x.id === id);
   if (!p) return;
+  registrarAuditoria('visualizou_plano_intervencao', 'perfil_clinico', id);
   if (info) info.innerHTML = `
     <div class="clinic-card" style="margin-bottom:14px">
       <div class="clinic-card-title">🧠 ${escapeHtml(p.nome)} · ${escapeHtml(p.diagnostico||'Sem diagnóstico')}</div>
@@ -26643,6 +26657,7 @@ async function gerarPraticaGuiada() {
   const id = document.getElementById('pg-aluno-sel')?.value;
   const p = perfisClinicaList.find(x => x.id === id);
   if (!p) return toast('Selecione um paciente.', 'error');
+  registrarAuditoria('gerou_pratica_guiada', 'perfil_clinico', id);
   const area = document.getElementById('pg-area-sel')?.value;
   const contexto = document.getElementById('pg-contexto')?.value?.trim();
   const qtdPerguntas = parseInt(document.getElementById('pg-qtd-perguntas')?.value, 10) || 5;
@@ -26942,6 +26957,7 @@ async function gerarMaterialTerapeutico() {
   const id = document.getElementById('mat-terapeutico-aluno-sel')?.value;
   const p = perfisClinicaList.find(x => x.id === id);
   if (!p) return toast('Selecione um paciente.', 'error');
+  registrarAuditoria('gerou_material_terapeutico', 'perfil_clinico', id);
   const tipo = document.getElementById('mat-tipo')?.value;
   const contexto = document.getElementById('mat-contexto')?.value?.trim();
   if (!contexto) return toast('Descreva a situação, rotina ou palavras a trabalhar.', 'error');
@@ -27781,6 +27797,7 @@ async function carregarMonitoramento() {
   const id   = document.getElementById('mon-aluno-sel')?.value;
   const body = document.getElementById('mon-body');
   if (!id || !body) return;
+  registrarAuditoria('visualizou_monitoramento', 'perfil_clinico', id);
   const { data: obj } = await db.from('objetivos_terapeuticos').select('*').eq('perfil_id', id).maybeSingle();
   if (!obj) { body.innerHTML = '<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Cadastre os objetivos terapêuticos deste aluno primeiro.</div></div>'; return; }
   const { data: regs } = await db.from('monitoramentos').select('*').eq('perfil_id', id).order('created_at', { ascending: false });
