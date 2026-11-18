@@ -27629,6 +27629,17 @@ function verificarCriteriosDominio(obj, regs, areas, labels) {
 // últimos usam escala própria (não 0-100%) e por isso ficam fora do gráfico de % e do alerta de Greer.
 const LABEL_TIPO_MEDIDA = { percentual: '% de acerto', frequencia: 'Frequência', duracao: 'Duração', latencia: 'Latência', sondagem: 'Sondagem (intermitente)' };
 const TIPOS_MEDIDA_NUMERICOS = ['frequencia', 'duracao', 'latencia'];
+// Hierarquia de dicas usada em ABA (ex: ficha da BC) — detalhamento opcional de "Com dica".
+const DICA_TIPOS = [
+  { sigla: 'AFT', label: 'Ajuda física total — condução física para a execução completa do movimento' },
+  { sigla: 'AFP', label: 'Ajuda física parcial — condução física parcial para início ou término do movimento' },
+  { sigla: 'AG',  label: 'Ajuda gestual — apontar, sinalizar ou tocar por meio de gestos ou item/estímulo solicitado' },
+  { sigla: 'AE',  label: 'Ajuda ecoica — reproduzir a palavra, som, letra ou música dando modelo vocal total' },
+  { sigla: 'AIV', label: 'Ajuda intraverbal — reproduzir parte da palavra/som/música, dando um SD para o aprendiz completar' },
+  { sigla: 'MD',  label: 'Modelo — demonstrar para o aprendiz a ação que deve ser realizada' },
+  { sigla: 'AV',  label: 'Ajuda visual — apresentar por meio de recursos visuais o que deve ser realizado' },
+  { sigla: 'AIE', label: 'Ajuda intraestímulo — material com características próprias que destacam a resposta' },
+];
 const UNIDADE_TIPO_MEDIDA = { frequencia: 'vezes', duracao: 'min', latencia: 'seg' };
 
 // Registro de % de acerto/sondagem vira contagem de tentativas por tipo — {ind, dica, erro, aus} —
@@ -27872,11 +27883,18 @@ async function carregarMonitoramento() {
           <div style="font-size:12.5px;font-weight:600;color:var(--gr600);margin-bottom:5px">${labels[a]}: <em style="font-weight:400">${obj[a]}</em>${tipo==='sondagem' ? ' <span style="font-size:10.5px;color:#6B7280;font-weight:400">(sondagem — não precisa registrar todo dia)</span>' : ''} <span style="font-size:10px;font-weight:700;color:${statusCor}">${statusTxt}</span></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <div><label style="font-size:10px;color:var(--gr500);display:block">Independente</label><input type="number" min="0" id="mon-ind-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>
-            <div><label style="font-size:10px;color:var(--gr500);display:block">Com dica</label><input type="number" min="0" id="mon-dica-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>
+            <div>
+              <label style="font-size:10px;color:var(--gr500);display:block">Com dica</label>
+              <input type="number" min="0" id="mon-dica-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')">
+            </div>
             <div><label style="font-size:10px;color:var(--gr500);display:block">Erro</label><input type="number" min="0" id="mon-erro-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>
             <div><label style="font-size:10px;color:var(--gr500);display:block">Ausente/recusou</label><input type="number" min="0" id="mon-aus-${a}" class="finput" style="width:90px" oninput="atualizarTentativaMon('${a}')"></div>
             ${critArea.manutencao ? `<div><label style="font-size:10px;color:var(--gr500);display:block" title="${critArea.manutencao.vezes}x por ${critArea.manutencao.unidade}, por ${critArea.manutencao.periodoDias} dias">Manutenção</label><input type="number" min="0" id="mon-mt-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>` : ''}
             ${critArea.generalizacao ? `<div><label style="font-size:10px;color:var(--gr500);display:block" title="${escapeHtml(critArea.generalizacao)}">Generalização</label><input type="number" min="0" id="mon-gen-${a}" class="finput" style="width:72px" oninput="atualizarTentativaMon('${a}')"></div>` : ''}
+          </div>
+          <button type="button" onclick="toggleDetalheDicaMon('${a}')" style="background:none;border:none;color:#2563EB;font-size:10.5px;padding:0;margin-top:4px;cursor:pointer;text-decoration:underline">🔍 Detalhar tipos de dica</button>
+          <div id="mon-dica-detalhe-${a}" style="display:none;margin-top:6px;padding:8px;background:#FAFAFA;border-radius:6px;flex-wrap:wrap;gap:6px">
+            ${DICA_TIPOS.map(d => `<div><label style="font-size:9.5px;color:var(--gr500);display:block" title="${d.label}">${d.sigla}</label><input type="number" min="0" id="mon-dica-${d.sigla}-${a}" class="finput" style="width:52px;padding:3px 4px;font-size:11px" oninput="atualizarTentativaMon('${a}')"></div>`).join('')}
           </div>
           <div id="mon-pct-preview-${a}" style="font-size:11px;color:var(--gr500);margin-top:4px"></div>
         </div>`;
@@ -27912,7 +27930,8 @@ async function carregarMonitoramento() {
                       if (v && typeof v === 'object') {
                         const tot = (v.ind||0)+(v.dica||0)+(v.erro||0)+(v.aus||0);
                         const pct = tot ? Math.round((v.ind||0)/tot*100) : 0;
-                        return `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#D1FAE5;color:#065F46">${labels[k]||k}: ${pct}% ind. (${v.ind||0}/${v.dica||0}/${v.erro||0}${v.aus?'/'+v.aus:''})${v.mt?' · MT:'+v.mt:''}${v.gen?' · GEN:'+v.gen:''}</span>`;
+                        const tituloDetalhe = v.dicaDetalhe ? Object.entries(v.dicaDetalhe).map(([s,n]) => `${s.toUpperCase()}: ${n}`).join(', ') : '';
+                        return `<span title="${escapeHtml(tituloDetalhe)}" style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#D1FAE5;color:#065F46">${labels[k]||k}: ${pct}% ind. (${v.ind||0}/${v.dica||0}/${v.erro||0}${v.aus?'/'+v.aus:''})${v.mt?' · MT:'+v.mt:''}${v.gen?' · GEN:'+v.gen:''}${v.dicaDetalhe?' 🔍':''}</span>`;
                       }
                       if (typeof v === 'number') return `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:#EEF2FF;color:#3730A3">${labels[k]||k}: ${v} ${UNIDADE_TIPO_MEDIDA[tiposMedida[k]]||''}</span>`;
                       return `<span style="font-size:11.5px;padding:2px 8px;border-radius:999px;background:${v==='ok'?'#D1FAE5':v==='parcial'?'#FEF3C7':'#FEE2E2'};color:${v==='ok'?'#065F46':v==='parcial'?'#92400E':'#7F1D1D'}">${labels[k]||k}: ${v==='ok'?'✔':v==='parcial'?'⚠':'✗'}</span>`;
@@ -27961,21 +27980,23 @@ function exportarDadosMonitoramentoCSV() {
   if (!regs.length) return toast('Nenhum registro pra exportar.', 'error');
   const tiposMedida = window._monObjAtual?.tipos_medida || {};
   const labels = window._monLabelsAtual || {};
-  const linhas = [['Data', 'Área', 'Tipo de medida', 'Tentativas', 'Independente', 'Com dica', 'Erro', 'Ausente/recusou', '% Independente', 'Manutenção', 'Generalização', 'Observações']];
+  const siglasDica = DICA_TIPOS.map(d => d.sigla);
+  const linhas = [['Data', 'Área', 'Tipo de medida', 'Tentativas', 'Independente', 'Com dica', ...siglasDica, 'Erro', 'Ausente/recusou', '% Independente', 'Manutenção', 'Generalização', 'Observações']];
   [...regs].sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).forEach(r => {
     const dataStr = new Date(r.created_at).toLocaleDateString('pt-BR');
     Object.entries(r.resultados || {}).forEach(([area, val]) => {
       const tipo = tiposMedida[area] || 'percentual';
       const areaLabel = (labels[area] || area).replace(/^\S+\s/, '');
+      const colsDicaDetalhe = () => siglasDica.map(s => (val?.dicaDetalhe?.[s.toLowerCase()]) || '');
       if (val && typeof val === 'object') {
         const tot = (val.ind||0)+(val.dica||0)+(val.erro||0)+(val.aus||0);
         const pct = tot ? Math.round((val.ind||0)/tot*100) : '';
-        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, tot, val.ind||0, val.dica||0, val.erro||0, val.aus||0, pct, val.mt||'', val.gen||'', r.observacoes || '']);
+        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, tot, val.ind||0, val.dica||0, ...colsDicaDetalhe(), val.erro||0, val.aus||0, pct, val.mt||'', val.gen||'', r.observacoes || '']);
       } else if (typeof val === 'number') {
-        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, '', val, '', '', '', '', '', '', r.observacoes || '']);
+        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, '', val, '', ...siglasDica.map(()=>''), '', '', '', '', '', r.observacoes || '']);
       } else {
         const valorTexto = { ok: 'Conseguiu', parcial: 'Parcial', nao: 'Não conseguiu' }[val] || val;
-        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, '', '', '', '', '', valorTexto, '', '', r.observacoes || '']);
+        linhas.push([dataStr, areaLabel, LABEL_TIPO_MEDIDA[tipo] || tipo, '', '', '', ...siglasDica.map(()=>''), '', '', valorTexto, '', '', r.observacoes || '']);
       }
     });
   });
@@ -28265,9 +28286,26 @@ function selMonBtn(btn, area, val) {
 
 // Lê as 4 contagens de tentativa (Independente/Com dica/Erro/Ausente) de uma área, monta o
 // objeto de tentativa em monResultados e mostra o % de independência calculado, em tempo real.
+function toggleDetalheDicaMon(area) {
+  const div = document.getElementById(`mon-dica-detalhe-${area}`);
+  if (!div) return;
+  div.style.display = div.style.display === 'flex' ? 'none' : 'flex';
+}
+
 function atualizarTentativaMon(area) {
   const ind = parseFloat(document.getElementById(`mon-ind-${area}`)?.value) || 0;
-  const dica = parseFloat(document.getElementById(`mon-dica-${area}`)?.value) || 0;
+  // Se algum campo de detalhe de dica foi preenchido, a soma deles substitui o total digitado
+  // em "Com dica" — evita o profissional ter que somar na mão e manter os dois sincronizados.
+  const dicaDetalhe = {};
+  let somaDetalhe = 0;
+  DICA_TIPOS.forEach(d => {
+    const v = parseFloat(document.getElementById(`mon-dica-${d.sigla}-${area}`)?.value) || 0;
+    if (v) { dicaDetalhe[d.sigla.toLowerCase()] = v; somaDetalhe += v; }
+  });
+  const temDetalhe = Object.keys(dicaDetalhe).length > 0;
+  const dicaInput = document.getElementById(`mon-dica-${area}`);
+  if (temDetalhe && dicaInput) dicaInput.value = somaDetalhe;
+  const dica = temDetalhe ? somaDetalhe : (parseFloat(dicaInput?.value) || 0);
   const erro = parseFloat(document.getElementById(`mon-erro-${area}`)?.value) || 0;
   const aus = parseFloat(document.getElementById(`mon-aus-${area}`)?.value) || 0;
   const mt = parseFloat(document.getElementById(`mon-mt-${area}`)?.value) || 0;
@@ -28278,6 +28316,7 @@ function atualizarTentativaMon(area) {
     monResultados[area] = { ind, dica, erro, aus };
     if (mt) monResultados[area].mt = mt;
     if (gen) monResultados[area].gen = gen;
+    if (temDetalhe) monResultados[area].dicaDetalhe = dicaDetalhe;
   }
   const preview = document.getElementById(`mon-pct-preview-${area}`);
   if (preview) preview.textContent = total ? `${total} tentativa${total>1?'s':''} — ${Math.round(ind/total*100)}% independente` : '';
