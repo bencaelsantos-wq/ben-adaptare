@@ -12490,7 +12490,7 @@ async function carregarLogsAcesso() {
           <td>${l.user_email||'—'}</td>
           <td>${l.role||'—'}</td>
           <td>${l.created_at ? new Date(l.created_at).toLocaleString('pt-BR') : '—'}</td>
-          <td>${l.acao ? `${LABEL_ACAO[l.acao]||l.acao}${l.recurso_id ? ' · ID '+l.recurso_id.slice(0,8) : ''}` : '<span style="color:var(--gr300)">Login</span>'}</td>
+          <td style="max-width:260px;white-space:normal;overflow:visible;text-overflow:clip" title="${l.acao ? escapeHtml(`${LABEL_ACAO[l.acao]||l.acao}${l.recurso_id ? ' · ID '+l.recurso_id : ''}`) : 'Login'}">${l.acao ? `${LABEL_ACAO[l.acao]||l.acao}${l.recurso_id ? ' · ID '+l.recurso_id.slice(0,8) : ''}` : '<span style="color:var(--gr300)">Login</span>'}</td>
           <td style="max-width:260px">${(l.user_agent||'—')}</td>
         </tr>`).join('')
       : '<tr><td colspan="5" style="text-align:center;color:var(--gr300);padding:20px">Nenhum acesso registrado ainda.</td></tr>';
