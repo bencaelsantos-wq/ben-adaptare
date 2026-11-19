@@ -19208,6 +19208,12 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
     attachEditarIA('result-text');
     salvarAdaptAutomatico();
 
+    // Busca as imagens automaticamente assim que a atividade é gerada, sem depender do
+    // profissional descobrir e clicar o botão "Detectar imagens da atividade" — relatado em
+    // reunião que a equipe simplesmente não estava encontrando esse passo, e a atividade saía
+    // com os marcadores de imagem sem nenhuma imagem de fato anexada.
+    if (/\[IMAGEM:\s*[^\]]+\]/i.test(textoFinal)) detectarItensImagem();
+
     const avisos = [];
      if (incluiGuia && !/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i.test(texto)) {
       avisos.push('o Guia do Professor não parece ter sido gerado');
@@ -28341,6 +28347,49 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
       }
     };
   }
+  // Marca com um losango verde o ponto em que o critério de domínio foi atingido pela primeira
+  // vez (ex: 3 dias seguidos ≥80%) — pedido em reunião: hoje o gráfico não sinaliza visualmente
+  // quando chega a hora de tomar uma decisão (trocar alvo/suspender/avançar), só o texto do
+  // card de "critério atingido" avisa, sem nenhum marcador no próprio gráfico.
+  function indiceCriterioDominioAtingido(seqValores, crit) {
+    if (!crit) return null;
+    if (crit.blocoUnico100) {
+      const i100 = (seqValores||[]).findIndex(v => v === 100);
+      if (i100 !== -1) return i100;
+    }
+    if (!crit.percentual || !crit.dias) return null;
+    for (let i = crit.dias - 1; i < (seqValores||[]).length; i++) {
+      const janela = seqValores.slice(i - crit.dias + 1, i + 1);
+      if (janela.every(v => v >= crit.percentual)) return i;
+    }
+    return null;
+  }
+  function criarPluginCriterioDominio(indice) {
+    if (indice === null || indice === undefined || indice < 0) return null;
+    return {
+      id: 'criterioDominio_' + indice,
+      afterDraw(chart) {
+        const xScale = chart.scales.x, yScale = chart.scales.y;
+        if (!xScale || !yScale) return;
+        const x = xScale.getPixelForValue(indice);
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = '#059669';
+        ctx.beginPath();
+        ctx.moveTo(x, yScale.top - 2);
+        ctx.lineTo(x + 5, yScale.top + 5);
+        ctx.lineTo(x, yScale.top + 12);
+        ctx.lineTo(x - 5, yScale.top + 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#047857';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Critério atingido', x, yScale.top - 5);
+        ctx.restore();
+      }
+    };
+  }
   // Eixo X com a data de cada registro (igual ao gráfico real da BC) — o Chart.js já trata eixos
   // de categoria com espaçamento igual entre pontos, então intervalos desiguais entre atendimentos
   // não distorcem a leitura visual da tendência mesmo mostrando a data de verdade.
@@ -28396,13 +28445,17 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
       },
       { label: 'Com dica', data: dataPontosDica, borderColor: '#D97706', backgroundColor: '#D97706', tension: 0.3, spanGaps: true, pointRadius: 3, fill: false },
       { label: 'Erro', data: dataPontosErro, borderColor: '#DC2626', backgroundColor: '#DC2626', tension: 0.3, spanGaps: true, pointRadius: 3, fill: false },
-      { label: 'Linha de tendência', data: linhaDeTendencia(dataPontosInd), borderColor: '#9CA3AF', borderWidth: 1.5, borderDash: [3,3], pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0 },
+      // Cor mais clara da própria série de Independente (em vez de cinza genérico) — mesma
+      // convenção que a BC já usa na planilha dela pra linha de tendência do independente.
+      { label: 'Linha de tendência', data: linhaDeTendencia(dataPontosInd), borderColor: '#6EE7B7', borderWidth: 1.5, borderDash: [3,3], pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0 },
     ];
     if (criterios[a]?.percentual) {
       datasets.push({
         label: `Meta (${criterios[a].percentual}%)`,
         data: dataLabels.map(() => criterios[a].percentual),
-        borderColor: '#6B7280', borderDash: [6, 4], borderWidth: 1.5,
+        // Linha sólida (não tracejada) pra não se confundir visualmente com a Linha de tendência,
+        // que também é tracejada — ponto levantado em reunião.
+        borderColor: '#F59E0B', borderWidth: 1.5,
         pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0,
       });
     }
@@ -28412,10 +28465,22 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
       indiceMudanca = datasReais.findIndex(d => d && d >= dataMudanca);
     }
     const pluginMudanca = criarPluginMudancaObjetivo(indiceMudanca);
+    let indiceCriterioReal = null;
+    const indiceCriterioSeq = indiceCriterioDominioAtingido(seqValores, criterios[a]);
+    if (indiceCriterioSeq !== null) {
+      let contagemCrit = -1;
+      for (let i = 0; i < dataPontosInd.length; i++) {
+        if (dataPontosInd[i] !== null) {
+          contagemCrit++;
+          if (contagemCrit === indiceCriterioSeq) { indiceCriterioReal = i; break; }
+        }
+      }
+    }
+    const pluginCriterio = criarPluginCriterioDominio(indiceCriterioReal);
     _chartsPercentuais[a] = new Chart(canvas, {
       type: 'line',
       data: { labels: dataLabels, datasets },
-      plugins: pluginMudanca ? [pluginMudanca] : [],
+      plugins: [pluginMudanca, pluginCriterio].filter(Boolean),
       options: {
         layout: { padding: { top: 12 } },
         scales: {
