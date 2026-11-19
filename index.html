@@ -25457,6 +25457,14 @@ async function carregarObjetivos() {
             </select>
           </div>
           <textarea id="obj-${a.key}" placeholder="${a.ph}">${obj[a.key]||''}</textarea>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <button type="button" class="btn-sm-ghost" style="font-size:11.5px" onclick="toggleBancoAlvos('${a.key}')">📚 Banco de alvos</button>
+            <button type="button" class="btn-sm-ghost" style="font-size:11.5px" onclick="salvarAlvoNoBanco('${a.key}')">💾 Salvar este alvo no banco</button>
+          </div>
+          <div id="obj-${a.key}-banco" style="display:none;margin-top:6px;border:1px solid var(--gr200);border-radius:8px;padding:8px">
+            <input type="text" class="finput" placeholder="Buscar alvo…" style="margin-bottom:6px" oninput="filtrarBancoAlvos('${a.key}', this.value)">
+            <div id="obj-${a.key}-banco-lista" style="max-height:160px;overflow-y:auto;font-size:12.5px"></div>
+          </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;background:var(--gr50);border-radius:8px">
             <div>
               <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Camada de Intervenção (RTI)</label>
@@ -25514,6 +25522,62 @@ async function carregarObjetivos() {
       <button class="btn-copy" onclick="baixarFichaRegistroABA()">📋 Ficha de Registro ABA</button>
       <button class="btn-copy" onclick="baixarPDFObjetivosTerapeuticos()">📄 Baixar PDF dos Objetivos</button>
     </div>`;
+}
+
+// ── BANCO DE ALVOS TERAPÊUTICOS ──────────────────────────────
+// Biblioteca reutilizável de alvos pré-escritos por área, pra reduzir digitação manual e
+// inconsistência entre o que é registrado e o que é de fato aplicado — pedido em reunião pela
+// Camila, no mesmo espírito do banco de habilidades da BNCC que já usamos em outras telas.
+window._bancoAlvosCache = {};
+async function toggleBancoAlvos(areaKey) {
+  const painel = document.getElementById(`obj-${areaKey}-banco`);
+  if (!painel) return;
+  const abrindo = painel.style.display === 'none';
+  painel.style.display = abrindo ? 'block' : 'none';
+  if (abrindo && !window._bancoAlvosCache[areaKey]) {
+    let q = db.from('banco_alvos_terapeuticos').select('id,texto,compartilhada,organizacao_id').eq('area', areaKey);
+    q = window._organizacaoId
+      ? q.or(`organizacao_id.is.null,organizacao_id.eq.${window._organizacaoId},compartilhada.eq.true`)
+      : q.or('organizacao_id.is.null,compartilhada.eq.true');
+    const { data } = await q.order('created_at', { ascending: false });
+    window._bancoAlvosCache[areaKey] = data || [];
+    renderizarBancoAlvos(areaKey, window._bancoAlvosCache[areaKey]);
+  }
+}
+function renderizarBancoAlvos(areaKey, itens) {
+  const lista = document.getElementById(`obj-${areaKey}-banco-lista`);
+  if (!lista) return;
+  if (!itens.length) { lista.innerHTML = '<p style="color:var(--gr400);margin:4px 0">Nenhum alvo cadastrado ainda nesta área.</p>'; return; }
+  lista.innerHTML = itens.map(it => `
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--gr100)">
+      <span style="flex:1">${escapeHtml(it.texto)}</span>
+      <button type="button" class="btn-sm-ghost" style="font-size:11px;white-space:nowrap" onclick="usarAlvoDoBanco('${areaKey}', ${JSON.stringify(it.texto)})">Usar</button>
+    </div>`).join('');
+}
+function filtrarBancoAlvos(areaKey, termo) {
+  const todos = window._bancoAlvosCache[areaKey] || [];
+  const q = (termo || '').toLowerCase().trim();
+  renderizarBancoAlvos(areaKey, q ? todos.filter(it => it.texto.toLowerCase().includes(q)) : todos);
+}
+function usarAlvoDoBanco(areaKey, texto) {
+  const ta = document.getElementById(`obj-${areaKey}`);
+  if (!ta) return;
+  ta.value = ta.value.trim() ? ta.value.trim() + '\n' + texto : texto;
+  toast('Alvo adicionado — revise e ajuste pro caso específico antes de salvar.', 'success');
+}
+async function salvarAlvoNoBanco(areaKey) {
+  const ta = document.getElementById(`obj-${areaKey}`);
+  const texto = ta?.value?.trim();
+  if (!texto) return toast('Escreva o alvo no campo antes de salvar no banco.', 'error');
+  const compartilhar = confirm('Compartilhar este alvo com outras organizações da LouMind? Cancelar mantém visível só pra sua organização.');
+  try {
+    await db.from('banco_alvos_terapeuticos').insert({
+      area: areaKey, texto, organizacao_id: window._organizacaoId || null,
+      compartilhada: compartilhar, criado_por: user.id
+    });
+    delete window._bancoAlvosCache[areaKey];
+    toast('Alvo salvo no banco!', 'success');
+  } catch (e) { toast('Erro ao salvar no banco: ' + (e.message || 'tente novamente'), 'error'); }
 }
 
 function atualizarBadgeNivelSuporte(areaKey) {
