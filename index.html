@@ -15903,7 +15903,7 @@ function renderPagesClinica() {
       <p style="margin:0 0 4px"><strong>Pra cada área, você define:</strong></p>
       <ul style="margin:0;padding-left:18px">
         <li><strong>Objetivo</strong> — o comportamento-alvo descrito de forma observável e mensurável (ex: "nomear corretamente 10 figuras geométricas, de forma independente, em 3 sessões consecutivas").</li>
-        <li><strong>Nível de suporte (MTSS)</strong> — se esse objetivo é trabalhado de forma universal (toda a turma/grupo), em pequeno grupo, ou de forma individualizada.</li>
+        <li><strong>Camada de Intervenção (RTI)</strong> — se esse objetivo é trabalhado de forma universal (toda a turma/grupo), em pequeno grupo, ou de forma individualizada.</li>
         <li><strong>Status do programa</strong> — 🟢 Em treino (sendo trabalhado agora), 🔴 Suspenso (pausado), 🟡 Concluído (critério já atingido e mantido).</li>
         <li><strong>Tipo de medida</strong> — como o dado é coletado no Monitoramento: % de acerto (contagem de tentativas independente/com dica/erro), frequência, duração, latência, ou sondagem (quando o aprendiz não é exposto ao alvo todo dia, como em lição de casa).</li>
         <li><strong>Critério de domínio</strong> — quando a habilidade é considerada adquirida (ex: 80% de independência por 3 dias seguidos). Quando atingido, o Monitoramento avisa automaticamente — mas a decisão de avançar é sempre sua.</li>
@@ -25424,10 +25424,13 @@ async function carregarObjetivos() {
     { v: 'latencia', label: 'Latência' },
     { v: 'sondagem', label: 'Sondagem (não diária)' },
   ];
+  // Nomenclatura alinhada ao RTI/MTSS (camadas de intervenção) em vez de "nível de suporte" —
+  // termo que a BC já usa com outro sentido pra classificar necessidade de apoio no autismo (DSM),
+  // o que causava confusão. Chaves de dados (1/2/3) mantidas por compatibilidade.
   const OPCOES_NIVEL_SUPORTE = [
-    { v: '1', label: 'Nível 1 — Universal', cor: '#16A34A' },
-    { v: '2', label: 'Nível 2 — Em grupo', cor: '#D97706' },
-    { v: '3', label: 'Nível 3 — Individual', cor: '#DC2626' },
+    { v: '1', label: 'Camada 1 — Universal', cor: '#16A34A' },
+    { v: '2', label: 'Camada 2 — Em grupo', cor: '#D97706' },
+    { v: '3', label: 'Camada 3 — Individual', cor: '#DC2626' },
   ];
   const OPCOES_STATUS_PROGRAMA = [
     { v: 'treino', label: '🟢 Em treino', cor: '#16A34A' },
@@ -25453,7 +25456,7 @@ async function carregarObjetivos() {
           <textarea id="obj-${a.key}" placeholder="${a.ph}">${obj[a.key]||''}</textarea>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;background:var(--gr50);border-radius:8px">
             <div>
-              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Nível de suporte (MTSS)</label>
+              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Camada de Intervenção (RTI)</label>
               <select id="obj-${a.key}-nivel" class="fselect" style="font-size:12.5px;padding:4px 28px 4px 8px" onchange="atualizarBadgeNivelSuporte('${a.key}')">
                 ${OPCOES_NIVEL_SUPORTE.map(o => `<option value="${o.v}" ${o.v===nivelAtual?'selected':''}>${o.label}</option>`).join('')}
               </select>
@@ -25511,7 +25514,7 @@ async function carregarObjetivos() {
 }
 
 function atualizarBadgeNivelSuporte(areaKey) {
-  const CORES = { '1': ['#16A34A','Nível 1 — Universal'], '2': ['#D97706','Nível 2 — Em grupo'], '3': ['#DC2626','Nível 3 — Individual'] };
+  const CORES = { '1': ['#16A34A','Camada 1 — Universal'], '2': ['#D97706','Camada 2 — Em grupo'], '3': ['#DC2626','Camada 3 — Individual'] };
   const sel = document.getElementById(`obj-${areaKey}-nivel`);
   const badge = document.getElementById(`obj-${areaKey}-nivel-badge`);
   if (!sel || !badge) return;
@@ -25680,7 +25683,7 @@ function baixarPDFObjetivosTerapeuticos() {
   const ctx = window._objAbaAtual;
   if (!ctx) return toast('Selecione um paciente primeiro.', 'error');
   const LABEL_TIPO = { percentual: '% de acerto', frequencia: 'Frequência/taxa', duracao: 'Duração', latencia: 'Latência', sondagem: 'Sondagem (não diária)' };
-  const LABEL_NIVEL = { '1': 'Nível 1 — Universal', '2': 'Nível 2 — Em grupo', '3': 'Nível 3 — Individual' };
+  const LABEL_NIVEL = { '1': 'Camada 1 — Universal', '2': 'Camada 2 — Em grupo', '3': 'Camada 3 — Individual' };
   const LABEL_STATUS = { treino: 'Em treino', suspenso: 'Suspenso', concluido: 'Concluído' };
   const LABEL_UNIDADE_MANUT = { dia: 'dia', semana: 'semana', mes: 'mês' };
 
@@ -25727,7 +25730,7 @@ function baixarPDFObjetivosTerapeuticos() {
     y += 1;
     linha(a.texto, ml, 10, false);
     y += 1;
-    linha(`Nível de suporte (MTSS): ${LABEL_NIVEL[nivel]}  ·  Tipo de medida: ${LABEL_TIPO[tipo]}`, ml, 9, false, [90,90,90]);
+    linha(`Camada de Intervenção (RTI): ${LABEL_NIVEL[nivel]}  ·  Tipo de medida: ${LABEL_TIPO[tipo]}`, ml, 9, false, [90,90,90]);
     if (pct && dias) {
       linha(`Critério de domínio: ${pct}% por ${dias} dia(s) seguidos${bloco100 ? ' OU 100% num único bloco/sessão' : ''}`, ml, 9, false, [90,90,90]);
     }
