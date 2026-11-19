@@ -8914,11 +8914,13 @@ function renderPagesDeveloper() {
   document.getElementById('main-content').innerHTML = `
   <!-- DASHBOARD -->
   <div id="page-dev-dashboard" class="page active">
-    <h1 class="page-title">⚙️ Dashboard do Desenvolvedor</h1>
-    <p class="page-sub">Visão completa e em tempo real de toda a plataforma LouMind.</p>
+    <div class="section-header">
+      <div><h1 class="page-title">⚙️ Dashboard do Desenvolvedor</h1><p class="page-sub" style="margin-bottom:0">Visão completa e em tempo real de toda a plataforma LouMind.</p></div>
+      <button class="btn-sm" onclick="carregarConteudoDev()">↺ Atualizar</button>
+    </div>
 
     <!-- KPI CARDS -->
-    <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:14px;margin-bottom:24px" id="dev-conteudo-grid"></div>
+    <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:14px;margin-bottom:24px;margin-top:16px" id="dev-conteudo-grid"></div>
 
     <!-- PERFIS POR PAPEL -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
@@ -12726,6 +12728,7 @@ function showPage(id) {
   if (id === 'gc-profissionais') { carregarProfissionaisClinica(); carregarVinculosATGestao(); }
   if (id === 'clinica-pratica-guiada') { carregarPendentesPraticaGuiada(); carregarHistoricoPraticaGuiada(); }
   if (id === 'dev-conteudo') carregarBancoImagens();
+  if (id === 'dev-dashboard') carregarConteudoDev();
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'guia-gestao') renderGuiaGestao();
   if (id === 'diversidade') renderDiversidade();
