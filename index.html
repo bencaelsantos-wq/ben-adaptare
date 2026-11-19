@@ -21493,79 +21493,69 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
   let y = 0;
 
-  // ── CABEÇALHO DA FOLHA DO ALUNO ──────────────────────────
-  if (logoUrl) {
-    doc.setFillColor(250, 251, 255);
-    doc.rect(0, 0, W, 24, 'F');
-    doc.setDrawColor(200, 210, 230);
-    doc.setLineWidth(0.3);
-    doc.line(0, 24, W, 24);
-    try {
-      doc.addImage(logoUrl, 'PNG', ml, 3, 45, 18, '', 'FAST');
-    } catch(e) {
-      try { doc.addImage(logoUrl, 'JPEG', ml, 3, 45, 18, '', 'FAST'); } catch(e2) {}
-    }
-    if (window._nomeInstituicao) {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(60, 70, 110);
-      doc.text(sanitizarTexto(window._nomeInstituicao), ml + 47, 12);
-    }
-    if (opts.professor) {
-      const _partes = (opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/);
-      const _descAtiv = _partes.length > 1 ? _partes.slice(1).join(' — ') : '';
-      doc.setFontSize(7.5);
-      doc.setTextColor(120, 130, 160);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Professor(a): ' + opts.professor, W - mr, 10, { align: 'right' });
-      if (_descAtiv) doc.text(_descAtiv, W - mr, 16, { align: 'right' });
-    }
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
-    doc.setTextColor(160, 168, 190);
-    doc.text('gerado com LouMind', W - mr, 21.5, { align: 'right' });
-    y = 30;
-  } else {
-    // Cabeçalho sem logo — faixa azul fina
-    doc.setFillColor(CT[0], CT[1], CT[2]);
-    doc.rect(0, 0, W, 3, 'F');
-    doc.setFillColor(245, 248, 255);
-    doc.rect(0, 3, W, 16, 'F');
-    doc.setTextColor(CT[0], CT[1], CT[2]);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text((opts.tipo || 'ATIVIDADE ADAPTADA').toUpperCase(), ml, 13);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 120, 160);
-    if (opts.professor) {
-      const _p2 = (opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/);
-      const _desc2 = _p2.length > 1 ? _p2.slice(1).join(' — ') : '';
-      doc.text('Prof.: ' + opts.professor + (_desc2 ? '  |  ' + _desc2 : ''), W - mr, 13, { align: 'right' });
-    }
-    y = 24;
-  }
+  // ── CABEÇALHO DA FOLHA DO ALUNO — cartão único com borda, nos moldes de uma prova impressa
+  // tradicional (instituição/matéria à esquerda, professor/data à direita, aluno/data/nota
+  // embaixo), em vez dos 2 blocos de cores separados que o layout anterior usava.
+  const nomeInstCab = window._nomeInstituicao || (opts.tipo || 'ATIVIDADE ADAPTADA').toUpperCase();
+  const alturaCabecalho = 28;
+  doc.setDrawColor(210, 214, 222);
+  doc.setLineWidth(0.5);
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(ml, 6, W - ml - mr, alturaCabecalho, 3, 3, 'FD');
 
-  // ── DADOS DO ALUNO (compacto) ─────────────────────────────
-  doc.setFillColor(240, 244, 255);
-  doc.roundedRect(ml, y, W - ml - mr, 14, 1.5, 1.5, 'F');
+  if (logoUrl) {
+    try { doc.addImage(logoUrl, 'PNG', ml + 4, 9.5, 26, 15, '', 'FAST'); }
+    catch(e) { try { doc.addImage(logoUrl, 'JPEG', ml + 4, 9.5, 26, 15, '', 'FAST'); } catch(e2) {} }
+  }
+  const xTextoCab = logoUrl ? ml + 34 : ml + 6;
+
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(50, 70, 140);
-  doc.text('ALUNO:', ml + 4, y + 8.5);
+  doc.setFontSize(11.5);
+  doc.setTextColor(25, 25, 25);
+  doc.text(sanitizarTexto(nomeInstCab), xTextoCab, 14);
+
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(20, 20, 60);
-  doc.text((opts.aluno || '').toUpperCase(), ml + 21, y + 8.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(50, 70, 140);
-  doc.text('DATA:', W / 2, y + 8.5);
+  doc.setFontSize(8.5);
+  doc.setTextColor(CT[0], CT[1], CT[2]);
+  doc.text(sanitizarTexto(opts.titulo || 'Atividade Adaptada'), xTextoCab, 19.5);
+
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(20, 20, 60);
-  doc.text('_____ / _____ / _______', W / 2 + 15, y + 8.5);
-  y += 18;
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 128, 150);
+  doc.text(dataHoje, W - mr - 5, 14, { align: 'right' });
+  if (opts.professor) doc.text('Prof.: ' + opts.professor, W - mr - 5, 19.5, { align: 'right' });
+
+  doc.setDrawColor(225, 228, 235);
+  doc.setLineWidth(0.3);
+  doc.line(ml + 5, 23, W - mr - 5, 23);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90, 98, 120);
+  doc.text('ALUNO:', ml + 6, 30);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(20, 20, 25);
+  doc.text(sanitizarTexto((opts.aluno || '').toUpperCase()), ml + 21, 30);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90, 98, 120);
+  doc.text('DATA:', W - mr - 60, 30);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(20, 20, 25);
+  doc.text('___/___/_____', W - mr - 48, 30);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90, 98, 120);
+  doc.text('NOTA:', W - mr - 22, 30);
+  doc.setDrawColor(150, 155, 170);
+  doc.setLineWidth(0.3);
+  doc.line(W - mr - 10, 31, W - mr - 2, 31);
+
+  y = 6 + alturaCabecalho + 6;
 
   // ── TÍTULO DA ATIVIDADE ───────────────────────────────────
   doc.setFillColor(CT[0], CT[1], CT[2]);
