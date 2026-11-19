@@ -19883,6 +19883,7 @@ async function salvarAdapt() {
   }
   const { data, error } = await db.from('adaptacoes').insert({
     user_id: user.id,
+    organizacao_id: window._organizacaoId || null,
     aluno_id:   dadosUltima.alunoId  || null,
     aluno_nome: dadosUltima.aluno    || null,
     idade:      dadosUltima.idade    || null,
@@ -19908,6 +19909,7 @@ async function salvarAdaptAutomatico() {
   try {
     const { data, error } = await db.from('adaptacoes').insert({
       user_id: user.id,
+      organizacao_id: window._organizacaoId || null,
       aluno_id:   dadosUltima.alunoId  || null,
       aluno_nome: dadosUltima.aluno    || null,
       idade:      dadosUltima.idade    || null,
@@ -19936,8 +19938,26 @@ function copiarAdapt(elId) {
 
 // ── CARREGAR ADAPTAÇÕES ──────────────────────────────────────
 async function carregarAdaptacoes() {
-  const { data } = await db.from('adaptacoes').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+  // Gestão Clínica acompanha as adaptações de toda a organização (pedido em reunião: ela só
+  // via as que ela mesma gerava, não as da equipe) — demais papéis continuam vendo só as próprias.
+  let q = db.from('adaptacoes').select('*').order('created_at',{ascending:false});
+  q = (userRole === 'gestao-clinica' && window._organizacaoId)
+    ? q.eq('organizacao_id', window._organizacaoId)
+    : q.eq('user_id', user.id);
+  const { data } = await q;
   adaptacoesList = data || [];
+  if (userRole === 'gestao-clinica' && window._organizacaoId) {
+    try {
+      const idsAutores = [...new Set(adaptacoesList.map(r => r.user_id).filter(Boolean))];
+      const { data: autores } = idsAutores.length
+        ? await db.from('profiles').select('id,nome,email').in('id', idsAutores)
+        : { data: [] };
+      window._autoresAdaptacoes = {};
+      (autores||[]).forEach(a => { window._autoresAdaptacoes[a.id] = a.nome || a.email || ''; });
+    } catch(e) { window._autoresAdaptacoes = {}; }
+  } else {
+    window._autoresAdaptacoes = {};
+  }
   popularFiltrosHist();
   filtrarHistorico();
 }
@@ -20007,8 +20027,10 @@ function cardAdaptacao(r, gestao=false) {
   const tags = (r.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('');
   const meta = [r.idade, r.serie, r.materia].filter(Boolean).join(' · ');
   const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '';
+  const autorNome = window._autoresAdaptacoes?.[r.user_id];
   return `<div class="item-card" onclick='abrirModalAdapt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
     <div class="ic-nome">${escapeHtml(r.aluno||r.aluno_nome)||'(sem nome)'}</div>
+    ${autorNome ? `<div style="font-size:11px;color:var(--gr500)">por ${escapeHtml(autorNome)}</div>` : ''}
     <div class="ic-meta">${escapeHtml(meta)}</div>
     <div class="ic-tags">${tags}</div>
     <div class="ic-prev">${escapeHtml((r.texto||'').slice(0,100))}…</div>
