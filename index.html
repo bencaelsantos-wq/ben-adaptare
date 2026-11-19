@@ -22028,6 +22028,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     }
     if (isH) {
       const CORES_LOUMIND_ATIV = [[52,74,140],[91,125,184],[123,140,166],[94,163,155]];
+      // Selo numerado colorido por questão — uma cor por número (gira pela paleta), não por
+      // verbo de comando, pra dar a mesma sensação de "cartão colorido" de materiais feitos à mão.
+      const CORES_SELO_QUESTAO_ATIV = [[249,115,22],[34,197,94],[234,179,8],[168,85,247],[59,130,246],[236,72,153]];
       const VERBOS_COMANDO_ATIV = [
         { re: /\b(ESCREVA|RESPONDA)\b/i, icone: 'lapis', cor: CORES_LOUMIND_ATIV[0] },
         { re: /\b(MARQUE|ASSINALE)\b/i, icone: 'x', cor: CORES_LOUMIND_ATIV[1] },
@@ -22039,20 +22042,35 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const comandoAtiv = (isQuestaoNumeradaAtiv || isLinhaComandoAtiv)
         ? (VERBOS_COMANDO_ATIV.find(v => v.re.test(linhaT)) || { icone: 'generico', cor: CORES_LOUMIND_ATIV[2] })
         : null;
+      const matchNumSelo = isQuestaoNumeradaAtiv ? linhaT.match(/^(\d+)\./) : null;
       y += 2;
       if (comandoAtiv) {
         const [r,g,b] = comandoAtiv.cor;
+        const textoBarraAtiv = matchNumSelo ? limpa.replace(/^\d+\.\s*/, '') : limpa;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(fontSize);
-        const linhasBarraAtiv = doc.splitTextToSize(limpa, maxW - 11);
+        const deslocSelo = matchNumSelo ? 9 : 0;
+        const linhasBarraAtiv = doc.splitTextToSize(textoBarraAtiv, maxW - 11 - deslocSelo);
         const altBarraAtiv = Math.max(7, linhasBarraAtiv.length * altLinha + 2);
+        if (matchNumSelo) {
+          const corSelo = CORES_SELO_QUESTAO_ATIV[parseInt(matchNumSelo[1], 10) % CORES_SELO_QUESTAO_ATIV.length];
+          const raioSelo = Math.max(4, (altBarraAtiv + 0.6) / 2 - 0.5);
+          const cySelo = y - 3.8 + (altBarraAtiv + 0.6) / 2;
+          doc.setFillColor(corSelo[0], corSelo[1], corSelo[2]);
+          doc.circle(ml + raioSelo, cySelo, raioSelo, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(fontSize + 1);
+          doc.setTextColor(255, 255, 255);
+          doc.text(matchNumSelo[1], ml + raioSelo, cySelo + 1.3, { align: 'center' });
+          doc.setFontSize(fontSize);
+        }
         doc.setFillColor(r, g, b);
-        doc.roundedRect(ml, y - 3.8, 7, altBarraAtiv + 0.6, 1.3, 1.3, 'F');
-        desenharIconeComando(doc, comandoAtiv.icone, ml + 3.5, y, 3.6);
+        doc.roundedRect(ml + deslocSelo, y - 3.8, 7, altBarraAtiv + 0.6, 1.3, 1.3, 'F');
+        desenharIconeComando(doc, comandoAtiv.icone, ml + deslocSelo + 3.5, y, 3.6);
         doc.setFillColor(r, g, b);
-        doc.rect(ml + 8, y - 3.5, maxW - 8, altBarraAtiv, 'F');
+        doc.rect(ml + deslocSelo + 8, y - 3.5, maxW - 8 - deslocSelo, altBarraAtiv, 'F');
         doc.setTextColor(255, 255, 255);
-        linhasBarraAtiv.forEach((lb, li) => doc.text(lb, ml + 11, y + 0.5 + li * altLinha));
+        linhasBarraAtiv.forEach((lb, li) => doc.text(lb, ml + deslocSelo + 11, y + 0.5 + li * altLinha));
         y += altBarraAtiv - 7 + 3;
       } else {
         doc.setFont('helvetica', 'bold');
