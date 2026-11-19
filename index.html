@@ -19475,6 +19475,53 @@ async function detectarItensImagem() {
   document.getElementById('ap-img-painel').style.display = '';
   renderizarPainelImagens();
   document.getElementById('ap-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  const qtdPendentesIni = (window._imgItens || []).filter(it => it.termo?.trim() && !it.urlEscolhida).length;
+  if (qtdPendentesIni) toast('Buscando imagens automaticamente para ' + qtdPendentesIni + ' item(ns)…', 'success');
+  const qtdResolvidas = await autoResolverImagensItens();
+  if (qtdResolvidas) toast(qtdResolvidas + ' imagem(ns) encontrada(s) automaticamente. Revise e troque se quiser.', 'success');
+}
+
+// Busca automaticamente uma imagem real para cada item que ainda não tem uma (não veio do
+// documento original nem do vocabulário já salvo do aluno) — banco próprio da organização
+// primeiro, depois banco LouMind, depois banco de sites gratuitos — pra não depender do
+// profissional clicar "Buscar" item por item só pra ter uma imagem na opção de ligar/pareamento.
+async function autoResolverImagensItens() {
+  const pendentes = (window._imgItens || []).filter(it => it.termo?.trim() && !it.urlEscolhida);
+  if (!pendentes.length) return 0;
+  let qtdResolvidas = 0;
+  for (const item of pendentes) {
+    const termoBusca = item.termo.trim().toLowerCase();
+    try {
+      let q = db.from('banco_imagens_atividades').select('url,tags').contains('tags', [termoBusca]);
+      q = window._organizacaoId
+        ? q.or(`organizacao_id.is.null,organizacao_id.eq.${window._organizacaoId},compartilhada.eq.true`)
+        : q.or(`organizacao_id.is.null,compartilhada.eq.true`);
+      const { data: dProprio } = await q;
+      let urls = (dProprio || []).map(d => d.url);
+      let fonteEncontrada = 'proprio';
+      if (!urls.length) {
+        const { data: dLouMind } = await db.from('banco_imagens_loumind').select('url,tags').contains('tags', [termoBusca]);
+        urls = (dLouMind || []).map(d => d.url);
+        fonteEncontrada = 'loumind';
+      }
+      if (!urls.length) {
+        const r = await fetch(`${PIXABAY_PROXY}?q=${encodeURIComponent(termoBusca)}&image_type=illustration`, {
+          headers: { 'Authorization': `Bearer ${SB_KEY}` }
+        });
+        const data = await r.json();
+        urls = (data.hits || []).slice(0, 8).map(h => h.webformatURL);
+        fonteEncontrada = 'pixabay';
+      }
+      if (urls.length) {
+        item.resultados = urls;
+        item.urlEscolhida = urls[0];
+        item.fonte = fonteEncontrada;
+        qtdResolvidas++;
+      }
+    } catch (e) { /* item fica sem imagem automática — profissional pode buscar manualmente */ }
+  }
+  renderizarPainelImagens();
+  return qtdResolvidas;
 }
 
 function usarImagemOriginalNoItem(i, indiceOriginal) {
