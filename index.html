@@ -18760,7 +18760,7 @@ const qtdQuestoes = qtdQuestoesRaw === 'auto' ? null : parseInt(qtdQuestoesRaw, 
   const CAMADAS_ACESSIBILIDADE_TEXTOS = {
     'passo-a-passo': `CAMADA — Passo a passo: para cada questão/item, acrescente logo abaixo do enunciado uma pequena lista numerada (1, 2, 3…) com os passos concretos que o aluno deve seguir para resolver aquele item especificamente (não um passo a passo genérico da matéria — os passos reais daquele enunciado). Mantenha os passos curtos e objetivos.`,
     'comando-destaque': `CAMADA — Comando em destaque: em cada enunciado, identifique o verbo de comando (ex: Calcule, Compare, Descubra, Observe, Escreva) e coloque-o em MAIÚSCULAS ou marque com **asteriscos** no início da frase, para que o aluno veja rapidamente o que precisa fazer antes de ler o resto do enunciado.`,
-    'caa': `CAMADA — CAA (Comunicação Aumentativa e Alternativa): reescreva cada enunciado com frases curtas (máx. 10-12 palavras), ordem direta sujeito-verbo-objeto, vocabulário concreto, evitando frases subordinadas e duplo sentido. Quando fizer sentido, use o marcador [IMAGEM: nome-do-item] como apoio de pictograma para o conceito-chave do enunciado. PROIBIDO nesta camada: (1) blocos de "PASSOS:" numerando o raciocínio antes do aluno tentar — o aluno com baixa leitura precisa do enunciado curto e do apoio visual, não de mais texto explicativo; (2) imprimir a resposta/gabarito no corpo da atividade do aluno (ex: nunca escreva "RESPOSTA: X" com o X já preenchido); (3) empilhar duas ou mais frases de instrução no mesmo item — um comando por item, só isso.`,
+    'caa': `CAMADA — CAA (Comunicação Aumentativa e Alternativa): reescreva cada enunciado com frases curtas (máx. 10-12 palavras), ordem direta sujeito-verbo-objeto, vocabulário concreto, evitando frases subordinadas e duplo sentido. Quando fizer sentido, use o marcador [IMAGEM: nome-do-item] como apoio de pictograma para o conceito-chave do enunciado. PROIBIDO nesta camada: (1) blocos de "PASSOS:" numerando o raciocínio antes do aluno tentar — o aluno com baixa leitura precisa do enunciado curto e do apoio visual, não de mais texto explicativo; (2) imprimir a resposta/gabarito no corpo da atividade do aluno (ex: nunca escreva "RESPOSTA: X" com o X já preenchido) — se precisar de um exemplo resolvido, integre a resposta numa única frase curta de modelo (ex: "Veja: MACACO começa com MA"), nunca como uma linha separada "Resposta: ___"; (3) empilhar duas ou mais frases de instrução no mesmo item — um comando por item, só isso; (4) um parágrafo de introdução com mais de 1 frase curta antes do primeiro exercício — a explicação geral da atividade deve caber numa linha só, o resto da orientação vai dentro de cada item.`,
     'calculo-resolvido': `CAMADA — Cálculo com fórmula explicitada: em questões de cálculo/matemática/ciências que envolvam fórmula, mostre a fórmula geral usada ANTES da pergunta (ex: "Área = lado × lado"), para que o aluno veja o caminho antes de aplicar aos números do enunciado — sem resolver a conta por ele, apenas explicitando qual fórmula/operação usar.`,
   };
   // Ativa a camada CAA (frases curtas) automaticamente quando o cadastro do aluno indica
@@ -19082,6 +19082,7 @@ ${qtdQuestoes ? `- Gere exatamente ${qtdQuestoes} questões nesta atividade — 
 - NUNCA use emojis
 - NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso não renderiza isso
 - NUNCA escreva dentro de [ESPAÇO PARA DESENHO]. Use esse marcador SOMENTE quando o original pede explicitamente "desenhe" ou "ilustre livremente" — nunca no mesmo item que já usa [IMAGEM: nome-do-item] (são mutuamente exclusivos)
+- Sempre que apresentar uma lista curta (2 a 6) de opções soltas pra o aluno identificar, marcar, pintar ou circular — sílabas, palavras, letras, números — use OBRIGATORIAMENTE o marcador "[OPCOES: opção1 | opção2 | opção3]" numa linha sozinha, com as opções separadas por "|". NUNCA escreva essas opções como uma linha solta em CAIXA ALTA sem esse marcador — isso é tratado como título de seção, não como opções, e sai sem nenhum contorno/caixa ao redor de cada uma. Exemplo certo: "[OPCOES: MA | DA | FA | LA]". Exemplo errado (nunca faça): "MA DA FA LA" solto no texto.
 - Separação visual obrigatória entre blocos com ---
 - Sempre que a atividade tiver uma parte de leitura/contexto seguida de uma parte de exercícios/perguntas, insira um marcador "[BANNER: ATIVIDADES]" numa linha sozinha, bem no início da primeira pergunta/exercício, para marcar visualmente a transição — use esse marcador só UMA vez por atividade, no início da parte de exercícios, nunca entre cada questão individual.
 - Um número de questão ou qualquer rótulo curto terminado em dois-pontos (ex: "1.", "Parte 1:", "Sobre a Parte 1:", "Exemplo:") e o conteúdo que vem logo depois SEMPRE ficam na mesma linha, nunca quebrados em linhas separadas (ex correto: "1. Olhe a figura e complete."; ex correto: "Sobre a Parte 1: Onde Lucas foi?"; ex ERRADO, nunca faça: rótulo sozinho numa linha e o conteúdo na linha seguinte)
@@ -21629,13 +21630,18 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
    const linhas = sanitizarTexto(folhaSemTitulo).split('\n');
   let emNegrito = false;
 
-  // Estima a altura (mm) de um bloco de linhas a partir de uma QUESTÃO, pra não deixá-la cortada entre páginas
+  // Estima a altura (mm) de um bloco de linhas a partir de uma QUESTÃO/item numerado, pra não
+  // deixá-la cortada entre páginas — inclui também a altura de qualquer imagem do bloco, senão
+  // o texto do item fica numa página e a imagem correspondente "sobra" sozinha na próxima.
+  const inicioNovoItemAtiv = lj => /^QUEST[ÃA]O\s*\d+/i.test(lj) || /^\d+\.\s/.test(lj);
   function estimarAlturaBlocoQuestaoAtiv(idxInicio) {
     let altura = 0;
     for (let j = idxInicio; j < linhas.length; j++) {
       const lj = linhas[j].trim();
-      if (j > idxInicio && (/^QUEST[ÃA]O\s*\d+/i.test(lj) || /^\[BANNER:/i.test(lj) || /^\[NOVAPAGINA\]$/i.test(lj))) break;
+      if (j > idxInicio && (inicioNovoItemAtiv(lj) || /^\[BANNER:/i.test(lj) || /^\[NOVAPAGINA\]$/i.test(lj))) break;
       if (lj === '' || /^-{3,}$/.test(lj) || /^\[\/?NEGRITO\]$/i.test(lj)) { altura += 2; continue; }
+      const qtdImgLinha = (lj.match(/\[IMAGEM:[^\]]*\]/gi) || []).length;
+      if (qtdImgLinha) { altura += qtdImgLinha * 38; continue; }
       const ljClean = lj.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
       const ehHeading = lj.length < 90 && lj.length > 3 && lj === lj.toUpperCase() && /[A-ZÀ-Ú]/.test(lj) && !/^\(/.test(lj);
       if (ehHeading) { altura += 10; continue; }
@@ -21646,7 +21652,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
 
   for (let i = 0; i < linhas.length; i++) {
     const linhaTrim0Ativ = linhas[i].trim();
-    if (/^QUEST[ÃA]O\s*\d+/i.test(linhaTrim0Ativ)) {
+    if (inicioNovoItemAtiv(linhaTrim0Ativ)) {
       const alturaBlocoAtiv = estimarAlturaBlocoQuestaoAtiv(i);
       if (y + alturaBlocoAtiv > H - rodapeH && y > 30) {
         adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
@@ -21707,6 +21713,40 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setLineWidth(0.3);
       doc.line(ml, y - 1.5, ml + maxW, y - 1.5);
       y += altLinha;
+      continue;
+    }
+    // [OPCOES: a | b | c] — lista curta de opções pra identificar/marcar (sílabas, palavras,
+    // letras). Antes disso virava uma linha solta em CAIXA ALTA, que o renderizador confundia
+    // com um título de seção (negrito + sublinhado colorido) em vez de opções clicáveis/legíveis.
+    const matchOpcoes = limpa.match(/^\[OPCOES:\s*(.+)\]$/i);
+    if (matchOpcoes) {
+      const opcoesAtiv = matchOpcoes[1].split('|').map(o => o.trim()).filter(Boolean);
+      const gapOpcoesAtiv = 4;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(fontSize + 0.5);
+      const alturaChipAtiv = altLinha + 3;
+      if (y + alturaChipAtiv > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 24;
+      }
+      let xOpcaoAtiv = ml;
+      let yLinhaOpcoesAtiv = y;
+      opcoesAtiv.forEach(op => {
+        const wOpcaoAtiv = doc.getTextWidth(op) + 10;
+        if (xOpcaoAtiv + wOpcaoAtiv > ml + maxW) { xOpcaoAtiv = ml; yLinhaOpcoesAtiv += alturaChipAtiv + 2; }
+        doc.setDrawColor(CT[0], CT[1], CT[2]);
+        doc.setLineWidth(0.4);
+        doc.setFillColor(248, 249, 252);
+        doc.roundedRect(xOpcaoAtiv, yLinhaOpcoesAtiv - alturaChipAtiv + 2.5, wOpcaoAtiv, alturaChipAtiv, 2, 2, 'FD');
+        doc.setTextColor(CT[0], CT[1], CT[2]);
+        doc.text(op, xOpcaoAtiv + wOpcaoAtiv / 2, yLinhaOpcoesAtiv, { align: 'center' });
+        xOpcaoAtiv += wOpcaoAtiv + gapOpcoesAtiv;
+      });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      y = yLinhaOpcoesAtiv + 6;
       continue;
     }
     if (/\[ESPACO PARA DESENHO\]|\[ESPA.O PARA DESENHO\]/i.test(limpa)) {
