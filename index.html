@@ -19483,8 +19483,10 @@ async function detectarItensImagem() {
 
 // Busca automaticamente uma imagem real para cada item que ainda não tem uma (não veio do
 // documento original nem do vocabulário já salvo do aluno) — banco próprio da organização
-// primeiro, depois banco LouMind, depois banco de sites gratuitos — pra não depender do
-// profissional clicar "Buscar" item por item só pra ter uma imagem na opção de ligar/pareamento.
+// primeiro (garantido ser ilustração, nunca foto, via image_type=illustration), depois banco
+// próprio da organização, depois banco LouMind — essas duas últimas não têm como sistema
+// garantir o estilo da imagem (podem ter fotos reais cadastradas), então só entram se a busca
+// de ilustração não achar nada. Evita a mistura de estilos (desenho + foto) na mesma atividade.
 async function autoResolverImagensItens() {
   const pendentes = (window._imgItens || []).filter(it => it.termo?.trim() && !it.urlEscolhida);
   if (!pendentes.length) return 0;
@@ -19492,25 +19494,28 @@ async function autoResolverImagensItens() {
   for (const item of pendentes) {
     const termoBusca = item.termo.trim().toLowerCase();
     try {
-      let q = db.from('banco_imagens_atividades').select('url,tags').contains('tags', [termoBusca]);
-      q = window._organizacaoId
-        ? q.or(`organizacao_id.is.null,organizacao_id.eq.${window._organizacaoId},compartilhada.eq.true`)
-        : q.or(`organizacao_id.is.null,compartilhada.eq.true`);
-      const { data: dProprio } = await q;
-      let urls = (dProprio || []).map(d => d.url);
-      let fonteEncontrada = 'proprio';
-      if (!urls.length) {
-        const { data: dLouMind } = await db.from('banco_imagens_loumind').select('url,tags').contains('tags', [termoBusca]);
-        urls = (dLouMind || []).map(d => d.url);
-        fonteEncontrada = 'loumind';
-      }
-      if (!urls.length) {
+      let urls = [];
+      let fonteEncontrada = 'pixabay';
+      try {
         const r = await fetch(`${PIXABAY_PROXY}?q=${encodeURIComponent(termoBusca)}&image_type=illustration`, {
           headers: { 'Authorization': `Bearer ${SB_KEY}` }
         });
         const data = await r.json();
         urls = (data.hits || []).slice(0, 8).map(h => h.webformatURL);
-        fonteEncontrada = 'pixabay';
+      } catch (e) { /* segue para os bancos próprios se a busca de ilustração falhar */ }
+      if (!urls.length) {
+        let q = db.from('banco_imagens_atividades').select('url,tags').contains('tags', [termoBusca]);
+        q = window._organizacaoId
+          ? q.or(`organizacao_id.is.null,organizacao_id.eq.${window._organizacaoId},compartilhada.eq.true`)
+          : q.or(`organizacao_id.is.null,compartilhada.eq.true`);
+        const { data: dProprio } = await q;
+        urls = (dProprio || []).map(d => d.url);
+        fonteEncontrada = 'proprio';
+      }
+      if (!urls.length) {
+        const { data: dLouMind } = await db.from('banco_imagens_loumind').select('url,tags').contains('tags', [termoBusca]);
+        urls = (dLouMind || []).map(d => d.url);
+        fonteEncontrada = 'loumind';
       }
       if (urls.length) {
         item.resultados = urls;
