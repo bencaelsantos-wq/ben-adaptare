@@ -18760,9 +18760,15 @@ const qtdQuestoes = qtdQuestoesRaw === 'auto' ? null : parseInt(qtdQuestoesRaw, 
   const CAMADAS_ACESSIBILIDADE_TEXTOS = {
     'passo-a-passo': `CAMADA — Passo a passo: para cada questão/item, acrescente logo abaixo do enunciado uma pequena lista numerada (1, 2, 3…) com os passos concretos que o aluno deve seguir para resolver aquele item especificamente (não um passo a passo genérico da matéria — os passos reais daquele enunciado). Mantenha os passos curtos e objetivos.`,
     'comando-destaque': `CAMADA — Comando em destaque: em cada enunciado, identifique o verbo de comando (ex: Calcule, Compare, Descubra, Observe, Escreva) e coloque-o em MAIÚSCULAS ou marque com **asteriscos** no início da frase, para que o aluno veja rapidamente o que precisa fazer antes de ler o resto do enunciado.`,
-    'caa': `CAMADA — CAA (Comunicação Aumentativa e Alternativa): reescreva cada enunciado com frases curtas (máx. 10-12 palavras), ordem direta sujeito-verbo-objeto, vocabulário concreto, evitando frases subordinadas e duplo sentido. Quando fizer sentido, use o marcador [IMAGEM: nome-do-item] como apoio de pictograma para o conceito-chave do enunciado.`,
+    'caa': `CAMADA — CAA (Comunicação Aumentativa e Alternativa): reescreva cada enunciado com frases curtas (máx. 10-12 palavras), ordem direta sujeito-verbo-objeto, vocabulário concreto, evitando frases subordinadas e duplo sentido. Quando fizer sentido, use o marcador [IMAGEM: nome-do-item] como apoio de pictograma para o conceito-chave do enunciado. PROIBIDO nesta camada: (1) blocos de "PASSOS:" numerando o raciocínio antes do aluno tentar — o aluno com baixa leitura precisa do enunciado curto e do apoio visual, não de mais texto explicativo; (2) imprimir a resposta/gabarito no corpo da atividade do aluno (ex: nunca escreva "RESPOSTA: X" com o X já preenchido); (3) empilhar duas ou mais frases de instrução no mesmo item — um comando por item, só isso.`,
     'calculo-resolvido': `CAMADA — Cálculo com fórmula explicitada: em questões de cálculo/matemática/ciências que envolvam fórmula, mostre a fórmula geral usada ANTES da pergunta (ex: "Área = lado × lado"), para que o aluno veja o caminho antes de aplicar aos números do enunciado — sem resolver a conta por ele, apenas explicitando qual fórmula/operação usar.`,
   };
+  // Ativa a camada CAA (frases curtas) automaticamente quando o cadastro do aluno indica
+  // dificuldade de leitura — sem depender do profissional lembrar de marcar o checkbox a cada
+  // geração. Detecta por palavra-chave no texto já reunido de limitações/comprometidas.
+  const textoLimitacoesBusca = [ctxLimitacoes, a.limitacoes, a.comprometidas].filter(Boolean).join(' ').toLowerCase();
+  const indicaDificuldadeLeitura = /l[eê]\s|leitura|n[ãa]o\s+l[eê]|le[ -]?quase\s+nada|n[ãa]o\s+decodifica|n[ãa]o\s+alfabetizad/.test(textoLimitacoesBusca);
+  if (indicaDificuldadeLeitura && !camadasSelecionadas.includes('caa')) camadasSelecionadas.push('caa');
   const INSTRUCAO_CAMADAS = camadasSelecionadas.map(c => CAMADAS_ACESSIBILIDADE_TEXTOS[c]).filter(Boolean).join('\n');
 
   const ESTILOS_ADAPTACAO_TEXTOS = {
@@ -19052,7 +19058,7 @@ C) terceiro item da coluna esquerda
 2) outra definição embaralhada
 3) outra definição embaralhada
 [/LIGAR]
-  Regras deste formato: a ordem dos números do lado direito DEVE ser diferente da ordem lógica de resposta (nunca 1=A, 2=B, 3=C em sequência — embaralhe de verdade, ex: 1 responde a C, 2 responde a A, 3 responde a B). Cada linha começa com uma letra ou número seguido de ")" e espaço. Pode incluir UM marcador [IMAGEM: nome-do-item] no final de qualquer item (dos dois lados), sempre depois do texto do item nessa mesma linha — use só quando a imagem realmente ajudar a identificar o item (ex: animais, objetos concretos), nunca em item que já é só texto abstrato/definição.
+  Regras deste formato: a ordem dos números do lado direito DEVE ser diferente da ordem lógica de resposta (nunca 1=A, 2=B, 3=C em sequência — embaralhe de verdade, ex: 1 responde a C, 2 responde a A, 3 responde a B). Cada linha começa com uma letra ou número seguido de ")" e espaço. Pode incluir NO MÁXIMO UM marcador [IMAGEM: nome-do-item] por item, no final da linha, sempre depois do texto do item — use só quando a imagem realmente ajudar a identificar o item (ex: animais, objetos concretos), nunca em item que já é só texto abstrato/definição. NUNCA repita o marcador [IMAGEM:] mais de uma vez na mesma linha/item — o layout só desenha uma imagem por item e qualquer marcador extra aparece como texto quebrado no PDF do aluno. Se o exercício pede ligar uma QUANTIDADE a um grupo de itens (ex: "3 peixes"), escreva a quantidade como número/texto no item (ex: "3 peixes [IMAGEM: peixe]"), nunca repita o marcador de imagem uma vez por unidade contada.
   Nunca omita o marcador [IMAGEM:] no item "a" e "b" — sem ele o aluno fica sem nenhuma pista visual de qual parte responder.
   NUNCA use, do lado da resposta, um texto que contenha a mesma palavra do item da esquerda (ex: proibido ligar "CACHORRO" a "Filhote de cachorro" — a resposta já está escrita dentro do próprio item, isso anula o desafio de associação). Use sempre um termo próprio e distinto quando existir (ex: bezerro, potro, gatinho); se não houver um termo consagrado em português para aquele filhote/caso, troque por outro tipo de associação onde a resposta não repita nenhuma palavra do item original.
 - Se a atividade original pede manipular material concreto sobre números, REFORMULE para o aluno REGISTRAR o resultado por escrito (ex: "Depois de contar com o Material Dourado, escreva o número que você formou: ___"), deixando a manipulação física como instrução separada para o professor/AT conduzir oralmente, não como grade no papel.
@@ -21734,6 +21740,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
             imgNomeLigar = mImgLigar[1].trim().toLowerCase();
             textoItemLigar = textoItemLigar.replace(mImgLigar[0], '').replace(/\u00BB.*$/,'').trim();
           }
+          // Cada item [LIGAR] s\u00F3 desenha 1 imagem \u2014 remove qualquer marcador [IMAGEM:...] extra
+          // (completo ou com colchete faltando) que tenha sobrado, pra nunca vazar como texto cru.
+          textoItemLigar = textoItemLigar.replace(/\[IMAGEM:[^\]]*\]?/gi, '').trim();
           (ladoDireitoLigar ? direitaLigar : esquerdaLigar).push({ texto: textoItemLigar, img: imgNomeLigar });
         }
       }
@@ -21802,7 +21811,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         itens.push({ rotulo, nome: m[1].trim().toLowerCase() });
         cursor = m.index + m[0].length;
       });
-      const restante = limpa.slice(cursor).trim();
+      // Remove qualquer marcador [IMAGEM:...] mal-formado (sem colchete de fechamento) que
+      // tenha sobrado no restante da linha, pra nunca vazar como texto cru no PDF.
+      const restante = limpa.slice(cursor).replace(/\[IMAGEM:[^\]]*\]?/gi, '').trim();
       if (restante) itens[itens.length - 1].rotulo = (itens[itens.length - 1].rotulo + ' ' + restante).trim();
 
       const ehLigarAssociar = itens.length === 1 && /\u00BB|->/.test(itens[0].rotulo || '');
