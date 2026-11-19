@@ -19174,7 +19174,10 @@ GENERALIZAÇÃO (1 linha, máx 15 palavras): [como estimular essa habilidade for
 NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
 
   try {
-    const maxTokensAdapt = (incluiGuia ? 3500 : 1200) + (qtdQuestoes || 6) * 300;
+    // Tokens de saída aumentados — levantado em reunião que a geração ficava truncada/menos rica
+    // que um chat genérico com mais espaço de saída, limitando o quanto a IA consegue formatar
+    // bem (selos, caixinhas de opções, imagens) sem cortar a atividade no meio.
+    const maxTokensAdapt = (incluiGuia ? 5000 : 1800) + (qtdQuestoes || 6) * 400;
     const textoBruto = await chamarClaude({ prompt, maxTokens: maxTokensAdapt, modulo: 'adaptacao', imagensBase64: usarVisaoImagensOriginais ? window._imagensPDFOriginal : [] });
     let texto = corrigirAlternativasColadas(corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '')));
     const idxNome = texto.search(/Nome\s*:\s*_{2,}/i);
