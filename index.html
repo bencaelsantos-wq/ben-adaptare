@@ -21818,14 +21818,27 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setLineWidth(0.4);
       const desenharImgLigar = (nome, x, rowY) => {
         const b64 = nome && opts.imagensPorItem && opts.imagensPorItem[nome];
-        if (!b64) return;
+        if (!b64) return false;
         try {
           const props = doc.getImageProperties(b64);
           let w = imgSizeLigar, h = w * (props.height / props.width);
           if (h > imgSizeLigar) { h = imgSizeLigar; w = h * (props.width / props.height); }
           const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+          doc.setDrawColor(210, 214, 222);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(x - 1.5, rowY - imgSizeLigar - 0.5, imgSizeLigar + 3, imgSizeLigar + 3, 1.8, 1.8, 'S');
           doc.addImage(b64, formato, x, rowY - imgSizeLigar + 2, w, h);
-        } catch(e) {}
+          return true;
+        } catch(e) { return false; }
+      };
+      // Moldura arredondada ao redor da palavra, pra cada opção virar um "cartão" separado em
+      // vez de texto solto — aproxima do visual de material de apoio feito à mão (um retângulo
+      // por opção), igual às caixinhas de palavra/sílaba de referência.
+      const desenharCaixaTextoLigar = (texto, x, rowY, larguraMax) => {
+        const tw = Math.min(larguraMax, doc.getTextWidth(texto) + 6);
+        doc.setDrawColor(210, 214, 222);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(x - 3, rowY - altLinha * 0.78, tw, altLinha * 0.95 + 1.5, 1.8, 1.8, 'S');
       };
       for (let r = 0; r < numLinhasLigar; r++) {
         const rowY = y + r * alturaLinhaLigar;
@@ -21833,6 +21846,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         if (itEsq) {
           if (itEsq.img) desenharImgLigar(itEsq.img, colEsqImgX, rowY);
           const linhasTxtEsq = doc.splitTextToSize(itEsq.texto, larguraMaxEsq);
+          desenharCaixaTextoLigar(linhasTxtEsq[0], colEsqTextX, rowY, larguraMaxEsq);
           doc.text(linhasTxtEsq[0], colEsqTextX, rowY);
           doc.circle(circEsqX, rowY - 1.3, 1.3, 'S');
         }
@@ -21841,6 +21855,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
           doc.circle(colDirCircX + 2, rowY - 1.3, 1.3, 'S');
           if (itDir.img) desenharImgLigar(itDir.img, colDirImgX, rowY);
           const linhasTxtDir = doc.splitTextToSize(itDir.texto, colDirW - 6);
+          desenharCaixaTextoLigar(linhasTxtDir[0], colDirTextX, rowY, colDirW - 6);
           doc.text(linhasTxtDir[0], colDirTextX, rowY);
         }
       }
