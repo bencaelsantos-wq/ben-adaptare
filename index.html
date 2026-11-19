@@ -28308,29 +28308,35 @@ function exportarDadosMonitoramentoCSV() {
 }
 
 let _chartsNumericos = {};
+// Gráfico de linha (não barras) pra frequência/duração/latência — convenção estabelecida na
+// literatura de Análise do Comportamento pra gráficos de caso único sessão a sessão (Cooper,
+// Heron & Heward): gráfico de intervalo igual, pontos conectados, pra permitir leitura de
+// tendência/nível/variabilidade — o que barras tendem a obscurecer. Barras ficam reservadas
+// pra dados resumidos/agregados (médias por fase), não pra série sessão a sessão como esta.
 function renderizarGraficosNumericos(regs, areasNumericas, tiposMedida, labels) {
   const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
   if (!areasNumericas.length || typeof Chart === 'undefined') return;
   const { datasKeys, porArea } = construirSequenciasMonitoramento(regs, areasNumericas);
-  const dataLabels = datasKeys.map((_, i) => `Reg. ${i + 1}`);
   areasNumericas.forEach(a => {
     const canvas = document.getElementById(`mon-grafico-num-${a}`);
     if (!canvas) return;
     if (_chartsNumericos[a]) { _chartsNumericos[a].destroy(); delete _chartsNumericos[a]; }
     const dataPontos = porArea[a]?.dataPontos || [];
+    const cor = CORES[a] || '#2563EB';
     _chartsNumericos[a] = new Chart(canvas, {
-      type: 'bar',
-      data: { labels: dataLabels, datasets: [{
+      type: 'line',
+      data: { labels: datasKeys, datasets: [{
         label: `${(labels[a]||a).replace(/^\S+\s/,'')} (${UNIDADE_TIPO_MEDIDA[tiposMedida[a]]})`,
         data: dataPontos,
-        backgroundColor: CORES[a] || '#2563EB',
-        barPercentage: 0.5,
-        categoryPercentage: 0.6,
-        borderRadius: 4,
+        borderColor: cor, backgroundColor: cor,
+        tension: 0.3, spanGaps: true, pointRadius: 4, pointHoverRadius: 6, fill: false,
       }] },
       options: {
         scales: { y: { beginAtZero: true }, x: { grid: { display: false } } },
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { title: items => datasKeys[items[0]?.dataIndex] ? `Registro de ${datasKeys[items[0].dataIndex]}` : '' } },
+        },
       },
     });
   });
