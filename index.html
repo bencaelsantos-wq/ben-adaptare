@@ -28476,24 +28476,26 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
     if (indice === null || indice === undefined || indice < 0) return null;
     return {
       id: 'criterioDominio_' + indice,
+      // Em vez de um losango flutuante solto acima do gráfico (que ficava deslocado do ponto
+      // real e concorria visualmente com o marcador em losango do alerta de decisão do Greer,
+      // que é outra funcionalidade — aparece no ponto mais recente quando detecta variabilidade/
+      // piora/estabilidade), aqui só desenha um anel ao redor do próprio ponto "Independente"
+      // daquele dia, com um rótulo pequeno acima.
       afterDraw(chart) {
-        const xScale = chart.scales.x, yScale = chart.scales.y;
-        if (!xScale || !yScale) return;
-        const x = xScale.getPixelForValue(indice);
+        const meta = chart.getDatasetMeta(0); // dataset 0 = Independente
+        const ponto = meta?.data?.[indice];
+        if (!ponto) return;
         const ctx = chart.ctx;
         ctx.save();
-        ctx.fillStyle = '#059669';
+        ctx.strokeStyle = '#059669';
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.moveTo(x, yScale.top - 2);
-        ctx.lineTo(x + 5, yScale.top + 5);
-        ctx.lineTo(x, yScale.top + 12);
-        ctx.lineTo(x - 5, yScale.top + 5);
-        ctx.closePath();
-        ctx.fill();
+        ctx.arc(ponto.x, ponto.y, 8, 0, Math.PI * 2);
+        ctx.stroke();
         ctx.fillStyle = '#047857';
-        ctx.font = '9px sans-serif';
+        ctx.font = 'bold 9px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Critério atingido', x, yScale.top - 5);
+        ctx.fillText('✓ Critério atingido', ponto.x, ponto.y - 13);
         ctx.restore();
       }
     };
