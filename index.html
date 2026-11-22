@@ -25457,13 +25457,18 @@ async function carregarObjetivos() {
             </select>
           </div>
           <textarea id="obj-${a.key}" placeholder="${a.ph}">${obj[a.key]||''}</textarea>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
             <button type="button" class="btn-sm-ghost" style="font-size:11.5px" onclick="toggleBancoAlvos('${a.key}')">📚 Banco de alvos</button>
             <button type="button" class="btn-sm-ghost" style="font-size:11.5px" onclick="salvarAlvoNoBanco('${a.key}')">💾 Salvar este alvo no banco</button>
+            <button type="button" class="btn-sm-ghost" style="font-size:11.5px" onclick="toggleBnccObjetivo('${a.key}')">📘 Gerar a partir da BNCC</button>
           </div>
           <div id="obj-${a.key}-banco" style="display:none;margin-top:6px;border:1px solid var(--gr200);border-radius:8px;padding:8px">
             <input type="text" class="finput" placeholder="Buscar alvo…" style="margin-bottom:6px" oninput="filtrarBancoAlvos('${a.key}', this.value)">
             <div id="obj-${a.key}-banco-lista" style="max-height:160px;overflow-y:auto;font-size:12.5px"></div>
+          </div>
+          <div id="obj-${a.key}-bncc" style="display:none;margin-top:6px;border:1px solid var(--gr200);border-radius:8px;padding:8px">
+            <input type="text" class="finput" placeholder="Buscar habilidade da BNCC (ex: reconhecer números, nomear figuras…)" style="margin-bottom:6px" oninput="buscarBnccObjetivo('${a.key}', this.value)">
+            <div id="obj-${a.key}-bncc-lista" style="max-height:160px;overflow-y:auto;font-size:12.5px"></div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;background:var(--gr50);border-radius:8px">
             <div>
@@ -25564,6 +25569,53 @@ function usarAlvoDoBanco(areaKey, texto) {
   if (!ta) return;
   ta.value = ta.value.trim() ? ta.value.trim() + '\n' + texto : texto;
   toast('Alvo adicionado — revise e ajuste pro caso específico antes de salvar.', 'success');
+}
+// ── GERAR OBJETIVO A PARTIR DA BNCC ──────────────────────────
+// Pedido em reunião pela Camila: em vez do profissional digitar o alvo livremente (o que gera
+// inconsistência entre o que é registrado e o que é de fato aplicado), permitir selecionar uma
+// habilidade já padronizada da BNCC e gerar o objetivo automaticamente a partir dela — reaproveita
+// o mesmo banco de habilidades já usado em Nova Adaptação, sem chamada de IA (texto determinístico,
+// auditável e sem custo extra).
+function toggleBnccObjetivo(areaKey) {
+  const painel = document.getElementById(`obj-${areaKey}-bncc`);
+  if (painel) painel.style.display = painel.style.display === 'none' ? 'block' : 'none';
+}
+let _bnccObjetivoDebounce = null;
+function buscarBnccObjetivo(areaKey, termo) {
+  clearTimeout(_bnccObjetivoDebounce);
+  _bnccObjetivoDebounce = setTimeout(async () => {
+    const lista = document.getElementById(`obj-${areaKey}-bncc-lista`);
+    if (!lista) return;
+    const cache = await carregarCacheBNCC();
+    const termoBruto = _bnccNormalizar((termo || '').trim());
+    let filtrados = cache;
+    if (termoBruto) {
+      const palavras = termoBruto.split(/\s+/).filter(Boolean);
+      const gruposPorPalavra = palavras.map(_bnccExpandirTermo);
+      filtrados = cache.filter(h => {
+        const campo = _bnccNormalizar(h.codigo) + ' ' + _bnccNormalizar(h.descricao);
+        return gruposPorPalavra.every(grupo => grupo.some(termo2 => campo.includes(termo2)));
+      });
+    }
+    filtrados = filtrados.slice(0, 20);
+    lista.innerHTML = filtrados.length
+      ? filtrados.map(h => `
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--gr100)">
+          <span style="flex:1"><strong>${h.codigo}</strong> — ${escapeHtml(h.descricao)}</span>
+          <button type="button" class="btn-sm-ghost" style="font-size:11px;white-space:nowrap" onclick='usarBnccObjetivo("${areaKey}", ${JSON.stringify(h.codigo)}, ${JSON.stringify(h.descricao)})'>Usar</button>
+        </div>`).join('')
+      : '<p style="color:var(--gr400);margin:4px 0">Nenhuma habilidade encontrada.</p>';
+  }, 250);
+}
+function usarBnccObjetivo(areaKey, codigo, descricao) {
+  const ta = document.getElementById(`obj-${areaKey}`);
+  if (!ta) return;
+  // Minúscula a primeira letra da descrição da BNCC (ela vem em verbo no infinitivo, ex:
+  // "Reconhecer números...") pra encaixar natural na frase-modelo observável/mensurável.
+  const descMin = descricao.charAt(0).toLowerCase() + descricao.slice(1);
+  const texto = `${descMin}, de forma independente, em 3 sessões consecutivas. (BNCC ${codigo})`;
+  ta.value = ta.value.trim() ? ta.value.trim() + '\n' + texto : texto;
+  toast('Objetivo gerado a partir da BNCC — revise o critério (dias/%) antes de salvar.', 'success');
 }
 async function salvarAlvoNoBanco(areaKey) {
   const ta = document.getElementById(`obj-${areaKey}`);
