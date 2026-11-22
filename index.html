@@ -28323,16 +28323,26 @@ function renderizarGraficosNumericos(regs, areasNumericas, tiposMedida, labels) 
     if (_chartsNumericos[a]) { _chartsNumericos[a].destroy(); delete _chartsNumericos[a]; }
     const dataPontos = porArea[a]?.dataPontos || [];
     const cor = CORES[a] || '#2563EB';
+    const unidade = UNIDADE_TIPO_MEDIDA[tiposMedida[a]] || '';
+    // Arredonda o teto do eixo Y pra um valor "redondo" acima do maior ponto, em vez de deixar
+    // o Chart.js ajustar sozinho um teto meio arbitrário (ex: 16) — e nomeia o eixo com a
+    // unidade, já que um número solto no eixo (minutos? vezes?) não ficava claro sozinho.
+    const maiorValor = Math.max(0, ...dataPontos.filter(v => v !== null && v !== undefined));
+    const passo = maiorValor <= 10 ? 2 : maiorValor <= 50 ? 5 : maiorValor <= 200 ? 20 : Math.ceil(maiorValor / 10 / 10) * 10;
+    const tetoEixoY = Math.ceil((maiorValor * 1.15 || passo) / passo) * passo;
     _chartsNumericos[a] = new Chart(canvas, {
       type: 'line',
       data: { labels: datasKeys, datasets: [{
-        label: `${(labels[a]||a).replace(/^\S+\s/,'')} (${UNIDADE_TIPO_MEDIDA[tiposMedida[a]]})`,
+        label: `${(labels[a]||a).replace(/^\S+\s/,'')} (${unidade})`,
         data: dataPontos,
         borderColor: cor, backgroundColor: cor,
         tension: 0.3, spanGaps: true, pointRadius: 4, pointHoverRadius: 6, fill: false,
       }] },
       options: {
-        scales: { y: { beginAtZero: true }, x: { grid: { display: false } } },
+        scales: {
+          y: { beginAtZero: true, max: tetoEixoY, ticks: { stepSize: passo }, title: { display: !!unidade, text: unidade } },
+          x: { grid: { display: false } },
+        },
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: { title: items => datasKeys[items[0]?.dataIndex] ? `Registro de ${datasKeys[items[0].dataIndex]}` : '' } },
