@@ -8914,11 +8914,13 @@ function renderPagesDeveloper() {
   document.getElementById('main-content').innerHTML = `
   <!-- DASHBOARD -->
   <div id="page-dev-dashboard" class="page active">
-    <h1 class="page-title">⚙️ Dashboard do Desenvolvedor</h1>
-    <p class="page-sub">Visão completa e em tempo real de toda a plataforma LouMind.</p>
+    <div class="section-header">
+      <div><h1 class="page-title">⚙️ Dashboard do Desenvolvedor</h1><p class="page-sub" style="margin-bottom:0">Visão completa e em tempo real de toda a plataforma LouMind.</p></div>
+      <button class="btn-sm" onclick="carregarConteudoDev()">↺ Atualizar</button>
+    </div>
 
     <!-- KPI CARDS -->
-    <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:14px;margin-bottom:24px" id="dev-conteudo-grid"></div>
+    <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:14px;margin-bottom:24px;margin-top:16px" id="dev-conteudo-grid"></div>
 
     <!-- PERFIS POR PAPEL -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
@@ -9758,7 +9760,7 @@ async function carregarConsumoIA() {
     const { data: logs } = await db.from('usage_logs')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(500);
+      .limit(10000);
 
     if (!logs || !logs.length) {
       document.getElementById('ia-historico-tbody').innerHTML =
@@ -11192,7 +11194,9 @@ async function verificarOrcamentoIA(modulo) {
   const ehPerguntaAluno = modulo === 'pergunte_aluno';
   const ehJornadaResumo = modulo === 'jornada_resumo';
   const MODULOS_COM_ORCAMENTO_PROPRIO = ['analise-comportamental', 'linha-tempo-laudos', 'pergunte_aluno', 'jornada_resumo'];
-  const { data } = await db.from('usage_logs').select('custo_usd, metodo').gte('created_at', inicioMes.toISOString());
+  let query = db.from('usage_logs').select('custo_usd, metodo').gte('created_at', inicioMes.toISOString());
+  query = window._organizacaoId ? query.eq('organizacao_id', window._organizacaoId) : query.eq('user_id', user?.id || '');
+  const { data } = await query;
   const gastoUSD = (data||[]).filter(r => {
     if (ehAnalise) return r.metodo === 'analise-comportamental';
     if (ehLaudos) return r.metodo === 'linha-tempo-laudos';
@@ -11410,7 +11414,8 @@ async function chamarClaude({ prompt, maxTokens = 2000, modulo = 'geral', imagen
         metodo:        modulo,
         tokens_input:  inputTok,
         tokens_output: outputTok,
-        custo_usd:     parseFloat(custoUSD.toFixed(6))
+        custo_usd:     parseFloat(custoUSD.toFixed(6)),
+        organizacao_id: window._organizacaoId || null
       }).then(() => {}).catch(() => {});
     }
   } catch (_) {}
@@ -12723,6 +12728,7 @@ function showPage(id) {
   if (id === 'gc-profissionais') { carregarProfissionaisClinica(); carregarVinculosATGestao(); }
   if (id === 'clinica-pratica-guiada') { carregarPendentesPraticaGuiada(); carregarHistoricoPraticaGuiada(); }
   if (id === 'dev-conteudo') carregarBancoImagens();
+  if (id === 'dev-dashboard') carregarConteudoDev();
   if (id === 'guia') { if (userRole === 'gestao') renderGuiaGestao(); else renderGuia(); }
   if (id === 'guia-gestao') renderGuiaGestao();
   if (id === 'diversidade') renderDiversidade();
@@ -15897,7 +15903,7 @@ function renderPagesClinica() {
       <p style="margin:0 0 4px"><strong>Pra cada área, você define:</strong></p>
       <ul style="margin:0;padding-left:18px">
         <li><strong>Objetivo</strong> — o comportamento-alvo descrito de forma observável e mensurável (ex: "nomear corretamente 10 figuras geométricas, de forma independente, em 3 sessões consecutivas").</li>
-        <li><strong>Nível de suporte (MTSS)</strong> — se esse objetivo é trabalhado de forma universal (toda a turma/grupo), em pequeno grupo, ou de forma individualizada.</li>
+        <li><strong>Arranjo de Ensino</strong> — se esse objetivo é trabalhado em grupo grande/turma, em pequeno grupo, ou de forma individual (1:1).</li>
         <li><strong>Status do programa</strong> — 🟢 Em treino (sendo trabalhado agora), 🔴 Suspenso (pausado), 🟡 Concluído (critério já atingido e mantido).</li>
         <li><strong>Tipo de medida</strong> — como o dado é coletado no Monitoramento: % de acerto (contagem de tentativas independente/com dica/erro), frequência, duração, latência, ou sondagem (quando o aprendiz não é exposto ao alvo todo dia, como em lição de casa).</li>
         <li><strong>Critério de domínio</strong> — quando a habilidade é considerada adquirida (ex: 80% de independência por 3 dias seguidos). Quando atingido, o Monitoramento avisa automaticamente — mas a decisão de avançar é sempre sua.</li>
@@ -18754,9 +18760,15 @@ const qtdQuestoes = qtdQuestoesRaw === 'auto' ? null : parseInt(qtdQuestoesRaw, 
   const CAMADAS_ACESSIBILIDADE_TEXTOS = {
     'passo-a-passo': `CAMADA — Passo a passo: para cada questão/item, acrescente logo abaixo do enunciado uma pequena lista numerada (1, 2, 3…) com os passos concretos que o aluno deve seguir para resolver aquele item especificamente (não um passo a passo genérico da matéria — os passos reais daquele enunciado). Mantenha os passos curtos e objetivos.`,
     'comando-destaque': `CAMADA — Comando em destaque: em cada enunciado, identifique o verbo de comando (ex: Calcule, Compare, Descubra, Observe, Escreva) e coloque-o em MAIÚSCULAS ou marque com **asteriscos** no início da frase, para que o aluno veja rapidamente o que precisa fazer antes de ler o resto do enunciado.`,
-    'caa': `CAMADA — CAA (Comunicação Aumentativa e Alternativa): reescreva cada enunciado com frases curtas (máx. 10-12 palavras), ordem direta sujeito-verbo-objeto, vocabulário concreto, evitando frases subordinadas e duplo sentido. Quando fizer sentido, use o marcador [IMAGEM: nome-do-item] como apoio de pictograma para o conceito-chave do enunciado.`,
+    'caa': `CAMADA — CAA (Comunicação Aumentativa e Alternativa): reescreva cada enunciado com frases curtas (máx. 10-12 palavras), ordem direta sujeito-verbo-objeto, vocabulário concreto, evitando frases subordinadas e duplo sentido. Quando fizer sentido, use o marcador [IMAGEM: nome-do-item] como apoio de pictograma para o conceito-chave do enunciado. PROIBIDO nesta camada: (1) blocos de "PASSOS:" numerando o raciocínio antes do aluno tentar — o aluno com baixa leitura precisa do enunciado curto e do apoio visual, não de mais texto explicativo; (2) imprimir a resposta/gabarito no corpo da atividade do aluno (ex: nunca escreva "RESPOSTA: X" com o X já preenchido) — se precisar de um exemplo resolvido, integre a resposta numa única frase curta de modelo (ex: "Veja: MACACO começa com MA"), nunca como uma linha separada "Resposta: ___"; (3) empilhar duas ou mais frases de instrução no mesmo item — um comando por item, só isso; (4) um parágrafo de introdução com mais de 1 frase curta antes do primeiro exercício — a explicação geral da atividade deve caber numa linha só, o resto da orientação vai dentro de cada item.`,
     'calculo-resolvido': `CAMADA — Cálculo com fórmula explicitada: em questões de cálculo/matemática/ciências que envolvam fórmula, mostre a fórmula geral usada ANTES da pergunta (ex: "Área = lado × lado"), para que o aluno veja o caminho antes de aplicar aos números do enunciado — sem resolver a conta por ele, apenas explicitando qual fórmula/operação usar.`,
   };
+  // Ativa a camada CAA (frases curtas) automaticamente quando o cadastro do aluno indica
+  // dificuldade de leitura — sem depender do profissional lembrar de marcar o checkbox a cada
+  // geração. Detecta por palavra-chave no texto já reunido de limitações/comprometidas.
+  const textoLimitacoesBusca = [ctxLimitacoes, a.limitacoes, a.comprometidas].filter(Boolean).join(' ').toLowerCase();
+  const indicaDificuldadeLeitura = /l[eê]\s|leitura|n[ãa]o\s+l[eê]|le[ -]?quase\s+nada|n[ãa]o\s+decodifica|n[ãa]o\s+alfabetizad/.test(textoLimitacoesBusca);
+  if (indicaDificuldadeLeitura && !camadasSelecionadas.includes('caa')) camadasSelecionadas.push('caa');
   const INSTRUCAO_CAMADAS = camadasSelecionadas.map(c => CAMADAS_ACESSIBILIDADE_TEXTOS[c]).filter(Boolean).join('\n');
 
   const ESTILOS_ADAPTACAO_TEXTOS = {
@@ -19046,7 +19058,7 @@ C) terceiro item da coluna esquerda
 2) outra definição embaralhada
 3) outra definição embaralhada
 [/LIGAR]
-  Regras deste formato: a ordem dos números do lado direito DEVE ser diferente da ordem lógica de resposta (nunca 1=A, 2=B, 3=C em sequência — embaralhe de verdade, ex: 1 responde a C, 2 responde a A, 3 responde a B). Cada linha começa com uma letra ou número seguido de ")" e espaço. Pode incluir UM marcador [IMAGEM: nome-do-item] no final de qualquer item (dos dois lados), sempre depois do texto do item nessa mesma linha — use só quando a imagem realmente ajudar a identificar o item (ex: animais, objetos concretos), nunca em item que já é só texto abstrato/definição.
+  Regras deste formato: a ordem dos números do lado direito DEVE ser diferente da ordem lógica de resposta (nunca 1=A, 2=B, 3=C em sequência — embaralhe de verdade, ex: 1 responde a C, 2 responde a A, 3 responde a B). Cada linha começa com uma letra ou número seguido de ")" e espaço. Pode incluir NO MÁXIMO UM marcador [IMAGEM: nome-do-item] por item, no final da linha, sempre depois do texto do item — use só quando a imagem realmente ajudar a identificar o item (ex: animais, objetos concretos), nunca em item que já é só texto abstrato/definição. NUNCA repita o marcador [IMAGEM:] mais de uma vez na mesma linha/item — o layout só desenha uma imagem por item e qualquer marcador extra aparece como texto quebrado no PDF do aluno. Se o exercício pede ligar uma QUANTIDADE a um grupo de itens (ex: "3 peixes"), escreva a quantidade como número/texto no item (ex: "3 peixes [IMAGEM: peixe]"), nunca repita o marcador de imagem uma vez por unidade contada.
   Nunca omita o marcador [IMAGEM:] no item "a" e "b" — sem ele o aluno fica sem nenhuma pista visual de qual parte responder.
   NUNCA use, do lado da resposta, um texto que contenha a mesma palavra do item da esquerda (ex: proibido ligar "CACHORRO" a "Filhote de cachorro" — a resposta já está escrita dentro do próprio item, isso anula o desafio de associação). Use sempre um termo próprio e distinto quando existir (ex: bezerro, potro, gatinho); se não houver um termo consagrado em português para aquele filhote/caso, troque por outro tipo de associação onde a resposta não repita nenhuma palavra do item original.
 - Se a atividade original pede manipular material concreto sobre números, REFORMULE para o aluno REGISTRAR o resultado por escrito (ex: "Depois de contar com o Material Dourado, escreva o número que você formou: ___"), deixando a manipulação física como instrução separada para o professor/AT conduzir oralmente, não como grade no papel.
@@ -19070,6 +19082,7 @@ ${qtdQuestoes ? `- Gere exatamente ${qtdQuestoes} questões nesta atividade — 
 - NUNCA use emojis
 - NUNCA use tabelas em formato markdown (colunas com | e ---) em nenhuma parte da resposta — papel impresso não renderiza isso
 - NUNCA escreva dentro de [ESPAÇO PARA DESENHO]. Use esse marcador SOMENTE quando o original pede explicitamente "desenhe" ou "ilustre livremente" — nunca no mesmo item que já usa [IMAGEM: nome-do-item] (são mutuamente exclusivos)
+- Sempre que apresentar uma lista curta (2 a 6) de opções soltas pra o aluno identificar, marcar, pintar ou circular — sílabas, palavras, letras, números — use OBRIGATORIAMENTE o marcador "[OPCOES: opção1 | opção2 | opção3]" numa linha sozinha, com as opções separadas por "|". NUNCA escreva essas opções como uma linha solta em CAIXA ALTA sem esse marcador — isso é tratado como título de seção, não como opções, e sai sem nenhum contorno/caixa ao redor de cada uma. Exemplo certo: "[OPCOES: MA | DA | FA | LA]". Exemplo errado (nunca faça): "MA DA FA LA" solto no texto.
 - Separação visual obrigatória entre blocos com ---
 - Sempre que a atividade tiver uma parte de leitura/contexto seguida de uma parte de exercícios/perguntas, insira um marcador "[BANNER: ATIVIDADES]" numa linha sozinha, bem no início da primeira pergunta/exercício, para marcar visualmente a transição — use esse marcador só UMA vez por atividade, no início da parte de exercícios, nunca entre cada questão individual.
 - Um número de questão ou qualquer rótulo curto terminado em dois-pontos (ex: "1.", "Parte 1:", "Sobre a Parte 1:", "Exemplo:") e o conteúdo que vem logo depois SEMPRE ficam na mesma linha, nunca quebrados em linhas separadas (ex correto: "1. Olhe a figura e complete."; ex correto: "Sobre a Parte 1: Onde Lucas foi?"; ex ERRADO, nunca faça: rótulo sozinho numa linha e o conteúdo na linha seguinte)
@@ -19161,7 +19174,10 @@ GENERALIZAÇÃO (1 linha, máx 15 palavras): [como estimular essa habilidade for
 NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 'NÃO gere o guia do professor nem nenhuma seção além da folha do aluno — pare a resposta assim que a folha do aluno terminar.'}`;
 
   try {
-    const maxTokensAdapt = (incluiGuia ? 3500 : 1200) + (qtdQuestoes || 6) * 300;
+    // Tokens de saída aumentados — levantado em reunião que a geração ficava truncada/menos rica
+    // que um chat genérico com mais espaço de saída, limitando o quanto a IA consegue formatar
+    // bem (selos, caixinhas de opções, imagens) sem cortar a atividade no meio.
+    const maxTokensAdapt = (incluiGuia ? 5000 : 1800) + (qtdQuestoes || 6) * 400;
     const textoBruto = await chamarClaude({ prompt, maxTokens: maxTokensAdapt, modulo: 'adaptacao', imagensBase64: usarVisaoImagensOriginais ? window._imagensPDFOriginal : [] });
     let texto = corrigirAlternativasColadas(corrigirAcentuacaoComum(textoBruto.replace(/^#{1,6}\s*/gm, '').replace(/\*\*/g, '')));
     const idxNome = texto.search(/Nome\s*:\s*_{2,}/i);
@@ -19194,6 +19210,12 @@ NÃO FAZER: [1-2 proibições críticas, cada uma em no máximo 10 palavras]` : 
     document.getElementById('result-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
     attachEditarIA('result-text');
     salvarAdaptAutomatico();
+
+    // Busca as imagens automaticamente assim que a atividade é gerada, sem depender do
+    // profissional descobrir e clicar o botão "Detectar imagens da atividade" — relatado em
+    // reunião que a equipe simplesmente não estava encontrando esse passo, e a atividade saía
+    // com os marcadores de imagem sem nenhuma imagem de fato anexada.
+    if (/\[IMAGEM:\s*[^\]]+\]/i.test(textoFinal)) detectarItensImagem();
 
     const avisos = [];
      if (incluiGuia && !/\*{0,3}\s*GUIA[\s_]*(?:DO[\s_]+)?PROFESSOR\s*\*{0,3}/i.test(texto)) {
@@ -19463,6 +19485,58 @@ async function detectarItensImagem() {
   document.getElementById('ap-img-painel').style.display = '';
   renderizarPainelImagens();
   document.getElementById('ap-img-painel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  const qtdPendentesIni = (window._imgItens || []).filter(it => it.termo?.trim() && !it.urlEscolhida).length;
+  if (qtdPendentesIni) toast('Buscando imagens automaticamente para ' + qtdPendentesIni + ' item(ns)…', 'success');
+  const qtdResolvidas = await autoResolverImagensItens();
+  if (qtdResolvidas) toast(qtdResolvidas + ' imagem(ns) encontrada(s) automaticamente. Revise e troque se quiser.', 'success');
+}
+
+// Busca automaticamente uma imagem real para cada item que ainda não tem uma (não veio do
+// documento original nem do vocabulário já salvo do aluno) — banco próprio da organização
+// primeiro (garantido ser ilustração, nunca foto, via image_type=illustration), depois banco
+// próprio da organização, depois banco LouMind — essas duas últimas não têm como sistema
+// garantir o estilo da imagem (podem ter fotos reais cadastradas), então só entram se a busca
+// de ilustração não achar nada. Evita a mistura de estilos (desenho + foto) na mesma atividade.
+async function autoResolverImagensItens() {
+  const pendentes = (window._imgItens || []).filter(it => it.termo?.trim() && !it.urlEscolhida);
+  if (!pendentes.length) return 0;
+  let qtdResolvidas = 0;
+  for (const item of pendentes) {
+    const termoBusca = item.termo.trim().toLowerCase();
+    try {
+      let urls = [];
+      let fonteEncontrada = 'pixabay';
+      try {
+        const r = await fetch(`${PIXABAY_PROXY}?q=${encodeURIComponent(termoBusca)}&image_type=illustration`, {
+          headers: { 'Authorization': `Bearer ${SB_KEY}` }
+        });
+        const data = await r.json();
+        urls = (data.hits || []).slice(0, 8).map(h => h.webformatURL);
+      } catch (e) { /* segue para os bancos próprios se a busca de ilustração falhar */ }
+      if (!urls.length) {
+        let q = db.from('banco_imagens_atividades').select('url,tags').contains('tags', [termoBusca]);
+        q = window._organizacaoId
+          ? q.or(`organizacao_id.is.null,organizacao_id.eq.${window._organizacaoId},compartilhada.eq.true`)
+          : q.or(`organizacao_id.is.null,compartilhada.eq.true`);
+        const { data: dProprio } = await q;
+        urls = (dProprio || []).map(d => d.url);
+        fonteEncontrada = 'proprio';
+      }
+      if (!urls.length) {
+        const { data: dLouMind } = await db.from('banco_imagens_loumind').select('url,tags').contains('tags', [termoBusca]);
+        urls = (dLouMind || []).map(d => d.url);
+        fonteEncontrada = 'loumind';
+      }
+      if (urls.length) {
+        item.resultados = urls;
+        item.urlEscolhida = urls[0];
+        item.fonte = fonteEncontrada;
+        qtdResolvidas++;
+      }
+    } catch (e) { /* item fica sem imagem automática — profissional pode buscar manualmente */ }
+  }
+  renderizarPainelImagens();
+  return qtdResolvidas;
 }
 
 function usarImagemOriginalNoItem(i, indiceOriginal) {
@@ -19812,6 +19886,7 @@ async function salvarAdapt() {
   }
   const { data, error } = await db.from('adaptacoes').insert({
     user_id: user.id,
+    organizacao_id: window._organizacaoId || null,
     aluno_id:   dadosUltima.alunoId  || null,
     aluno_nome: dadosUltima.aluno    || null,
     idade:      dadosUltima.idade    || null,
@@ -19837,6 +19912,7 @@ async function salvarAdaptAutomatico() {
   try {
     const { data, error } = await db.from('adaptacoes').insert({
       user_id: user.id,
+      organizacao_id: window._organizacaoId || null,
       aluno_id:   dadosUltima.alunoId  || null,
       aluno_nome: dadosUltima.aluno    || null,
       idade:      dadosUltima.idade    || null,
@@ -19865,8 +19941,26 @@ function copiarAdapt(elId) {
 
 // ── CARREGAR ADAPTAÇÕES ──────────────────────────────────────
 async function carregarAdaptacoes() {
-  const { data } = await db.from('adaptacoes').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+  // Gestão Clínica acompanha as adaptações de toda a organização (pedido em reunião: ela só
+  // via as que ela mesma gerava, não as da equipe) — demais papéis continuam vendo só as próprias.
+  let q = db.from('adaptacoes').select('*').order('created_at',{ascending:false});
+  q = (userRole === 'gestao-clinica' && window._organizacaoId)
+    ? q.eq('organizacao_id', window._organizacaoId)
+    : q.eq('user_id', user.id);
+  const { data } = await q;
   adaptacoesList = data || [];
+  if (userRole === 'gestao-clinica' && window._organizacaoId) {
+    try {
+      const idsAutores = [...new Set(adaptacoesList.map(r => r.user_id).filter(Boolean))];
+      const { data: autores } = idsAutores.length
+        ? await db.from('profiles').select('id,nome,email').in('id', idsAutores)
+        : { data: [] };
+      window._autoresAdaptacoes = {};
+      (autores||[]).forEach(a => { window._autoresAdaptacoes[a.id] = a.nome || a.email || ''; });
+    } catch(e) { window._autoresAdaptacoes = {}; }
+  } else {
+    window._autoresAdaptacoes = {};
+  }
   popularFiltrosHist();
   filtrarHistorico();
 }
@@ -19936,8 +20030,10 @@ function cardAdaptacao(r, gestao=false) {
   const tags = (r.perfis||[]).map(p=>`<span class="ic-tag">${p.split('—')[0].trim()}</span>`).join('');
   const meta = [r.idade, r.serie, r.materia].filter(Boolean).join(' · ');
   const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '';
+  const autorNome = window._autoresAdaptacoes?.[r.user_id];
   return `<div class="item-card" onclick='abrirModalAdapt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
     <div class="ic-nome">${escapeHtml(r.aluno||r.aluno_nome)||'(sem nome)'}</div>
+    ${autorNome ? `<div style="font-size:11px;color:var(--gr500)">por ${escapeHtml(autorNome)}</div>` : ''}
     <div class="ic-meta">${escapeHtml(meta)}</div>
     <div class="ic-tags">${tags}</div>
     <div class="ic-prev">${escapeHtml((r.texto||'').slice(0,100))}…</div>
@@ -21434,79 +21530,69 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
   const dataHoje = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
   let y = 0;
 
-  // ── CABEÇALHO DA FOLHA DO ALUNO ──────────────────────────
-  if (logoUrl) {
-    doc.setFillColor(250, 251, 255);
-    doc.rect(0, 0, W, 24, 'F');
-    doc.setDrawColor(200, 210, 230);
-    doc.setLineWidth(0.3);
-    doc.line(0, 24, W, 24);
-    try {
-      doc.addImage(logoUrl, 'PNG', ml, 3, 45, 18, '', 'FAST');
-    } catch(e) {
-      try { doc.addImage(logoUrl, 'JPEG', ml, 3, 45, 18, '', 'FAST'); } catch(e2) {}
-    }
-    if (window._nomeInstituicao) {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(60, 70, 110);
-      doc.text(sanitizarTexto(window._nomeInstituicao), ml + 47, 12);
-    }
-    if (opts.professor) {
-      const _partes = (opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/);
-      const _descAtiv = _partes.length > 1 ? _partes.slice(1).join(' — ') : '';
-      doc.setFontSize(7.5);
-      doc.setTextColor(120, 130, 160);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Professor(a): ' + opts.professor, W - mr, 10, { align: 'right' });
-      if (_descAtiv) doc.text(_descAtiv, W - mr, 16, { align: 'right' });
-    }
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
-    doc.setTextColor(160, 168, 190);
-    doc.text('gerado com LouMind', W - mr, 21.5, { align: 'right' });
-    y = 30;
-  } else {
-    // Cabeçalho sem logo — faixa azul fina
-    doc.setFillColor(CT[0], CT[1], CT[2]);
-    doc.rect(0, 0, W, 3, 'F');
-    doc.setFillColor(245, 248, 255);
-    doc.rect(0, 3, W, 16, 'F');
-    doc.setTextColor(CT[0], CT[1], CT[2]);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text((opts.tipo || 'ATIVIDADE ADAPTADA').toUpperCase(), ml, 13);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 120, 160);
-    if (opts.professor) {
-      const _p2 = (opts.subtitulo || '').split(/\s*[—–-]{1,2}\s*/);
-      const _desc2 = _p2.length > 1 ? _p2.slice(1).join(' — ') : '';
-      doc.text('Prof.: ' + opts.professor + (_desc2 ? '  |  ' + _desc2 : ''), W - mr, 13, { align: 'right' });
-    }
-    y = 24;
-  }
+  // ── CABEÇALHO DA FOLHA DO ALUNO — cartão único com borda, nos moldes de uma prova impressa
+  // tradicional (instituição/matéria à esquerda, professor/data à direita, aluno/data/nota
+  // embaixo), em vez dos 2 blocos de cores separados que o layout anterior usava.
+  const nomeInstCab = window._nomeInstituicao || (opts.tipo || 'ATIVIDADE ADAPTADA').toUpperCase();
+  const alturaCabecalho = 28;
+  doc.setDrawColor(210, 214, 222);
+  doc.setLineWidth(0.5);
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(ml, 6, W - ml - mr, alturaCabecalho, 3, 3, 'FD');
 
-  // ── DADOS DO ALUNO (compacto) ─────────────────────────────
-  doc.setFillColor(240, 244, 255);
-  doc.roundedRect(ml, y, W - ml - mr, 14, 1.5, 1.5, 'F');
+  if (logoUrl) {
+    try { doc.addImage(logoUrl, 'PNG', ml + 4, 9.5, 26, 15, '', 'FAST'); }
+    catch(e) { try { doc.addImage(logoUrl, 'JPEG', ml + 4, 9.5, 26, 15, '', 'FAST'); } catch(e2) {} }
+  }
+  const xTextoCab = logoUrl ? ml + 34 : ml + 6;
+
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(50, 70, 140);
-  doc.text('ALUNO:', ml + 4, y + 8.5);
+  doc.setFontSize(11.5);
+  doc.setTextColor(25, 25, 25);
+  doc.text(sanitizarTexto(nomeInstCab), xTextoCab, 14);
+
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(20, 20, 60);
-  doc.text((opts.aluno || '').toUpperCase(), ml + 21, y + 8.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(50, 70, 140);
-  doc.text('DATA:', W / 2, y + 8.5);
+  doc.setFontSize(8.5);
+  doc.setTextColor(CT[0], CT[1], CT[2]);
+  doc.text(sanitizarTexto(opts.titulo || 'Atividade Adaptada'), xTextoCab, 19.5);
+
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(20, 20, 60);
-  doc.text('_____ / _____ / _______', W / 2 + 15, y + 8.5);
-  y += 18;
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 128, 150);
+  doc.text(dataHoje, W - mr - 5, 14, { align: 'right' });
+  if (opts.professor) doc.text('Prof.: ' + opts.professor, W - mr - 5, 19.5, { align: 'right' });
+
+  doc.setDrawColor(225, 228, 235);
+  doc.setLineWidth(0.3);
+  doc.line(ml + 5, 23, W - mr - 5, 23);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90, 98, 120);
+  doc.text('ALUNO:', ml + 6, 30);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(20, 20, 25);
+  doc.text(sanitizarTexto((opts.aluno || '').toUpperCase()), ml + 21, 30);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90, 98, 120);
+  doc.text('DATA:', W - mr - 60, 30);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(20, 20, 25);
+  doc.text('___/___/_____', W - mr - 48, 30);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90, 98, 120);
+  doc.text('NOTA:', W - mr - 22, 30);
+  doc.setDrawColor(150, 155, 170);
+  doc.setLineWidth(0.3);
+  doc.line(W - mr - 10, 31, W - mr - 2, 31);
+
+  y = 6 + alturaCabecalho + 6;
 
   // ── TÍTULO DA ATIVIDADE ───────────────────────────────────
   doc.setFillColor(CT[0], CT[1], CT[2]);
@@ -21575,13 +21661,18 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
    const linhas = sanitizarTexto(folhaSemTitulo).split('\n');
   let emNegrito = false;
 
-  // Estima a altura (mm) de um bloco de linhas a partir de uma QUESTÃO, pra não deixá-la cortada entre páginas
+  // Estima a altura (mm) de um bloco de linhas a partir de uma QUESTÃO/item numerado, pra não
+  // deixá-la cortada entre páginas — inclui também a altura de qualquer imagem do bloco, senão
+  // o texto do item fica numa página e a imagem correspondente "sobra" sozinha na próxima.
+  const inicioNovoItemAtiv = lj => /^QUEST[ÃA]O\s*\d+/i.test(lj) || /^\d+\.\s/.test(lj);
   function estimarAlturaBlocoQuestaoAtiv(idxInicio) {
     let altura = 0;
     for (let j = idxInicio; j < linhas.length; j++) {
       const lj = linhas[j].trim();
-      if (j > idxInicio && (/^QUEST[ÃA]O\s*\d+/i.test(lj) || /^\[BANNER:/i.test(lj) || /^\[NOVAPAGINA\]$/i.test(lj))) break;
+      if (j > idxInicio && (inicioNovoItemAtiv(lj) || /^\[BANNER:/i.test(lj) || /^\[NOVAPAGINA\]$/i.test(lj))) break;
       if (lj === '' || /^-{3,}$/.test(lj) || /^\[\/?NEGRITO\]$/i.test(lj)) { altura += 2; continue; }
+      const qtdImgLinha = (lj.match(/\[IMAGEM:[^\]]*\]/gi) || []).length;
+      if (qtdImgLinha) { altura += qtdImgLinha * 38; continue; }
       const ljClean = lj.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '');
       const ehHeading = lj.length < 90 && lj.length > 3 && lj === lj.toUpperCase() && /[A-ZÀ-Ú]/.test(lj) && !/^\(/.test(lj);
       if (ehHeading) { altura += 10; continue; }
@@ -21592,7 +21683,7 @@ function gerarPDFAtividade(doc, opts, W, H, ml, mr) {
 
   for (let i = 0; i < linhas.length; i++) {
     const linhaTrim0Ativ = linhas[i].trim();
-    if (/^QUEST[ÃA]O\s*\d+/i.test(linhaTrim0Ativ)) {
+    if (inicioNovoItemAtiv(linhaTrim0Ativ)) {
       const alturaBlocoAtiv = estimarAlturaBlocoQuestaoAtiv(i);
       if (y + alturaBlocoAtiv > H - rodapeH && y > 30) {
         adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
@@ -21653,6 +21744,40 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setLineWidth(0.3);
       doc.line(ml, y - 1.5, ml + maxW, y - 1.5);
       y += altLinha;
+      continue;
+    }
+    // [OPCOES: a | b | c] — lista curta de opções pra identificar/marcar (sílabas, palavras,
+    // letras). Antes disso virava uma linha solta em CAIXA ALTA, que o renderizador confundia
+    // com um título de seção (negrito + sublinhado colorido) em vez de opções clicáveis/legíveis.
+    const matchOpcoes = limpa.match(/^\[OPCOES:\s*(.+)\]$/i);
+    if (matchOpcoes) {
+      const opcoesAtiv = matchOpcoes[1].split('|').map(o => o.trim()).filter(Boolean);
+      const gapOpcoesAtiv = 4;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(fontSize + 0.5);
+      const alturaChipAtiv = altLinha + 3;
+      if (y + alturaChipAtiv > H - rodapeH) {
+        adicionarRodapePagina(doc, W, H, ml, mr, doc.internal.getNumberOfPages());
+        doc.addPage();
+        y = 24;
+      }
+      let xOpcaoAtiv = ml;
+      let yLinhaOpcoesAtiv = y;
+      opcoesAtiv.forEach(op => {
+        const wOpcaoAtiv = doc.getTextWidth(op) + 10;
+        if (xOpcaoAtiv + wOpcaoAtiv > ml + maxW) { xOpcaoAtiv = ml; yLinhaOpcoesAtiv += alturaChipAtiv + 2; }
+        doc.setDrawColor(CT[0], CT[1], CT[2]);
+        doc.setLineWidth(0.4);
+        doc.setFillColor(248, 249, 252);
+        doc.roundedRect(xOpcaoAtiv, yLinhaOpcoesAtiv - alturaChipAtiv + 2.5, wOpcaoAtiv, alturaChipAtiv, 2, 2, 'FD');
+        doc.setTextColor(CT[0], CT[1], CT[2]);
+        doc.text(op, xOpcaoAtiv + wOpcaoAtiv / 2, yLinhaOpcoesAtiv, { align: 'center' });
+        xOpcaoAtiv += wOpcaoAtiv + gapOpcoesAtiv;
+      });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(25, 25, 25);
+      y = yLinhaOpcoesAtiv + 6;
       continue;
     }
     if (/\[ESPACO PARA DESENHO\]|\[ESPA.O PARA DESENHO\]/i.test(limpa)) {
@@ -21728,6 +21853,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
             imgNomeLigar = mImgLigar[1].trim().toLowerCase();
             textoItemLigar = textoItemLigar.replace(mImgLigar[0], '').replace(/\u00BB.*$/,'').trim();
           }
+          // Cada item [LIGAR] s\u00F3 desenha 1 imagem \u2014 remove qualquer marcador [IMAGEM:...] extra
+          // (completo ou com colchete faltando) que tenha sobrado, pra nunca vazar como texto cru.
+          textoItemLigar = textoItemLigar.replace(/\[IMAGEM:[^\]]*\]?/gi, '').trim();
           (ladoDireitoLigar ? direitaLigar : esquerdaLigar).push({ texto: textoItemLigar, img: imgNomeLigar });
         }
       }
@@ -21756,14 +21884,27 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       doc.setLineWidth(0.4);
       const desenharImgLigar = (nome, x, rowY) => {
         const b64 = nome && opts.imagensPorItem && opts.imagensPorItem[nome];
-        if (!b64) return;
+        if (!b64) return false;
         try {
           const props = doc.getImageProperties(b64);
           let w = imgSizeLigar, h = w * (props.height / props.width);
           if (h > imgSizeLigar) { h = imgSizeLigar; w = h * (props.width / props.height); }
           const formato = b64.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+          doc.setDrawColor(210, 214, 222);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(x - 1.5, rowY - imgSizeLigar - 0.5, imgSizeLigar + 3, imgSizeLigar + 3, 1.8, 1.8, 'S');
           doc.addImage(b64, formato, x, rowY - imgSizeLigar + 2, w, h);
-        } catch(e) {}
+          return true;
+        } catch(e) { return false; }
+      };
+      // Moldura arredondada ao redor da palavra, pra cada opção virar um "cartão" separado em
+      // vez de texto solto — aproxima do visual de material de apoio feito à mão (um retângulo
+      // por opção), igual às caixinhas de palavra/sílaba de referência.
+      const desenharCaixaTextoLigar = (texto, x, rowY, larguraMax) => {
+        const tw = Math.min(larguraMax, doc.getTextWidth(texto) + 6);
+        doc.setDrawColor(210, 214, 222);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(x - 3, rowY - altLinha * 0.78, tw, altLinha * 0.95 + 1.5, 1.8, 1.8, 'S');
       };
       for (let r = 0; r < numLinhasLigar; r++) {
         const rowY = y + r * alturaLinhaLigar;
@@ -21771,6 +21912,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         if (itEsq) {
           if (itEsq.img) desenharImgLigar(itEsq.img, colEsqImgX, rowY);
           const linhasTxtEsq = doc.splitTextToSize(itEsq.texto, larguraMaxEsq);
+          desenharCaixaTextoLigar(linhasTxtEsq[0], colEsqTextX, rowY, larguraMaxEsq);
           doc.text(linhasTxtEsq[0], colEsqTextX, rowY);
           doc.circle(circEsqX, rowY - 1.3, 1.3, 'S');
         }
@@ -21779,6 +21921,7 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
           doc.circle(colDirCircX + 2, rowY - 1.3, 1.3, 'S');
           if (itDir.img) desenharImgLigar(itDir.img, colDirImgX, rowY);
           const linhasTxtDir = doc.splitTextToSize(itDir.texto, colDirW - 6);
+          desenharCaixaTextoLigar(linhasTxtDir[0], colDirTextX, rowY, colDirW - 6);
           doc.text(linhasTxtDir[0], colDirTextX, rowY);
         }
       }
@@ -21796,7 +21939,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
         itens.push({ rotulo, nome: m[1].trim().toLowerCase() });
         cursor = m.index + m[0].length;
       });
-      const restante = limpa.slice(cursor).trim();
+      // Remove qualquer marcador [IMAGEM:...] mal-formado (sem colchete de fechamento) que
+      // tenha sobrado no restante da linha, pra nunca vazar como texto cru no PDF.
+      const restante = limpa.slice(cursor).replace(/\[IMAGEM:[^\]]*\]?/gi, '').trim();
       if (restante) itens[itens.length - 1].rotulo = (itens[itens.length - 1].rotulo + ' ' + restante).trim();
 
       const ehLigarAssociar = itens.length === 1 && /\u00BB|->/.test(itens[0].rotulo || '');
@@ -22011,6 +22156,9 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
     }
     if (isH) {
       const CORES_LOUMIND_ATIV = [[52,74,140],[91,125,184],[123,140,166],[94,163,155]];
+      // Selo numerado colorido por questão — uma cor por número (gira pela paleta), não por
+      // verbo de comando, pra dar a mesma sensação de "cartão colorido" de materiais feitos à mão.
+      const CORES_SELO_QUESTAO_ATIV = [[249,115,22],[34,197,94],[234,179,8],[168,85,247],[59,130,246],[236,72,153]];
       const VERBOS_COMANDO_ATIV = [
         { re: /\b(ESCREVA|RESPONDA)\b/i, icone: 'lapis', cor: CORES_LOUMIND_ATIV[0] },
         { re: /\b(MARQUE|ASSINALE)\b/i, icone: 'x', cor: CORES_LOUMIND_ATIV[1] },
@@ -22022,20 +22170,35 @@ const limpa = linhaT.replace(/^#{1,6}\s/, '').replace(/\*\*/g, '').replace(/^#+\
       const comandoAtiv = (isQuestaoNumeradaAtiv || isLinhaComandoAtiv)
         ? (VERBOS_COMANDO_ATIV.find(v => v.re.test(linhaT)) || { icone: 'generico', cor: CORES_LOUMIND_ATIV[2] })
         : null;
+      const matchNumSelo = isQuestaoNumeradaAtiv ? linhaT.match(/^(\d+)\./) : null;
       y += 2;
       if (comandoAtiv) {
         const [r,g,b] = comandoAtiv.cor;
+        const textoBarraAtiv = matchNumSelo ? limpa.replace(/^\d+\.\s*/, '') : limpa;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(fontSize);
-        const linhasBarraAtiv = doc.splitTextToSize(limpa, maxW - 11);
+        const deslocSelo = matchNumSelo ? 9 : 0;
+        const linhasBarraAtiv = doc.splitTextToSize(textoBarraAtiv, maxW - 11 - deslocSelo);
         const altBarraAtiv = Math.max(7, linhasBarraAtiv.length * altLinha + 2);
+        if (matchNumSelo) {
+          const corSelo = CORES_SELO_QUESTAO_ATIV[parseInt(matchNumSelo[1], 10) % CORES_SELO_QUESTAO_ATIV.length];
+          const raioSelo = Math.max(4, (altBarraAtiv + 0.6) / 2 - 0.5);
+          const cySelo = y - 3.8 + (altBarraAtiv + 0.6) / 2;
+          doc.setFillColor(corSelo[0], corSelo[1], corSelo[2]);
+          doc.circle(ml + raioSelo, cySelo, raioSelo, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(fontSize + 1);
+          doc.setTextColor(255, 255, 255);
+          doc.text(matchNumSelo[1], ml + raioSelo, cySelo + 1.3, { align: 'center' });
+          doc.setFontSize(fontSize);
+        }
         doc.setFillColor(r, g, b);
-        doc.roundedRect(ml, y - 3.8, 7, altBarraAtiv + 0.6, 1.3, 1.3, 'F');
-        desenharIconeComando(doc, comandoAtiv.icone, ml + 3.5, y, 3.6);
+        doc.roundedRect(ml + deslocSelo, y - 3.8, 7, altBarraAtiv + 0.6, 1.3, 1.3, 'F');
+        desenharIconeComando(doc, comandoAtiv.icone, ml + deslocSelo + 3.5, y, 3.6);
         doc.setFillColor(r, g, b);
-        doc.rect(ml + 8, y - 3.5, maxW - 8, altBarraAtiv, 'F');
+        doc.rect(ml + deslocSelo + 8, y - 3.5, maxW - 8 - deslocSelo, altBarraAtiv, 'F');
         doc.setTextColor(255, 255, 255);
-        linhasBarraAtiv.forEach((lb, li) => doc.text(lb, ml + 11, y + 0.5 + li * altLinha));
+        linhasBarraAtiv.forEach((lb, li) => doc.text(lb, ml + deslocSelo + 11, y + 0.5 + li * altLinha));
         y += altBarraAtiv - 7 + 3;
       } else {
         doc.setFont('helvetica', 'bold');
@@ -25264,10 +25427,17 @@ async function carregarObjetivos() {
     { v: 'latencia', label: 'Latência' },
     { v: 'sondagem', label: 'Sondagem (não diária)' },
   ];
+  // "Arranjo de Ensino" — termo nativo da Análise do Comportamento (Cooper, Heron & Heward:
+  // "instructional arrangement") pra descrever o tamanho do agrupamento em que o objetivo é
+  // trabalhado. Em reunião, a Deborah apontou que "Nível de Suporte" colide com a classificação
+  // de gravidade do TEA (DSM) e que RTI/MTSS ("camada de intervenção") é terminologia de educação,
+  // estranha à análise do comportamento — "ninguém da análise do comportamento fala tanto" nisso —
+  // e recomendou reservar RTI pro lado escolar, não pra esta tela clínica. Chaves de dados (1/2/3)
+  // mantidas por compatibilidade.
   const OPCOES_NIVEL_SUPORTE = [
-    { v: '1', label: 'Nível 1 — Universal', cor: '#16A34A' },
-    { v: '2', label: 'Nível 2 — Em grupo', cor: '#D97706' },
-    { v: '3', label: 'Nível 3 — Individual', cor: '#DC2626' },
+    { v: '1', label: 'Grupo grande/turma', cor: '#16A34A' },
+    { v: '2', label: 'Pequeno grupo', cor: '#D97706' },
+    { v: '3', label: 'Individual (1:1)', cor: '#DC2626' },
   ];
   const OPCOES_STATUS_PROGRAMA = [
     { v: 'treino', label: '🟢 Em treino', cor: '#16A34A' },
@@ -25291,9 +25461,22 @@ async function carregarObjetivos() {
             </select>
           </div>
           <textarea id="obj-${a.key}" placeholder="${a.ph}">${obj[a.key]||''}</textarea>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+            <button type="button" class="btn-sm-ghost" style="font-size:11.5px" onclick="toggleBancoAlvos('${a.key}')">📚 Banco de alvos</button>
+            <button type="button" class="btn-sm-ghost" style="font-size:11.5px" onclick="salvarAlvoNoBanco('${a.key}')">💾 Salvar este alvo no banco</button>
+            <button type="button" class="btn-sm-ghost" style="font-size:11.5px" onclick="toggleBnccObjetivo('${a.key}')">📘 Gerar a partir da BNCC</button>
+          </div>
+          <div id="obj-${a.key}-banco" style="display:none;margin-top:6px;border:1px solid var(--gr200);border-radius:8px;padding:8px">
+            <input type="text" class="finput" placeholder="Buscar alvo…" style="margin-bottom:6px" oninput="filtrarBancoAlvos('${a.key}', this.value)">
+            <div id="obj-${a.key}-banco-lista" style="max-height:160px;overflow-y:auto;font-size:12.5px"></div>
+          </div>
+          <div id="obj-${a.key}-bncc" style="display:none;margin-top:6px;border:1px solid var(--gr200);border-radius:8px;padding:8px">
+            <input type="text" class="finput" placeholder="Buscar habilidade da BNCC (ex: reconhecer números, nomear figuras…)" style="margin-bottom:6px" oninput="buscarBnccObjetivo('${a.key}', this.value)">
+            <div id="obj-${a.key}-bncc-lista" style="max-height:160px;overflow-y:auto;font-size:12.5px"></div>
+          </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;background:var(--gr50);border-radius:8px">
             <div>
-              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Nível de suporte (MTSS)</label>
+              <label style="font-size:11px;color:var(--gr400);display:block;margin-bottom:2px">Arranjo de Ensino</label>
               <select id="obj-${a.key}-nivel" class="fselect" style="font-size:12.5px;padding:4px 28px 4px 8px" onchange="atualizarBadgeNivelSuporte('${a.key}')">
                 ${OPCOES_NIVEL_SUPORTE.map(o => `<option value="${o.v}" ${o.v===nivelAtual?'selected':''}>${o.label}</option>`).join('')}
               </select>
@@ -25350,8 +25533,111 @@ async function carregarObjetivos() {
     </div>`;
 }
 
+// ── BANCO DE ALVOS TERAPÊUTICOS ──────────────────────────────
+// Biblioteca reutilizável de alvos pré-escritos por área, pra reduzir digitação manual e
+// inconsistência entre o que é registrado e o que é de fato aplicado — pedido em reunião pela
+// Camila, no mesmo espírito do banco de habilidades da BNCC que já usamos em outras telas.
+window._bancoAlvosCache = {};
+async function toggleBancoAlvos(areaKey) {
+  const painel = document.getElementById(`obj-${areaKey}-banco`);
+  if (!painel) return;
+  const abrindo = painel.style.display === 'none';
+  painel.style.display = abrindo ? 'block' : 'none';
+  if (abrindo && !window._bancoAlvosCache[areaKey]) {
+    let q = db.from('banco_alvos_terapeuticos').select('id,texto,compartilhada,organizacao_id').eq('area', areaKey);
+    q = window._organizacaoId
+      ? q.or(`organizacao_id.is.null,organizacao_id.eq.${window._organizacaoId},compartilhada.eq.true`)
+      : q.or('organizacao_id.is.null,compartilhada.eq.true');
+    const { data } = await q.order('created_at', { ascending: false });
+    window._bancoAlvosCache[areaKey] = data || [];
+    renderizarBancoAlvos(areaKey, window._bancoAlvosCache[areaKey]);
+  }
+}
+function renderizarBancoAlvos(areaKey, itens) {
+  const lista = document.getElementById(`obj-${areaKey}-banco-lista`);
+  if (!lista) return;
+  if (!itens.length) { lista.innerHTML = '<p style="color:var(--gr400);margin:4px 0">Nenhum alvo cadastrado ainda nesta área.</p>'; return; }
+  lista.innerHTML = itens.map(it => `
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--gr100)">
+      <span style="flex:1">${escapeHtml(it.texto)}</span>
+      <button type="button" class="btn-sm-ghost" style="font-size:11px;white-space:nowrap" onclick="usarAlvoDoBanco('${areaKey}', ${JSON.stringify(it.texto)})">Usar</button>
+    </div>`).join('');
+}
+function filtrarBancoAlvos(areaKey, termo) {
+  const todos = window._bancoAlvosCache[areaKey] || [];
+  const q = (termo || '').toLowerCase().trim();
+  renderizarBancoAlvos(areaKey, q ? todos.filter(it => it.texto.toLowerCase().includes(q)) : todos);
+}
+function usarAlvoDoBanco(areaKey, texto) {
+  const ta = document.getElementById(`obj-${areaKey}`);
+  if (!ta) return;
+  ta.value = ta.value.trim() ? ta.value.trim() + '\n' + texto : texto;
+  toast('Alvo adicionado — revise e ajuste pro caso específico antes de salvar.', 'success');
+}
+// ── GERAR OBJETIVO A PARTIR DA BNCC ──────────────────────────
+// Pedido em reunião pela Camila: em vez do profissional digitar o alvo livremente (o que gera
+// inconsistência entre o que é registrado e o que é de fato aplicado), permitir selecionar uma
+// habilidade já padronizada da BNCC e gerar o objetivo automaticamente a partir dela — reaproveita
+// o mesmo banco de habilidades já usado em Nova Adaptação, sem chamada de IA (texto determinístico,
+// auditável e sem custo extra).
+function toggleBnccObjetivo(areaKey) {
+  const painel = document.getElementById(`obj-${areaKey}-bncc`);
+  if (painel) painel.style.display = painel.style.display === 'none' ? 'block' : 'none';
+}
+let _bnccObjetivoDebounce = null;
+function buscarBnccObjetivo(areaKey, termo) {
+  clearTimeout(_bnccObjetivoDebounce);
+  _bnccObjetivoDebounce = setTimeout(async () => {
+    const lista = document.getElementById(`obj-${areaKey}-bncc-lista`);
+    if (!lista) return;
+    const cache = await carregarCacheBNCC();
+    const termoBruto = _bnccNormalizar((termo || '').trim());
+    let filtrados = cache;
+    if (termoBruto) {
+      const palavras = termoBruto.split(/\s+/).filter(Boolean);
+      const gruposPorPalavra = palavras.map(_bnccExpandirTermo);
+      filtrados = cache.filter(h => {
+        const campo = _bnccNormalizar(h.codigo) + ' ' + _bnccNormalizar(h.descricao);
+        return gruposPorPalavra.every(grupo => grupo.some(termo2 => campo.includes(termo2)));
+      });
+    }
+    filtrados = filtrados.slice(0, 20);
+    lista.innerHTML = filtrados.length
+      ? filtrados.map(h => `
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--gr100)">
+          <span style="flex:1"><strong>${h.codigo}</strong> — ${escapeHtml(h.descricao)}</span>
+          <button type="button" class="btn-sm-ghost" style="font-size:11px;white-space:nowrap" onclick='usarBnccObjetivo("${areaKey}", ${JSON.stringify(h.codigo)}, ${JSON.stringify(h.descricao)})'>Usar</button>
+        </div>`).join('')
+      : '<p style="color:var(--gr400);margin:4px 0">Nenhuma habilidade encontrada.</p>';
+  }, 250);
+}
+function usarBnccObjetivo(areaKey, codigo, descricao) {
+  const ta = document.getElementById(`obj-${areaKey}`);
+  if (!ta) return;
+  // Minúscula a primeira letra da descrição da BNCC (ela vem em verbo no infinitivo, ex:
+  // "Reconhecer números...") pra encaixar natural na frase-modelo observável/mensurável.
+  const descMin = descricao.charAt(0).toLowerCase() + descricao.slice(1);
+  const texto = `${descMin}, de forma independente, em 3 sessões consecutivas. (BNCC ${codigo})`;
+  ta.value = ta.value.trim() ? ta.value.trim() + '\n' + texto : texto;
+  toast('Objetivo gerado a partir da BNCC — revise o critério (dias/%) antes de salvar.', 'success');
+}
+async function salvarAlvoNoBanco(areaKey) {
+  const ta = document.getElementById(`obj-${areaKey}`);
+  const texto = ta?.value?.trim();
+  if (!texto) return toast('Escreva o alvo no campo antes de salvar no banco.', 'error');
+  const compartilhar = confirm('Compartilhar este alvo com outras organizações da LouMind? Cancelar mantém visível só pra sua organização.');
+  try {
+    await db.from('banco_alvos_terapeuticos').insert({
+      area: areaKey, texto, organizacao_id: window._organizacaoId || null,
+      compartilhada: compartilhar, criado_por: user.id
+    });
+    delete window._bancoAlvosCache[areaKey];
+    toast('Alvo salvo no banco!', 'success');
+  } catch (e) { toast('Erro ao salvar no banco: ' + (e.message || 'tente novamente'), 'error'); }
+}
+
 function atualizarBadgeNivelSuporte(areaKey) {
-  const CORES = { '1': ['#16A34A','Nível 1 — Universal'], '2': ['#D97706','Nível 2 — Em grupo'], '3': ['#DC2626','Nível 3 — Individual'] };
+  const CORES = { '1': ['#16A34A','Grupo grande/turma'], '2': ['#D97706','Pequeno grupo'], '3': ['#DC2626','Individual (1:1)'] };
   const sel = document.getElementById(`obj-${areaKey}-nivel`);
   const badge = document.getElementById(`obj-${areaKey}-nivel-badge`);
   if (!sel || !badge) return;
@@ -25520,7 +25806,7 @@ function baixarPDFObjetivosTerapeuticos() {
   const ctx = window._objAbaAtual;
   if (!ctx) return toast('Selecione um paciente primeiro.', 'error');
   const LABEL_TIPO = { percentual: '% de acerto', frequencia: 'Frequência/taxa', duracao: 'Duração', latencia: 'Latência', sondagem: 'Sondagem (não diária)' };
-  const LABEL_NIVEL = { '1': 'Nível 1 — Universal', '2': 'Nível 2 — Em grupo', '3': 'Nível 3 — Individual' };
+  const LABEL_NIVEL = { '1': 'Grupo grande/turma', '2': 'Pequeno grupo', '3': 'Individual (1:1)' };
   const LABEL_STATUS = { treino: 'Em treino', suspenso: 'Suspenso', concluido: 'Concluído' };
   const LABEL_UNIDADE_MANUT = { dia: 'dia', semana: 'semana', mes: 'mês' };
 
@@ -25567,7 +25853,7 @@ function baixarPDFObjetivosTerapeuticos() {
     y += 1;
     linha(a.texto, ml, 10, false);
     y += 1;
-    linha(`Nível de suporte (MTSS): ${LABEL_NIVEL[nivel]}  ·  Tipo de medida: ${LABEL_TIPO[tipo]}`, ml, 9, false, [90,90,90]);
+    linha(`Arranjo de Ensino: ${LABEL_NIVEL[nivel]}  ·  Tipo de medida: ${LABEL_TIPO[tipo]}`, ml, 9, false, [90,90,90]);
     if (pct && dias) {
       linha(`Critério de domínio: ${pct}% por ${dias} dia(s) seguidos${bloco100 ? ' OU 100% num único bloco/sessão' : ''}`, ml, 9, false, [90,90,90]);
     }
@@ -28078,29 +28364,45 @@ function exportarDadosMonitoramentoCSV() {
 }
 
 let _chartsNumericos = {};
+// Gráfico de linha (não barras) pra frequência/duração/latência — convenção estabelecida na
+// literatura de Análise do Comportamento pra gráficos de caso único sessão a sessão (Cooper,
+// Heron & Heward): gráfico de intervalo igual, pontos conectados, pra permitir leitura de
+// tendência/nível/variabilidade — o que barras tendem a obscurecer. Barras ficam reservadas
+// pra dados resumidos/agregados (médias por fase), não pra série sessão a sessão como esta.
 function renderizarGraficosNumericos(regs, areasNumericas, tiposMedida, labels) {
   const CORES = { cognitivo:'#2563EB', comunicacao:'#7C3AED', social:'#059669', comportamental:'#D97706', academico:'#DC2626' };
   if (!areasNumericas.length || typeof Chart === 'undefined') return;
   const { datasKeys, porArea } = construirSequenciasMonitoramento(regs, areasNumericas);
-  const dataLabels = datasKeys.map((_, i) => `Reg. ${i + 1}`);
   areasNumericas.forEach(a => {
     const canvas = document.getElementById(`mon-grafico-num-${a}`);
     if (!canvas) return;
     if (_chartsNumericos[a]) { _chartsNumericos[a].destroy(); delete _chartsNumericos[a]; }
     const dataPontos = porArea[a]?.dataPontos || [];
+    const cor = CORES[a] || '#2563EB';
+    const unidade = UNIDADE_TIPO_MEDIDA[tiposMedida[a]] || '';
+    // Arredonda o teto do eixo Y pra um valor "redondo" acima do maior ponto, em vez de deixar
+    // o Chart.js ajustar sozinho um teto meio arbitrário (ex: 16) — e nomeia o eixo com a
+    // unidade, já que um número solto no eixo (minutos? vezes?) não ficava claro sozinho.
+    const maiorValor = Math.max(0, ...dataPontos.filter(v => v !== null && v !== undefined));
+    const passo = maiorValor <= 10 ? 2 : maiorValor <= 50 ? 5 : maiorValor <= 200 ? 20 : Math.ceil(maiorValor / 10 / 10) * 10;
+    const tetoEixoY = Math.ceil((maiorValor * 1.15 || passo) / passo) * passo;
     _chartsNumericos[a] = new Chart(canvas, {
-      type: 'bar',
-      data: { labels: dataLabels, datasets: [{
-        label: `${(labels[a]||a).replace(/^\S+\s/,'')} (${UNIDADE_TIPO_MEDIDA[tiposMedida[a]]})`,
+      type: 'line',
+      data: { labels: datasKeys, datasets: [{
+        label: `${(labels[a]||a).replace(/^\S+\s/,'')} (${unidade})`,
         data: dataPontos,
-        backgroundColor: CORES[a] || '#2563EB',
-        barPercentage: 0.5,
-        categoryPercentage: 0.6,
-        borderRadius: 4,
+        borderColor: cor, backgroundColor: cor,
+        tension: 0.3, spanGaps: true, pointRadius: 4, pointHoverRadius: 6, fill: false,
       }] },
       options: {
-        scales: { y: { beginAtZero: true }, x: { grid: { display: false } } },
-        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: tetoEixoY, ticks: { stepSize: passo }, title: { display: !!unidade, text: unidade } },
+          x: { grid: { display: false } },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { title: items => datasKeys[items[0]?.dataIndex] ? `Registro de ${datasKeys[items[0].dataIndex]}` : '' } },
+        },
       },
     });
   });
@@ -28209,6 +28511,51 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
       }
     };
   }
+  // Marca com um losango verde o ponto em que o critério de domínio foi atingido pela primeira
+  // vez (ex: 3 dias seguidos ≥80%) — pedido em reunião: hoje o gráfico não sinaliza visualmente
+  // quando chega a hora de tomar uma decisão (trocar alvo/suspender/avançar), só o texto do
+  // card de "critério atingido" avisa, sem nenhum marcador no próprio gráfico.
+  function indiceCriterioDominioAtingido(seqValores, crit) {
+    if (!crit) return null;
+    if (crit.blocoUnico100) {
+      const i100 = (seqValores||[]).findIndex(v => v === 100);
+      if (i100 !== -1) return i100;
+    }
+    if (!crit.percentual || !crit.dias) return null;
+    for (let i = crit.dias - 1; i < (seqValores||[]).length; i++) {
+      const janela = seqValores.slice(i - crit.dias + 1, i + 1);
+      if (janela.every(v => v >= crit.percentual)) return i;
+    }
+    return null;
+  }
+  function criarPluginCriterioDominio(indice) {
+    if (indice === null || indice === undefined || indice < 0) return null;
+    return {
+      id: 'criterioDominio_' + indice,
+      // Em vez de um losango flutuante solto acima do gráfico (que ficava deslocado do ponto
+      // real e concorria visualmente com o marcador em losango do alerta de decisão do Greer,
+      // que é outra funcionalidade — aparece no ponto mais recente quando detecta variabilidade/
+      // piora/estabilidade), aqui só desenha um anel ao redor do próprio ponto "Independente"
+      // daquele dia, com um rótulo pequeno acima.
+      afterDraw(chart) {
+        const meta = chart.getDatasetMeta(0); // dataset 0 = Independente
+        const ponto = meta?.data?.[indice];
+        if (!ponto) return;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.strokeStyle = '#059669';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(ponto.x, ponto.y, 8, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#047857';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✓ Critério atingido', ponto.x, ponto.y - 13);
+        ctx.restore();
+      }
+    };
+  }
   // Eixo X com a data de cada registro (igual ao gráfico real da BC) — o Chart.js já trata eixos
   // de categoria com espaçamento igual entre pontos, então intervalos desiguais entre atendimentos
   // não distorcem a leitura visual da tendência mesmo mostrando a data de verdade.
@@ -28264,13 +28611,17 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
       },
       { label: 'Com dica', data: dataPontosDica, borderColor: '#D97706', backgroundColor: '#D97706', tension: 0.3, spanGaps: true, pointRadius: 3, fill: false },
       { label: 'Erro', data: dataPontosErro, borderColor: '#DC2626', backgroundColor: '#DC2626', tension: 0.3, spanGaps: true, pointRadius: 3, fill: false },
-      { label: 'Linha de tendência', data: linhaDeTendencia(dataPontosInd), borderColor: '#9CA3AF', borderWidth: 1.5, borderDash: [3,3], pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0 },
+      // Cor mais clara da própria série de Independente (em vez de cinza genérico) — mesma
+      // convenção que a BC já usa na planilha dela pra linha de tendência do independente.
+      { label: 'Linha de tendência', data: linhaDeTendencia(dataPontosInd), borderColor: '#6EE7B7', borderWidth: 1.5, borderDash: [3,3], pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0 },
     ];
     if (criterios[a]?.percentual) {
       datasets.push({
         label: `Meta (${criterios[a].percentual}%)`,
         data: dataLabels.map(() => criterios[a].percentual),
-        borderColor: '#6B7280', borderDash: [6, 4], borderWidth: 1.5,
+        // Linha sólida (não tracejada) pra não se confundir visualmente com a Linha de tendência,
+        // que também é tracejada — ponto levantado em reunião.
+        borderColor: '#F59E0B', borderWidth: 1.5,
         pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0,
       });
     }
@@ -28280,10 +28631,22 @@ function renderizarGraficoMonitoramento(regs, areas, obj, labels) {
       indiceMudanca = datasReais.findIndex(d => d && d >= dataMudanca);
     }
     const pluginMudanca = criarPluginMudancaObjetivo(indiceMudanca);
+    let indiceCriterioReal = null;
+    const indiceCriterioSeq = indiceCriterioDominioAtingido(seqValores, criterios[a]);
+    if (indiceCriterioSeq !== null) {
+      let contagemCrit = -1;
+      for (let i = 0; i < dataPontosInd.length; i++) {
+        if (dataPontosInd[i] !== null) {
+          contagemCrit++;
+          if (contagemCrit === indiceCriterioSeq) { indiceCriterioReal = i; break; }
+        }
+      }
+    }
+    const pluginCriterio = criarPluginCriterioDominio(indiceCriterioReal);
     _chartsPercentuais[a] = new Chart(canvas, {
       type: 'line',
       data: { labels: dataLabels, datasets },
-      plugins: pluginMudanca ? [pluginMudanca] : [],
+      plugins: [pluginMudanca, pluginCriterio].filter(Boolean),
       options: {
         layout: { padding: { top: 12 } },
         scales: {
@@ -29595,7 +29958,7 @@ async function verDetalhesEscola(email) {
     gid ? db.from('adaptacoes').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
     gid ? db.from('peis').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
     gid ? db.from('paees').select('*',{count:'exact',head:true}).eq('user_id',gid) : {count:0},
-    db.from('usage_logs').select('tokens_input,tokens_output,custo_usd,metodo,criado_em').eq('user_email',email.toLowerCase()).order('criado_em',{ascending:false}).limit(100),
+    db.from('usage_logs').select('tokens_input,tokens_output,custo_usd,metodo,created_at').eq('user_email',email.toLowerCase()).order('created_at',{ascending:false}).limit(100),
     db.from('logs_acesso').select('created_at,role').eq('user_email',email.toLowerCase()).order('created_at',{ascending:false}).limit(10),
   ]);
 
